@@ -57,8 +57,13 @@
     "commercial_release_review_required": true
   },
   "download": {
-    "approved": false,
-    "reason": "The user requested size and destination disclosure before model download.",
-    "local_destination": "models/Wan2.1-T2V-1.3B"
+    "approved": true,
+    "approval_scope": "Exact official checkpoint and pinned revision only",
+    "completed": true,
+    "completed_at": "2026-07-30T07:55:47Z",
+    "local_destination": "/home/ksse2/ai/models/Wan2.1-T2V-1.3B",
+    "cache_destination": "/home/ksse2/ai/cache/huggingface",
+    "verification_receipt": "data_ledger/downloads/wan21_t2v_1_3b_37ec512.json",
+    "sha256_manifest": "data_ledger/models/wan21_t2v_1_3b_37ec512.sha256"
   }
 }
