@@ -92,6 +92,17 @@ python hiveframe_m0.py download-plan
 python hiveframe_m0.py preflight
 ```
 
+After an approved model setup on a compatible NVIDIA CUDA host, M0 enforces:
+
+```bash
+python hiveframe_m0.py smoke
+python hiveframe_m0.py run --prompt-id static-speaking-person
+python hiveframe_m0.py run-suite
+```
+
+The ten-prompt suite cannot run before the smoke and same-seed cold/warm
+reproducibility gates pass.
+
 ## Milestones
 
 M0 Reproducible Baseline → M1 Directed Regional Repair → M2 Patch Runtime Parity → M3 Neighbor-Sealed Patches → M4 Constraint-Compliant Generation → M5 Temporal Sparse Gain → M6 Closed-loop Local Repair → M7 Backend-Independent Runtime → M8 Creator MVP.

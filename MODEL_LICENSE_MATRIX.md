@@ -4,7 +4,8 @@
 
 | Backend / asset | Intended role | Reported upstream status to verify | Admission status | Required evidence |
 |---|---|---|---|---|
-| Wan 2.1 T2V 1.3B | M0 primary baseline | Official code and model are Apache-2.0 | Verified for research baseline; download not approved | Model `37ec512624d61f7aa208f7ea8140a131f93afc9a`; code `9737cba9c1c3c4d04b33fcad41c111989865d315`; exact large-file sizes and SHA-256 pinned; dependency lock awaits compatible NVIDIA host |
+| Wan 2.1 official code | M0 runtime reference | Apache-2.0 in the pinned GitHub source tree | Verified for research baseline | Code revision `9737cba9c1c3c4d04b33fcad41c111989865d315`; commercial use and modification allowed; redistribution must carry the license, modification notices, applicable attributions, and NOTICE if one is later present; no NOTICE file observed at this revision |
+| Wan 2.1 T2V 1.3B checkpoint | M0 primary weights | Apache-2.0 in the separate official Hugging Face checkpoint repository | Verified; download not approved | Checkpoint revision `37ec512624d61f7aa208f7ea8140a131f93afc9a`; exact large-file sizes/SHA-256 pinned; commercial use, modification, and redistribution follow Apache-2.0; separate model-card use conditions are recorded; no NOTICE file observed at this revision |
 | Wan 2.1 14B family | scale/reference experiments | Official repository reported as Apache-2.0 | Deferred | same evidence plus hardware and redistribution review |
 | Wan 2.2 TI2V-5B | 720p/24fps reference path | Official card reported as Apache-2.0 with a 4090-class path | Blocked pending verification | checkpoint-specific license/card; digest; runtime requirements; output restrictions |
 | LTX-2 | control and audio-video research | Official repository, inference, and trainer available; commercial terms require explicit review | Blocked pending legal/terms review | exact license version; commercial thresholds/conditions; trainer and weight terms; audio data considerations |

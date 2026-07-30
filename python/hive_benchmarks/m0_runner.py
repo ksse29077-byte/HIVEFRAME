@@ -36,6 +36,7 @@ REQUIRED_DISTRIBUTIONS = (
     "transformers",
     "tokenizers",
     "accelerate",
+    "tqdm",
     "imageio",
     "easydict",
     "ftfy",
@@ -214,6 +215,36 @@ def nvidia_smi_path() -> Path | None:
     return None
 
 
+def nvidia_inventory() -> list[dict[str, Any]]:
+    executable = nvidia_smi_path()
+    if executable is None:
+        return []
+    output = command_output(
+        [
+            str(executable),
+            "--query-gpu=index,name,driver_version,memory.total,compute_cap",
+            "--format=csv,noheader,nounits",
+        ]
+    )
+    if not output:
+        return []
+    devices: list[dict[str, Any]] = []
+    for line in output.splitlines():
+        values = [value.strip() for value in line.split(",")]
+        if len(values) != 5:
+            continue
+        devices.append(
+            {
+                "index": int(values[0]),
+                "name": values[1],
+                "driver_version": values[2],
+                "memory_total_mib": int(values[3]),
+                "compute_capability": values[4],
+            }
+        )
+    return devices
+
+
 def torch_devices() -> dict[str, Any]:
     result: dict[str, Any] = {
         "torch_importable": False,
@@ -273,6 +304,7 @@ def collect_environment() -> dict[str, Any]:
         },
         "display_devices": windows_display_devices(),
         "nvidia_smi": str(nvidia_smi_path()) if nvidia_smi_path() else None,
+        "nvidia_devices": nvidia_inventory(),
         "torch": torch_devices(),
         "packages": installed_distributions(),
         "project_git": git_fingerprint(ROOT),
@@ -342,12 +374,16 @@ def load_license_record(config: dict[str, Any]) -> dict[str, Any]:
     if not path.is_file():
         return {"path": str(path), "exists": False, "status": None}
     payload = json.loads(path.read_text(encoding="utf-8"))
+    checkpoint_license = payload.get("checkpoint_license", payload.get("license", {}))
     return {
         "path": str(path),
         "exists": True,
         "status": payload.get("status"),
-        "license": payload.get("license", {}).get("spdx"),
+        "license": checkpoint_license.get("spdx"),
         "model_revision": payload.get("artifact", {}).get("revision"),
+        "code_license": payload.get("official_code", {})
+        .get("license", {})
+        .get("spdx"),
     }
 
 
@@ -416,11 +452,24 @@ def evaluate_preflight(config: dict[str, Any]) -> dict[str, Any]:
                 "message": "Model license record is not approved for the research baseline.",
             }
         )
-    if disk.free < config["model"]["expected_repository_bytes"]:
+    recommended_free = (
+        int(config["model"]["expected_installed_bytes"])
+        + int(config["model"]["temporary_and_cache_headroom_bytes"])
+        + int(config["model"]["minimum_free_space_after_download_bytes"])
+    )
+    required_free = (
+        recommended_free
+        if not model["all_key_files_present"]
+        else int(config["model"]["minimum_free_space_after_download_bytes"])
+    )
+    if disk.free < required_free:
         blockers.append(
             {
                 "code": "disk_space_insufficient",
-                "message": "Free disk space is smaller than the model repository size.",
+                "message": (
+                    "Free disk space is below the configured download, temporary "
+                    "cache, and post-install reserve requirement."
+                ),
             }
         )
     if environment["display_devices"] and any(
@@ -443,20 +492,41 @@ def evaluate_preflight(config: dict[str, Any]) -> dict[str, Any]:
         "upstream_code": code,
         "model": model,
         "license_record": license_record,
+        "execution_decision": {
+            "official_backend_runnable_on_this_pc": bool(
+                environment["torch"]["cuda_available"]
+            ),
+            "reason": (
+                "Pinned official Wan uses CUDA and flash_attn; this workstation "
+                "has Intel Arc rather than NVIDIA CUDA."
+            ),
+            "recommended_dtype": config["generation"]["dtype"],
+            "recommended_resolution": config["generation"]["size"],
+            "smoke_frames": config["smoke"]["frame_num"],
+            "baseline_frames": config["generation"]["frame_num"],
+            "fps": config["generation"]["fps"],
+            "cpu_offload": config["generation"]["offload_model"],
+            "t5_on_cpu": config["generation"]["t5_cpu"],
+        },
         "disk": {
             "path": str(model_path.parent),
             "total_bytes": disk.total,
             "used_bytes": disk.used,
             "free_bytes": disk.free,
+            "recommended_free_before_download_bytes": recommended_free,
         },
     }
 
 
 def download_plan(config: dict[str, Any]) -> dict[str, Any]:
     expected = int(config["model"]["expected_repository_bytes"])
+    installed = int(config["model"]["expected_installed_bytes"])
+    temporary = int(config["model"]["temporary_and_cache_headroom_bytes"])
     reserve = int(config["model"]["minimum_free_space_after_download_bytes"])
     model_path = project_path(config["model"]["local_dir"])
+    cache_path = project_path(config["model"]["cache_dir"])
     disk = shutil.disk_usage(model_path.parent if model_path.parent.exists() else ROOT)
+    required = installed + temporary + reserve
     return {
         "download_performed": False,
         "repository": config["model"]["repo_id"],
@@ -465,12 +535,24 @@ def download_plan(config: dict[str, Any]) -> dict[str, Any]:
         "expected_bytes": expected,
         "expected_gb_decimal": round(expected / 1_000_000_000, 3),
         "expected_gib": round(expected / (1024**3), 3),
+        "expected_installed_bytes": installed,
+        "expected_installed_gb_decimal": round(installed / 1_000_000_000, 3),
+        "temporary_and_cache_headroom_bytes": temporary,
+        "temporary_and_cache_headroom_gb_decimal": round(
+            temporary / 1_000_000_000, 3
+        ),
         "destination": str(model_path),
+        "cache_destination": str(cache_path),
         "current_free_bytes": disk.free,
-        "required_free_before_download_bytes": expected + reserve,
+        "recommended_free_before_download_bytes": required,
+        "recommended_free_before_download_gb_decimal": round(
+            required / 1_000_000_000, 3
+        ),
+        "recommended_free_before_download_gib": round(required / (1024**3), 3),
         "minimum_free_after_download_bytes": reserve,
-        "enough_space": disk.free >= expected + reserve,
+        "enough_space": disk.free >= required,
         "command_after_approval": [
+            "HF_HOME=" + str(cache_path),
             "huggingface-cli",
             "download",
             config["model"]["repo_id"],
@@ -486,6 +568,64 @@ def load_suite(config: dict[str, Any]) -> list[dict[str, Any]]:
     path = project_path(config["benchmark"]["suite_path"])
     payload = json.loads(path.read_text(encoding="utf-8"))
     return list(payload["prompts"])
+
+
+def stable_hash(payload: Any) -> str:
+    encoded = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def settings_for_profile(
+    config: dict[str, Any], profile: str, *, repeat: int | None = None
+) -> dict[str, Any]:
+    settings = dict(config["generation"])
+    if profile == "smoke":
+        smoke = dict(config["smoke"])
+        smoke.pop("prompt_id", None)
+        settings.update(smoke)
+    settings["repeat"] = (
+        repeat
+        if repeat is not None
+        else int(config["reproducibility"]["repeat"])
+    )
+    return settings
+
+
+def gate_state_path(config: dict[str, Any]) -> Path:
+    return project_path(config["paths"]["gate_state"])
+
+
+def read_gate_state(config: dict[str, Any]) -> dict[str, Any]:
+    path = gate_state_path(config)
+    if not path.is_file():
+        return {"schema_version": "0.1.0", "smoke": None, "reproducibility": None}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write_gate_state(config: dict[str, Any], state: dict[str, Any]) -> None:
+    write_json(gate_state_path(config), state)
+
+
+def gate_fingerprint(config: dict[str, Any]) -> dict[str, str]:
+    return {
+        "project_commit": git_fingerprint(ROOT).get("revision"),
+        "code_revision": config["upstream"]["code_revision"],
+        "model_revision": config["model"]["revision"],
+        "config_hash": stable_hash(
+            {key: value for key, value in config.items() if not key.startswith("_")}
+        ),
+    }
+
+
+def gate_matches(
+    gate: dict[str, Any] | None, config: dict[str, Any], expected_status: str
+) -> bool:
+    if not gate or gate.get("status") != expected_status:
+        return False
+    fingerprint = gate_fingerprint(config)
+    return all(gate.get(key) == value for key, value in fingerprint.items())
 
 
 def process_rss_bytes(pid: int) -> int | None:
@@ -555,106 +695,328 @@ def blocked_receipt(
     config: dict[str, Any],
     prompt: dict[str, Any],
     preflight: dict[str, Any],
+    settings: dict[str, Any],
+    profile: str,
+    command: list[str],
 ) -> dict[str, Any]:
+    started = utc_now()
     return {
         "schema_version": "0.1.0",
         "kind": "hiveframe.m0.run_receipt",
-        "run_id": f"{prompt['id']}-{prompt['seed']}-{int(time.time())}",
+        "run_id": f"{profile}-{prompt['id']}-{prompt['seed']}",
         "status": "blocked",
-        "started_at": utc_now(),
+        "partial": True,
+        "profile": profile,
+        "started_at": started,
         "finished_at": utc_now(),
         "backend": {
             "name": "wan21_t2v_1_3b_official",
+            "code_repository": config["upstream"]["code_repository"],
             "code_revision": config["upstream"]["code_revision"],
             "model_id": config["model"]["repo_id"],
             "model_revision": config["model"]["revision"],
+            "code_license": "Apache-2.0",
+            "checkpoint_license": config["model"]["license"],
         },
         "sample": prompt,
-        "settings": config["generation"],
-        "timing": {},
-        "resources": {},
+        "settings": settings,
+        "settings_hash": stable_hash({"sample": prompt, "settings": settings}),
+        "configuration_hash": gate_fingerprint(config)["config_hash"],
+        "command": command,
+        "timing": {
+            "wall_clock_seconds": 0.0,
+            "model_load_wall_seconds": None,
+            "prompt_encode_wall_seconds": None,
+            "denoising_wall_seconds": None,
+            "denoising_steps": [],
+            "vae_encode_wall_seconds": None,
+            "vae_decode_wall_seconds": None,
+            "video_encode_wall_seconds": None,
+            "cuda_gpu_seconds": None,
+        },
+        "resources": {
+            "peak_vram_allocated_bytes": None,
+            "peak_vram_reserved_bytes": None,
+            "peak_host_rss_bytes": None,
+        },
         "artifacts": {},
+        "environment": preflight["environment"],
         "preflight": {
             "ready": False,
             "blockers": preflight["blockers"],
             "warnings": preflight["warnings"],
         },
+        "unsupported_metrics": {
+            "all_runtime_metrics": (
+                "Execution was blocked before model load; runtime measurements "
+                "do not exist."
+            ),
+            "vae_encode": "Text-to-video has no input VAE encode stage.",
+        },
+        "error": {
+            "type": "PreflightBlocked",
+            "message": "; ".join(item["message"] for item in preflight["blockers"]),
+        },
     }
+
+
+def timing_from_instrumentation(
+    instrumentation: dict[str, Any] | None, wall_seconds: float
+) -> tuple[dict[str, Any], dict[str, str]]:
+    unsupported: dict[str, str] = {
+        "vae_encode": "Text-to-video has no input VAE encode stage.",
+        "scheduler_overhead": (
+            "The official scheduler step is included in each denoising step; "
+            "scheduler-only time is not isolated by this non-invasive hook."
+        ),
+        "host_ram_descendants": (
+            "Peak host RSS samples the main Wan child process every configured "
+            "interval; short-lived descendant encoder processes are not aggregated."
+        ),
+    }
+    timing: dict[str, Any] = {
+        "wall_clock_seconds": wall_seconds,
+        "model_load_wall_seconds": None,
+        "model_load_cuda_seconds": None,
+        "runs": [],
+        "vae_encode_wall_seconds": None,
+        "scheduler_overhead_seconds": None,
+    }
+    if not instrumentation:
+        unsupported["instrumentation"] = (
+            "The instrumented child process did not produce a metrics file."
+        )
+        timing["cuda_gpu_seconds"] = None
+        return timing, unsupported
+
+    model_load = instrumentation.get("model_load", {})
+    timing["model_load_wall_seconds"] = model_load.get("model_load_wall_seconds")
+    timing["model_load_cuda_seconds"] = model_load.get("model_load_cuda_seconds")
+    cuda_total = (
+        float(timing["model_load_cuda_seconds"])
+        if timing["model_load_cuda_seconds"] is not None
+        else 0.0
+    )
+    has_cuda_measurement = timing["model_load_cuda_seconds"] is not None
+    for run in instrumentation.get("runs", []):
+        prompt_calls = run.get("prompt_encode_calls", [])
+        prompt_wall = sum(
+            float(item.get("encode_wall_seconds") or 0.0) for item in prompt_calls
+        )
+        prompt_cuda_values = [
+            item.get("encode_cuda_seconds") for item in prompt_calls
+        ]
+        prompt_cuda = (
+            sum(float(value) for value in prompt_cuda_values)
+            if prompt_cuda_values and all(value is not None for value in prompt_cuda_values)
+            else None
+        )
+        steps = run.get("denoising_steps", [])
+        denoising_wall = sum(
+            float(item.get("step_wall_seconds") or 0.0) for item in steps
+        )
+        step_cuda_values = [item.get("step_cuda_seconds") for item in steps]
+        denoising_cuda = (
+            sum(float(value) for value in step_cuda_values)
+            if step_cuda_values and all(value is not None for value in step_cuda_values)
+            else None
+        )
+        generation_cuda = run.get("generation_cuda_seconds")
+        video_encode_cuda = run.get("video_encode_cuda_seconds")
+        for value in (generation_cuda, video_encode_cuda):
+            if value is not None:
+                cuda_total += float(value)
+                has_cuda_measurement = True
+        timing["runs"].append(
+            {
+                "label": run.get("label"),
+                "prompt_encode_wall_seconds": prompt_wall,
+                "prompt_encode_cuda_seconds": prompt_cuda,
+                "denoising_wall_seconds": denoising_wall,
+                "denoising_cuda_seconds": denoising_cuda,
+                "denoising_steps": steps,
+                "vae_decode_wall_seconds": run.get("vae_decode_wall_seconds"),
+                "vae_decode_cuda_seconds": run.get("vae_decode_cuda_seconds"),
+                "video_encode_wall_seconds": run.get("video_encode_wall_seconds"),
+                "video_encode_cuda_seconds": video_encode_cuda,
+                "generation_wall_seconds": run.get("generation_wall_seconds"),
+                "generation_cuda_seconds": generation_cuda,
+            }
+        )
+    timing["cuda_gpu_seconds"] = cuda_total if has_cuda_measurement else None
+    if not has_cuda_measurement:
+        unsupported["cuda_gpu_time"] = (
+            "CUDA events were unavailable or the child failed before CUDA timing."
+        )
+    return timing, unsupported
 
 
 def run_sample(
     config: dict[str, Any],
     prompt: dict[str, Any],
     output_dir: Path,
+    *,
+    profile: str,
+    repeat: int | None = None,
 ) -> tuple[int, dict[str, Any]]:
-    preflight = evaluate_preflight(config)
-    run_id = f"{prompt['id']}-{prompt['seed']}"
-    receipt_path = output_dir / f"{run_id}.receipt.json"
-    if not preflight["ready"]:
-        receipt = blocked_receipt(config, prompt, preflight)
-        write_json(receipt_path, receipt)
-        return 2, receipt
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"{run_id}.mp4"
+    settings = settings_for_profile(config, profile, repeat=repeat)
+    run_id = f"{profile}-{prompt['id']}-{prompt['seed']}"
+    output_prefix = output_dir / run_id
+    metrics_path = output_dir / f"{run_id}.instrumentation.json"
     stdout_path = output_dir / f"{run_id}.stdout.log"
     stderr_path = output_dir / f"{run_id}.stderr.log"
-    generation = config["generation"]
+    receipt_path = output_dir / f"{run_id}.receipt.json"
     spec = Wan21RunSpec(
         prompt=prompt["intent"],
+        negative_prompt=settings["negative_prompt"],
         seed=int(prompt["seed"]),
-        output_path=output_path,
-        size=generation["size"],
-        frame_num=int(generation["frame_num"]),
-        sample_steps=int(generation["sample_steps"]),
-        sample_shift=float(generation["sample_shift"]),
-        sample_guide_scale=float(generation["sample_guide_scale"]),
-        sample_solver=generation["sample_solver"],
-        offload_model=bool(generation["offload_model"]),
-        t5_cpu=bool(generation["t5_cpu"]),
+        output_prefix=output_prefix,
+        metrics_path=metrics_path,
+        size=settings["size"],
+        frame_num=int(settings["frame_num"]),
+        fps=int(settings["fps"]),
+        sample_steps=int(settings["sample_steps"]),
+        sample_shift=float(settings["sample_shift"]),
+        sample_guide_scale=float(settings["sample_guide_scale"]),
+        sample_solver=settings["sample_solver"],
+        dtype=settings["dtype"],
+        device=settings["device"],
+        offload_model=bool(settings["offload_model"]),
+        t5_cpu=bool(settings["t5_cpu"]),
+        repeat=int(settings["repeat"]),
     )
     command = build_generate_command(
         python_executable=Path(sys.executable),
+        driver_path=ROOT / "python" / "hive_hooks" / "wan21_m0_instrumented.py",
         code_dir=project_path(config["backend"]["code_dir"]),
         checkpoint_dir=project_path(config["model"]["local_dir"]),
         spec=spec,
     )
+    preflight = evaluate_preflight(config)
+    if not preflight["ready"]:
+        receipt = blocked_receipt(
+            config, prompt, preflight, settings, profile, command
+        )
+        write_json(receipt_path, receipt)
+        return 2, receipt
 
+    output_dir.mkdir(parents=True, exist_ok=True)
     started_at = utc_now()
     start = time.perf_counter()
     peak_host_rss = 0
     peak_gpu_memory_mib = 0
     gpu_utilization_samples: list[int] = []
-    with stdout_path.open("w", encoding="utf-8") as stdout_handle, stderr_path.open(
-        "w", encoding="utf-8"
-    ) as stderr_handle:
-        process = subprocess.Popen(
-            command,
-            cwd=project_path(config["backend"]["code_dir"]),
-            stdout=stdout_handle,
-            stderr=stderr_handle,
-            text=True,
-        )
-        while process.poll() is None:
-            rss = process_rss_bytes(process.pid)
-            if rss is not None:
-                peak_host_rss = max(peak_host_rss, rss)
-            gpu = sample_nvidia_gpu()
-            if gpu:
-                peak_gpu_memory_mib = max(
-                    peak_gpu_memory_mib, gpu["memory_used_mib"]
-                )
-                gpu_utilization_samples.append(gpu["utilization_percent"])
-            time.sleep(float(config["receipt"]["sample_interval_seconds"]))
-        return_code = process.returncode
+    execution_error: dict[str, str] | None = None
+    try:
+        with stdout_path.open("w", encoding="utf-8") as stdout_handle, stderr_path.open(
+            "w", encoding="utf-8"
+        ) as stderr_handle:
+            process = subprocess.Popen(
+                command,
+                cwd=project_path(config["backend"]["code_dir"]),
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                text=True,
+            )
+            while process.poll() is None:
+                rss = process_rss_bytes(process.pid)
+                if rss is not None:
+                    peak_host_rss = max(peak_host_rss, rss)
+                gpu = sample_nvidia_gpu()
+                if gpu:
+                    peak_gpu_memory_mib = max(
+                        peak_gpu_memory_mib, gpu["memory_used_mib"]
+                    )
+                    gpu_utilization_samples.append(gpu["utilization_percent"])
+                time.sleep(float(config["receipt"]["sample_interval_seconds"]))
+            return_code = int(process.returncode)
+    except Exception as error:
+        return_code = -1
+        execution_error = {
+            "type": type(error).__name__,
+            "message": str(error),
+        }
     wall_seconds = time.perf_counter() - start
-    output_exists = output_path.is_file()
-    status = "succeeded" if return_code == 0 and output_exists else "failed"
+    instrumentation = (
+        json.loads(metrics_path.read_text(encoding="utf-8"))
+        if metrics_path.is_file()
+        else None
+    )
+    output_artifacts: list[dict[str, Any]] = []
+    if instrumentation:
+        for run in instrumentation.get("runs", []):
+            output_value = run.get("output")
+            if not output_value:
+                continue
+            output_path = Path(output_value)
+            if output_path.is_file():
+                output_artifacts.append(
+                    {
+                        "label": run.get("label"),
+                        "path": str(output_path),
+                        "bytes": output_path.stat().st_size,
+                        "sha256": sha256_file(output_path),
+                    }
+                )
+    expected_outputs = int(settings["repeat"])
+    status = (
+        "succeeded"
+        if return_code == 0
+        and instrumentation
+        and instrumentation.get("status") == "succeeded"
+        and len(output_artifacts) == expected_outputs
+        else "failed"
+    )
+    reproducibility: dict[str, Any] = {
+        "evaluated": expected_outputs == 2,
+        "status": "not_evaluated",
+        "same_seed": int(prompt["seed"]),
+        "cold_hash": None,
+        "warm_hash": None,
+        "possible_causes_if_mismatch": [
+            "nondeterministic CUDA kernels",
+            "driver or library differences",
+            "uncontrolled random state in the upstream backend",
+            "video encoder nondeterminism",
+        ],
+    }
+    if expected_outputs == 2 and len(output_artifacts) == 2:
+        cold = next(
+            (item for item in output_artifacts if item["label"] == "cold"), None
+        )
+        warm = next(
+            (item for item in output_artifacts if item["label"] == "warm"), None
+        )
+        if cold and warm:
+            reproducibility["cold_hash"] = cold["sha256"]
+            reproducibility["warm_hash"] = warm["sha256"]
+            if cold["sha256"] == warm["sha256"]:
+                reproducibility["status"] = "hash_match"
+            else:
+                reproducibility["status"] = "hash_mismatch"
+                status = "failed"
+    timing, unsupported = timing_from_instrumentation(instrumentation, wall_seconds)
+    environment = preflight["environment"]
+    error = (
+        instrumentation.get("error")
+        if instrumentation
+        else execution_error
+    )
+    if status == "failed" and error is None:
+        error = {
+            "type": "RunValidationFailed",
+            "message": (
+                "Child return code, output count, instrumentation status, or "
+                "same-seed reproducibility did not satisfy M0."
+            ),
+        }
     receipt = {
         "schema_version": "0.1.0",
         "kind": "hiveframe.m0.run_receipt",
         "run_id": run_id,
         "status": status,
+        "partial": status != "succeeded",
+        "profile": profile,
         "started_at": started_at,
         "finished_at": utc_now(),
         "backend": {
@@ -663,22 +1025,16 @@ def run_sample(
             "code_revision": config["upstream"]["code_revision"],
             "model_id": config["model"]["repo_id"],
             "model_revision": config["model"]["revision"],
-            "license": config["model"]["license"],
+            "code_license": "Apache-2.0",
+            "checkpoint_license": config["model"]["license"],
         },
         "sample": prompt,
-        "settings": generation,
+        "settings": settings,
+        "settings_hash": stable_hash({"sample": prompt, "settings": settings}),
+        "configuration_hash": gate_fingerprint(config)["config_hash"],
         "command": command,
         "return_code": return_code,
-        "timing": {
-            "wall_clock_seconds": wall_seconds,
-            "gpu_kernel_seconds": None,
-            "denoising_seconds": None,
-            "vae_encode_seconds": None,
-            "vae_decode_seconds": None,
-            "communication_seconds": 0.0,
-            "scheduler_overhead_seconds": None,
-            "repair_overhead_seconds": 0.0,
-        },
+        "timing": timing,
         "resources": {
             "peak_host_rss_bytes": peak_host_rss or None,
             "peak_gpu_memory_mib_sampled": peak_gpu_memory_mib or None,
@@ -687,34 +1043,34 @@ def run_sample(
                 if gpu_utilization_samples
                 else None
             ),
-            "transferred_bytes": 0,
-            "cache_memory_bytes": 0,
-        },
-        "sparse": {
-            "enabled": False,
-            "active_patch_ratio": 1.0,
-            "skipped_patch_ratio": 0.0,
-            "boundary_only_refresh_ratio": 0.0,
+            "peak_vram_allocated_bytes": (
+                instrumentation.get("peak_vram", {}).get("allocated_bytes")
+                if instrumentation
+                else None
+            ),
+            "peak_vram_reserved_bytes": (
+                instrumentation.get("peak_vram", {}).get("reserved_bytes")
+                if instrumentation
+                else None
+            ),
         },
         "artifacts": {
-            "video": str(output_path) if output_exists else None,
-            "video_bytes": output_path.stat().st_size if output_exists else None,
-            "video_sha256": sha256_file(output_path) if output_exists else None,
+            "outputs": output_artifacts,
+            "instrumentation": str(metrics_path) if metrics_path.is_file() else None,
             "stdout": str(stdout_path),
             "stderr": str(stderr_path),
         },
-        "environment": collect_environment(),
-        "warnings": [
-            "GPU kernel, denoising, VAE, and scheduler timings require the M0 "
-            "instrumentation hook and remain null rather than being estimated."
-        ],
+        "environment": environment,
+        "reproducibility": reproducibility,
+        "unsupported_metrics": unsupported,
+        "error": error,
     }
     write_json(receipt_path, receipt)
     return (0 if status == "succeeded" else 1), receipt
 
 
 def print_json(payload: Any) -> None:
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
 
 
 def command_preflight(args: argparse.Namespace, config: dict[str, Any]) -> int:
@@ -744,7 +1100,50 @@ def command_verify_model(args: argparse.Namespace, config: dict[str, Any]) -> in
     return 0
 
 
+def stage_gate_error(stage: str, message: str) -> dict[str, Any]:
+    return {
+        "kind": "hiveframe.m0.stage_gate",
+        "stage": stage,
+        "status": "blocked",
+        "message": message,
+    }
+
+
+def command_smoke(args: argparse.Namespace, config: dict[str, Any]) -> int:
+    suite = load_suite(config)
+    prompt_id = config["smoke"]["prompt_id"]
+    prompt = next(item for item in suite if item["id"] == prompt_id)
+    output_dir = (
+        Path(args.output_dir).resolve()
+        if args.output_dir
+        else project_path(config["paths"]["run_dir"])
+    )
+    return_code, receipt = run_sample(
+        config, prompt, output_dir, profile="smoke", repeat=1
+    )
+    if return_code == 0:
+        state = read_gate_state(config)
+        state["smoke"] = {
+            "status": "succeeded",
+            "receipt": str(output_dir / f"{receipt['run_id']}.receipt.json"),
+            "completed_at": utc_now(),
+            **gate_fingerprint(config),
+        }
+        write_gate_state(config, state)
+    print_json(receipt)
+    return return_code
+
+
 def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
+    state = read_gate_state(config)
+    if not gate_matches(state.get("smoke"), config, "succeeded"):
+        print_json(
+            stage_gate_error(
+                "reproducibility",
+                "A successful matching smoke gate is required before a cold/warm run.",
+            )
+        )
+        return 2
     suite = load_suite(config)
     prompt = next((item for item in suite if item["id"] == args.prompt_id), None)
     if prompt is None:
@@ -755,12 +1154,48 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
         if args.output_dir
         else project_path(config["paths"]["run_dir"])
     )
-    return_code, receipt = run_sample(config, prompt, output_dir)
+    return_code, receipt = run_sample(
+        config,
+        prompt,
+        output_dir,
+        profile="reproducibility",
+        repeat=int(config["reproducibility"]["repeat"]),
+    )
+    state = read_gate_state(config)
+    state["reproducibility"] = {
+        "status": (
+            "passed"
+            if return_code == 0
+            and receipt["reproducibility"]["status"] == "hash_match"
+            else "failed"
+        ),
+        "receipt": str(output_dir / f"{receipt['run_id']}.receipt.json"),
+        "completed_at": utc_now(),
+        **gate_fingerprint(config),
+    }
+    write_gate_state(config, state)
     print_json(receipt)
     return return_code
 
 
 def command_run_suite(args: argparse.Namespace, config: dict[str, Any]) -> int:
+    state = read_gate_state(config)
+    if not gate_matches(state.get("smoke"), config, "succeeded"):
+        print_json(
+            stage_gate_error(
+                "canonical_suite",
+                "A successful matching smoke gate is required before the suite.",
+            )
+        )
+        return 2
+    if not gate_matches(state.get("reproducibility"), config, "passed"):
+        print_json(
+            stage_gate_error(
+                "canonical_suite",
+                "A matching same-seed cold/warm hash check must pass first.",
+            )
+        )
+        return 2
     output_dir = (
         Path(args.output_dir).resolve()
         if args.output_dir
@@ -769,7 +1204,9 @@ def command_run_suite(args: argparse.Namespace, config: dict[str, Any]) -> int:
     results = []
     final_code = 0
     for prompt in load_suite(config):
-        code, receipt = run_sample(config, prompt, output_dir)
+        code, receipt = run_sample(
+            config, prompt, output_dir, profile="canonical", repeat=1
+        )
         results.append(
             {
                 "run_id": receipt["run_id"],
@@ -778,12 +1215,13 @@ def command_run_suite(args: argparse.Namespace, config: dict[str, Any]) -> int:
             }
         )
         final_code = max(final_code, code)
-        if code == 2:
+        if code != 0:
             break
     summary = {
         "kind": "hiveframe.m0.suite_summary",
         "created_at": utc_now(),
         "suite": config["benchmark"]["suite_id"],
+        "gate_fingerprint": gate_fingerprint(config),
         "results": results,
     }
     write_json(output_dir / "suite.summary.json", summary)
@@ -822,7 +1260,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     verify.set_defaults(handler=command_verify_model)
 
-    run = subparsers.add_parser("run", help="Run one deterministic canonical sample.")
+    smoke = subparsers.add_parser(
+        "smoke", help="Run the minimum-cost gated smoke profile once."
+    )
+    smoke.add_argument("--output-dir")
+    smoke.set_defaults(handler=command_smoke)
+
+    run = subparsers.add_parser(
+        "run",
+        help="Run one same-seed cold/warm pair after the smoke gate succeeds.",
+    )
     run.add_argument("--prompt-id", required=True)
     run.add_argument("--output-dir")
     run.set_defaults(handler=command_run)

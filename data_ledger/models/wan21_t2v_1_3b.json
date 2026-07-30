@@ -15,9 +15,17 @@
   },
   "official_code": {
     "repository": "https://github.com/Wan-Video/Wan2.1",
-    "revision": "9737cba9c1c3c4d04b33fcad41c111989865d315"
+    "revision": "9737cba9c1c3c4d04b33fcad41c111989865d315",
+    "license": {
+      "spdx": "Apache-2.0",
+      "source_url": "https://github.com/Wan-Video/Wan2.1/blob/9737cba9c1c3c4d04b33fcad41c111989865d315/LICENSE.txt",
+      "commercial_use": true,
+      "modification": true,
+      "redistribution": true,
+      "notice_file_present_at_revision": false
+    }
   },
-  "license": {
+  "checkpoint_license": {
     "spdx": "Apache-2.0",
     "source_url": "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B/blob/37ec512624d61f7aa208f7ea8140a131f93afc9a/LICENSE.txt",
     "model_card_url": "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B",
@@ -31,13 +39,17 @@
       "Preserve NOTICE attributions if a NOTICE file is distributed."
     ],
     "trademark_grant": false,
-    "warranty": "none"
+    "warranty": "none",
+    "notice_file_present_at_revision": false
   },
-  "model_card_use_notice": [
-    "The publisher claims no rights over generated content.",
-    "Users remain responsible for lawful and non-harmful use.",
-    "Do not use outputs to harm people or groups, maliciously expose personal information, spread misinformation, or target vulnerable populations."
-  ],
+  "additional_model_card_use_conditions": {
+    "source": "Model card usage notice; separate from the Apache-2.0 license text",
+    "conditions": [
+      "The publisher claims no rights over generated content.",
+      "Users remain responsible for lawful and non-harmful use.",
+      "Do not use outputs to harm people or groups, maliciously expose personal information, spread misinformation, or target vulnerable populations."
+    ]
+  },
   "provenance": {
     "publisher": "Wan-AI / Wan Team",
     "verification_method": "Official GitHub repository, Hugging Face model card, license file, repository API metadata, and pinned remote revisions.",

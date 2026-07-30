@@ -8,30 +8,62 @@
     "kind",
     "run_id",
     "status",
+    "partial",
+    "profile",
     "started_at",
     "finished_at",
     "backend",
     "sample",
     "settings",
+    "settings_hash",
+    "configuration_hash",
+    "command",
     "timing",
     "resources",
-    "artifacts"
+    "artifacts",
+    "environment",
+    "unsupported_metrics",
+    "error"
   ],
   "properties": {
     "schema_version": { "const": "0.1.0" },
     "kind": { "const": "hiveframe.m0.run_receipt" },
     "run_id": { "type": "string", "minLength": 1 },
     "status": { "enum": ["blocked", "failed", "succeeded"] },
+    "partial": { "type": "boolean" },
+    "profile": {
+      "enum": ["smoke", "reproducibility", "canonical"]
+    },
     "started_at": { "type": "string", "format": "date-time" },
     "finished_at": { "type": "string", "format": "date-time" },
     "backend": { "type": "object" },
     "sample": { "type": "object" },
     "settings": { "type": "object" },
+    "settings_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "configuration_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "command": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "timing": { "type": "object" },
     "resources": { "type": "object" },
-    "sparse": { "type": "object" },
     "artifacts": { "type": "object" },
+    "environment": { "type": "object" },
     "preflight": { "type": "object" },
+    "reproducibility": { "type": "object" },
+    "unsupported_metrics": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "error": {
+      "type": ["object", "null"]
+    },
     "warnings": {
       "type": "array",
       "items": { "type": "string" }
