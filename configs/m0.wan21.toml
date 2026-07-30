@@ -1,0 +1,61 @@
+[project]
+name = "hiveframe"
+milestone = "M0"
+mode = "reproducible_baseline"
+
+[upstream]
+code_repository = "https://github.com/Wan-Video/Wan2.1.git"
+code_revision = "9737cba9c1c3c4d04b33fcad41c111989865d315"
+
+[backend]
+name = "wan21_t2v_1_3b_official"
+code_dir = "vendor/Wan2.1"
+requires_nvidia_cuda = true
+requires_flash_attention = true
+
+[model]
+repo_id = "Wan-AI/Wan2.1-T2V-1.3B"
+revision = "37ec512624d61f7aa208f7ea8140a131f93afc9a"
+license = "Apache-2.0"
+expected_repository_bytes = 17573837064
+minimum_free_space_after_download_bytes = 10737418240
+local_dir = "models/Wan2.1-T2V-1.3B"
+
+[model.files."Wan2.1_VAE.pth"]
+size = 507609880
+sha256 = "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981"
+
+[model.files."diffusion_pytorch_model.safetensors"]
+size = 5676070424
+sha256 = "96b6b242ca1c2f24e9d02cd6596066fab6d310e2d7538f33ae267cb18d957e8f"
+
+[model.files."models_t5_umt5-xxl-enc-bf16.pth"]
+size = 11361920418
+sha256 = "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d"
+
+[generation]
+task = "t2v-1.3B"
+size = "832*480"
+frame_num = 49
+fps = 16
+sample_solver = "unipc"
+sample_steps = 50
+sample_shift = 8.0
+sample_guide_scale = 6.0
+offload_model = true
+t5_cpu = true
+prompt_extension = false
+
+[benchmark]
+suite_id = "canonical-v0"
+suite_path = "benchmarks/prompts/canonical-v0.json"
+
+[admission]
+license_record = "data_ledger/models/wan21_t2v_1_3b.json"
+
+[paths]
+preflight_report = "reports/m0/preflight.json"
+run_dir = "reports/m0/runs"
+
+[receipt]
+sample_interval_seconds = 0.5

@@ -4,7 +4,7 @@
 
 | Backend / asset | Intended role | Reported upstream status to verify | Admission status | Required evidence |
 |---|---|---|---|---|
-| Wan 2.1 T2V 1.3B | M0 primary baseline | Official repository reported as Apache-2.0 | Blocked pending verification | exact checkpoint ID and digest; code and weight license copies; commercial-use check; model card URL; dependency lock |
+| Wan 2.1 T2V 1.3B | M0 primary baseline | Official code and model are Apache-2.0 | Verified for research baseline; download not approved | Model `37ec512624d61f7aa208f7ea8140a131f93afc9a`; code `9737cba9c1c3c4d04b33fcad41c111989865d315`; exact large-file sizes and SHA-256 pinned; dependency lock awaits compatible NVIDIA host |
 | Wan 2.1 14B family | scale/reference experiments | Official repository reported as Apache-2.0 | Deferred | same evidence plus hardware and redistribution review |
 | Wan 2.2 TI2V-5B | 720p/24fps reference path | Official card reported as Apache-2.0 with a 4090-class path | Blocked pending verification | checkpoint-specific license/card; digest; runtime requirements; output restrictions |
 | LTX-2 | control and audio-video research | Official repository, inference, and trainer available; commercial terms require explicit review | Blocked pending legal/terms review | exact license version; commercial thresholds/conditions; trainer and weight terms; audio data considerations |

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/run-receipt/v0.schema.json",
+  "title": "HIVEFRAME M0 RunReceipt v0",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "run_id",
+    "status",
+    "started_at",
+    "finished_at",
+    "backend",
+    "sample",
+    "settings",
+    "timing",
+    "resources",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "kind": { "const": "hiveframe.m0.run_receipt" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["blocked", "failed", "succeeded"] },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "backend": { "type": "object" },
+    "sample": { "type": "object" },
+    "settings": { "type": "object" },
+    "timing": { "type": "object" },
+    "resources": { "type": "object" },
+    "sparse": { "type": "object" },
+    "artifacts": { "type": "object" },
+    "preflight": { "type": "object" },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

@@ -83,6 +83,15 @@ hiveframe baseline run --suite canonical-v0 --backend wan21
 
 Target configuration is in [`configs/research.example.yaml`](configs/research.example.yaml). CLI behavior is specified in [`docs/CLI_GOALS.md`](docs/CLI_GOALS.md).
 
+The implemented M0 preflight and receipt wrapper is documented in
+[`docs/M0_BASELINE.md`](docs/M0_BASELINE.md). It reports the exact model
+download plan without downloading weights:
+
+```bash
+python hiveframe_m0.py download-plan
+python hiveframe_m0.py preflight
+```
+
 ## Milestones
 
 M0 Reproducible Baseline → M1 Directed Regional Repair → M2 Patch Runtime Parity → M3 Neighbor-Sealed Patches → M4 Constraint-Compliant Generation → M5 Temporal Sparse Gain → M6 Closed-loop Local Repair → M7 Backend-Independent Runtime → M8 Creator MVP.
