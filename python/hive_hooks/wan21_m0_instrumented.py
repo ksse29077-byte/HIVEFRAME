@@ -17,9 +17,9 @@ from typing import Any, Callable
 
 
 def utc_now() -> str:
-    from datetime import UTC, datetime
+    from datetime import datetime, timezone
 
-    return datetime.now(UTC).isoformat()
+    return datetime.now(timezone.utc).isoformat()
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:

@@ -16,11 +16,16 @@ its Windows build path remains less mature.
 | Recommended | 24 GB VRAM, such as RTX 3090/4090, RTX A5000, L4, A10, A100, or H100 |
 | Host RAM | 32 GB minimum; 64 GB recommended |
 | Disk | At least 46.737 GB free before the approved checkpoint download; 60 GB or more is preferred |
-| OS | Ubuntu 22.04 LTS or another supported glibc 2.28+ Linux distribution |
+| OS | Ubuntu 24.04 LTS or another supported glibc 2.28+ Linux distribution |
 
 The publisher reports an 8.19 GB VRAM path for T2V-1.3B and demonstrates the
 single-GPU path on RTX 4090. HIVEFRAME recommends extra VRAM because M0 also
 collects instrumentation and retains the unmodified BF16 baseline.
+
+The first validated HIVEFRAME host is WSL2 Ubuntu 24.04 with an RTX 3060 12 GB.
+Its exact fingerprint, installed lock, and model-free test results are recorded
+in `docs/M0_WSL2_RTX3060_SETUP.md` and
+`data_ledger/environments/wsl2_ubuntu2404_rtx3060_m0.json`.
 
 Turing GPUs are not canonical M0 targets: the selected BF16 path and current
 FlashAttention-2 support target Ampere or newer.

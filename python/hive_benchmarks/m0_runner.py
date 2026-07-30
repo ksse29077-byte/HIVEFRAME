@@ -18,10 +18,14 @@ import subprocess
 import sys
 import tempfile
 import time
-import tomllib
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10 handoff host
+    import tomli as tomllib
 
 from hive_backends.wan21 import Wan21RunSpec, build_generate_command
 
@@ -52,7 +56,7 @@ REQUIRED_DISTRIBUTIONS = (
 
 
 def utc_now() -> str:
-    return datetime.now(UTC).isoformat()
+    return datetime.now(timezone.utc).isoformat()
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -507,6 +511,7 @@ def evaluate_preflight(config: dict[str, Any]) -> dict[str, Any]:
             "An XPU port must be evaluated as a separate backend, not mixed into M0."
         )
 
+    cuda_ready = bool(environment["torch"]["cuda_available"])
     return {
         "schema_version": "0.1.0",
         "kind": "hiveframe.m0.preflight",
@@ -519,12 +524,14 @@ def evaluate_preflight(config: dict[str, Any]) -> dict[str, Any]:
         "model": model,
         "license_record": license_record,
         "execution_decision": {
-            "official_backend_runnable_on_this_pc": bool(
-                environment["torch"]["cuda_available"]
-            ),
+            "official_backend_runnable_on_this_pc": cuda_ready,
             "reason": (
-                "Pinned official Wan uses CUDA and flash_attn; this workstation "
-                "has Intel Arc rather than NVIDIA CUDA."
+                "Pinned official Wan can use the detected NVIDIA CUDA device."
+                if cuda_ready
+                else (
+                    "Pinned official Wan requires an NVIDIA CUDA device and "
+                    "flash_attn, but CUDA is not available in this environment."
+                )
             ),
             "recommended_dtype": config["generation"]["dtype"],
             "recommended_resolution": config["generation"]["size"],
