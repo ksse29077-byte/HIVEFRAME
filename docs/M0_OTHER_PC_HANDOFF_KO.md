@@ -3,7 +3,8 @@
 작성 기준일: 2026-07-30  
 현재 단계: **M0 — Reproducible Baseline**  
 현재 브랜치: `agent/m0-baseline-runner`  
-인수인계 기준 커밋: `943deb5072fab2014bbc194b94f23b63725b42e8`
+검증 완료된 M0 상태의 필수 조상 커밋:
+`943deb5072fab2014bbc194b94f23b63725b42e8`
 
 이 문서는 다른 Windows PC의 WSL2 Ubuntu 환경에서 현재 HIVEFRAME M0
 상태를 그대로 이어가기 위한 인수인계서다. Patch Scheduler, Boundary Bus,
@@ -37,7 +38,7 @@ Temporal Cache, LoRA, 분산 실행, GUI는 현재 범위가 아니다.
 
 | 항목 | 고정값 |
 |---|---|
-| HIVEFRAME commit | `943deb5072fab2014bbc194b94f23b63725b42e8` |
+| HIVEFRAME 필수 조상 commit | `943deb5072fab2014bbc194b94f23b63725b42e8` |
 | Wan 공식 코드 | `Wan-Video/Wan2.1` |
 | Wan 코드 revision | `9737cba9c1c3c4d04b33fcad41c111989865d315` |
 | Checkpoint | `Wan-AI/Wan2.1-T2V-1.3B` |
@@ -93,10 +94,10 @@ Windows PowerShell 예시:
 ```powershell
 New-Item -ItemType Directory -Force D:\HIVEFRAME-HANDOFF
 git -C "C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversation-this-is-untrusted-2\outputs\HIVEFRAME" `
-  bundle create D:\HIVEFRAME-HANDOFF\HIVEFRAME-943deb5.bundle `
+  bundle create D:\HIVEFRAME-HANDOFF\HIVEFRAME-handoff.bundle `
   agent/m0-baseline-runner
 git -C "C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversation-this-is-untrusted-2\outputs\HIVEFRAME" `
-  bundle verify D:\HIVEFRAME-HANDOFF\HIVEFRAME-943deb5.bundle
+  bundle verify D:\HIVEFRAME-HANDOFF\HIVEFRAME-handoff.bundle
 ```
 
 ### 5.2 기존 PC에서 모델과 Wan 코드를 묶기
@@ -119,7 +120,7 @@ SHA-256도 별도로 기록한다.
 
 ```bash
 sha256sum \
-  /mnt/d/HIVEFRAME-HANDOFF/HIVEFRAME-943deb5.bundle \
+  /mnt/d/HIVEFRAME-HANDOFF/HIVEFRAME-handoff.bundle \
   /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-T2V-1.3B.tar \
   /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-code-9737cba.tar
 ```
@@ -132,18 +133,19 @@ sha256sum \
 mkdir -p ~/src
 git clone \
   -b agent/m0-baseline-runner \
-  /mnt/d/HIVEFRAME-HANDOFF/HIVEFRAME-943deb5.bundle \
+  /mnt/d/HIVEFRAME-HANDOFF/HIVEFRAME-handoff.bundle \
   ~/src/HIVEFRAME
 
 git -C ~/src/HIVEFRAME rev-parse HEAD
+git -C ~/src/HIVEFRAME merge-base --is-ancestor \
+  943deb5072fab2014bbc194b94f23b63725b42e8 HEAD
 git -C ~/src/HIVEFRAME status --short
+test -f ~/src/HIVEFRAME/docs/M0_OTHER_PC_HANDOFF_KO.md
 ```
 
-첫 명령 결과는 반드시 다음과 같아야 하며, status는 비어 있어야 한다.
-
-```text
-943deb5072fab2014bbc194b94f23b63725b42e8
-```
+`merge-base --is-ancestor`와 `test`는 종료 코드 0이어야 하며, status는
+비어 있어야 한다. 인수인계 문서를 추가한 커밋 때문에 HEAD는
+`943deb5`보다 새 값인 것이 정상이다.
 
 ### 5.4 새 PC Linux 파일시스템에 모델과 Wan 코드 복원
 
@@ -373,7 +375,7 @@ python hiveframe_m0.py run-suite
 
 ## 14. 인수 완료 체크리스트
 
-- [ ] Git HEAD가 `943deb5072fab2014bbc194b94f23b63725b42e8`
+- [ ] `943deb5072fab2014bbc194b94f23b63725b42e8`가 Git HEAD의 조상임
 - [ ] Git worktree가 깨끗함
 - [ ] WSL2 Ubuntu 24.04
 - [ ] NVIDIA GPU와 VRAM 인식
@@ -385,4 +387,3 @@ python hiveframe_m0.py run-suite
 - [ ] offline preflight `ready=true`
 - [ ] blocker 0개
 - [ ] smoke는 별도 승인 전 미실행
-
