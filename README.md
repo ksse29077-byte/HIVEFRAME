@@ -107,6 +107,10 @@ Use [`docs/M0_CUDA_HOST_HANDOFF.md`](docs/M0_CUDA_HOST_HANDOFF.md) to move this
 runner to an NVIDIA host, configure short external model/result paths, verify
 the approved revision, and collect the complete receipt bundle.
 
+The complete current-state Korean handoff for moving the repository,
+environment, pinned Wan code, and verified checkpoint to another PC is
+[`docs/M0_OTHER_PC_HANDOFF_KO.md`](docs/M0_OTHER_PC_HANDOFF_KO.md).
+
 ## Milestones
 
 M0 Reproducible Baseline → M1 Directed Regional Repair → M2 Patch Runtime Parity → M3 Neighbor-Sealed Patches → M4 Constraint-Compliant Generation → M5 Temporal Sparse Gain → M6 Closed-loop Local Repair → M7 Backend-Independent Runtime → M8 Creator MVP.
