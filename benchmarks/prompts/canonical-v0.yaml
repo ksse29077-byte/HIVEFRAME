@@ -1,0 +1,35 @@
+suite:
+  id: canonical-v0
+  status: draft
+  deterministic_seeds: [101, 202, 303]
+  prompts:
+    - id: static-speaking-person
+      category: static_background
+      intent: "A person speaks to camera while the room and camera remain still."
+    - id: static-eyes-mouth
+      category: static_background
+      intent: "A close portrait with motion limited to blinking eyes and speaking mouth."
+    - id: static-hand
+      category: static_background
+      intent: "A seated person moves one hand while body, background, and camera remain still."
+    - id: camera-slow-pan
+      category: camera
+      intent: "A slow horizontal camera pan across a structured room."
+    - id: camera-zoom
+      category: camera
+      intent: "A smooth zoom in followed by a smooth zoom out."
+    - id: boundary-face
+      category: patch_boundary
+      intent: "A face centered exactly across a planned patch boundary."
+    - id: boundary-cable
+      category: patch_boundary
+      intent: "A long cable crosses several planned patches with continuous geometry."
+    - id: constraint-two-objects
+      category: constraints
+      intent: "Exactly two objects maintain a specified distance and depth order."
+    - id: edit-background
+      category: editing
+      intent: "Replace only the background while preserving the foreground identity and motion."
+    - id: edit-face-lips
+      category: editing
+      intent: "Preserve face identity and geometry while changing only lip motion."

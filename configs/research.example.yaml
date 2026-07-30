@@ -1,0 +1,35 @@
+project:
+  name: hiveframe
+  mode: research
+
+backend:
+  primary: wan21_t2v_1_3b
+  reference: wan22_ti2v_5b
+  optional: ltx2
+  weights_shared: true
+  freeze_base_weights: true
+
+video:
+  width: 640
+  height: 384
+  frames: 49
+  fps: 16
+
+patching:
+  mode: adaptive_quadtree
+  initial_grid: [2, 2]
+  max_grid: [8, 8]
+  halo_latent: 16
+  max_boundary_rounds: 2
+  object_aligned: true
+
+sparse:
+  enable_temporal_cache: false
+  enable_mixed_resolution: false
+  enable_affected_closure: false
+
+receipts:
+  enabled: true
+  hash_outputs: true
+  record_gpu_time: true
+  record_peak_vram: true

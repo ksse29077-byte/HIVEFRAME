@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/hive-contracts",
+  "crates/hive-director",
+  "crates/hive-constraint-compiler",
+  "crates/hive-patch-scheduler",
+  "crates/hive-boundary-bus",
+  "crates/hive-temporal-cache",
+  "crates/hive-evaluator",
+  "crates/hive-cli",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+license = "UNLICENSED"
+rust-version = "1.75"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+

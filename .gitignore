@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Rust
+target/
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local secrets, models, media, and generated artifacts
+.env
+.env.*
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+models/
+outputs/
+reports/*.json
+reports/*.mp4
+benchmarks/canonical_clips/*
+!benchmarks/canonical_clips/README.md
