@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
-import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
@@ -90,6 +91,33 @@ class M0ConfigTests(unittest.TestCase):
         self.assertGreater(
             plan["recommended_free_before_download_bytes"],
             plan["expected_installed_bytes"],
+        )
+
+    def test_external_paths_can_be_short_and_outside_repository(self) -> None:
+        root = ROOT / "reports"
+        variables = {
+            "HIVEFRAME_WAN_CODE_DIR": str(root / "wan"),
+            "HIVEFRAME_MODEL_DIR": str(root / "short" / "m"),
+            "HIVEFRAME_HF_CACHE_DIR": str(root / "c"),
+            "HIVEFRAME_M0_REPORT_DIR": str(root / "r"),
+        }
+        with patch.dict(os.environ, variables, clear=False):
+            config = load_config(ROOT / "configs" / "m0.wan21.toml")
+        self.assertEqual(config["backend"]["code_dir"], str((root / "wan").resolve()))
+        self.assertEqual(
+            config["model"]["local_dir"], str((root / "short" / "m").resolve())
+        )
+        self.assertEqual(config["model"]["cache_dir"], str((root / "c").resolve()))
+        self.assertEqual(
+            config["paths"]["run_dir"], str((root / "r" / "runs").resolve())
+        )
+        plan = download_plan(config)
+        self.assertEqual(
+            plan["destination"], str((root / "short" / "m").resolve())
+        )
+        self.assertEqual(plan["storage_volume_checked_at"], str(root.resolve()))
+        self.assertEqual(
+            plan["cache_destination"], str((root / "c").resolve())
         )
 
     def test_smoke_and_baseline_profiles_are_separate(self) -> None:

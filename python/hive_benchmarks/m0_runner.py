@@ -28,6 +28,11 @@ from hive_backends.wan21 import Wan21RunSpec, build_generate_command
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = ROOT / "configs" / "m0.wan21.toml"
+PATH_ENVIRONMENT_OVERRIDES = {
+    "HIVEFRAME_WAN_CODE_DIR": ("backend", "code_dir"),
+    "HIVEFRAME_MODEL_DIR": ("model", "local_dir"),
+    "HIVEFRAME_HF_CACHE_DIR": ("model", "cache_dir"),
+}
 REQUIRED_DISTRIBUTIONS = (
     "torch",
     "torchvision",
@@ -53,6 +58,16 @@ def utc_now() -> str:
 def load_config(path: Path) -> dict[str, Any]:
     with path.open("rb") as handle:
         config = tomllib.load(handle)
+    for variable, (section, key) in PATH_ENVIRONMENT_OVERRIDES.items():
+        value = os.environ.get(variable)
+        if value:
+            config[section][key] = str(Path(value).expanduser().resolve())
+    report_dir = os.environ.get("HIVEFRAME_M0_REPORT_DIR")
+    if report_dir:
+        report_root = Path(report_dir).expanduser().resolve()
+        config["paths"]["preflight_report"] = str(report_root / "preflight.json")
+        config["paths"]["run_dir"] = str(report_root / "runs")
+        config["paths"]["gate_state"] = str(report_root / "gates.json")
     config["_config_path"] = str(path.resolve())
     return config
 
@@ -60,6 +75,16 @@ def load_config(path: Path) -> dict[str, Any]:
 def project_path(value: str) -> Path:
     path = Path(value)
     return path if path.is_absolute() else ROOT / path
+
+
+def existing_storage_ancestor(path: Path) -> Path:
+    candidate = path.resolve()
+    while not candidate.exists():
+        parent = candidate.parent
+        if parent == candidate:
+            return ROOT
+        candidate = parent
+    return candidate if candidate.is_dir() else candidate.parent
 
 
 def sha256_file(path: Path, chunk_size: int = 8 * 1024 * 1024) -> str:
@@ -393,7 +418,8 @@ def evaluate_preflight(config: dict[str, Any]) -> dict[str, Any]:
     model = inspect_model(config)
     license_record = load_license_record(config)
     model_path = project_path(config["model"]["local_dir"])
-    disk = shutil.disk_usage(model_path.parent if model_path.parent.exists() else ROOT)
+    disk_anchor = existing_storage_ancestor(model_path.parent)
+    disk = shutil.disk_usage(disk_anchor)
     blockers: list[dict[str, str]] = []
     warnings: list[str] = []
 
@@ -509,7 +535,7 @@ def evaluate_preflight(config: dict[str, Any]) -> dict[str, Any]:
             "t5_on_cpu": config["generation"]["t5_cpu"],
         },
         "disk": {
-            "path": str(model_path.parent),
+            "path": str(disk_anchor),
             "total_bytes": disk.total,
             "used_bytes": disk.used,
             "free_bytes": disk.free,
@@ -525,7 +551,8 @@ def download_plan(config: dict[str, Any]) -> dict[str, Any]:
     reserve = int(config["model"]["minimum_free_space_after_download_bytes"])
     model_path = project_path(config["model"]["local_dir"])
     cache_path = project_path(config["model"]["cache_dir"])
-    disk = shutil.disk_usage(model_path.parent if model_path.parent.exists() else ROOT)
+    disk_anchor = existing_storage_ancestor(model_path.parent)
+    disk = shutil.disk_usage(disk_anchor)
     required = installed + temporary + reserve
     return {
         "download_performed": False,
@@ -543,6 +570,7 @@ def download_plan(config: dict[str, Any]) -> dict[str, Any]:
         ),
         "destination": str(model_path),
         "cache_destination": str(cache_path),
+        "storage_volume_checked_at": str(disk_anchor),
         "current_free_bytes": disk.free,
         "recommended_free_before_download_bytes": required,
         "recommended_free_before_download_gb_decimal": round(

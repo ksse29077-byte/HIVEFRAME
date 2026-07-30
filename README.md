@@ -103,6 +103,10 @@ python hiveframe_m0.py run-suite
 The ten-prompt suite cannot run before the smoke and same-seed cold/warm
 reproducibility gates pass.
 
+Use [`docs/M0_CUDA_HOST_HANDOFF.md`](docs/M0_CUDA_HOST_HANDOFF.md) to move this
+runner to an NVIDIA host, configure short external model/result paths, verify
+the approved revision, and collect the complete receipt bundle.
+
 ## Milestones
 
 M0 Reproducible Baseline → M1 Directed Regional Repair → M2 Patch Runtime Parity → M3 Neighbor-Sealed Patches → M4 Constraint-Compliant Generation → M5 Temporal Sparse Gain → M6 Closed-loop Local Repair → M7 Backend-Independent Runtime → M8 Creator MVP.

@@ -31,6 +31,11 @@ Recommended settings for a compatible NVIDIA baseline host:
 
 The smoke profile is only a pipeline check and is not a quality result. The full settings retain the project's requested 49-frame target while using the official 1.3B-supported 480P dimensions.
 
+For transferring M0 to a compatible NVIDIA host, including the recommended
+driver/CUDA/Python/PyTorch anchor, short external paths, gated command order,
+and result collection, see
+[`M0_CUDA_HOST_HANDOFF.md`](M0_CUDA_HOST_HANDOFF.md).
+
 ## Pinned code and checkpoint
 
 These are separate admitted artifacts:
@@ -82,6 +87,11 @@ C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversation-this-i
 ```
 
 Both directories are excluded from Git. The download command is only printed by `download-plan`; the runner has no command that automatically downloads weights. Explicit user approval is required before running the printed download command.
+
+The default Windows paths are not mandatory. Absolute TOML paths and the
+`HIVEFRAME_MODEL_DIR`, `HIVEFRAME_HF_CACHE_DIR`, `HIVEFRAME_WAN_CODE_DIR`, and
+`HIVEFRAME_M0_REPORT_DIR` environment variables can select short external
+paths without editing the tracked configuration.
 
 ## Gated execution order
 

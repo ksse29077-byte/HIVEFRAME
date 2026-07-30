@@ -1,0 +1,5 @@
+# Reproducibility anchor for the recommended Linux CUDA 12.4 handoff host.
+# The first successful host must still capture `pip freeze` in its M0 receipt bundle.
+torch==2.4.1
+torchvision==0.19.1
+numpy==1.26.4
