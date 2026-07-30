@@ -19,8 +19,8 @@ Thumbs.db
 *.ckpt
 *.pt
 *.pth
-models/
-vendor/
+/models/
+/vendor/
 outputs/
 reports/*.json
 reports/*.mp4
