@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-07-31
+Status date: 2026-08-01
 
 ## Status legend
 
@@ -65,6 +65,25 @@ Overall pre-gate status: `verified`; decision `REFINE_COST_MODEL`.
 
 M1-P0 does not start or close M1 and does not close M0. Keep the same five
 measured combinations and correct the cost model before another decision.
+
+## M1-P0-R1 — Same-run Mono Cost Normalization
+
+Overall refinement status: `verified`; decision `REFINE_COST_MODEL`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Preserve v1 evidence and 35% threshold | `verified` | seven immutable v1 SHA-256 checks pass |
+| Predeclare paired cost model and deterministic order | `verified` | config, design, runner, and 19 R1 tests |
+| Keep the same five measured combinations | `verified` | 4 combinations remain analytically pruned; no corpus growth |
+| Run 5 warm-up and 20 measured blocks | `verified` | 100 final measured samples in one process |
+| Validate Case B paired deltas | `verified` | T1 error 61.83%; T2 error 56.60%; ranking matches |
+| Preserve safety and deterministic semantics | `verified` | recall 1.0, false-stable 0.0, hashes match v1 |
+| Publish R1 branch and Draft PR | `published` | [Issue #40](https://github.com/ksse29077-byte/HIVEFRAME/issues/40), [Draft PR #41](https://github.com/ksse29077-byte/HIVEFRAME/pull/41) |
+
+Same-run pairing did not bring the Rust-derived incremental coefficients
+within the unchanged 35% rule. Do not expand to the rights-cleared M1 Cost
+Surface from this result. The next calibration change requires a separately
+predeclared explanation of the missing Python topology-variable stages.
 
 ## Backend product target policy
 

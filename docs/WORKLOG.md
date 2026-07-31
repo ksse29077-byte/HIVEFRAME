@@ -385,6 +385,37 @@ runs: 0. Wan evidence changed: 0. Existing receipts deleted or rewritten: 0.
 
 ---
 
+## 2026-08-01 — M1-P0-R1 same-run Mono normalization
+
+### Verified result
+
+- PR #38 merged at
+  `ad091add498e5c8ec68b4cc5a03937c4d3d3cb62`; Issue #37 closed.
+- R1 Issue [#40](https://github.com/ksse29077-byte/HIVEFRAME/issues/40) and
+  Draft PR [#41](https://github.com/ksse29077-byte/HIVEFRAME/pull/41) are the
+  review surfaces.
+- The five v1 measured combinations and four analytical prunes were preserved.
+- Five warm-up and twenty measured blocks produced 100 final model-free
+  samples in one process.
+- Same-block B/T1 and B/T2 paired errors were 61.83% and 56.60%; both exceed
+  the unchanged 35% rule.
+- Predicted and measured ranking matched (`T0 < T1 < T2`), dirty recall was
+  1.0, false-stable was 0.0, and semantic hashes matched v1.
+- Decision: `REFINE_COST_MODEL`.
+
+The first attempt failed after measurement at result validation because an
+Amdahl aggregate was mistaken for a leaf metric. Failure evidence is
+preserved; the correction changed no formula, coefficient, order, threshold,
+or Gate. Detailed evidence is in
+[`worklogs/2026-08-01-m1-p0-r1-cost-model-refinement.md`](worklogs/2026-08-01-m1-p0-r1-cost-model-refinement.md).
+
+Python compile and all 107 tests passed. Rust format, locked check, and locked
+tests passed, including 8 runtime tests. JSON parsing and diff checks passed.
+H3 API calls, API-key uses, paid runs, model downloads, model loads, and CUDA
+runs were all 0. Wan evidence remained unchanged and LTX remained inactive.
+
+---
+
 ## Entry template
 
 ```markdown

@@ -2,7 +2,7 @@
 
 ## Current repository state
 
-As of 2026-07-31:
+As of 2026-08-01:
 
 - official Compound I/O architecture and roadmap are merged into `main`;
 - architecture RFC commit before this worklog addition:
@@ -23,6 +23,9 @@ As of 2026-07-31:
   or product speedup claim;
 - Rust I/O PR #36 is merged at `a71eea7...`;
 - M1-P0 is `REFINE_COST_MODEL`, not M1 entry or completion;
+- M1-P0-R1 same-run Mono normalization also returned
+  `REFINE_COST_MODEL`: Case B T1/T2 paired errors were 61.83% and 56.60%
+  against the unchanged 35% rule;
 - MiniMax H3 is the primary product backend target, with API and future
   open-weight admission still gated separately; Wan remains the frozen M0
   comparator and LTX is inactive.
@@ -64,8 +67,10 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Refine the M1-P0 absolute cost calibration on the same five measured
-combinations before expanding to the rights-cleared M1 Topology Cost Surface.
+Do not expand to the rights-cleared M1 Topology Cost Surface yet. R1 disproved
+same-run Mono normalization as a sufficient correction for the current
+incremental coefficients. Any next refinement must predeclare and isolate the
+missing Python topology-variable stages without changing v1 or R1 evidence.
 Treat the Rust I/O result as supporting evidence only; a separate approved
 shared-buffer or PyO3 probe must measure process/FFI cost before production
 migration.
