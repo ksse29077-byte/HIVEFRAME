@@ -1,0 +1,4275 @@
+{
+  "benchmark_status": "model_free_pre_gate_refinement",
+  "combination_summaries": [
+    {
+      "bytes_copied": [
+        0
+      ],
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "combination": "case-a-low-resolution-simple/T0",
+      "dirty_recall_min": 1.0,
+      "false_stable_max": 0.0,
+      "logical_bytes_read": [
+        11304960
+      ],
+      "mean_seconds": 0.004612730000000001,
+      "p50_seconds": 0.0043466,
+      "p95_seconds": 0.0057063,
+      "samples": 20,
+      "semantic_hashes": [
+        "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7"
+      ],
+      "stage_summary": {
+        "compute_plan": {
+          "mean_seconds": 7.275000000000001e-06,
+          "p50_seconds": 6.7e-06,
+          "p95_seconds": 8e-06
+        },
+        "coordinate_transform": {
+          "mean_seconds": 3.05e-06,
+          "p50_seconds": 2.5e-06,
+          "p95_seconds": 6.2e-06
+        },
+        "fusion": {
+          "mean_seconds": 1.0415e-05,
+          "p50_seconds": 9.6e-06,
+          "p95_seconds": 1.3e-05
+        },
+        "observation": {
+          "mean_seconds": 0.002421505,
+          "p50_seconds": 0.0022406,
+          "p95_seconds": 0.0033165
+        },
+        "routing": {
+          "mean_seconds": 7.95e-06,
+          "p50_seconds": 7.1e-06,
+          "p95_seconds": 1.32e-05
+        },
+        "total": {
+          "mean_seconds": 0.004612730000000001,
+          "p50_seconds": 0.0043466,
+          "p95_seconds": 0.0057063
+        }
+      },
+      "temporary_buffer_bytes": [
+        3932160
+      ]
+    },
+    {
+      "bytes_copied": [
+        0
+      ],
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "combination": "case-b-high-resolution-local-change/T0",
+      "dirty_recall_min": 1.0,
+      "false_stable_max": 0.0,
+      "logical_bytes_read": [
+        45619200
+      ],
+      "mean_seconds": 0.01894119,
+      "p50_seconds": 0.0186691,
+      "p95_seconds": 0.0196435,
+      "samples": 20,
+      "semantic_hashes": [
+        "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61"
+      ],
+      "stage_summary": {
+        "compute_plan": {
+          "mean_seconds": 7.660000000000001e-06,
+          "p50_seconds": 7.1e-06,
+          "p95_seconds": 8.7e-06
+        },
+        "coordinate_transform": {
+          "mean_seconds": 4.2049999999999996e-06,
+          "p50_seconds": 4.2e-06,
+          "p95_seconds": 5.2e-06
+        },
+        "fusion": {
+          "mean_seconds": 1.4665000000000001e-05,
+          "p50_seconds": 1.37e-05,
+          "p95_seconds": 1.7e-05
+        },
+        "observation": {
+          "mean_seconds": 0.010372445,
+          "p50_seconds": 0.0102029,
+          "p95_seconds": 0.0108822
+        },
+        "routing": {
+          "mean_seconds": 1.191e-05,
+          "p50_seconds": 1.18e-05,
+          "p95_seconds": 1.72e-05
+        },
+        "total": {
+          "mean_seconds": 0.01894119,
+          "p50_seconds": 0.0186691,
+          "p95_seconds": 0.0196435
+        }
+      },
+      "temporary_buffer_bytes": [
+        16588800
+      ]
+    },
+    {
+      "bytes_copied": [
+        0
+      ],
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "combination": "case-b-high-resolution-local-change/T1",
+      "dirty_recall_min": 1.0,
+      "false_stable_max": 0.0,
+      "logical_bytes_read": [
+        62208000
+      ],
+      "mean_seconds": 0.02853056,
+      "p50_seconds": 0.0274307,
+      "p95_seconds": 0.0341012,
+      "samples": 20,
+      "semantic_hashes": [
+        "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5"
+      ],
+      "stage_summary": {
+        "compute_plan": {
+          "mean_seconds": 9.02e-06,
+          "p50_seconds": 8.6e-06,
+          "p95_seconds": 1.16e-05
+        },
+        "coordinate_transform": {
+          "mean_seconds": 4.415e-06,
+          "p50_seconds": 4e-06,
+          "p95_seconds": 5.6e-06
+        },
+        "fusion": {
+          "mean_seconds": 2.621e-05,
+          "p50_seconds": 2.6e-05,
+          "p95_seconds": 2.85e-05
+        },
+        "observation": {
+          "mean_seconds": 0.019830085,
+          "p50_seconds": 0.01884,
+          "p95_seconds": 0.0245664
+        },
+        "routing": {
+          "mean_seconds": 3.9580000000000004e-05,
+          "p50_seconds": 3.76e-05,
+          "p95_seconds": 5.58e-05
+        },
+        "total": {
+          "mean_seconds": 0.02853056,
+          "p50_seconds": 0.0274307,
+          "p95_seconds": 0.0341012
+        }
+      },
+      "temporary_buffer_bytes": [
+        16588800
+      ]
+    },
+    {
+      "bytes_copied": [
+        0
+      ],
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "combination": "case-b-high-resolution-local-change/T2",
+      "dirty_recall_min": 1.0,
+      "false_stable_max": 0.0,
+      "logical_bytes_read": [
+        62304512
+      ],
+      "mean_seconds": 0.02936508,
+      "p50_seconds": 0.0289726,
+      "p95_seconds": 0.0309328,
+      "samples": 20,
+      "semantic_hashes": [
+        "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22"
+      ],
+      "stage_summary": {
+        "compute_plan": {
+          "mean_seconds": 7.01e-06,
+          "p50_seconds": 6.9e-06,
+          "p95_seconds": 7.5e-06
+        },
+        "coordinate_transform": {
+          "mean_seconds": 4.4799999999999995e-06,
+          "p50_seconds": 4.3e-06,
+          "p95_seconds": 5.9e-06
+        },
+        "fusion": {
+          "mean_seconds": 2.0935e-05,
+          "p50_seconds": 2.07e-05,
+          "p95_seconds": 2.32e-05
+        },
+        "observation": {
+          "mean_seconds": 0.015555915,
+          "p50_seconds": 0.015376,
+          "p95_seconds": 0.0166414
+        },
+        "routing": {
+          "mean_seconds": 0.005313855,
+          "p50_seconds": 0.005124,
+          "p95_seconds": 0.006284
+        },
+        "total": {
+          "mean_seconds": 0.02936508,
+          "p50_seconds": 0.0289726,
+          "p95_seconds": 0.0309328
+        }
+      },
+      "temporary_buffer_bytes": [
+        16588800
+      ]
+    },
+    {
+      "bytes_copied": [
+        0
+      ],
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "combination": "case-c-global-motion/T0",
+      "dirty_recall_min": 1.0,
+      "false_stable_max": 0.0,
+      "logical_bytes_read": [
+        42393600
+      ],
+      "mean_seconds": 0.02050855,
+      "p50_seconds": 0.0202126,
+      "p95_seconds": 0.021749,
+      "samples": 20,
+      "semantic_hashes": [
+        "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56"
+      ],
+      "stage_summary": {
+        "compute_plan": {
+          "mean_seconds": 7.830000000000001e-06,
+          "p50_seconds": 7.5e-06,
+          "p95_seconds": 8.8e-06
+        },
+        "coordinate_transform": {
+          "mean_seconds": 4.195e-06,
+          "p50_seconds": 4.1e-06,
+          "p95_seconds": 5.7e-06
+        },
+        "fusion": {
+          "mean_seconds": 1.618e-05,
+          "p50_seconds": 1.59e-05,
+          "p95_seconds": 1.92e-05
+        },
+        "observation": {
+          "mean_seconds": 0.012862660000000001,
+          "p50_seconds": 0.0126672,
+          "p95_seconds": 0.0140603
+        },
+        "routing": {
+          "mean_seconds": 1.2275e-05,
+          "p50_seconds": 1.22e-05,
+          "p95_seconds": 1.61e-05
+        },
+        "total": {
+          "mean_seconds": 0.02050855,
+          "p50_seconds": 0.0202126,
+          "p95_seconds": 0.021749
+        }
+      },
+      "temporary_buffer_bytes": [
+        14745600
+      ]
+    }
+  ],
+  "evidence_boundaries": {
+    "backend_neutral": true,
+    "cuda_runs": 0,
+    "h3_api_calls": 0,
+    "m0_completion_eligible": false,
+    "m1_completion_eligible": false,
+    "model_downloads": 0,
+    "model_free": true,
+    "model_loads": 0,
+    "official_speedup_eligible": false,
+    "paid_api_runs": 0
+  },
+  "paired_records": {
+    "T1": [
+      {
+        "block_index": 0,
+        "candidate_id": "T1",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0305171,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.009908299999999998,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0206088
+      },
+      {
+        "block_index": 1,
+        "candidate_id": "T1",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.027668,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008508600000000002,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0191594
+      },
+      {
+        "block_index": 2,
+        "candidate_id": "T1",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.026685,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008067600000000001,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0186174
+      },
+      {
+        "block_index": 3,
+        "candidate_id": "T1",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0341012,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.015568299999999997,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0185329
+      },
+      {
+        "block_index": 4,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0290965,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010665300000000003,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0184312
+      },
+      {
+        "block_index": 5,
+        "candidate_id": "T1",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0306209,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.011011299999999998,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0196096
+      },
+      {
+        "block_index": 6,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0272225,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008100900000000001,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0191216
+      },
+      {
+        "block_index": 7,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0275245,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0089879,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0185366
+      },
+      {
+        "block_index": 8,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0262779,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0079248,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0183531
+      },
+      {
+        "block_index": 9,
+        "candidate_id": "T1",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0260005,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0077336,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0182669
+      },
+      {
+        "block_index": 10,
+        "candidate_id": "T1",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0274307,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0088624,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0185683
+      },
+      {
+        "block_index": 11,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0378518,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.018208299999999997,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0196435
+      },
+      {
+        "block_index": 12,
+        "candidate_id": "T1",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0281465,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.009540400000000001,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0186061
+      },
+      {
+        "block_index": 13,
+        "candidate_id": "T1",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0269255,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008048600000000003,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0188769
+      },
+      {
+        "block_index": 14,
+        "candidate_id": "T1",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0271986,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008115999999999998,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0190826
+      },
+      {
+        "block_index": 15,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0281711,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008873800000000001,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0192973
+      },
+      {
+        "block_index": 16,
+        "candidate_id": "T1",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.027343,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008746799999999999,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0185962
+      },
+      {
+        "block_index": 17,
+        "candidate_id": "T1",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0269013,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008232199999999999,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0186691
+      },
+      {
+        "block_index": 18,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0275128,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008511999999999999,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0190008
+      },
+      {
+        "block_index": 19,
+        "candidate_id": "T1",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0274158,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008170300000000002,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0192455
+      }
+    ],
+    "T2": [
+      {
+        "block_index": 0,
+        "candidate_id": "T2",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.029914,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0093052,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0206088
+      },
+      {
+        "block_index": 1,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0309328,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0117734,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0191594
+      },
+      {
+        "block_index": 2,
+        "candidate_id": "T2",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0300715,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.011454100000000002,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0186174
+      },
+      {
+        "block_index": 3,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0287979,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010265,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0185329
+      },
+      {
+        "block_index": 4,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.028323,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.009891800000000003,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0184312
+      },
+      {
+        "block_index": 5,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0305392,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010929599999999998,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0196096
+      },
+      {
+        "block_index": 6,
+        "candidate_id": "T2",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0316794,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.012557800000000004,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0191216
+      },
+      {
+        "block_index": 7,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0305298,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.011993199999999999,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0185366
+      },
+      {
+        "block_index": 8,
+        "candidate_id": "T2",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0289331,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010579999999999999,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0183531
+      },
+      {
+        "block_index": 9,
+        "candidate_id": "T2",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0289726,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010705700000000002,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0182669
+      },
+      {
+        "block_index": 10,
+        "candidate_id": "T2",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0292647,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010696400000000002,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0185683
+      },
+      {
+        "block_index": 11,
+        "candidate_id": "T2",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.0287242,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.009080699999999997,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0196435
+      },
+      {
+        "block_index": 12,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0286657,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010059599999999998,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0186061
+      },
+      {
+        "block_index": 13,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0287751,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.009898200000000003,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0188769
+      },
+      {
+        "block_index": 14,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0280621,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.008979499999999998,
+        "mono_order_index": 3,
+        "mono_seconds": 0.0190826
+      },
+      {
+        "block_index": 15,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0289289,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0096316,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0192973
+      },
+      {
+        "block_index": 16,
+        "candidate_id": "T2",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0290345,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010438300000000001,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0185962
+      },
+      {
+        "block_index": 17,
+        "candidate_id": "T2",
+        "candidate_order_index": 3,
+        "candidate_seconds": 0.0284218,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.0097527,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0186691
+      },
+      {
+        "block_index": 18,
+        "candidate_id": "T2",
+        "candidate_order_index": 1,
+        "candidate_seconds": 0.029065,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010064199999999999,
+        "mono_order_index": 2,
+        "mono_seconds": 0.0190008
+      },
+      {
+        "block_index": 19,
+        "candidate_id": "T2",
+        "candidate_order_index": 2,
+        "candidate_seconds": 0.0296663,
+        "case_id": "case-b-high-resolution-local-change",
+        "delta_seconds": 0.010420800000000001,
+        "mono_order_index": 1,
+        "mono_seconds": 0.0192455
+      }
+    ]
+  },
+  "paired_summaries": {
+    "T1": {
+      "absolute_error_seconds": 0.005262699999999999,
+      "aggregation": "nearest_rank over same-block signed paired deltas",
+      "candidate_id": "T1",
+      "measured_delta_p50_seconds": 0.008511999999999999,
+      "measured_delta_p95_seconds": 0.015568299999999997,
+      "pairs": 20,
+      "predicted_delta_seconds": 0.0032493,
+      "relative_error": 0.6182683270676691
+    },
+    "T2": {
+      "absolute_error_seconds": 0.0058099,
+      "aggregation": "nearest_rank over same-block signed paired deltas",
+      "candidate_id": "T2",
+      "measured_delta_p50_seconds": 0.010265,
+      "measured_delta_p95_seconds": 0.011993199999999999,
+      "pairs": 20,
+      "predicted_delta_seconds": 0.0044551,
+      "relative_error": 0.5659912323429128
+    }
+  },
+  "premeasurement_commit": "0236aa9a5be64896676f6e2b68cafc53e4c646c9",
+  "repetition_blocks": 20,
+  "run_kind": "m1_p0_r1_same_run_mono_normalization",
+  "runner_wall_seconds_measured_phase": 2.3607345999917015,
+  "same_prepared_sequence_objects": true,
+  "same_process": true,
+  "samples": [
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 0,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.1e-06,
+        "coordinate_transform": 2.4e-06,
+        "fusion": 9.6e-06,
+        "observation": 0.0022694,
+        "routing": 7.9e-06,
+        "total": 0.0049096
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0049096
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 0,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.1e-06,
+        "coordinate_transform": 4e-06,
+        "fusion": 2.4e-05,
+        "observation": 0.0219001,
+        "routing": 3.82e-05,
+        "total": 0.0305171
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0305171
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 0,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.7e-06,
+        "coordinate_transform": 4.5e-06,
+        "fusion": 1.7e-05,
+        "observation": 0.0108506,
+        "routing": 1.47e-05,
+        "total": 0.0206088
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0206088
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 0,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.1e-06,
+        "coordinate_transform": 4.9e-06,
+        "fusion": 2.21e-05,
+        "observation": 0.0157081,
+        "routing": 0.0057627,
+        "total": 0.029914
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.029914
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 0,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 3.9e-06,
+        "fusion": 1.57e-05,
+        "observation": 0.0140271,
+        "routing": 1.22e-05,
+        "total": 0.0215827
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0215827
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 1,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 8e-06,
+        "coordinate_transform": 2.7e-06,
+        "fusion": 1.27e-05,
+        "observation": 0.0028191,
+        "routing": 7.2e-06,
+        "total": 0.0049471
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0049471
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 1,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.7e-06,
+        "coordinate_transform": 4.4e-06,
+        "fusion": 2.44e-05,
+        "observation": 0.0185475,
+        "routing": 3.83e-05,
+        "total": 0.027668
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.027668
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 1,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.6e-06,
+        "coordinate_transform": 6.2e-06,
+        "fusion": 1.94e-05,
+        "observation": 0.0157976,
+        "routing": 0.0066989,
+        "total": 0.0309328
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0309328
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 1,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.9e-06,
+        "coordinate_transform": 3.1e-06,
+        "fusion": 1.48e-05,
+        "observation": 0.0105934,
+        "routing": 1.09e-05,
+        "total": 0.0191594
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0191594
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 1,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.7e-06,
+        "coordinate_transform": 3.3e-06,
+        "fusion": 1.54e-05,
+        "observation": 0.0121953,
+        "routing": 7.6e-06,
+        "total": 0.0195918
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0195918
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 2,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 7e-06,
+        "coordinate_transform": 4.3e-06,
+        "fusion": 1.03e-05,
+        "observation": 0.0022508,
+        "routing": 1.03e-05,
+        "total": 0.0044792
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0044792
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 2,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.1e-06,
+        "coordinate_transform": 5.9e-06,
+        "fusion": 2.16e-05,
+        "observation": 0.0162794,
+        "routing": 0.0054361,
+        "total": 0.0300715
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0300715
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 2,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.1e-06,
+        "coordinate_transform": 3.4e-06,
+        "fusion": 2.46e-05,
+        "observation": 0.0182602,
+        "routing": 3.1e-05,
+        "total": 0.026685
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.026685
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 2,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 4.6e-06,
+        "fusion": 1.43e-05,
+        "observation": 0.0102029,
+        "routing": 1.19e-05,
+        "total": 0.0186174
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0186174
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 2,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 8.4e-06,
+        "coordinate_transform": 2.6e-06,
+        "fusion": 1.79e-05,
+        "observation": 0.0140603,
+        "routing": 9.6e-06,
+        "total": 0.0215495
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0215495
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 3,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 2.1e-05,
+        "coordinate_transform": 6.9e-06,
+        "fusion": 2.16e-05,
+        "observation": 0.0039264,
+        "routing": 1.72e-05,
+        "total": 0.0065152
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0065152
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 3,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.8e-06,
+        "coordinate_transform": 5.6e-06,
+        "fusion": 2.63e-05,
+        "observation": 0.0245664,
+        "routing": 5.58e-05,
+        "total": 0.0341012
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0341012
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 3,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.3e-06,
+        "coordinate_transform": 3.3e-06,
+        "fusion": 1.96e-05,
+        "observation": 0.0152386,
+        "routing": 0.005117,
+        "total": 0.0287979
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0287979
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 3,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 4.2e-06,
+        "fusion": 1.23e-05,
+        "observation": 0.0100501,
+        "routing": 1.18e-05,
+        "total": 0.0185329
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0185329
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 3,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.5e-06,
+        "coordinate_transform": 3.1e-06,
+        "fusion": 1.58e-05,
+        "observation": 0.0124929,
+        "routing": 9.6e-06,
+        "total": 0.0200192
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0200192
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 4,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 5.8e-06,
+        "coordinate_transform": 2.5e-06,
+        "fusion": 8.3e-06,
+        "observation": 0.0021431,
+        "routing": 7.9e-06,
+        "total": 0.0043427
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0043427
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 4,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.7e-06,
+        "coordinate_transform": 2.6e-06,
+        "fusion": 1.09e-05,
+        "observation": 0.0100765,
+        "routing": 6.5e-06,
+        "total": 0.0184312
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0184312
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 4,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.3e-06,
+        "coordinate_transform": 4.4e-06,
+        "fusion": 1.93e-05,
+        "observation": 0.0150048,
+        "routing": 0.0048317,
+        "total": 0.028323
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.028323
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 4,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.3e-06,
+        "coordinate_transform": 4.5e-06,
+        "fusion": 2.62e-05,
+        "observation": 0.0203812,
+        "routing": 4.13e-05,
+        "total": 0.0290965
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0290965
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 4,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 1.04e-05,
+        "coordinate_transform": 5.2e-06,
+        "fusion": 2.06e-05,
+        "observation": 0.0153825,
+        "routing": 1.48e-05,
+        "total": 0.0229745
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0229745
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 5,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 3.4e-06,
+        "fusion": 1.1e-05,
+        "observation": 0.0030205,
+        "routing": 1e-05,
+        "total": 0.0052702
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0052702
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 5,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.9e-06,
+        "coordinate_transform": 4.6e-06,
+        "fusion": 2.66e-05,
+        "observation": 0.0219393,
+        "routing": 3.76e-05,
+        "total": 0.0306209
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0306209
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 5,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.7e-06,
+        "coordinate_transform": 4.1e-06,
+        "fusion": 2.07e-05,
+        "observation": 0.0166414,
+        "routing": 0.0050888,
+        "total": 0.0305392
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0305392
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 5,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8e-06,
+        "coordinate_transform": 4.4e-06,
+        "fusion": 1.52e-05,
+        "observation": 0.0109911,
+        "routing": 1.48e-05,
+        "total": 0.0196096
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0196096
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 5,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 3.4e-06,
+        "fusion": 1.65e-05,
+        "observation": 0.0130674,
+        "routing": 1.04e-05,
+        "total": 0.0205875
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0205875
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 6,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 7.5e-06,
+        "coordinate_transform": 6.2e-06,
+        "fusion": 1.3e-05,
+        "observation": 0.0033165,
+        "routing": 1.32e-05,
+        "total": 0.0057063
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0057063
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 6,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.5e-06,
+        "coordinate_transform": 5.3e-06,
+        "fusion": 2.12e-05,
+        "observation": 0.0168815,
+        "routing": 0.006284,
+        "total": 0.0316794
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0316794
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 6,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.6e-06,
+        "coordinate_transform": 4.6e-06,
+        "fusion": 1.45e-05,
+        "observation": 0.0106405,
+        "routing": 1.31e-05,
+        "total": 0.0191216
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0191216
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 6,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.5e-06,
+        "coordinate_transform": 4.6e-06,
+        "fusion": 2.57e-05,
+        "observation": 0.0185899,
+        "routing": 3.99e-05,
+        "total": 0.0272225
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0272225
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 6,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.2e-06,
+        "coordinate_transform": 4.5e-06,
+        "fusion": 1.59e-05,
+        "observation": 0.0120044,
+        "routing": 1.34e-05,
+        "total": 0.0194804
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0194804
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 7,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 7.1e-06,
+        "coordinate_transform": 4.3e-06,
+        "fusion": 1.18e-05,
+        "observation": 0.0022868,
+        "routing": 1.06e-05,
+        "total": 0.0044344
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0044344
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 7,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.6e-06,
+        "coordinate_transform": 3.5e-06,
+        "fusion": 1.29e-05,
+        "observation": 0.0101818,
+        "routing": 8.1e-06,
+        "total": 0.0185366
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0185366
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 7,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.9e-06,
+        "coordinate_transform": 4.8e-06,
+        "fusion": 2.05e-05,
+        "observation": 0.0165982,
+        "routing": 0.0054941,
+        "total": 0.0305298
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0305298
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 7,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.9e-06,
+        "coordinate_transform": 4.5e-06,
+        "fusion": 2.42e-05,
+        "observation": 0.0190878,
+        "routing": 3.97e-05,
+        "total": 0.0275245
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0275245
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 7,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 4.7e-06,
+        "fusion": 1.59e-05,
+        "observation": 0.0135632,
+        "routing": 1.31e-05,
+        "total": 0.021749
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.021749
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 8,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 7e-06,
+        "coordinate_transform": 2.8e-06,
+        "fusion": 1.1e-05,
+        "observation": 0.0022745,
+        "routing": 7.1e-06,
+        "total": 0.0046423
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0046423
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 8,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.7e-06,
+        "coordinate_transform": 4.2e-06,
+        "fusion": 1.92e-05,
+        "observation": 0.0152883,
+        "routing": 0.0050694,
+        "total": 0.0289331
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0289331
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 8,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.5e-06,
+        "coordinate_transform": 3.5e-06,
+        "fusion": 1.28e-05,
+        "observation": 0.010051,
+        "routing": 9e-06,
+        "total": 0.0183531
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0183531
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 8,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 1.16e-05,
+        "coordinate_transform": 3.8e-06,
+        "fusion": 2.5e-05,
+        "observation": 0.0179067,
+        "routing": 3.3e-05,
+        "total": 0.0262779
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0262779
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 8,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.9e-06,
+        "coordinate_transform": 2.9e-06,
+        "fusion": 1.65e-05,
+        "observation": 0.0119727,
+        "routing": 8e-06,
+        "total": 0.0193824
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0193824
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 9,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.8e-06,
+        "coordinate_transform": 2.7e-06,
+        "fusion": 8.3e-06,
+        "observation": 0.0022406,
+        "routing": 6.4e-06,
+        "total": 0.0043188
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0043188
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 9,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.9e-06,
+        "coordinate_transform": 4e-06,
+        "fusion": 1.99e-05,
+        "observation": 0.0155413,
+        "routing": 0.005124,
+        "total": 0.0289726
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0289726
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 9,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.3e-06,
+        "coordinate_transform": 3.7e-06,
+        "fusion": 2.46e-05,
+        "observation": 0.0175942,
+        "routing": 3.35e-05,
+        "total": 0.0260005
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0260005
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 9,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6e-06,
+        "coordinate_transform": 4.7e-06,
+        "fusion": 1.13e-05,
+        "observation": 0.009935,
+        "routing": 1.36e-05,
+        "total": 0.0182669
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0182669
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 9,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.5e-06,
+        "coordinate_transform": 3.6e-06,
+        "fusion": 1.5e-05,
+        "observation": 0.0126662,
+        "routing": 1.26e-05,
+        "total": 0.0201559
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0201559
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 10,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 5.3e-06,
+        "coordinate_transform": 2.4e-06,
+        "fusion": 8.1e-06,
+        "observation": 0.0020805,
+        "routing": 6.4e-06,
+        "total": 0.0041545
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0041545
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 10,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.1e-06,
+        "coordinate_transform": 4.2e-06,
+        "fusion": 1.18e-05,
+        "observation": 0.0101017,
+        "routing": 1.22e-05,
+        "total": 0.0185683
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0185683
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 10,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.4e-06,
+        "coordinate_transform": 3.7e-06,
+        "fusion": 2.66e-05,
+        "observation": 0.0189886,
+        "routing": 3.22e-05,
+        "total": 0.0274307
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0274307
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 10,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.2e-06,
+        "coordinate_transform": 4.3e-06,
+        "fusion": 2.07e-05,
+        "observation": 0.015376,
+        "routing": 0.0053218,
+        "total": 0.0292647
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0292647
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 10,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.8e-06,
+        "coordinate_transform": 4.2e-06,
+        "fusion": 1.3e-05,
+        "observation": 0.0118766,
+        "routing": 1.36e-05,
+        "total": 0.0202126
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0202126
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 11,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.4e-06,
+        "coordinate_transform": 1.8e-06,
+        "fusion": 6.6e-06,
+        "observation": 0.0021154,
+        "routing": 5.1e-06,
+        "total": 0.0042535
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0042535
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 11,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.3e-06,
+        "coordinate_transform": 3.7e-06,
+        "fusion": 2.07e-05,
+        "observation": 0.0152078,
+        "routing": 0.0049129,
+        "total": 0.0287242
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0287242
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 11,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 1.69e-05,
+        "coordinate_transform": 5.2e-06,
+        "fusion": 3.31e-05,
+        "observation": 0.0108639,
+        "routing": 1.72e-05,
+        "total": 0.0196435
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0196435
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 11,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.9e-06,
+        "coordinate_transform": 1e-05,
+        "fusion": 2.85e-05,
+        "observation": 0.0275821,
+        "routing": 8.78e-05,
+        "total": 0.0378518
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0378518
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 11,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 8.6e-06,
+        "coordinate_transform": 5.7e-06,
+        "fusion": 1.92e-05,
+        "observation": 0.0132233,
+        "routing": 1.61e-05,
+        "total": 0.0210805
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0210805
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 12,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.7e-06,
+        "coordinate_transform": 3.7e-06,
+        "fusion": 1.17e-05,
+        "observation": 0.0022171,
+        "routing": 8.2e-06,
+        "total": 0.0043466
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0043466
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 12,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.1e-06,
+        "coordinate_transform": 4.2e-06,
+        "fusion": 2.69e-05,
+        "observation": 0.0194517,
+        "routing": 3.94e-05,
+        "total": 0.0281465
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0281465
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 12,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.9e-06,
+        "coordinate_transform": 4e-06,
+        "fusion": 2.32e-05,
+        "observation": 0.0149712,
+        "routing": 0.0050249,
+        "total": 0.0286657
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0286657
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 12,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 5.6e-06,
+        "fusion": 1.37e-05,
+        "observation": 0.0101111,
+        "routing": 1.78e-05,
+        "total": 0.0186061
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0186061
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 12,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.3e-06,
+        "coordinate_transform": 5.3e-06,
+        "fusion": 1.65e-05,
+        "observation": 0.0139907,
+        "routing": 1.44e-05,
+        "total": 0.0217019
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0217019
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 13,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.1e-06,
+        "coordinate_transform": 1.6e-06,
+        "fusion": 8.9e-06,
+        "observation": 0.0022252,
+        "routing": 4.4e-06,
+        "total": 0.0042854
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0042854
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 13,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 9.3e-06,
+        "coordinate_transform": 3.5e-06,
+        "fusion": 2.64e-05,
+        "observation": 0.0184594,
+        "routing": 3.05e-05,
+        "total": 0.0269255
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0269255
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 13,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.3e-06,
+        "coordinate_transform": 3.8e-06,
+        "fusion": 2.17e-05,
+        "observation": 0.0150978,
+        "routing": 0.0052795,
+        "total": 0.0287751
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0287751
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 13,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.7e-06,
+        "coordinate_transform": 4.9e-06,
+        "fusion": 1.31e-05,
+        "observation": 0.0105221,
+        "routing": 1.46e-05,
+        "total": 0.0188769
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0188769
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 13,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7e-06,
+        "coordinate_transform": 4.2e-06,
+        "fusion": 1.27e-05,
+        "observation": 0.0115662,
+        "routing": 1.14e-05,
+        "total": 0.0190044
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0190044
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 14,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.6e-06,
+        "coordinate_transform": 2.3e-06,
+        "fusion": 8.6e-06,
+        "observation": 0.0020682,
+        "routing": 5.9e-06,
+        "total": 0.004107
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.004107
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 14,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.6e-06,
+        "coordinate_transform": 2.8e-06,
+        "fusion": 2.54e-05,
+        "observation": 0.0187295,
+        "routing": 2.68e-05,
+        "total": 0.0271986
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0271986
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 14,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.7e-06,
+        "coordinate_transform": 4.7e-06,
+        "fusion": 2.43e-05,
+        "observation": 0.0148263,
+        "routing": 0.004931,
+        "total": 0.0280621
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0280621
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 14,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.8e-06,
+        "coordinate_transform": 4.9e-06,
+        "fusion": 1.39e-05,
+        "observation": 0.0100747,
+        "routing": 1.34e-05,
+        "total": 0.0190826
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0190826
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 14,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.5e-06,
+        "coordinate_transform": 4.8e-06,
+        "fusion": 1.6e-05,
+        "observation": 0.0116781,
+        "routing": 1.49e-05,
+        "total": 0.0193596
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0193596
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 15,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.9e-06,
+        "coordinate_transform": 1.8e-06,
+        "fusion": 1.12e-05,
+        "observation": 0.0024154,
+        "routing": 5.1e-06,
+        "total": 0.0044958
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0044958
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 15,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.2e-06,
+        "coordinate_transform": 3.7e-06,
+        "fusion": 1.36e-05,
+        "observation": 0.0108822,
+        "routing": 7.2e-06,
+        "total": 0.0192973
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0192973
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 15,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.2e-06,
+        "coordinate_transform": 4.8e-06,
+        "fusion": 2.2e-05,
+        "observation": 0.0152705,
+        "routing": 0.0051453,
+        "total": 0.0289289
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0289289
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 15,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 9.6e-06,
+        "coordinate_transform": 4e-06,
+        "fusion": 2.63e-05,
+        "observation": 0.0196733,
+        "routing": 3.9e-05,
+        "total": 0.0281711
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0281711
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 15,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 8.8e-06,
+        "coordinate_transform": 6.5e-06,
+        "fusion": 1.72e-05,
+        "observation": 0.0129437,
+        "routing": 1.63e-05,
+        "total": 0.0206731
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0206731
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 16,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 6.4e-06,
+        "coordinate_transform": 3.1e-06,
+        "fusion": 8.2e-06,
+        "observation": 0.0021599,
+        "routing": 8.6e-06,
+        "total": 0.0042642
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0042642
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 16,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.1e-06,
+        "coordinate_transform": 3.8e-06,
+        "fusion": 1.35e-05,
+        "observation": 0.0101975,
+        "routing": 1.01e-05,
+        "total": 0.0185962
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0185962
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 16,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.6e-06,
+        "coordinate_transform": 3.9e-06,
+        "fusion": 2.6e-05,
+        "observation": 0.0188037,
+        "routing": 3.59e-05,
+        "total": 0.027343
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.027343
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 16,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.7e-06,
+        "coordinate_transform": 3.5e-06,
+        "fusion": 1.94e-05,
+        "observation": 0.0154743,
+        "routing": 0.0051953,
+        "total": 0.0290345
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0290345
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 16,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 4.1e-06,
+        "fusion": 1.5e-05,
+        "observation": 0.0126897,
+        "routing": 1.22e-05,
+        "total": 0.0203571
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0203571
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 17,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 7.4e-06,
+        "coordinate_transform": 2.3e-06,
+        "fusion": 1.18e-05,
+        "observation": 0.0023335,
+        "routing": 6.3e-06,
+        "total": 0.0043936
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0043936
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 17,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.1e-06,
+        "coordinate_transform": 3.9e-06,
+        "fusion": 1.46e-05,
+        "observation": 0.0102723,
+        "routing": 1.01e-05,
+        "total": 0.0186691
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0186691
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 17,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.6e-06,
+        "coordinate_transform": 5e-06,
+        "fusion": 2.46e-05,
+        "observation": 0.0182869,
+        "routing": 4.47e-05,
+        "total": 0.0269013
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0269013
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 17,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.5e-06,
+        "coordinate_transform": 3.9e-06,
+        "fusion": 2.09e-05,
+        "observation": 0.0147752,
+        "routing": 0.0051013,
+        "total": 0.0284218
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0284218
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 17,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 8.1e-06,
+        "coordinate_transform": 3.9e-06,
+        "fusion": 1.58e-05,
+        "observation": 0.0121736,
+        "routing": 1.05e-05,
+        "total": 0.0197473
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0197473
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 18,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 5e-06,
+        "coordinate_transform": 2.2e-06,
+        "fusion": 9.1e-06,
+        "observation": 0.002132,
+        "routing": 5.8e-06,
+        "total": 0.0042045
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0042045
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 18,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 6.8e-06,
+        "coordinate_transform": 4.3e-06,
+        "fusion": 1.96e-05,
+        "observation": 0.0153842,
+        "routing": 0.004958,
+        "total": 0.029065
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.029065
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 18,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.8e-06,
+        "coordinate_transform": 3.8e-06,
+        "fusion": 1.55e-05,
+        "observation": 0.0105453,
+        "routing": 9.5e-06,
+        "total": 0.0190008
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0190008
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 18,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 1.46e-05,
+        "coordinate_transform": 4.1e-06,
+        "fusion": 3.37e-05,
+        "observation": 0.0190132,
+        "routing": 3.36e-05,
+        "total": 0.0275128
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0275128
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 18,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 8e-06,
+        "coordinate_transform": 4.3e-06,
+        "fusion": 1.79e-05,
+        "observation": 0.0130121,
+        "routing": 1.39e-05,
+        "total": 0.0207866
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.0207866
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "block_index": 19,
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 11304960,
+        "overlap_denominator": 245760,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 3932160
+      },
+      "durations_seconds": {
+        "compute_plan": 5e-06,
+        "coordinate_transform": 1.6e-06,
+        "fusion": 6.5e-06,
+        "observation": 0.0021352,
+        "routing": 5.4e-06,
+        "total": 0.0041837
+      },
+      "order_index": 0,
+      "phase": "measured",
+      "process_cpu_seconds": 0.0,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "total_seconds": 0.0041837
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 19,
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.3e-06,
+        "coordinate_transform": 4.4e-06,
+        "fusion": 1.45e-05,
+        "observation": 0.0103052,
+        "routing": 1.17e-05,
+        "total": 0.0192455
+      },
+      "order_index": 1,
+      "phase": "measured",
+      "process_cpu_seconds": 0.015625,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "total_seconds": 0.0192455
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 19,
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "overlap_denominator": 12064,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 7.5e-06,
+        "coordinate_transform": 5.5e-06,
+        "fusion": 2.27e-05,
+        "observation": 0.0157558,
+        "routing": 0.0055004,
+        "total": 0.0296663
+      },
+      "order_index": 2,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "total_seconds": 0.0296663
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "block_index": 19,
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "overlap_denominator": 2073600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 16588800
+      },
+      "durations_seconds": {
+        "compute_plan": 8.5e-06,
+        "coordinate_transform": 4e-06,
+        "fusion": 2.82e-05,
+        "observation": 0.01884,
+        "routing": 3.34e-05,
+        "total": 0.0274158
+      },
+      "order_index": 3,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "total_seconds": 0.0274158
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "block_index": 19,
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 42393600,
+        "overlap_denominator": 921600,
+        "overlap_numerator": 0,
+        "temporary_buffer_bytes": 14745600
+      },
+      "durations_seconds": {
+        "compute_plan": 7.3e-06,
+        "coordinate_transform": 3.7e-06,
+        "fusion": 1.51e-05,
+        "observation": 0.0126672,
+        "routing": 1.09e-05,
+        "total": 0.020175
+      },
+      "order_index": 4,
+      "phase": "measured",
+      "process_cpu_seconds": 0.03125,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "total_seconds": 0.020175
+    }
+  ],
+  "schema_version": "0.1.0",
+  "seed": 101,
+  "unavailable_metrics": {
+    "audit_seconds": {
+      "method": "not measured; separate output audit required",
+      "reason": "R1 has no generated output to audit.",
+      "status": "unavailable",
+      "unit": "seconds",
+      "value": null
+    },
+    "backend_generation_seconds": {
+      "method": "not measured; separate admitted backend experiment required",
+      "reason": "R1 is model-free and executes no admitted backend.",
+      "status": "unavailable",
+      "unit": "seconds",
+      "value": null
+    },
+    "end_to_end_speedup": {
+      "method": "cannot evaluate a complete-cost end-to-end comparison",
+      "reason": "Generation, audit, repair, and complete M0 input share are unavailable.",
+      "status": "partially_available",
+      "unit": "ratio",
+      "value": null
+    },
+    "gpu_kernel_seconds": {
+      "method": "not measured; separate profiler/CUPTI run required",
+      "reason": "R1 has no CUDA execution path.",
+      "status": "unavailable",
+      "unit": "seconds",
+      "value": null
+    },
+    "h3_generation_seconds": {
+      "method": "not measured; no API key or API call",
+      "reason": "MiniMax H3 has not passed Issue #39 admission and is not called.",
+      "status": "unavailable",
+      "unit": "seconds",
+      "value": null
+    },
+    "recovery_seconds": {
+      "method": "not measured; separate backend failure experiment required",
+      "reason": "R1 executes no backend repair or fallback path.",
+      "status": "unavailable",
+      "unit": "seconds",
+      "value": null
+    }
+  },
+  "warmups": 5
+}

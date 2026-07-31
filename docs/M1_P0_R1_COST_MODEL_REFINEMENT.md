@@ -1,6 +1,6 @@
 # M1-P0-R1 Same-run Mono Cost Normalization
 
-Status: predeclared; measurement pending
+Status: model-free measurement complete; decision `REFINE_COST_MODEL`
 
 Issue: [#40](https://github.com/ksse29077-byte/HIVEFRAME/issues/40)
 
@@ -117,6 +117,43 @@ unavailable-metric semantics fail.
 The measurement result must select exactly one of these four decisions. The
 formula, coefficient sources, order, threshold, and Gate rules may not be
 changed in the evidence commit after results are observed.
+
+## Result
+
+The final measurement ran from pre-measurement commit
+`0236aa9a5be64896676f6e2b68cafc53e4c646c9`. The original contract commit is
+`885a3b6d27cc5514920928a90bb049c7ff66b4c7`.
+
+| Candidate | Predicted delta | Measured p50 | Measured p95 | Absolute error | Relative error |
+|---|---:|---:|---:|---:|---:|
+| B/T1 | 3.2493 ms | 8.5120 ms | 15.5683 ms | 5.2627 ms | 61.83% |
+| B/T2 | 4.4551 ms | 10.2650 ms | 11.9932 ms | 5.8099 ms | 56.60% |
+
+- predicted ranking: `T0 < T1 < T2`;
+- measured paired-delta ranking: `T0 < T1 < T2`;
+- ranking match: true;
+- dirty recall minimum: 1.0;
+- false-stable maximum: 0.0;
+- deterministic semantic hashes: stable and equal to v1;
+- copied bytes: 0 for every retained combination;
+- Amdahl status: `partially_available`; no end-to-end bound;
+- final Gate: `REFINE_COST_MODEL`.
+
+Same-block normalization did not explain the v1 calibration gap. For the two
+decision-bearing Case B candidates, v1 absolute relative error was 31.03% and
+35.36%, while R1 paired-delta error was 61.83% and 56.60%. This comparison
+uses different declared targets—absolute total in v1 and paired topology delta
+in R1—so it does not mean total runtime regressed. It means the v1 Rust-derived
+incremental coefficients underpredict the locally paired Python topology
+overhead.
+
+The first R1 attempt completed its measurement loop but failed before result
+publication because the validator mistook the aggregate Amdahl
+`partially_available` status for a leaf metric. The failed attempt and its
+predeclared model are preserved under `reports/topology_pruning/r1-failures/`.
+The correction only restricted leaf-metric detection to objects with a
+`value` field. It did not change the cost equation, coefficients, execution
+order, 35% threshold, or Gate rules.
 
 ## Output contract
 

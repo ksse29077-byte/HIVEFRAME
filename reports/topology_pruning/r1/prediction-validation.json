@@ -1,0 +1,85 @@
+{
+  "amdahl": {
+    "end_to_end_upper_bound": {
+      "method": "cannot evaluate 1/((1-f)+f/s) without f",
+      "reason": "Amdahl optimized fraction f_input is unavailable.",
+      "status": "unavailable",
+      "unit": "ratio",
+      "value": null
+    },
+    "f_input": {
+      "method": "not measured in M0 Single-Eye Cost Truth",
+      "reason": "M0 does not isolate eligible input/orchestration share.",
+      "status": "unavailable",
+      "unit": "ratio",
+      "value": null
+    },
+    "formula": "Speedup_max=1/((1-f_input)+f_input/s_control)",
+    "meaning": "Only the local control-plane speedup factor is available. No end-to-end Wan or product bound is asserted.",
+    "s_control": {
+      "maximum": 1.625342742364019,
+      "method": "merged Rust Probe Python p50 / Rust p50",
+      "minimum": 1.2331273022413687,
+      "status": "available"
+    },
+    "status": "partially_available"
+  },
+  "decision": {
+    "decision": "REFINE_COST_MODEL",
+    "reason": "Paired prediction error or ranking still fails the predeclared rule."
+  },
+  "deterministic_hashes": true,
+  "dirty_recall_min": 1.0,
+  "false_stable_max": 0.0,
+  "m0_completion_eligible": false,
+  "m1_completion_eligible": false,
+  "official_speedup_eligible": false,
+  "premeasurement_commit": "0236aa9a5be64896676f6e2b68cafc53e4c646c9",
+  "r1_paired_delta_validation": {
+    "T1": {
+      "absolute_error_seconds": 0.005262699999999999,
+      "aggregation": "nearest_rank over same-block signed paired deltas",
+      "candidate_id": "T1",
+      "measured_delta_p50_seconds": 0.008511999999999999,
+      "measured_delta_p95_seconds": 0.015568299999999997,
+      "pairs": 20,
+      "predicted_delta_seconds": 0.0032493,
+      "relative_error": 0.6182683270676691
+    },
+    "T2": {
+      "absolute_error_seconds": 0.0058099,
+      "aggregation": "nearest_rank over same-block signed paired deltas",
+      "candidate_id": "T2",
+      "measured_delta_p50_seconds": 0.010265,
+      "measured_delta_p95_seconds": 0.011993199999999999,
+      "pairs": 20,
+      "predicted_delta_seconds": 0.0044551,
+      "relative_error": 0.5659912323429128
+    }
+  },
+  "ranking": {
+    "basis": "T0=0 and Case B paired-delta p50 for T1/T2",
+    "match": true,
+    "measured": [
+      "T0",
+      "T1",
+      "T2"
+    ],
+    "predicted": [
+      "T0",
+      "T1",
+      "T2"
+    ]
+  },
+  "run_kind": "m1_p0_r1_same_run_mono_normalization",
+  "schema_version": "0.1.0",
+  "unavailable_semantics_valid": true,
+  "v1_absolute_relative_error": {
+    "case-a-low-resolution-simple/T0": 0.41661762548893244,
+    "case-b-high-resolution-local-change/T0": 0.28149887946053326,
+    "case-b-high-resolution-local-change/T1": 0.3102706565596615,
+    "case-b-high-resolution-local-change/T2": 0.3536352809920611,
+    "case-c-global-motion/T0": 0.10690103276109701
+  },
+  "v1_artifacts_unchanged": true
+}
