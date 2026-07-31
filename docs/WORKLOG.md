@@ -196,6 +196,34 @@ surface.
 
 ---
 
+## 2026-07-31 — Compound I/O RFC merged into main
+
+### Verified state
+
+- Compound I/O RFC PR
+  [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33) was merged into
+  `main`.
+- Merge commit:
+  `237c298899ae9a5d46470d18255f7ff6a704bb65`.
+- Merged at: `2026-07-31T07:33:59Z`.
+- RFC Issue
+  [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32) was closed
+  through merged PR #33.
+- The official architecture and roadmap on `main` now use the Compound I/O
+  definition.
+- The next research milestone is **M1 — Eye Topology Ground Truth Lab**.
+
+### Verification
+
+- Python compile: passed.
+- Python unittest: 59 passed.
+- Rust `cargo check --workspace --locked`: passed.
+- `git diff --check`: passed.
+- Model load: 0.
+- CUDA execution: 0.
+
+---
+
 ## Entry template
 
 ```markdown
