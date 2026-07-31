@@ -117,6 +117,14 @@ Every baseline and experiment receipt must identify:
 - quality and constraint results;
 - output hashes, environment fingerprint, warnings, escalation, and failure state.
 
+RunReceipt `0.2.0` uses metadata-bearing measurements rather than unqualified
+numbers. Each value declares its unit, scope, method, aggregation, support
+status, parent span, and repeated-run identity. CUDA event spans and profiler
+kernel durations are separate metrics. Per-generation allocator peaks,
+process-wide allocator peaks, system-sampled GPU memory, main-process RSS, and
+process-tree RSS are also separate scopes. The compatibility schema continues
+to accept immutable `0.1.0` receipts; historical files are never rewritten.
+
 ## Execution sequence
 
 1. Validate model and data admission.

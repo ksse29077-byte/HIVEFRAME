@@ -152,8 +152,9 @@ python hiveframe_m0.py run --profile baseline-reproducibility `
 ```
 
 The plan prints `execution_started: false`, the selected profile, prompt ID,
-complete effective settings, model/code revisions, expected run kind, and
-settings hash. Execution requires the exact hash through
+complete effective settings, model/code revisions, expected run kind, settings
+hash, resolved output directory, expected artifact paths, and any existing
+collisions. Execution requires the exact hash through
 `--expect-settings-hash`; a missing or different hash is rejected before
 preflight or the model child process starts.
 
@@ -162,6 +163,7 @@ profile `smoke`, expected run kind `single regression smoke`, and repeat 1.
 `--run-id` is required. It accepts only ASCII letters, digits, `.`, `_`, and
 `-`; any existing artifact beginning with `<run-id>.` blocks execution before
 preflight so earlier receipts, logs, and videos cannot be overwritten.
+The same no-overwrite rule applies to `run`; there is no override flag.
 
 ## Fixed generation inputs
 
@@ -180,20 +182,90 @@ Prompt extension is disabled because it would introduce an external model or API
 
 ## Timing and resource receipt
 
-The instrumented wrapper separates, when supported:
+New runs emit receipt schema `0.2.0`. Existing `0.1.0` receipts remain immutable
+and are accepted by the compatibility schema. They are not rewritten to look
+like new measurements.
 
-- model load wall time and CUDA-event time;
-- positive and negative prompt-encode wall/CUDA time;
-- total denoising wall/CUDA time;
-- every denoising step's wall/CUDA time, including the scheduler step;
-- VAE decode wall/CUDA time;
-- video preprocessing/encode wall/CUDA time;
-- full child wall-clock time;
-- peak PyTorch allocated/reserved VRAM;
-- sampled NVIDIA VRAM and utilization;
-- child-process peak host RAM.
+Every v0.2 measurement carries:
 
-T2V has no input VAE encode stage, so that field is `null` with a not-applicable reason. Scheduler-only overhead is not isolated by the non-invasive hook; it remains `null` with a reason instead of being estimated.
+- value and unit;
+- scope and aggregation;
+- measurement method;
+- support status and unsupported reason;
+- parent span;
+- run label and repeat index.
+
+Missing or inapplicable values are `null`, never invented as zero.
+
+### CUDA event span is not kernel time
+
+`cuda_event_span_seconds` is elapsed time between two events recorded on a CUDA
+stream. It may include GPU idle time, CPU/offload delays between event
+submission, synchronization, and work queued inside the enclosing operation.
+It is useful as an accelerator-timeline span but is not the sum of GPU kernel
+durations.
+
+`gpu_kernel_seconds` is reserved for a separate
+`torch.profiler`/CUPTI collection. The official wall-clock path keeps the
+profiler disabled and records:
+
+```text
+value: null
+support_status: not_collected
+measurement_method: torch.profiler/CUPTI (disabled)
+unsupported_reason: profiler overhead is excluded from official wall-clock
+```
+
+A profiling run must use the same pinned inputs but is diagnostic only.
+`torch.profiler` adds CPU, GPU, memory, and synchronization overhead, so its
+wall-clock cannot replace the official unprofiled result.
+
+### Wall-clock hierarchy
+
+The receipt distinguishes:
+
+1. exact CLI-process exit duration — not internally collectible after process
+   exit, so a parent launcher is required;
+2. CLI entry through receipt assembly;
+3. parent runner from child start through observed exit;
+4. instrumented Wan child lifetime;
+5. model load;
+6. each repeated run;
+7. generation, prompt, denoising, VAE, and MP4 encode spans;
+8. setup/finalization and unattributed remainders.
+
+Parent/child relationships are explicit. Remainders subtract only
+non-overlapping direct children and are clamped at zero. Windows shell startup
+and WSL distribution startup are outside the internal runner and are never
+reported as internal end-to-end latency.
+
+### VRAM
+
+The receipt keeps these scopes separate:
+
+- per-generation allocated/reserved peak after resetting allocator peak stats;
+- allocated/reserved current value immediately after generation;
+- process peak across model load and every reset window;
+- final process current value;
+- 0.5-second NVIDIA system-wide sampled peak.
+
+Allocated bytes describe tensor memory known to PyTorch. Reserved bytes describe
+memory managed by the caching allocator and are not proof of simultaneous
+physical residency. NVIDIA sampling covers the entire selected GPU, can include
+other processes, and can miss short spikes. The allocator backend, both
+`PYTORCH_ALLOC_CONF` names, device total memory, and supported pool statistics
+are recorded with the run.
+
+### Host RAM
+
+Linux/WSL runs enumerate descendants through `/proc`, sample main-process RSS,
+descendant RSS, and the aggregate process tree, and retain separate peaks.
+Platforms without process-tree enumeration retain the main-process value and
+mark descendant/tree measurements unsupported with a reason.
+
+T2V has no input VAE encode stage, so that field is `null` with a
+not-applicable reason. Scheduler-only overhead is not isolated by the
+non-invasive hook; it remains `null` with a reason instead of being estimated.
 
 Each receipt also contains:
 

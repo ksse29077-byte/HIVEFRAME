@@ -31,6 +31,7 @@ class Wan21RunSpec:
     offload_model: bool = True
     t5_cpu: bool = True
     repeat: int = 2
+    kernel_profiler: str = "disabled"
 
     def validate(self) -> None:
         if self.size not in {"832*480", "480*832"}:
@@ -51,6 +52,10 @@ class Wan21RunSpec:
             raise ValueError("The pinned official Wan backend requires cuda:N.")
         if self.repeat not in {1, 2}:
             raise ValueError("repeat must be one smoke run or cold/warm pair.")
+        if self.kernel_profiler not in {"disabled", "torch"}:
+            raise ValueError(
+                "kernel_profiler must be 'disabled' or 'torch'."
+            )
 
 
 def build_generate_command(
@@ -104,5 +109,7 @@ def build_generate_command(
         str(spec.t5_cpu).lower(),
         "--repeat",
         str(spec.repeat),
+        "--kernel-profiler",
+        spec.kernel_profiler,
     ]
     return command

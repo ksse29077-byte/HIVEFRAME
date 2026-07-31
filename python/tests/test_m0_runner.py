@@ -26,8 +26,17 @@ from hive_benchmarks.m0_runner import (
     download_plan,
     load_config,
     load_suite,
+    resources_from_instrumentation,
+    sample_process_tree_rss,
     settings_for_profile,
     stable_hash,
+    timing_from_instrumentation,
+    validate_receipt_contract,
+)
+from hive_hooks.wan21_m0_instrumented import (
+    allocator_environment,
+    execute_with_kernel_profiler,
+    reset_allocator_peak,
 )
 
 
@@ -57,6 +66,8 @@ class Wan21CommandTests(unittest.TestCase):
         self.assertIn("--device", command)
         self.assertIn("cuda:0", command)
         self.assertIn("--t5-cpu", command)
+        self.assertIn("--kernel-profiler", command)
+        self.assertIn("disabled", command)
         self.assertNotIn("--use_prompt_extend", command)
 
     def test_invalid_frame_count_is_rejected(self) -> None:
@@ -174,6 +185,14 @@ class M0ConfigTests(unittest.TestCase):
         smoke_hash = stable_hash({"sample": prompt, "settings": smoke})
         baseline_hash = stable_hash({"sample": prompt, "settings": baseline})
         self.assertNotEqual(smoke_hash, baseline_hash)
+        self.assertEqual(
+            smoke_hash,
+            "76f0a1ab1196788431a1de4af3319ef5427c3353c1bdb7c6df9641881a2a4588",
+        )
+        self.assertEqual(
+            baseline_hash,
+            "5a4da7ba8926901ce705c6724b7953afae91bc6e53c0d222145807a741417598",
+        )
 
     def test_run_plan_exposes_final_settings_without_execution(self) -> None:
         prompt = next(
@@ -572,6 +591,499 @@ class M0ConfigTests(unittest.TestCase):
         self.assertEqual(len(receipt["settings_hash"]), 64)
         self.assertEqual(len(receipt["configuration_hash"]), 64)
         self.assertEqual(receipt["environment"]["project_git"]["revision"], "test-revision")
+        self.assertEqual(receipt["schema_version"], "0.2.0")
+        validate_receipt_contract(receipt)
+
+    def test_cuda_event_span_is_not_reported_as_kernel_time(self) -> None:
+        instrumentation = self._instrumentation_fixture()
+        timing, unsupported = timing_from_instrumentation(
+            instrumentation,
+            11.0,
+            cli_observed_seconds=12.0,
+        )
+        cold = timing["runs"][0]
+        self.assertEqual(
+            cold["generation"]["cuda_event_span"]["value"],
+            4.5,
+        )
+        self.assertEqual(
+            cold["generation"]["gpu_kernel"]["support_status"],
+            "not_collected",
+        )
+        self.assertIsNone(cold["generation"]["gpu_kernel"]["value"])
+        self.assertNotIn("cuda_gpu_seconds", json.dumps(timing))
+        self.assertNotIn("cuda_gpu_time", unsupported)
+        self.assertNotIn("host_ram_descendants", unsupported)
+
+    def test_disabled_kernel_profiler_runs_once_and_records_null_reason(self) -> None:
+        calls = []
+
+        def operation() -> str:
+            calls.append("called")
+            return "result"
+
+        result, record = execute_with_kernel_profiler(
+            object(), "disabled", operation
+        )
+        self.assertEqual(result, "result")
+        self.assertEqual(calls, ["called"])
+        self.assertIsNone(record["value"])
+        self.assertEqual(record["support_status"], "not_collected")
+        self.assertIn("official wall-clock", record["unsupported_reason"])
+
+    def test_torch_kernel_profiler_sums_profiler_kernel_durations(self) -> None:
+        class Event:
+            def __init__(self, duration: float):
+                self.self_cuda_time_total = duration
+
+        class Capture:
+            def __enter__(self) -> "Capture":
+                return self
+
+            def __exit__(self, *_: object) -> None:
+                return None
+
+            @staticmethod
+            def key_averages() -> list[Event]:
+                return [Event(1000.0), Event(2500.0)]
+
+        class ProfilerActivity:
+            CUDA = "cuda"
+
+        class Profiler:
+            @staticmethod
+            def profile(*, activities: list[str]) -> Capture:
+                self.assertEqual(activities, ["cuda"])
+                return Capture()
+
+        Profiler.ProfilerActivity = ProfilerActivity
+
+        class FakeTorch:
+            profiler = Profiler()
+
+        result, record = execute_with_kernel_profiler(
+            FakeTorch(), "torch", lambda: "profiled"
+        )
+        self.assertEqual(result, "profiled")
+        self.assertEqual(record["support_status"], "supported")
+        self.assertAlmostEqual(record["value"], 0.0035)
+
+    def test_profiler_extraction_failure_does_not_repeat_operation(self) -> None:
+        calls = []
+
+        class Capture:
+            def __enter__(self) -> "Capture":
+                return self
+
+            def __exit__(self, *_: object) -> None:
+                return None
+
+            @staticmethod
+            def key_averages() -> list[object]:
+                raise RuntimeError("CUPTI results unavailable")
+
+        class ProfilerActivity:
+            CUDA = "cuda"
+
+        class Profiler:
+            @staticmethod
+            def profile(*, activities: list[str]) -> Capture:
+                return Capture()
+
+        Profiler.ProfilerActivity = ProfilerActivity
+
+        class FakeTorch:
+            profiler = Profiler()
+
+        def operation() -> str:
+            calls.append("called")
+            return "profiled"
+
+        result, record = execute_with_kernel_profiler(
+            FakeTorch(), "torch", operation
+        )
+        self.assertEqual(result, "profiled")
+        self.assertEqual(calls, ["called"])
+        self.assertEqual(record["support_status"], "unsupported")
+        self.assertIsNone(record["value"])
+
+    def test_generation_peak_reset_calls_allocator_api(self) -> None:
+        class FakeCuda:
+            calls: list[int] = []
+
+            @classmethod
+            def reset_peak_memory_stats(cls, index: int) -> None:
+                cls.calls.append(index)
+
+        class FakeTorch:
+            cuda = FakeCuda()
+
+        reset_allocator_peak(FakeTorch(), 0)
+        reset_allocator_peak(FakeTorch(), 0)
+        self.assertEqual(FakeCuda.calls, [0, 0])
+
+    def test_run_and_process_allocator_peaks_are_separate(self) -> None:
+        instrumentation = self._instrumentation_fixture()
+        resources = resources_from_instrumentation(
+            instrumentation,
+            peak_main_rss=100,
+            peak_child_rss=40,
+            peak_tree_rss=140,
+            process_tree_support_status="supported",
+            process_tree_unsupported_reason=None,
+            peak_gpu_memory_mib=12000,
+            gpu_utilization_samples=[10, 20],
+        )
+        self.assertEqual(
+            resources["process"]["peak_vram_allocated"]["value"],
+            900,
+        )
+        self.assertEqual(
+            resources["runs"][0]["generation_peak_vram_allocated"]["value"],
+            700,
+        )
+        self.assertEqual(
+            resources["runs"][0][
+                "generation_end_current_vram_reserved"
+            ]["value"],
+            650,
+        )
+        self.assertNotEqual(
+            resources["process"]["peak_vram_reserved"]["scope"],
+            resources["runs"][0]["generation_peak_vram_reserved"]["scope"],
+        )
+
+    def test_allocator_environment_is_recorded_with_pool_statistics(self) -> None:
+        class FakeProperties:
+            total_memory = 12_000
+
+        class FakeCuda:
+            @staticmethod
+            def get_allocator_backend() -> str:
+                return "native"
+
+            @staticmethod
+            def get_device_properties(_: int) -> FakeProperties:
+                return FakeProperties()
+
+            @staticmethod
+            def memory_stats(_: int) -> dict[str, int]:
+                return {
+                    "allocated_bytes.all.current": 10,
+                    "reserved_bytes.large_pool.peak": 20,
+                    "unrelated": 30,
+                }
+
+        class FakeTorch:
+            cuda = FakeCuda()
+
+        with patch.dict(
+            os.environ,
+            {
+                "PYTORCH_ALLOC_CONF": "backend:native",
+                "PYTORCH_CUDA_ALLOC_CONF": "backend:native",
+            },
+            clear=False,
+        ):
+            result = allocator_environment(FakeTorch(), 0)
+        self.assertEqual(result["allocator_backend"], "native")
+        self.assertEqual(result["device_total_memory_bytes"], 12_000)
+        self.assertEqual(
+            result["pool_statistics"]["reserved_bytes.large_pool.peak"],
+            20,
+        )
+        self.assertNotIn("unrelated", result["pool_statistics"])
+
+    def test_wall_hierarchy_and_unattributed_remainder_are_nonnegative(self) -> None:
+        instrumentation = self._instrumentation_fixture()
+        instrumentation["runs"][0]["generation_wall_seconds"] = 1.0
+        timing, _ = timing_from_instrumentation(instrumentation, 11.0)
+        cold = timing["runs"][0]
+        self.assertEqual(cold["generation"]["unattributed_wall"]["value"], 0.0)
+        self.assertEqual(
+            cold["generation"]["wall"]["parent_span"],
+            "run:cold",
+        )
+        self.assertIn(
+            {
+                "parent": "generation:cold",
+                "child": "denoising:cold",
+            },
+            timing["span_relationships"],
+        )
+        self.assertGreaterEqual(timing["unattributed_wall"]["value"], 0.0)
+
+    def test_incomplete_parent_spans_are_not_reported_as_partial_totals(self) -> None:
+        instrumentation = self._instrumentation_fixture()
+        instrumentation["runs"][0].pop(
+            "video_encode_cuda_event_span_seconds"
+        )
+        instrumentation["runs"][0].pop("video_encode_wall_seconds")
+        timing, unsupported = timing_from_instrumentation(
+            instrumentation, 11.0
+        )
+        self.assertIsNone(timing["process_cuda_event_span"]["value"])
+        self.assertEqual(
+            timing["process_cuda_event_span"]["support_status"],
+            "not_collected",
+        )
+        self.assertIn(
+            "partial sum",
+            timing["process_cuda_event_span"]["unsupported_reason"],
+        )
+        self.assertIsNone(timing["runs"][0]["unattributed_wall"]["value"])
+        self.assertIn("cuda_event_span", unsupported)
+
+    def test_process_tree_rss_aggregates_descendants(self) -> None:
+        values = {10: 100, 11: 40, 12: 60}
+        with (
+            patch(
+                "hive_benchmarks.m0_runner.process_tree_pids",
+                return_value=({10, 11, 12}, None),
+            ),
+            patch(
+                "hive_benchmarks.m0_runner.process_rss_bytes",
+                side_effect=lambda pid: values[pid],
+            ),
+        ):
+            sample = sample_process_tree_rss(10)
+        self.assertEqual(sample["main_process_rss_bytes"], 100)
+        self.assertEqual(sample["child_process_rss_bytes"], 100)
+        self.assertEqual(sample["process_tree_rss_bytes"], 200)
+        self.assertEqual(sample["support_status"], "supported")
+
+    def test_missing_runner_and_process_tree_samples_are_not_zero(self) -> None:
+        timing, _ = timing_from_instrumentation(
+            self._instrumentation_fixture(), None
+        )
+        self.assertIsNone(timing["runner_child_process_wall"]["value"])
+        self.assertEqual(
+            timing["runner_child_process_wall"]["support_status"],
+            "not_collected",
+        )
+        resources = resources_from_instrumentation(
+            self._instrumentation_fixture(),
+            peak_main_rss=None,
+            peak_child_rss=None,
+            peak_tree_rss=None,
+            process_tree_support_status="supported",
+            process_tree_unsupported_reason=None,
+            peak_gpu_memory_mib=None,
+            gpu_utilization_samples=[],
+        )
+        self.assertIsNone(
+            resources["host_ram"]["child_process_peak_rss"]["value"]
+        )
+        self.assertEqual(
+            resources["host_ram"]["child_process_peak_rss"][
+                "support_status"
+            ],
+            "not_collected",
+        )
+        self.assertIsNone(
+            resources["process"]["nvidia_system_sampled_peak"]["value"]
+        )
+
+    def test_run_collision_blocks_before_gate_or_model_execution(self) -> None:
+        prompt = next(
+            item
+            for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            output_dir = Path(temporary)
+            plan = build_run_plan(
+                self.config,
+                prompt,
+                "smoke-cold-warm",
+                output_dir,
+            )
+            collision = output_dir / f"{plan['run_id']}.receipt.json"
+            collision.write_text("existing", encoding="utf-8")
+            args = argparse.Namespace(
+                profile="smoke-cold-warm",
+                prompt_id="static-speaking-person",
+                output_dir=temporary,
+                plan=False,
+                expect_settings_hash=plan["settings_hash"],
+            )
+            output = io.StringIO()
+            with (
+                patch("hive_benchmarks.m0_runner.read_gate_state") as gate,
+                patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+                contextlib.redirect_stdout(output),
+            ):
+                return_code = command_run(args, self.config)
+        self.assertEqual(return_code, 2)
+        gate.assert_not_called()
+        run_sample.assert_not_called()
+        self.assertEqual(
+            json.loads(output.getvalue())["stage"],
+            "run-id-collision",
+        )
+
+    def test_plan_lists_output_directory_and_expected_artifacts(self) -> None:
+        prompt = next(
+            item
+            for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            output_dir = Path(temporary)
+            plan = build_run_plan(
+                self.config,
+                prompt,
+                "smoke-cold-warm",
+                output_dir,
+            )
+        self.assertEqual(plan["output"]["directory"], str(output_dir))
+        self.assertFalse(plan["output"]["overwrite_allowed"])
+        paths = [
+            item["path"] for item in plan["output"]["expected_artifacts"]
+        ]
+        self.assertTrue(any(path.endswith(".cold.mp4") for path in paths))
+        self.assertTrue(any(path.endswith(".warm.mp4") for path in paths))
+        self.assertTrue(any(path.endswith(".receipt.json") for path in paths))
+
+    def test_receipt_schema_declares_v01_compatibility_and_v02_metrics(self) -> None:
+        schema = json.loads(
+            (ROOT / "schemas" / "run_receipt.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(
+            schema["properties"]["schema_version"]["enum"],
+            ["0.1.0", "0.2.0"],
+        )
+        metric_required = set(schema["$defs"]["measurement"]["required"])
+        self.assertTrue(
+            {
+                "value",
+                "unit",
+                "scope",
+                "measurement_method",
+                "aggregation",
+                "support_status",
+                "unsupported_reason",
+                "parent_span",
+                "run_label",
+                "repeat_index",
+            }.issubset(metric_required)
+        )
+        timing_run = schema["$defs"]["timingV2"]["properties"]["runs"][
+            "items"
+        ]["properties"]
+        self.assertEqual(
+            timing_run["generation"]["properties"]["gpu_kernel"]["$ref"],
+            "#/$defs/measurement",
+        )
+        resource_run = schema["$defs"]["resourcesV2"]["properties"]["runs"][
+            "items"
+        ]["properties"]
+        self.assertEqual(
+            resource_run["generation_peak_vram_allocated"]["$ref"],
+            "#/$defs/measurement",
+        )
+
+    def test_legacy_v01_receipt_remains_accepted_by_runtime_policy(self) -> None:
+        legacy = {
+            "schema_version": "0.1.0",
+            "kind": "hiveframe.m0.run_receipt",
+            "run_id": "legacy",
+            "status": "succeeded",
+            "partial": False,
+            "profile": "smoke",
+            "timing": {"cuda_gpu_seconds": 1.0},
+            "resources": {},
+            "unsupported_metrics": {},
+            "error": None,
+        }
+        validate_receipt_contract(legacy)
+
+    def test_gate_fingerprint_contract_is_unchanged_by_receipt_v2(self) -> None:
+        from hive_benchmarks.m0_runner import gate_fingerprint, gate_matches
+
+        fingerprint = gate_fingerprint(self.config)
+        gate = {"status": "passed", **fingerprint}
+        self.assertTrue(gate_matches(gate, self.config, "passed"))
+
+    @staticmethod
+    def _instrumentation_fixture() -> dict[str, object]:
+        not_collected = {
+            "value": None,
+            "unit": "seconds",
+            "support_status": "not_collected",
+            "unsupported_reason": "disabled for official wall-clock",
+            "measurement_method": "torch.profiler/CUPTI (disabled)",
+        }
+        return {
+            "schema_version": "0.2.0",
+            "total_wall_seconds": 10.0,
+            "model_load": {
+                "model_load_wall_seconds": 2.0,
+                "model_load_cuda_event_span_seconds": 1.5,
+                "gpu_kernel_seconds": dict(not_collected),
+            },
+            "runs": [
+                {
+                    "label": "cold",
+                    "repeat_index": 0,
+                    "run_wall_seconds": 6.0,
+                    "prompt_encode_calls": [
+                        {
+                            "label": "positive",
+                            "encode_wall_seconds": 1.0,
+                            "encode_cuda_event_span_seconds": 0.8,
+                        }
+                    ],
+                    "denoising_steps": [
+                        {
+                            "index": 0,
+                            "model_forward_calls": 2,
+                            "step_wall_seconds": 2.0,
+                            "step_cuda_event_span_seconds": 1.8,
+                        }
+                    ],
+                    "vae_decode_wall_seconds": 1.0,
+                    "vae_decode_cuda_event_span_seconds": 0.9,
+                    "generation_wall_seconds": 5.0,
+                    "generation_cuda_event_span_seconds": 4.5,
+                    "video_encode_wall_seconds": 1.0,
+                    "video_encode_cuda_event_span_seconds": 0.5,
+                    "gpu_kernel_seconds": dict(not_collected),
+                    "video_encode_gpu_kernel_seconds": dict(not_collected),
+                    "memory": {
+                        "peak_allocated_bytes": 700,
+                        "peak_reserved_bytes": 800,
+                        "current_allocated_bytes": 600,
+                        "current_reserved_bytes": 650,
+                    },
+                }
+            ],
+            "process_memory": {
+                "process_peak_allocated_bytes": 900,
+                "process_peak_reserved_bytes": 1000,
+                "final_current_allocated_bytes": 500,
+                "final_current_reserved_bytes": 550,
+            },
+            "allocator_environment": {
+                "allocator_backend": "native",
+                "pytorch_alloc_conf": None,
+                "pytorch_cuda_alloc_conf_alias": None,
+                "device_total_memory_bytes": 12_000,
+                "pool_statistics": {
+                    "reserved_bytes.all.peak": 1000,
+                },
+                "scope": "selected device",
+                "measurement_method": "PyTorch allocator APIs",
+                "unsupported": {},
+            },
+            "kernel_profiler": {
+                "mode": "disabled",
+                "official_wall_clock_eligible": True,
+                "overhead_disclosure": "disabled in official wall-clock",
+            },
+        }
 
 
 if __name__ == "__main__":

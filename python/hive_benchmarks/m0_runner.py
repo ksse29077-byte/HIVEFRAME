@@ -63,10 +63,59 @@ PROFILE_RUN_KINDS = {
     "baseline-reproducibility": "baseline same-seed cold/warm pair",
 }
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+RECEIPT_SCHEMA_VERSION = "0.2.0"
+MEASUREMENT_SUPPORT_STATUSES = {
+    "supported",
+    "unsupported",
+    "not_collected",
+    "not_applicable",
+}
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def measurement(
+    value: float | int | None,
+    *,
+    unit: str,
+    scope: str,
+    measurement_method: str,
+    aggregation: str,
+    support_status: str | None = None,
+    unsupported_reason: str | None = None,
+    parent_span: str | None = None,
+    run_label: str | None = None,
+    repeat_index: int | None = None,
+) -> dict[str, Any]:
+    status = support_status or (
+        "supported" if value is not None else "not_collected"
+    )
+    if status not in MEASUREMENT_SUPPORT_STATUSES:
+        raise ValueError(f"Unknown measurement support status: {status}")
+    if value is None and not unsupported_reason:
+        raise ValueError("Null measurements require an unsupported reason.")
+    if value is not None and status != "supported":
+        raise ValueError("Only supported measurements may contain a value.")
+    return {
+        "value": value,
+        "unit": unit,
+        "scope": scope,
+        "measurement_method": measurement_method,
+        "aggregation": aggregation,
+        "support_status": status,
+        "unsupported_reason": unsupported_reason,
+        "parent_span": parent_span,
+        "run_label": run_label,
+        "repeat_index": repeat_index,
+    }
+
+
+def nonnegative_remainder(parent: float | None, children: list[float]) -> float | None:
+    if parent is None:
+        return None
+    return max(0.0, float(parent) - sum(float(value) for value in children))
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -117,6 +166,111 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
         encoding="utf-8",
     )
     temporary.replace(path)
+
+
+def validate_receipt_contract(receipt: dict[str, Any]) -> None:
+    required = {
+        "schema_version",
+        "kind",
+        "run_id",
+        "status",
+        "partial",
+        "profile",
+        "timing",
+        "resources",
+        "unsupported_metrics",
+        "error",
+    }
+    missing = sorted(required - receipt.keys())
+    if missing:
+        raise ValueError(f"Receipt is missing required fields: {missing}")
+    version = receipt["schema_version"]
+    if version not in {"0.1.0", RECEIPT_SCHEMA_VERSION}:
+        raise ValueError(f"Unsupported receipt schema version: {version}")
+    if version == "0.1.0":
+        return
+
+    timing_required = {
+        "cli_python_process_wall",
+        "cli_to_receipt_wall",
+        "runner_child_process_wall",
+        "instrumented_child_process_wall",
+        "setup_finalization_wall",
+        "unattributed_wall",
+        "model_load",
+        "runs",
+        "span_relationships",
+        "process_cuda_event_span",
+        "process_gpu_kernel",
+        "profiling_contract",
+    }
+    missing_timing = sorted(timing_required - receipt["timing"].keys())
+    if missing_timing:
+        raise ValueError(f"Receipt v0.2 timing is incomplete: {missing_timing}")
+    resource_required = {"process", "runs", "host_ram", "allocator"}
+    missing_resources = sorted(resource_required - receipt["resources"].keys())
+    if missing_resources:
+        raise ValueError(
+            f"Receipt v0.2 resources are incomplete: {missing_resources}"
+        )
+
+    measurement_keys = {
+        "value",
+        "unit",
+        "scope",
+        "measurement_method",
+        "aggregation",
+        "support_status",
+        "unsupported_reason",
+        "parent_span",
+        "run_label",
+        "repeat_index",
+    }
+
+    def visit(value: Any, path: str) -> None:
+        if isinstance(value, dict):
+            if "value" in value and "support_status" in value:
+                absent = sorted(measurement_keys - value.keys())
+                if absent:
+                    raise ValueError(
+                        f"Measurement {path} is missing metadata: {absent}"
+                    )
+                status = value["support_status"]
+                if status not in MEASUREMENT_SUPPORT_STATUSES:
+                    raise ValueError(
+                        f"Measurement {path} has invalid status {status!r}."
+                    )
+                if status == "supported":
+                    if value["value"] is None:
+                        raise ValueError(
+                            f"Supported measurement {path} has no value."
+                        )
+                    if value["unsupported_reason"] is not None:
+                        raise ValueError(
+                            f"Supported measurement {path} has an unsupported reason."
+                        )
+                else:
+                    if value["value"] is not None:
+                        raise ValueError(
+                            f"Unsupported measurement {path} must have null value."
+                        )
+                    if not value["unsupported_reason"]:
+                        raise ValueError(
+                            f"Unsupported measurement {path} needs a reason."
+                        )
+            for key, child in value.items():
+                visit(child, f"{path}.{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                visit(child, f"{path}[{index}]")
+
+    visit(receipt["timing"], "timing")
+    visit(receipt["resources"], "resources")
+    encoded = json.dumps(receipt["timing"], sort_keys=True)
+    if "cuda_gpu_seconds" in encoded:
+        raise ValueError(
+            "Receipt v0.2 must not label a CUDA event span as cuda_gpu_seconds."
+        )
 
 
 def command_output(command: list[str], cwd: Path | None = None) -> str | None:
@@ -659,6 +813,34 @@ def validate_run_id(run_id: str) -> str:
     return run_id
 
 
+def expected_run_artifacts(
+    output_dir: Path, run_id: str, *, repeat: int
+) -> list[dict[str, Any]]:
+    labels = ["cold"] if repeat == 1 else ["cold", "warm"]
+    artifacts = [
+        {
+            "kind": "video",
+            "label": label,
+            "path": str(output_dir / f"{run_id}.{label}.mp4"),
+        }
+        for label in labels
+    ]
+    artifacts.extend(
+        {
+            "kind": kind,
+            "label": None,
+            "path": str(output_dir / f"{run_id}.{suffix}"),
+        }
+        for kind, suffix in (
+            ("instrumentation", "instrumentation.json"),
+            ("receipt", "receipt.json"),
+            ("stdout", "stdout.log"),
+            ("stderr", "stderr.log"),
+        )
+    )
+    return artifacts
+
+
 def build_execution_plan(
     config: dict[str, Any],
     prompt: dict[str, Any],
@@ -667,6 +849,7 @@ def build_execution_plan(
     repeat: int,
     expected_run_kind: str,
     run_id: str,
+    output_dir: Path,
 ) -> dict[str, Any]:
     validate_run_id(run_id)
     settings = settings_for_profile(
@@ -676,7 +859,7 @@ def build_execution_plan(
     )
     settings_hash = stable_hash({"sample": prompt, "settings": settings})
     return {
-        "schema_version": "0.1.0",
+        "schema_version": RECEIPT_SCHEMA_VERSION,
         "kind": "hiveframe.m0.run_plan",
         "execution_started": False,
         "selected_profile": profile,
@@ -697,6 +880,14 @@ def build_execution_plan(
             "required_argument": "--expect-settings-hash",
             "required_value": settings_hash,
         },
+        "output": {
+            "directory": str(output_dir),
+            "expected_artifacts": expected_run_artifacts(
+                output_dir, run_id, repeat=repeat
+            ),
+            "existing_collisions": run_artifact_collisions(output_dir, run_id),
+            "overwrite_allowed": False,
+        },
     }
 
 
@@ -704,6 +895,7 @@ def build_run_plan(
     config: dict[str, Any],
     prompt: dict[str, Any],
     profile: str,
+    output_dir: Path | None = None,
 ) -> dict[str, Any]:
     if profile not in RUN_PROFILES:
         choices = ", ".join(RUN_PROFILES)
@@ -718,6 +910,7 @@ def build_run_plan(
         repeat=int(config["reproducibility"]["repeat"]),
         expected_run_kind=PROFILE_RUN_KINDS[profile],
         run_id=run_id,
+        output_dir=output_dir or project_path(config["paths"]["run_dir"]),
     )
 
 
@@ -725,6 +918,7 @@ def build_smoke_plan(
     config: dict[str, Any],
     prompt: dict[str, Any],
     run_id: str,
+    output_dir: Path | None = None,
 ) -> dict[str, Any]:
     return build_execution_plan(
         config,
@@ -733,6 +927,7 @@ def build_smoke_plan(
         repeat=1,
         expected_run_kind="single regression smoke",
         run_id=run_id,
+        output_dir=output_dir or project_path(config["paths"]["run_dir"]),
     )
 
 
@@ -838,6 +1033,74 @@ def process_rss_bytes(pid: int) -> int | None:
         ctypes.windll.kernel32.CloseHandle(handle)
 
 
+def process_tree_pids(root_pid: int) -> tuple[set[int], str | None]:
+    if os.name == "nt":
+        return {root_pid}, (
+            "Process-tree enumeration is not implemented on Windows; only the "
+            "main child process is sampled."
+        )
+    proc_root = Path("/proc")
+    if not proc_root.is_dir():
+        return {root_pid}, "/proc is unavailable; only the main process is sampled."
+    parent_to_children: dict[int, set[int]] = {}
+    try:
+        entries = list(proc_root.iterdir())
+    except OSError as error:
+        return {root_pid}, f"Unable to enumerate /proc: {error}"
+    for entry in entries:
+        if not entry.name.isdigit():
+            continue
+        try:
+            stat = (entry / "stat").read_text(encoding="utf-8")
+            close_paren = stat.rfind(")")
+            fields = stat[close_paren + 2 :].split()
+            parent_pid = int(fields[1])
+            parent_to_children.setdefault(parent_pid, set()).add(int(entry.name))
+        except (OSError, ValueError, IndexError):
+            continue
+    discovered = {root_pid}
+    pending = [root_pid]
+    while pending:
+        parent = pending.pop()
+        for child in parent_to_children.get(parent, set()):
+            if child not in discovered:
+                discovered.add(child)
+                pending.append(child)
+    return discovered, None
+
+
+def sample_process_tree_rss(root_pid: int) -> dict[str, Any]:
+    pids, unsupported_reason = process_tree_pids(root_pid)
+    main_rss = process_rss_bytes(root_pid)
+    child_values = [
+        value
+        for pid in pids
+        if pid != root_pid
+        if (value := process_rss_bytes(pid)) is not None
+    ]
+    child_rss = sum(child_values) if unsupported_reason is None else None
+    tree_rss = (
+        (main_rss or 0) + sum(child_values)
+        if unsupported_reason is None and main_rss is not None
+        else None
+    )
+    return {
+        "main_process_rss_bytes": main_rss,
+        "child_process_rss_bytes": child_rss,
+        "process_tree_rss_bytes": tree_rss,
+        "sampled_process_count": len(pids),
+        "support_status": (
+            "supported" if unsupported_reason is None else "unsupported"
+        ),
+        "unsupported_reason": unsupported_reason,
+        "measurement_method": (
+            "/proc process-tree enumeration and VmRSS sampling"
+            if os.name != "nt"
+            else "Windows main-process working-set sampling"
+        ),
+    }
+
+
 def sample_nvidia_gpu() -> dict[str, int] | None:
     executable = nvidia_smi_path()
     if executable is None:
@@ -861,6 +1124,141 @@ def sample_nvidia_gpu() -> dict[str, int] | None:
         return None
 
 
+def unavailable_measurement(
+    *,
+    unit: str,
+    scope: str,
+    measurement_method: str,
+    reason: str,
+    status: str = "not_collected",
+    aggregation: str = "single",
+    parent_span: str | None = None,
+    run_label: str | None = None,
+    repeat_index: int | None = None,
+) -> dict[str, Any]:
+    return measurement(
+        None,
+        unit=unit,
+        scope=scope,
+        measurement_method=measurement_method,
+        aggregation=aggregation,
+        support_status=status,
+        unsupported_reason=reason,
+        parent_span=parent_span,
+        run_label=run_label,
+        repeat_index=repeat_index,
+    )
+
+
+def blocked_timing(reason: str) -> dict[str, Any]:
+    runtime_wall = unavailable_measurement(
+        unit="seconds",
+        scope="runtime",
+        measurement_method="time.perf_counter",
+        reason=reason,
+    )
+    kernel = unavailable_measurement(
+        unit="seconds",
+        scope="runtime",
+        measurement_method="torch.profiler/CUPTI (disabled)",
+        reason=reason,
+    )
+    return {
+        "cli_python_process_wall": unavailable_measurement(
+            unit="seconds",
+            scope="CLI Python process entry to process exit",
+            measurement_method="external parent process required",
+            reason=(
+                "Exact process-exit duration cannot be written by the exiting "
+                "process; use a parent launcher measurement."
+            ),
+        ),
+        "cli_to_receipt_wall": runtime_wall,
+        "runner_child_process_wall": runtime_wall,
+        "instrumented_child_process_wall": runtime_wall,
+        "setup_finalization_wall": runtime_wall,
+        "unattributed_wall": runtime_wall,
+        "model_load": {
+            "wall": runtime_wall,
+            "cuda_event_span": unavailable_measurement(
+                unit="seconds",
+                scope="model load",
+                measurement_method="torch.cuda.Event elapsed_time",
+                reason=reason,
+            ),
+            "gpu_kernel": kernel,
+        },
+        "runs": [],
+        "span_relationships": [],
+        "process_cuda_event_span": unavailable_measurement(
+            unit="seconds",
+            scope="model load and all repeated runs",
+            measurement_method="sum of disjoint parent CUDA event spans",
+            reason=reason,
+            aggregation="sum",
+        ),
+        "process_gpu_kernel": kernel,
+        "profiling_contract": {
+            "official_wall_clock_eligible": True,
+            "kernel_profiler_mode": "disabled",
+            "overhead_disclosure": (
+                "Kernel profiling was not started. torch.profiler/CUPTI runs "
+                "must be separate from official wall-clock samples."
+            ),
+        },
+    }
+
+
+def blocked_resources(reason: str) -> dict[str, Any]:
+    byte_metric = unavailable_measurement(
+        unit="bytes",
+        scope="runtime",
+        measurement_method="runtime resource sampler",
+        reason=reason,
+        aggregation="max",
+    )
+    return {
+        "process": {
+            "peak_vram_allocated": byte_metric,
+            "peak_vram_reserved": byte_metric,
+            "final_current_vram_allocated": byte_metric,
+            "final_current_vram_reserved": byte_metric,
+            "nvidia_system_sampled_peak": unavailable_measurement(
+                unit="MiB",
+                scope="entire selected GPU",
+                measurement_method="nvidia-smi sampled every configured interval",
+                reason=reason,
+                aggregation="sampled_max",
+            ),
+            "average_gpu_utilization": unavailable_measurement(
+                unit="percent",
+                scope="entire selected GPU",
+                measurement_method="nvidia-smi sampled every configured interval",
+                reason=reason,
+                aggregation="sampled_mean",
+            ),
+        },
+        "runs": [],
+        "host_ram": {
+            "main_process_peak_rss": byte_metric,
+            "child_process_peak_rss": byte_metric,
+            "process_tree_peak_rss": byte_metric,
+        },
+        "allocator": {
+            "allocator_backend": None,
+            "pytorch_alloc_conf": os.environ.get("PYTORCH_ALLOC_CONF"),
+            "pytorch_cuda_alloc_conf_alias": os.environ.get(
+                "PYTORCH_CUDA_ALLOC_CONF"
+            ),
+            "device_total_memory_bytes": None,
+            "pool_statistics": None,
+            "support_status": "not_collected",
+            "unsupported_reason": reason,
+            "measurement_method": "PyTorch allocator APIs and environment",
+        },
+    }
+
+
 def blocked_receipt(
     config: dict[str, Any],
     prompt: dict[str, Any],
@@ -871,7 +1269,7 @@ def blocked_receipt(
 ) -> dict[str, Any]:
     started = utc_now()
     return {
-        "schema_version": "0.1.0",
+        "schema_version": RECEIPT_SCHEMA_VERSION,
         "kind": "hiveframe.m0.run_receipt",
         "run_id": f"{profile}-{prompt['id']}-{prompt['seed']}",
         "status": "blocked",
@@ -893,22 +1291,12 @@ def blocked_receipt(
         "settings_hash": stable_hash({"sample": prompt, "settings": settings}),
         "configuration_hash": gate_fingerprint(config)["config_hash"],
         "command": command,
-        "timing": {
-            "wall_clock_seconds": 0.0,
-            "model_load_wall_seconds": None,
-            "prompt_encode_wall_seconds": None,
-            "denoising_wall_seconds": None,
-            "denoising_steps": [],
-            "vae_encode_wall_seconds": None,
-            "vae_decode_wall_seconds": None,
-            "video_encode_wall_seconds": None,
-            "cuda_gpu_seconds": None,
-        },
-        "resources": {
-            "peak_vram_allocated_bytes": None,
-            "peak_vram_reserved_bytes": None,
-            "peak_host_rss_bytes": None,
-        },
+        "timing": blocked_timing(
+            "Execution was blocked before model load; runtime measurements do not exist."
+        ),
+        "resources": blocked_resources(
+            "Execution was blocked before model load; runtime measurements do not exist."
+        ),
         "artifacts": {},
         "environment": preflight["environment"],
         "preflight": {
@@ -930,8 +1318,50 @@ def blocked_receipt(
     }
 
 
+def support_record_measurement(
+    record: dict[str, Any] | None,
+    *,
+    scope: str,
+    aggregation: str,
+    parent_span: str | None,
+    run_label: str | None = None,
+    repeat_index: int | None = None,
+) -> dict[str, Any]:
+    if not record:
+        return unavailable_measurement(
+            unit="seconds",
+            scope=scope,
+            measurement_method="torch.profiler/CUPTI",
+            reason="The instrumentation did not provide a kernel profiler record.",
+            aggregation=aggregation,
+            parent_span=parent_span,
+            run_label=run_label,
+            repeat_index=repeat_index,
+        )
+    status = str(record.get("support_status", "not_collected"))
+    value = record.get("value")
+    reason = record.get("unsupported_reason")
+    return measurement(
+        float(value) if value is not None else None,
+        unit=str(record.get("unit", "seconds")),
+        scope=scope,
+        measurement_method=str(
+            record.get("measurement_method", "torch.profiler/CUPTI")
+        ),
+        aggregation=aggregation,
+        support_status=status,
+        unsupported_reason=str(reason) if reason is not None else None,
+        parent_span=parent_span,
+        run_label=run_label,
+        repeat_index=repeat_index,
+    )
+
+
 def timing_from_instrumentation(
-    instrumentation: dict[str, Any] | None, wall_seconds: float
+    instrumentation: dict[str, Any] | None,
+    wall_seconds: float | None,
+    *,
+    cli_observed_seconds: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, str]]:
     unsupported: dict[str, str] = {
         "vae_encode": "Text-to-video has no input VAE encode stage.",
@@ -939,42 +1369,263 @@ def timing_from_instrumentation(
             "The official scheduler step is included in each denoising step; "
             "scheduler-only time is not isolated by this non-invasive hook."
         ),
-        "host_ram_descendants": (
-            "Peak host RSS samples the main Wan child process every configured "
-            "interval; short-lived descendant encoder processes are not aggregated."
-        ),
     }
+    runner_wall = (
+        measurement(
+            wall_seconds,
+            unit="seconds",
+            scope="parent runner from child process start through observed exit",
+            measurement_method="time.perf_counter around subprocess.Popen/poll",
+            aggregation="single",
+            parent_span="cli_python_process",
+        )
+        if wall_seconds is not None
+        else unavailable_measurement(
+            unit="seconds",
+            scope="parent runner from child process start through observed exit",
+            measurement_method="time.perf_counter around subprocess.Popen/poll",
+            reason="The child process did not start.",
+            parent_span="cli_python_process",
+        )
+    )
     timing: dict[str, Any] = {
-        "wall_clock_seconds": wall_seconds,
-        "model_load_wall_seconds": None,
-        "model_load_cuda_seconds": None,
+        "cli_python_process_wall": unavailable_measurement(
+            unit="seconds",
+            scope="CLI Python process entry to process exit",
+            measurement_method="external parent process required",
+            reason=(
+                "The exiting Python process cannot persist an exact post-exit "
+                "duration. Windows shell and WSL startup are also outside scope."
+            ),
+            parent_span=None,
+        ),
+        "cli_to_receipt_wall": (
+            measurement(
+                cli_observed_seconds,
+                unit="seconds",
+                scope="CLI main entry through receipt assembly",
+                measurement_method="time.perf_counter",
+                aggregation="single",
+                parent_span="cli_python_process",
+            )
+            if cli_observed_seconds is not None
+            else unavailable_measurement(
+                unit="seconds",
+                scope="CLI main entry through receipt assembly",
+                measurement_method="time.perf_counter",
+                reason="The command was invoked without a CLI entry timestamp.",
+                parent_span="cli_python_process",
+            )
+        ),
+        "runner_child_process_wall": runner_wall,
+        "instrumented_child_process_wall": unavailable_measurement(
+            unit="seconds",
+            scope="instrumented Wan child process",
+            measurement_method="time.perf_counter in child",
+            reason="Instrumentation was unavailable.",
+            parent_span="runner_child_process",
+        ),
+        "setup_finalization_wall": unavailable_measurement(
+            unit="seconds",
+            scope="instrumented child outside model load and repeated runs",
+            measurement_method="derived non-overlapping remainder",
+            reason="Instrumentation was unavailable.",
+            aggregation="derived_union_remainder",
+            parent_span="instrumented_child_process",
+        ),
+        "unattributed_wall": unavailable_measurement(
+            unit="seconds",
+            scope="parent runner outside instrumented child lifetime",
+            measurement_method="derived non-overlapping remainder",
+            reason="Instrumentation was unavailable.",
+            aggregation="derived_union_remainder",
+            parent_span="runner_child_process",
+        ),
+        "model_load": {},
         "runs": [],
-        "vae_encode_wall_seconds": None,
-        "scheduler_overhead_seconds": None,
+        "span_relationships": [],
+        "profiling_contract": {
+            "official_wall_clock_eligible": True,
+            "kernel_profiler_mode": "unknown",
+            "overhead_disclosure": (
+                "Kernel profiling runs carry torch.profiler/CUPTI overhead and "
+                "must be separate from official wall-clock samples."
+            ),
+        },
     }
     if not instrumentation:
         unsupported["instrumentation"] = (
             "The instrumented child process did not produce a metrics file."
         )
-        timing["cuda_gpu_seconds"] = None
+        timing["model_load"] = {
+            "wall": unavailable_measurement(
+                unit="seconds",
+                scope="model load",
+                measurement_method="time.perf_counter",
+                reason="Instrumentation was unavailable.",
+                parent_span="instrumented_child_process",
+            ),
+            "cuda_event_span": unavailable_measurement(
+                unit="seconds",
+                scope="model load",
+                measurement_method="torch.cuda.Event elapsed_time",
+                reason="Instrumentation was unavailable.",
+                parent_span="instrumented_child_process",
+            ),
+            "gpu_kernel": unavailable_measurement(
+                unit="seconds",
+                scope="model load",
+                measurement_method="torch.profiler/CUPTI",
+                reason="Instrumentation was unavailable.",
+                parent_span="instrumented_child_process",
+            ),
+        }
+        timing["process_cuda_event_span"] = unavailable_measurement(
+            unit="seconds",
+            scope="model load and all repeated runs",
+            measurement_method="sum of disjoint parent CUDA event spans",
+            reason="Instrumentation was unavailable.",
+            aggregation="sum",
+        )
+        timing["process_gpu_kernel"] = unavailable_measurement(
+            unit="seconds",
+            scope="model load and all repeated runs",
+            measurement_method="torch.profiler/CUPTI",
+            reason="Instrumentation was unavailable.",
+            aggregation="sum",
+        )
         return timing, unsupported
 
-    model_load = instrumentation.get("model_load", {})
-    timing["model_load_wall_seconds"] = model_load.get("model_load_wall_seconds")
-    timing["model_load_cuda_seconds"] = model_load.get("model_load_cuda_seconds")
-    cuda_total = (
-        float(timing["model_load_cuda_seconds"])
-        if timing["model_load_cuda_seconds"] is not None
-        else 0.0
+    child_total_value = instrumentation.get("total_wall_seconds")
+    child_total = (
+        float(child_total_value) if child_total_value is not None else None
     )
-    has_cuda_measurement = timing["model_load_cuda_seconds"] is not None
-    for run in instrumentation.get("runs", []):
+    timing["instrumented_child_process_wall"] = (
+        measurement(
+            child_total,
+            unit="seconds",
+            scope="instrumented child entry through metrics finalization",
+            measurement_method="time.perf_counter in child",
+            aggregation="single",
+            parent_span="runner_child_process",
+        )
+        if child_total is not None
+        else unavailable_measurement(
+            unit="seconds",
+            scope="instrumented child entry through metrics finalization",
+            measurement_method="time.perf_counter in child",
+            reason="Child instrumentation omitted total_wall_seconds.",
+            parent_span="runner_child_process",
+        )
+    )
+    runner_unattributed = (
+        nonnegative_remainder(wall_seconds, [child_total])
+        if wall_seconds is not None and child_total is not None
+        else None
+    )
+    timing["unattributed_wall"] = (
+        measurement(
+            runner_unattributed,
+            unit="seconds",
+            scope="parent runner outside instrumented child lifetime",
+            measurement_method="runner wall minus instrumented child wall",
+            aggregation="derived_union_remainder",
+            parent_span="runner_child_process",
+        )
+        if runner_unattributed is not None
+        else unavailable_measurement(
+            unit="seconds",
+            scope="parent runner outside instrumented child lifetime",
+            measurement_method="runner wall minus instrumented child wall",
+            reason=(
+                "Runner or instrumented-child wall timing was omitted."
+            ),
+            aggregation="derived_union_remainder",
+            parent_span="runner_child_process",
+        )
+    )
+
+    model_load = instrumentation.get("model_load", {})
+    model_wall_value = model_load.get("model_load_wall_seconds")
+    model_wall = (
+        float(model_wall_value) if model_wall_value is not None else None
+    )
+    model_cuda_value = model_load.get(
+        "model_load_cuda_event_span_seconds",
+        model_load.get("model_load_cuda_seconds"),
+    )
+    model_cuda = (
+        float(model_cuda_value) if model_cuda_value is not None else None
+    )
+    timing["model_load"] = {
+        "wall": (
+            measurement(
+                model_wall,
+                unit="seconds",
+                scope="one pipeline/model construction per child process",
+                measurement_method="time.perf_counter",
+                aggregation="single",
+                parent_span="instrumented_child_process",
+            )
+            if model_wall is not None
+            else unavailable_measurement(
+                unit="seconds",
+                scope="one pipeline/model construction per child process",
+                measurement_method="time.perf_counter",
+                reason="Model-load wall timing was not produced.",
+                parent_span="instrumented_child_process",
+            )
+        ),
+        "cuda_event_span": (
+            measurement(
+                model_cuda,
+                unit="seconds",
+                scope="CUDA event span around pipeline/model construction",
+                measurement_method="torch.cuda.Event elapsed_time / 1000",
+                aggregation="single",
+                parent_span="instrumented_child_process",
+            )
+            if model_cuda is not None
+            else unavailable_measurement(
+                unit="seconds",
+                scope="CUDA event span around pipeline/model construction",
+                measurement_method="torch.cuda.Event elapsed_time / 1000",
+                reason="CUDA events were unavailable.",
+                parent_span="instrumented_child_process",
+            )
+        ),
+        "gpu_kernel": support_record_measurement(
+            model_load.get("gpu_kernel_seconds"),
+            scope="model load CUDA kernels",
+            aggregation="sum",
+            parent_span="model_load",
+        ),
+    }
+    cuda_parent_values = [model_cuda] if model_cuda is not None else []
+    cuda_parent_spans_complete = model_cuda is not None
+    kernel_parent_metrics = [timing["model_load"]["gpu_kernel"]]
+    run_wall_values: list[float] = []
+    for repeat_index, run in enumerate(instrumentation.get("runs", [])):
+        label = str(run.get("label") or f"repeat_{repeat_index}")
+        recorded_repeat_index = int(run.get("repeat_index", repeat_index))
+        run_span = f"run:{label}"
+        generation_span = f"generation:{label}"
         prompt_calls = run.get("prompt_encode_calls", [])
-        prompt_wall = sum(
-            float(item.get("encode_wall_seconds") or 0.0) for item in prompt_calls
+        prompt_wall_values = [
+            item.get("encode_wall_seconds") for item in prompt_calls
+        ]
+        prompt_wall = (
+            sum(float(value) for value in prompt_wall_values)
+            if prompt_wall_values
+            and all(value is not None for value in prompt_wall_values)
+            else None
         )
         prompt_cuda_values = [
-            item.get("encode_cuda_seconds") for item in prompt_calls
+            item.get(
+                "encode_cuda_event_span_seconds",
+                item.get("encode_cuda_seconds"),
+            )
+            for item in prompt_calls
         ]
         prompt_cuda = (
             sum(float(value) for value in prompt_cuda_values)
@@ -982,43 +1633,986 @@ def timing_from_instrumentation(
             else None
         )
         steps = run.get("denoising_steps", [])
-        denoising_wall = sum(
-            float(item.get("step_wall_seconds") or 0.0) for item in steps
+        denoising_wall_values = [
+            item.get("step_wall_seconds") for item in steps
+        ]
+        denoising_wall = (
+            sum(float(value) for value in denoising_wall_values)
+            if denoising_wall_values
+            and all(value is not None for value in denoising_wall_values)
+            else None
         )
-        step_cuda_values = [item.get("step_cuda_seconds") for item in steps]
+        step_cuda_values = [
+            item.get(
+                "step_cuda_event_span_seconds",
+                item.get("step_cuda_seconds"),
+            )
+            for item in steps
+        ]
         denoising_cuda = (
             sum(float(value) for value in step_cuda_values)
             if step_cuda_values and all(value is not None for value in step_cuda_values)
             else None
         )
-        generation_cuda = run.get("generation_cuda_seconds")
-        video_encode_cuda = run.get("video_encode_cuda_seconds")
-        for value in (generation_cuda, video_encode_cuda):
-            if value is not None:
-                cuda_total += float(value)
-                has_cuda_measurement = True
+        generation_wall_value = run.get("generation_wall_seconds")
+        generation_wall = (
+            float(generation_wall_value)
+            if generation_wall_value is not None
+            else None
+        )
+        vae_wall_value = run.get("vae_decode_wall_seconds")
+        vae_wall = (
+            float(vae_wall_value) if vae_wall_value is not None else None
+        )
+        generation_cuda_value = run.get(
+            "generation_cuda_event_span_seconds",
+            run.get("generation_cuda_seconds"),
+        )
+        generation_cuda = (
+            float(generation_cuda_value)
+            if generation_cuda_value is not None
+            else None
+        )
+        vae_cuda_value = run.get(
+            "vae_decode_cuda_event_span_seconds",
+            run.get("vae_decode_cuda_seconds"),
+        )
+        vae_cuda = (
+            float(vae_cuda_value) if vae_cuda_value is not None else None
+        )
+        video_encode_wall_value = run.get("video_encode_wall_seconds")
+        video_encode_wall = (
+            float(video_encode_wall_value)
+            if video_encode_wall_value is not None
+            else None
+        )
+        video_encode_cuda_value = run.get(
+            "video_encode_cuda_event_span_seconds",
+            run.get("video_encode_cuda_seconds"),
+        )
+        video_encode_cuda = (
+            float(video_encode_cuda_value)
+            if video_encode_cuda_value is not None
+            else None
+        )
+        run_wall_value = run.get("run_wall_seconds")
+        run_wall = (
+            float(run_wall_value)
+            if run_wall_value is not None
+            else (
+                (generation_wall or 0.0) + (video_encode_wall or 0.0)
+                if generation_wall is not None or video_encode_wall is not None
+                else None
+            )
+        )
+        if run_wall is not None:
+            run_wall_values.append(run_wall)
+        generation_unattributed = (
+            nonnegative_remainder(
+                generation_wall, [prompt_wall, denoising_wall, vae_wall]
+            )
+            if all(
+                value is not None
+                for value in (
+                    generation_wall,
+                    prompt_wall,
+                    denoising_wall,
+                    vae_wall,
+                )
+            )
+            else None
+        )
+        run_unattributed = (
+            nonnegative_remainder(
+                run_wall, [generation_wall, video_encode_wall]
+            )
+            if all(
+                value is not None
+                for value in (run_wall, generation_wall, video_encode_wall)
+            )
+            else None
+        )
+        if generation_cuda is not None:
+            cuda_parent_values.append(generation_cuda)
+        else:
+            cuda_parent_spans_complete = False
+        if video_encode_cuda is not None:
+            cuda_parent_values.append(video_encode_cuda)
+        else:
+            cuda_parent_spans_complete = False
+        generation_kernel = support_record_measurement(
+            run.get("gpu_kernel_seconds"),
+            scope=f"{label} generation CUDA kernels",
+            aggregation="sum",
+            parent_span=generation_span,
+            run_label=label,
+            repeat_index=recorded_repeat_index,
+        )
+        video_kernel = support_record_measurement(
+            run.get("video_encode_gpu_kernel_seconds"),
+            scope=f"{label} MP4 preprocessing CUDA kernels",
+            aggregation="sum",
+            parent_span=f"video_encode:{label}",
+            run_label=label,
+            repeat_index=recorded_repeat_index,
+        )
+        kernel_parent_metrics.extend((generation_kernel, video_kernel))
+        prompt_call_receipts = []
+        for call_index, call in enumerate(prompt_calls):
+            call_label = str(call.get("label", f"call_{call_index + 1}"))
+            call_wall_value = call.get("encode_wall_seconds")
+            call_cuda_value = call.get(
+                "encode_cuda_event_span_seconds",
+                call.get("encode_cuda_seconds"),
+            )
+            prompt_call_receipts.append(
+                {
+                    "label": call_label,
+                    "wall": measurement(
+                        float(call_wall_value),
+                        unit="seconds",
+                        scope=f"{label} prompt encode call {call_label}",
+                        measurement_method="time.perf_counter",
+                        aggregation="single",
+                        parent_span=f"prompt_encode:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if call_wall_value is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} prompt encode call {call_label}",
+                        measurement_method="time.perf_counter",
+                        reason="Prompt encode call wall timing was omitted.",
+                        parent_span=f"prompt_encode:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "cuda_event_span": measurement(
+                        float(call_cuda_value),
+                        unit="seconds",
+                        scope=f"{label} prompt encode call {call_label}",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        aggregation="single",
+                        parent_span=f"prompt_encode:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if call_cuda_value is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} prompt encode call {call_label}",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        reason="CUDA event timing was unavailable.",
+                        parent_span=f"prompt_encode:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                }
+            )
+        step_receipts = []
+        for step_index, step in enumerate(steps):
+            step_label = int(step.get("index", step_index))
+            step_wall_value = step.get("step_wall_seconds")
+            step_cuda_value = step.get(
+                "step_cuda_event_span_seconds",
+                step.get("step_cuda_seconds"),
+            )
+            step_receipts.append(
+                {
+                    "index": step_label,
+                    "model_forward_calls": int(
+                        step.get("model_forward_calls", 0)
+                    ),
+                    "wall": measurement(
+                        float(step_wall_value),
+                        unit="seconds",
+                        scope=f"{label} denoising step {step_label}",
+                        measurement_method="time.perf_counter",
+                        aggregation="single",
+                        parent_span=f"denoising:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if step_wall_value is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} denoising step {step_label}",
+                        measurement_method="time.perf_counter",
+                        reason="Step wall timing was omitted.",
+                        parent_span=f"denoising:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "cuda_event_span": measurement(
+                        float(step_cuda_value),
+                        unit="seconds",
+                        scope=f"{label} denoising step {step_label}",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        aggregation="single",
+                        parent_span=f"denoising:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if step_cuda_value is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} denoising step {step_label}",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        reason="CUDA event timing was unavailable.",
+                        parent_span=f"denoising:{label}",
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                }
+            )
         timing["runs"].append(
             {
-                "label": run.get("label"),
-                "prompt_encode_wall_seconds": prompt_wall,
-                "prompt_encode_cuda_seconds": prompt_cuda,
-                "denoising_wall_seconds": denoising_wall,
-                "denoising_cuda_seconds": denoising_cuda,
-                "denoising_steps": steps,
-                "vae_decode_wall_seconds": run.get("vae_decode_wall_seconds"),
-                "vae_decode_cuda_seconds": run.get("vae_decode_cuda_seconds"),
-                "video_encode_wall_seconds": run.get("video_encode_wall_seconds"),
-                "video_encode_cuda_seconds": video_encode_cuda,
-                "generation_wall_seconds": run.get("generation_wall_seconds"),
-                "generation_cuda_seconds": generation_cuda,
+                "label": label,
+                "repeat_index": recorded_repeat_index,
+                "run_wall": measurement(
+                    run_wall,
+                    unit="seconds",
+                    scope=f"{label} repeated run including MP4 encode",
+                    measurement_method="time.perf_counter",
+                    aggregation="single",
+                    parent_span="instrumented_child_process",
+                    run_label=label,
+                    repeat_index=recorded_repeat_index,
+                )
+                if run_wall is not None
+                else unavailable_measurement(
+                    unit="seconds",
+                    scope=f"{label} repeated run including MP4 encode",
+                    measurement_method="time.perf_counter",
+                    reason="Run wall timing was omitted.",
+                    parent_span="instrumented_child_process",
+                    run_label=label,
+                    repeat_index=recorded_repeat_index,
+                ),
+                "unattributed_wall": measurement(
+                    run_unattributed,
+                    unit="seconds",
+                    scope=f"{label} run outside generation and MP4 encode",
+                    measurement_method="derived non-overlapping remainder",
+                    aggregation="derived_union_remainder",
+                    parent_span=run_span,
+                    run_label=label,
+                    repeat_index=recorded_repeat_index,
+                )
+                if run_unattributed is not None
+                else unavailable_measurement(
+                    unit="seconds",
+                    scope=f"{label} run outside generation and MP4 encode",
+                    measurement_method="derived non-overlapping remainder",
+                    reason="Run wall timing was omitted.",
+                    aggregation="derived_union_remainder",
+                    parent_span=run_span,
+                    run_label=label,
+                    repeat_index=recorded_repeat_index,
+                ),
+                "prompt_encode": {
+                    "wall": (
+                        measurement(
+                            prompt_wall,
+                            unit="seconds",
+                            scope=f"{label} positive and negative prompt calls",
+                            measurement_method=(
+                                "sum of non-overlapping call wall spans"
+                            ),
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                        if prompt_wall is not None
+                        else unavailable_measurement(
+                            unit="seconds",
+                            scope=f"{label} positive and negative prompt calls",
+                            measurement_method=(
+                                "sum of non-overlapping call wall spans"
+                            ),
+                            reason=(
+                                "One or more prompt wall spans are missing."
+                            ),
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                    ),
+                    "cuda_event_span": (
+                        measurement(
+                            prompt_cuda,
+                            unit="seconds",
+                            scope=f"{label} positive and negative prompt calls",
+                            measurement_method=(
+                                "sum of torch.cuda.Event elapsed_time / 1000"
+                            ),
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                        if prompt_cuda is not None
+                        else unavailable_measurement(
+                            unit="seconds",
+                            scope=f"{label} positive and negative prompt calls",
+                            measurement_method=(
+                                "sum of torch.cuda.Event elapsed_time / 1000"
+                            ),
+                            reason="One or more prompt CUDA event spans are missing.",
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                    ),
+                    "calls": prompt_call_receipts,
+                },
+                "denoising": {
+                    "wall": (
+                        measurement(
+                            denoising_wall,
+                            unit="seconds",
+                            scope=f"{label} denoising steps",
+                            measurement_method=(
+                                "sum of non-overlapping step wall spans"
+                            ),
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                        if denoising_wall is not None
+                        else unavailable_measurement(
+                            unit="seconds",
+                            scope=f"{label} denoising steps",
+                            measurement_method=(
+                                "sum of non-overlapping step wall spans"
+                            ),
+                            reason=(
+                                "One or more denoising step wall spans are missing."
+                            ),
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                    ),
+                    "cuda_event_span": (
+                        measurement(
+                            denoising_cuda,
+                            unit="seconds",
+                            scope=f"{label} denoising steps",
+                            measurement_method=(
+                                "sum of torch.cuda.Event elapsed_time / 1000"
+                            ),
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                        if denoising_cuda is not None
+                        else unavailable_measurement(
+                            unit="seconds",
+                            scope=f"{label} denoising steps",
+                            measurement_method=(
+                                "sum of torch.cuda.Event elapsed_time / 1000"
+                            ),
+                            reason="One or more step CUDA event spans are missing.",
+                            aggregation="sum",
+                            parent_span=generation_span,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                    ),
+                    "steps": step_receipts,
+                },
+                "vae_decode": {
+                    "wall": measurement(
+                        vae_wall,
+                        unit="seconds",
+                        scope=f"{label} VAE decode",
+                        measurement_method="time.perf_counter",
+                        aggregation="single",
+                        parent_span=generation_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if vae_wall is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} VAE decode",
+                        measurement_method="time.perf_counter",
+                        reason="VAE decode wall timing was omitted.",
+                        parent_span=generation_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "cuda_event_span": measurement(
+                        vae_cuda,
+                        unit="seconds",
+                        scope=f"{label} VAE decode",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        aggregation="single",
+                        parent_span=generation_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if vae_cuda is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} VAE decode",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        reason="VAE CUDA event timing was unavailable.",
+                        parent_span=generation_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                },
+                "generation": {
+                    "wall": measurement(
+                        generation_wall,
+                        unit="seconds",
+                        scope=f"{label} pipeline.generate call",
+                        measurement_method="time.perf_counter",
+                        aggregation="single",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if generation_wall is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} pipeline.generate call",
+                        measurement_method="time.perf_counter",
+                        reason="Generation wall timing was omitted.",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "cuda_event_span": measurement(
+                        generation_cuda,
+                        unit="seconds",
+                        scope=f"{label} pipeline.generate CUDA event span",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        aggregation="single",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if generation_cuda is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} pipeline.generate CUDA event span",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        reason="Generation CUDA event timing was unavailable.",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "gpu_kernel": generation_kernel,
+                    "unattributed_wall": measurement(
+                        generation_unattributed,
+                        unit="seconds",
+                        scope=f"{label} generation outside prompt, steps, and VAE",
+                        measurement_method="derived non-overlapping remainder",
+                        aggregation="derived_union_remainder",
+                        parent_span=generation_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if generation_unattributed is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} generation outside prompt, steps, and VAE",
+                        measurement_method="derived non-overlapping remainder",
+                        reason="Generation wall timing was omitted.",
+                        aggregation="derived_union_remainder",
+                        parent_span=generation_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                },
+                "video_encode": {
+                    "wall": measurement(
+                        video_encode_wall,
+                        unit="seconds",
+                        scope=f"{label} tensor preprocessing and MP4 encoding",
+                        measurement_method="time.perf_counter",
+                        aggregation="single",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if video_encode_wall is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} tensor preprocessing and MP4 encoding",
+                        measurement_method="time.perf_counter",
+                        reason="MP4 encode wall timing was omitted.",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "cuda_event_span": measurement(
+                        video_encode_cuda,
+                        unit="seconds",
+                        scope=f"{label} MP4 preprocessing CUDA event span",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        aggregation="single",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    )
+                    if video_encode_cuda is not None
+                    else unavailable_measurement(
+                        unit="seconds",
+                        scope=f"{label} MP4 preprocessing CUDA event span",
+                        measurement_method="torch.cuda.Event elapsed_time / 1000",
+                        reason="MP4 CUDA event timing was unavailable.",
+                        parent_span=run_span,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "gpu_kernel": video_kernel,
+                },
             }
         )
-    timing["cuda_gpu_seconds"] = cuda_total if has_cuda_measurement else None
-    if not has_cuda_measurement:
-        unsupported["cuda_gpu_time"] = (
-            "CUDA events were unavailable or the child failed before CUDA timing."
+        timing["span_relationships"].extend(
+            [
+                {"parent": "instrumented_child_process", "child": run_span},
+                {"parent": run_span, "child": generation_span},
+                {"parent": generation_span, "child": f"prompt_encode:{label}"},
+                {"parent": generation_span, "child": f"denoising:{label}"},
+                {"parent": generation_span, "child": f"vae_decode:{label}"},
+                {"parent": run_span, "child": f"video_encode:{label}"},
+            ]
+        )
+
+    expected_run_count = len(instrumentation.get("runs", []))
+    setup_finalization = (
+        nonnegative_remainder(child_total, [model_wall] + run_wall_values)
+        if child_total is not None
+        and model_wall is not None
+        and len(run_wall_values) == expected_run_count
+        else None
+    )
+    timing["setup_finalization_wall"] = (
+        measurement(
+            setup_finalization,
+            unit="seconds",
+            scope="instrumented child outside model load and repeated runs",
+            measurement_method="derived non-overlapping remainder",
+            aggregation="derived_union_remainder",
+            parent_span="instrumented_child_process",
+        )
+        if setup_finalization is not None
+        else unavailable_measurement(
+            unit="seconds",
+            scope="instrumented child outside model load and repeated runs",
+            measurement_method="derived non-overlapping remainder",
+            reason="Instrumented child total wall timing was omitted.",
+            aggregation="derived_union_remainder",
+            parent_span="instrumented_child_process",
+        )
+    )
+    timing["span_relationships"].extend(
+        [
+            {
+                "parent": "runner_child_process",
+                "child": "instrumented_child_process",
+            },
+            {
+                "parent": "instrumented_child_process",
+                "child": "model_load",
+            },
+        ]
+    )
+    timing["process_cuda_event_span"] = (
+        measurement(
+            sum(cuda_parent_values),
+            unit="seconds",
+            scope="model load, generation, and MP4 parent event spans",
+            measurement_method="sum of disjoint parent CUDA event spans",
+            aggregation="sum",
+        )
+        if cuda_parent_spans_complete
+        else unavailable_measurement(
+            unit="seconds",
+            scope="model load, generation, and MP4 parent event spans",
+            measurement_method="sum of disjoint parent CUDA event spans",
+            reason=(
+                "One or more model-load, generation, or MP4 parent CUDA "
+                "event spans were unavailable; a partial sum is not reported."
+            ),
+            aggregation="sum",
+        )
+    )
+    kernel_values = [
+        float(item["value"])
+        for item in kernel_parent_metrics
+        if item["support_status"] == "supported" and item["value"] is not None
+    ]
+    all_kernel_supported = bool(kernel_parent_metrics) and all(
+        item["support_status"] == "supported"
+        for item in kernel_parent_metrics
+    )
+    timing["process_gpu_kernel"] = (
+        measurement(
+            sum(kernel_values),
+            unit="seconds",
+            scope="model load and all repeated-run profiled CUDA kernels",
+            measurement_method="sum of torch.profiler/CUPTI stage totals",
+            aggregation="sum",
+        )
+        if all_kernel_supported
+        else unavailable_measurement(
+            unit="seconds",
+            scope="model load and all repeated-run profiled CUDA kernels",
+            measurement_method="torch.profiler/CUPTI",
+            reason=(
+                "Kernel profiler was disabled, unsupported, or incomplete. "
+                "Official wall-clock runs intentionally do not collect it."
+            ),
+            aggregation="sum",
+        )
+    )
+    profiler_contract = instrumentation.get("kernel_profiler", {})
+    timing["profiling_contract"] = {
+        "official_wall_clock_eligible": bool(
+            profiler_contract.get("official_wall_clock_eligible", True)
+        ),
+        "kernel_profiler_mode": str(
+            profiler_contract.get("mode", "disabled")
+        ),
+        "overhead_disclosure": str(
+            profiler_contract.get(
+                "overhead_disclosure",
+                "torch.profiler/CUPTI adds measurement overhead.",
+            )
+        ),
+    }
+    if not cuda_parent_spans_complete:
+        unsupported["cuda_event_span"] = (
+            "One or more required parent CUDA event spans were unavailable."
         )
     return timing, unsupported
+
+
+def allocator_byte_measurement(
+    value: Any,
+    *,
+    scope: str,
+    aggregation: str,
+    parent_span: str | None = None,
+    run_label: str | None = None,
+    repeat_index: int | None = None,
+    reason: str = "PyTorch allocator did not provide this statistic.",
+) -> dict[str, Any]:
+    return (
+        measurement(
+            int(value),
+            unit="bytes",
+            scope=scope,
+            measurement_method="PyTorch CUDA caching allocator",
+            aggregation=aggregation,
+            parent_span=parent_span,
+            run_label=run_label,
+            repeat_index=repeat_index,
+        )
+        if value is not None
+        else unavailable_measurement(
+            unit="bytes",
+            scope=scope,
+            measurement_method="PyTorch CUDA caching allocator",
+            reason=reason,
+            aggregation=aggregation,
+            parent_span=parent_span,
+            run_label=run_label,
+            repeat_index=repeat_index,
+        )
+    )
+
+
+def resources_from_instrumentation(
+    instrumentation: dict[str, Any] | None,
+    *,
+    peak_main_rss: int | None,
+    peak_child_rss: int | None,
+    peak_tree_rss: int | None,
+    process_tree_support_status: str,
+    process_tree_unsupported_reason: str | None,
+    peak_gpu_memory_mib: int | None,
+    gpu_utilization_samples: list[int],
+) -> dict[str, Any]:
+    process_memory = (
+        instrumentation.get("process_memory", {}) if instrumentation else {}
+    )
+    unavailable_runtime = (
+        "The instrumented child did not provide allocator measurements."
+    )
+    process = {
+        "peak_vram_allocated": allocator_byte_measurement(
+            process_memory.get("process_peak_allocated_bytes"),
+            scope="model load and all repeated runs in one process",
+            aggregation="max_across_allocator_reset_windows",
+            reason=unavailable_runtime,
+        ),
+        "peak_vram_reserved": allocator_byte_measurement(
+            process_memory.get("process_peak_reserved_bytes"),
+            scope=(
+                "model load and all repeated runs; caching-allocator high-water "
+                "mark, not asserted as simultaneous physical residency"
+            ),
+            aggregation="max_across_allocator_reset_windows",
+            reason=unavailable_runtime,
+        ),
+        "final_current_vram_allocated": allocator_byte_measurement(
+            process_memory.get("final_current_allocated_bytes"),
+            scope="instrumented process after all repeated runs",
+            aggregation="single",
+            reason=unavailable_runtime,
+        ),
+        "final_current_vram_reserved": allocator_byte_measurement(
+            process_memory.get("final_current_reserved_bytes"),
+            scope=(
+                "instrumented process after all repeated runs; allocator-managed "
+                "memory, not physical-residency proof"
+            ),
+            aggregation="single",
+            reason=unavailable_runtime,
+        ),
+        "nvidia_system_sampled_peak": (
+            measurement(
+                peak_gpu_memory_mib,
+                unit="MiB",
+                scope="entire selected GPU, including other processes",
+                measurement_method=(
+                    "nvidia-smi memory.used sampled every configured interval"
+                ),
+                aggregation="sampled_max",
+            )
+            if peak_gpu_memory_mib is not None
+            else unavailable_measurement(
+                unit="MiB",
+                scope="entire selected GPU, including other processes",
+                measurement_method=(
+                    "nvidia-smi memory.used sampled every configured interval"
+                ),
+                reason="No supported NVIDIA memory sample was collected.",
+                aggregation="sampled_max",
+            )
+        ),
+        "average_gpu_utilization": (
+            measurement(
+                sum(gpu_utilization_samples) / len(gpu_utilization_samples),
+                unit="percent",
+                scope="entire selected GPU over parent runner sampling window",
+                measurement_method=(
+                    "nvidia-smi utilization.gpu sampled every configured interval"
+                ),
+                aggregation="sampled_mean",
+            )
+            if gpu_utilization_samples
+            else unavailable_measurement(
+                unit="percent",
+                scope="entire selected GPU over parent runner sampling window",
+                measurement_method=(
+                    "nvidia-smi utilization.gpu sampled every configured interval"
+                ),
+                reason="No supported NVIDIA utilization sample was collected.",
+                aggregation="sampled_mean",
+            )
+        ),
+    }
+    run_resources = []
+    if instrumentation:
+        for repeat_index, run in enumerate(instrumentation.get("runs", [])):
+            label = str(run.get("label") or f"repeat_{repeat_index}")
+            recorded_repeat_index = int(run.get("repeat_index", repeat_index))
+            memory = run.get("memory", {})
+            parent = f"generation:{label}"
+            run_resources.append(
+                {
+                    "label": label,
+                    "repeat_index": recorded_repeat_index,
+                    "generation_peak_vram_allocated": allocator_byte_measurement(
+                        memory.get("peak_allocated_bytes"),
+                        scope=f"{label} generation allocator reset window",
+                        aggregation="max",
+                        parent_span=parent,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "generation_peak_vram_reserved": allocator_byte_measurement(
+                        memory.get("peak_reserved_bytes"),
+                        scope=(
+                            f"{label} generation allocator reset window; "
+                            "allocator-managed memory, not physical-residency proof"
+                        ),
+                        aggregation="max",
+                        parent_span=parent,
+                        run_label=label,
+                        repeat_index=recorded_repeat_index,
+                    ),
+                    "generation_end_current_vram_allocated": (
+                        allocator_byte_measurement(
+                            memory.get("current_allocated_bytes"),
+                            scope=f"{label} immediately after generation",
+                            aggregation="single",
+                            parent_span=parent,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                    ),
+                    "generation_end_current_vram_reserved": (
+                        allocator_byte_measurement(
+                            memory.get("current_reserved_bytes"),
+                            scope=(
+                                f"{label} immediately after generation; "
+                                "allocator-managed memory"
+                            ),
+                            aggregation="single",
+                            parent_span=parent,
+                            run_label=label,
+                            repeat_index=recorded_repeat_index,
+                        )
+                    ),
+                }
+            )
+    main_metric = (
+        measurement(
+            peak_main_rss,
+            unit="bytes",
+            scope="main instrumented child process only",
+            measurement_method="periodic VmRSS/working-set sampling",
+            aggregation="sampled_max",
+        )
+        if peak_main_rss is not None
+        else unavailable_measurement(
+            unit="bytes",
+            scope="main instrumented child process only",
+            measurement_method="periodic VmRSS/working-set sampling",
+            reason="Main process RSS samples were unavailable.",
+            aggregation="sampled_max",
+        )
+    )
+    if (
+        process_tree_support_status == "supported"
+        and (peak_child_rss is None or peak_tree_rss is None)
+    ):
+        process_tree_support_status = "not_collected"
+        process_tree_unsupported_reason = (
+            "No complete descendant/tree RSS sample was collected."
+        )
+    if process_tree_support_status == "supported":
+        child_metric = measurement(
+            peak_child_rss,
+            unit="bytes",
+            scope="all descendants of the main instrumented child",
+            measurement_method="/proc process-tree VmRSS aggregation",
+            aggregation="sampled_max",
+        )
+        tree_metric = (
+            measurement(
+                peak_tree_rss,
+                unit="bytes",
+                scope="main instrumented child and all descendants",
+                measurement_method="/proc process-tree VmRSS aggregation",
+                aggregation="sampled_max",
+            )
+            if peak_tree_rss is not None
+            else unavailable_measurement(
+                unit="bytes",
+                scope="main instrumented child and all descendants",
+                measurement_method="/proc process-tree VmRSS aggregation",
+                reason="Process-tree samples unexpectedly had no aggregate value.",
+                aggregation="sampled_max",
+            )
+        )
+    else:
+        reason = process_tree_unsupported_reason or (
+            "Process-tree RSS aggregation is unsupported on this platform."
+        )
+        unsupported_status = (
+            process_tree_support_status
+            if process_tree_support_status
+            in {"unsupported", "not_collected", "not_applicable"}
+            else "unsupported"
+        )
+        child_metric = unavailable_measurement(
+            unit="bytes",
+            scope="all descendants of the main instrumented child",
+            measurement_method="process-tree RSS aggregation",
+            reason=reason,
+            status=unsupported_status,
+            aggregation="sampled_max",
+        )
+        tree_metric = unavailable_measurement(
+            unit="bytes",
+            scope="main instrumented child and all descendants",
+            measurement_method="process-tree RSS aggregation",
+            reason=reason,
+            status=unsupported_status,
+            aggregation="sampled_max",
+        )
+    allocator = (
+        instrumentation.get("allocator_environment", {})
+        if instrumentation
+        else {}
+    )
+    allocator_unsupported = allocator.get("unsupported", {})
+    return {
+        "process": process,
+        "runs": run_resources,
+        "host_ram": {
+            "main_process_peak_rss": main_metric,
+            "child_process_peak_rss": child_metric,
+            "process_tree_peak_rss": tree_metric,
+        },
+        "allocator": {
+            "allocator_backend": allocator.get("allocator_backend"),
+            "pytorch_alloc_conf": allocator.get("pytorch_alloc_conf"),
+            "pytorch_cuda_alloc_conf_alias": allocator.get(
+                "pytorch_cuda_alloc_conf_alias"
+            ),
+            "device_total_memory_bytes": allocator.get(
+                "device_total_memory_bytes"
+            ),
+            "pool_statistics": allocator.get("pool_statistics"),
+            "support_status": (
+                "supported"
+                if allocator and not allocator_unsupported
+                else "unsupported"
+                if allocator
+                else "not_collected"
+            ),
+            "unsupported_reason": (
+                "; ".join(
+                    f"{key}: {value}"
+                    for key, value in allocator_unsupported.items()
+                )
+                if allocator_unsupported
+                else None
+                if allocator
+                else unavailable_runtime
+            ),
+            "measurement_method": str(
+                allocator.get(
+                    "measurement_method",
+                    "PyTorch allocator APIs and process environment",
+                )
+            ),
+            "scope": str(
+                allocator.get(
+                    "scope",
+                    "selected CUDA device in the instrumented process",
+                )
+            ),
+        },
+    }
 
 
 def run_sample(
@@ -1029,6 +2623,8 @@ def run_sample(
     profile: str,
     repeat: int | None = None,
     run_id: str | None = None,
+    kernel_profiler: str = "disabled",
+    cli_started_perf: float | None = None,
 ) -> tuple[int, dict[str, Any]]:
     settings = settings_for_profile(config, profile, repeat=repeat)
     run_id = validate_run_id(
@@ -1057,6 +2653,7 @@ def run_sample(
         offload_model=bool(settings["offload_model"]),
         t5_cpu=bool(settings["t5_cpu"]),
         repeat=int(settings["repeat"]),
+        kernel_profiler=kernel_profiler,
     )
     command = build_generate_command(
         python_executable=Path(sys.executable),
@@ -1070,20 +2667,28 @@ def run_sample(
         receipt = blocked_receipt(
             config, prompt, preflight, settings, profile, command
         )
+        validate_receipt_contract(receipt)
         write_json(receipt_path, receipt)
         return 2, receipt
 
     output_dir.mkdir(parents=True, exist_ok=True)
     started_at = utc_now()
-    start = time.perf_counter()
-    peak_host_rss = 0
-    peak_gpu_memory_mib = 0
+    child_started = False
+    child_start: float | None = None
+    peak_main_rss: int | None = None
+    peak_child_rss: int | None = None
+    peak_tree_rss: int | None = None
+    process_tree_sample_count = 0
+    process_tree_support_status = "supported"
+    process_tree_unsupported_reason: str | None = None
+    peak_gpu_memory_mib: int | None = None
     gpu_utilization_samples: list[int] = []
     execution_error: dict[str, str] | None = None
     try:
         with stdout_path.open("w", encoding="utf-8") as stdout_handle, stderr_path.open(
             "w", encoding="utf-8"
         ) as stderr_handle:
+            child_start = time.perf_counter()
             process = subprocess.Popen(
                 command,
                 cwd=project_path(config["backend"]["code_dir"]),
@@ -1091,14 +2696,44 @@ def run_sample(
                 stderr=stderr_handle,
                 text=True,
             )
+            child_started = True
             while process.poll() is None:
-                rss = process_rss_bytes(process.pid)
-                if rss is not None:
-                    peak_host_rss = max(peak_host_rss, rss)
+                rss = sample_process_tree_rss(process.pid)
+                if rss["main_process_rss_bytes"] is not None:
+                    observed = int(rss["main_process_rss_bytes"])
+                    peak_main_rss = (
+                        observed
+                        if peak_main_rss is None
+                        else max(peak_main_rss, observed)
+                    )
+                if rss["child_process_rss_bytes"] is not None:
+                    observed = int(rss["child_process_rss_bytes"])
+                    peak_child_rss = (
+                        observed
+                        if peak_child_rss is None
+                        else max(peak_child_rss, observed)
+                    )
+                if rss["process_tree_rss_bytes"] is not None:
+                    observed = int(rss["process_tree_rss_bytes"])
+                    peak_tree_rss = (
+                        observed
+                        if peak_tree_rss is None
+                        else max(peak_tree_rss, observed)
+                    )
+                if rss["support_status"] == "supported":
+                    process_tree_sample_count += 1
+                if rss["support_status"] != "supported":
+                    process_tree_support_status = str(rss["support_status"])
+                    process_tree_unsupported_reason = str(
+                        rss["unsupported_reason"]
+                    )
                 gpu = sample_nvidia_gpu()
                 if gpu:
-                    peak_gpu_memory_mib = max(
-                        peak_gpu_memory_mib, gpu["memory_used_mib"]
+                    observed_gpu = int(gpu["memory_used_mib"])
+                    peak_gpu_memory_mib = (
+                        observed_gpu
+                        if peak_gpu_memory_mib is None
+                        else max(peak_gpu_memory_mib, observed_gpu)
                     )
                     gpu_utilization_samples.append(gpu["utilization_percent"])
                 time.sleep(float(config["receipt"]["sample_interval_seconds"]))
@@ -1109,7 +2744,20 @@ def run_sample(
             "type": type(error).__name__,
             "message": str(error),
         }
-    wall_seconds = time.perf_counter() - start
+    wall_seconds = (
+        time.perf_counter() - child_start
+        if child_started and child_start is not None
+        else None
+    )
+    if (
+        process_tree_sample_count == 0
+        and process_tree_support_status == "supported"
+    ):
+        process_tree_support_status = "not_collected"
+        process_tree_unsupported_reason = (
+            "The child exited before a supported process-tree RSS sample "
+            "was collected."
+        )
     instrumentation = (
         json.loads(metrics_path.read_text(encoding="utf-8"))
         if metrics_path.is_file()
@@ -1168,8 +2816,28 @@ def run_sample(
             else:
                 reproducibility["status"] = "hash_mismatch"
                 status = "failed"
-    timing, unsupported = timing_from_instrumentation(instrumentation, wall_seconds)
-    environment = preflight["environment"]
+    cli_observed_seconds = (
+        time.perf_counter() - cli_started_perf
+        if cli_started_perf is not None
+        else None
+    )
+    timing, unsupported = timing_from_instrumentation(
+        instrumentation,
+        wall_seconds,
+        cli_observed_seconds=cli_observed_seconds,
+    )
+    resources = resources_from_instrumentation(
+        instrumentation,
+        peak_main_rss=peak_main_rss,
+        peak_child_rss=peak_child_rss,
+        peak_tree_rss=peak_tree_rss,
+        process_tree_support_status=process_tree_support_status,
+        process_tree_unsupported_reason=process_tree_unsupported_reason,
+        peak_gpu_memory_mib=peak_gpu_memory_mib,
+        gpu_utilization_samples=gpu_utilization_samples,
+    )
+    environment = dict(preflight["environment"])
+    environment["cuda_allocator"] = resources["allocator"]
     error = (
         instrumentation.get("error")
         if instrumentation
@@ -1184,7 +2852,7 @@ def run_sample(
             ),
         }
     receipt = {
-        "schema_version": "0.1.0",
+        "schema_version": RECEIPT_SCHEMA_VERSION,
         "kind": "hiveframe.m0.run_receipt",
         "run_id": run_id,
         "status": status,
@@ -1208,25 +2876,7 @@ def run_sample(
         "command": command,
         "return_code": return_code,
         "timing": timing,
-        "resources": {
-            "peak_host_rss_bytes": peak_host_rss or None,
-            "peak_gpu_memory_mib_sampled": peak_gpu_memory_mib or None,
-            "average_gpu_utilization_percent": (
-                sum(gpu_utilization_samples) / len(gpu_utilization_samples)
-                if gpu_utilization_samples
-                else None
-            ),
-            "peak_vram_allocated_bytes": (
-                instrumentation.get("peak_vram", {}).get("allocated_bytes")
-                if instrumentation
-                else None
-            ),
-            "peak_vram_reserved_bytes": (
-                instrumentation.get("peak_vram", {}).get("reserved_bytes")
-                if instrumentation
-                else None
-            ),
-        },
+        "resources": resources,
         "artifacts": {
             "outputs": output_artifacts,
             "instrumentation": str(metrics_path) if metrics_path.is_file() else None,
@@ -1238,6 +2888,7 @@ def run_sample(
         "unsupported_metrics": unsupported,
         "error": error,
     }
+    validate_receipt_contract(receipt)
     write_json(receipt_path, receipt)
     return (0 if status == "succeeded" else 1), receipt
 
@@ -1291,7 +2942,7 @@ def command_smoke(args: argparse.Namespace, config: dict[str, Any]) -> int:
         if args.output_dir
         else project_path(config["paths"]["run_dir"])
     )
-    plan = build_smoke_plan(config, prompt, args.run_id)
+    plan = build_smoke_plan(config, prompt, args.run_id, output_dir)
     if args.plan:
         print_json(plan)
         return 0
@@ -1301,7 +2952,7 @@ def command_smoke(args: argparse.Namespace, config: dict[str, Any]) -> int:
     if approval_error:
         print_json(approval_error)
         return 2
-    collisions = run_artifact_collisions(output_dir, args.run_id)
+    collisions = list(plan["output"]["existing_collisions"])
     if collisions:
         print_json(
             stage_gate_error(
@@ -1320,6 +2971,7 @@ def command_smoke(args: argparse.Namespace, config: dict[str, Any]) -> int:
         profile="smoke",
         repeat=1,
         run_id=args.run_id,
+        cli_started_perf=getattr(args, "_cli_started_perf", None),
     )
     if return_code == 0:
         state = read_gate_state(config)
@@ -1340,7 +2992,12 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
     if prompt is None:
         print(f"Unknown prompt id: {args.prompt_id}", file=sys.stderr)
         return 2
-    plan = build_run_plan(config, prompt, args.profile)
+    output_dir = (
+        Path(args.output_dir).resolve()
+        if args.output_dir
+        else project_path(config["paths"]["run_dir"])
+    )
+    plan = build_run_plan(config, prompt, args.profile, output_dir)
     if args.plan:
         print_json(plan)
         return 0
@@ -1349,6 +3006,18 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
     )
     if approval_error:
         print_json(approval_error)
+        return 2
+    collisions = list(plan["output"]["existing_collisions"])
+    if collisions:
+        print_json(
+            stage_gate_error(
+                "run-id-collision",
+                (
+                    f"Run ID {plan['run_id']!r} already has artifacts; "
+                    f"refusing to overwrite: {', '.join(collisions)}"
+                ),
+            )
+        )
         return 2
     state = read_gate_state(config)
     if not gate_matches(state.get("smoke"), config, "succeeded"):
@@ -1359,17 +3028,13 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
             )
         )
         return 2
-    output_dir = (
-        Path(args.output_dir).resolve()
-        if args.output_dir
-        else project_path(config["paths"]["run_dir"])
-    )
     return_code, receipt = run_sample(
         config,
         prompt,
         output_dir,
         profile=args.profile,
         repeat=int(config["reproducibility"]["repeat"]),
+        cli_started_perf=getattr(args, "_cli_started_perf", None),
     )
     state = read_gate_state(config)
     state["reproducibility"] = {
@@ -1542,8 +3207,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    cli_started_perf = time.perf_counter()
     parser = build_parser()
     args = parser.parse_args(argv)
+    args._cli_started_perf = cli_started_perf
     config = load_config(Path(args.config).resolve())
     return int(args.handler(args, config))
 
