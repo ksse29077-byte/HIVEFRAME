@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/compute-plan/v0.schema.json",
+  "title": "HIVEFRAME ComputePlan v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "source_state_id",
+    "policy",
+    "execution_units",
+    "claims"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "plan_id": { "type": "string", "minLength": 1 },
+    "source_state_id": { "type": "string", "minLength": 1 },
+    "policy": { "const": "selective_generation_reference_v0" },
+    "execution_units": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unit_id",
+          "region_id",
+          "pixel_xywh",
+          "observed_state",
+          "decision",
+          "selectors",
+          "confidence",
+          "source_observation_ids",
+          "reason"
+        ],
+        "properties": {
+          "unit_id": { "type": "string", "minLength": 1 },
+          "region_id": { "type": "string", "minLength": 1 },
+          "pixel_xywh": {
+            "type": "array",
+            "prefixItems": [
+              { "type": "integer", "minimum": 0 },
+              { "type": "integer", "minimum": 0 },
+              { "type": "integer", "minimum": 1 },
+              { "type": "integer", "minimum": 1 }
+            ],
+            "items": false
+          },
+          "observed_state": { "enum": ["dirty", "stable", "uncertain"] },
+          "decision": { "enum": ["generate", "reuse_cache", "reconcile"] },
+          "selectors": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "patch",
+              "token",
+              "block",
+              "timestep",
+              "resolution",
+              "cache"
+            ],
+            "properties": {
+              "patch": { "type": "boolean" },
+              "token": { "enum": ["all", "region_only", "none", "backend_decides"] },
+              "block": { "enum": ["all", "candidate", "none", "backend_decides"] },
+              "timestep": { "enum": ["all", "candidate", "none", "backend_decides"] },
+              "resolution": { "enum": ["full", "reduced", "none", "backend_decides"] },
+              "cache": { "enum": ["bypass", "reuse", "refresh", "backend_decides"] }
+            }
+          },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "source_observation_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actual_sparse_speedup", "gpu_kernel_seconds"],
+      "properties": {
+        "actual_sparse_speedup": { "$ref": "#/$defs/unsupportedMeasurement" },
+        "gpu_kernel_seconds": { "$ref": "#/$defs/unsupportedMeasurement" }
+      }
+    }
+  },
+  "$defs": {
+    "unsupportedMeasurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit",
+        "support_status",
+        "reason",
+        "measurement_method"
+      ],
+      "properties": {
+        "value": { "type": "null" },
+        "unit": { "type": "string", "minLength": 1 },
+        "support_status": { "enum": ["unsupported", "not_collected"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "measurement_method": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

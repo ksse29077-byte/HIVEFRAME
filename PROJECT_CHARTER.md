@@ -2,90 +2,132 @@
 
 ## Mission
 
-Build a backend-independent runtime that turns centrally specified video intent into measurable patch-local execution, preserves global consistency through bounded neighbor exchange, and saves real end-to-end computation by reusing stable temporal state.
+Build a commercial visual runtime that reduces real end-to-end video
+processing time and GPU cost by observing change with small, purpose-specific
+logical eyes and selectively generating only the work that remains necessary.
 
-## Product hypothesis
+All economics include observation, fusion, planning, backend execution,
+boundary handling, evaluation, and repair. HIVEFRAME succeeds only when that
+total is lower than a same-condition conventional video-generation path
+without unacceptable quality or control loss.
 
-Video generation and editing can be made faster and more controllable when logical visual workers:
+## Research hypothesis
 
-1. share one frozen base model rather than replicate it;
-2. receive deterministic geometric and semantic work derived from a central scene contract;
-3. exchange compact boundary and previous-step context;
-4. skip stable interiors only when uncertainty and dependency rules permit;
-5. expand repairs from strip → patch → object → frame when local correction is unsafe.
+Different spatial, temporal, resolution, and semantic observations can be
+captured without giving every observer a full-fidelity copy of the input.
+`EyeObservation` values can be fused into a provenance-preserving
+`SharedVisualState`, then compiled into a backend-neutral `ComputePlan`.
 
-The initial product is a research runtime and command-line workflow. A creator-facing UI is M8, not an early milestone.
+The plan may select patches, tokens, model blocks, timesteps, resolution, or
+cache operations. These are research candidates, not assumed backend
+capabilities or speedup claims.
+
+The falsifiable hypothesis and counterexamples are defined in
+[`docs/COMPOUND_EYE_HYPOTHESIS.md`](docs/COMPOUND_EYE_HYPOTHESIS.md).
+
+## Preserved foundation
+
+The architecture rebase does not replace the repository or erase evidence.
+It preserves:
+
+- Git history and the `pre-compound-eye-v1` snapshot;
+- the Wan 2.1 1.3B M0 execution environment;
+- smoke, cold/warm, reproducibility, and memory-admission results;
+- RunReceipt 0.1/0.2 compatibility and timing meanings;
+- evaluators and backend adapters;
+- model and license ledgers;
+- the patch-centric architecture as a comparison design in
+  [`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md).
 
 ## Scope
 
 ### In scope
 
-- deterministic baseline generation and complete run receipts;
-- `SceneContract`, constraint compilation, dependency graph, affected closure, and write permissions;
-- scheduler and denoising hooks for latent snapshots and patch experiments;
-- patch parity, halo exchange, reconciliation, and central escalation;
-- temporal cache, scene-cut invalidation, uncertainty, and periodic refresh;
-- numeric geometry and identity compliance;
-- closed-loop local repair;
+- deterministic Single-Eye Cost Truth baselines and complete run receipts;
+- versioned `EyeContract`, `EyeObservation`, `SharedVisualState`, and
+  `ComputePlan` contracts;
+- purpose-specific global, regional, boundary, motion, and future semantic
+  eyes;
+- deterministic Sensory Fusion with source, confidence, and uncertainty;
+- backend capability negotiation for patch, token, block, timestep,
+  resolution, and cache selectors;
+- scene contracts, numeric constraints, ownership, and write permissions;
+- boundary reconciliation, affected closure, temporal reuse, evaluation, and
+  closed-loop repair;
+- same-condition economic experiments that include every overhead;
 - at least two video backends behind one control plane;
-- license, dataset, experiment, and invention records.
+- license, data, experiment, and invention records.
 
 ### Deferred
 
+- model or adapter training before a measured need;
+- custom CUDA/Triton kernels before a measured bottleneck;
+- multi-GPU selective execution;
 - polished GUI;
-- broad support for large model families;
-- natural-language conversation among workers;
+- broad model-family support;
+- worker conversation;
 - feature-film-length generation;
 - foundation-model pretraining;
-- mobile deployment;
-- full custom GPU-kernel rewrite.
+- mobile deployment.
 
 ## Non-goals and anti-patterns
 
 HIVEFRAME does not count any of the following as success:
 
-- adding workers while total GPU time rises;
-- excluding VAE decode to inflate speedup;
-- comparing a low-resolution result with a high-resolution baseline;
-- cherry-picking easy static scenes;
-- blurring seams at the cost of detail;
-- copying the entire model into every worker;
+- presenting the compound-eye structure as proven before backend experiments;
+- reporting a compute plan as actual sparse execution;
+- adding logical eyes while total observation and GPU work rise;
+- excluding fusion, VAE, evaluation, repair, or orchestration from wall time;
+- comparing different resolution, frames, steps, scheduler, precision, or
+  checkpoint conditions;
+- cherry-picking static scenes;
+- hiding boundary defects with blur;
+- copying the entire input or model for every eye;
+- converting unsupported values to zero;
 - accepting errors only because an evaluator missed them.
 
 ## Principles
 
-1. **Measure economics first.** The first five stages prove execution economics, not training scale.
-2. **Receipts over anecdotes.** Every result must be attributable to exact code, model, configuration, seed, environment, and measured cost.
-3. **Deterministic control.** The director expresses relationships; a compiler converts them into numeric constraints.
-4. **Shared weights, logical workers.** Worker count is not model replication.
-5. **Safe locality.** Local work is allowed only within write permissions and affected closure.
-6. **Explicit failure.** Uncertain or conflicting work escalates or fails.
-7. **License admission is a hard gate.** No checkpoint or dataset is used until its terms and provenance are recorded.
-8. **Training follows diagnosis.** Adapters are used only after the missing behavior and target metric are known.
+1. **Observe before selecting.** Selection is compiled from explicit evidence.
+2. **Measure total economics.** Saved backend work must exceed every new cost.
+3. **Receipts over anecdotes.** Results identify exact code, model,
+   configuration, seed, environment, scope, and method.
+4. **Provenance survives fusion.** Every state and decision remains traceable
+   to observations and confidence.
+5. **Logical eyes are not replicas.** An eye owns a receptive purpose, not
+   model weights or a full input copy.
+6. **Safe locality.** Regional work cannot escape compiled write permissions.
+7. **Uncertainty is actionable.** Conflict causes reconciliation, promotion,
+   refresh, or failure.
+8. **Capabilities are explicit.** A backend may reject or promote unsupported
+   selectors; it cannot silently claim them.
+9. **License admission is a hard gate.**
+10. **Training follows diagnosis.**
 
 ## Training gate
 
-Training may begin only after all three conditions are met:
+Training may begin only after:
 
-- a no-training structural experiment shows computation savings on at least some scenes;
-- failures can be attributed to boundary, constraint, or cache modules;
-- the adapter target and success metric are explicit.
+- no-training experiments show a measured structural opportunity;
+- failures can be attributed to observation, fusion, planning, boundary,
+  backend capability, evaluation, or cache behavior;
+- an adapter target and success metric are explicit.
 
-Actual data requirements will be determined experimentally from adapter size and the selected base model.
+## Current priority
 
-## Primary stakeholders
+**M0 — Single-Eye Cost Truth** is the preserved Wan Reproducible Baseline.
+Existing executions, receipts, smoke gates, and environment fingerprints remain
+valid. M0 is not rerun or weakened merely because the architecture hypothesis
+changed.
 
-- runtime and systems researchers;
-- diffusion/backend integration engineers;
-- evaluation and data-governance owners;
-- future creator-product users.
-
-## First priority
-
-**M0 — Reproducible Baseline** is the only first implementation priority. It must reproduce a pinned backend under identical conditions and record every relevant cost and quality dimension before patch optimization begins.
+The next research milestone is **M1 — Eye Observation Correctness**. It compares
+model-free and recorded-input observations with oracle change masks before any
+Wan attention-hook or selective generation change.
 
 ## Decision record
 
-The default strategy is:
-
-> Use Wan as the primary commercial renderer, keep LTX as the control and audio research backend, and develop the central contract, patch workers, neighbor boundary protocol, and temporal cache as a model-independent runtime. Train only minimal adapters after structural bottlenecks have been measured.
+> Preserve Wan as the primary baseline renderer and LTX as a future control and
+> audio research backend. Test compound-eye observation and selective planning
+> as a backend-independent control layer. Retain patch, boundary, temporal
+> cache, and repair mechanisms as possible execution tools rather than defining
+> the product solely as a patch runtime.

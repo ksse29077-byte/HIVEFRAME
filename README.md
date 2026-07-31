@@ -1,24 +1,32 @@
 # HIVEFRAME
 
-HIVEFRAME is a research-first runtime for hierarchical visual swarm video generation and editing. It explores whether a shared-weight video diffusion backend can reduce real end-to-end work by scheduling logical visual workers over latent patches, exchanging bounded neighbor context, and reusing stable temporal state without sacrificing global quality or constraints.
+HIVEFRAME is a research-first compound-eye visual runtime for video generation
+and editing. It explores whether small, purpose-specific logical eyes can
+observe change before generation, fuse that evidence into a shared visual
+state, and selectively schedule backend work without sacrificing global
+quality, constraints, or failure safety.
 
 > Status: pre-alpha research scaffold. The first implementation priority is **M0 — Reproducible Baseline**. Training and GUI work are intentionally deferred.
 
 ## Core thesis
 
-HIVEFRAME treats patch execution as a runtime concern rather than a collection of independently replicated models:
+- `EyeContract` assigns spatial, temporal, resolution, and semantic receptive
+  purposes without copying the full input for every eye.
+- Each eye emits a small `EyeObservation`.
+- Sensory Fusion creates a provenance-preserving `SharedVisualState`.
+- A deterministic compiler produces a `ComputePlan` for patch, token, block,
+  timestep, resolution, or cache candidates.
+- Backend adapters translate only supported selectors and preserve shared
+  model weights.
+- Boundary, temporal-cache, evaluator, and repair mechanisms remain safety
+  layers.
+- Every real claim is measured against M0 Single-Eye Cost Truth with all
+  observation and orchestration overhead included.
 
-- a central `SceneContract` expresses geometry, identity, depth, motion, and write permissions;
-- deterministic compilation turns the contract into patch-local work and dependency closures;
-- logical workers share base-model weights;
-- a boundary bus exchanges compact halo and semantic packets;
-- temporal cache decisions skip only work proven stable;
-- every run emits a receipt covering time, memory, transferred bytes, cache behavior, quality, hashes, and environment.
-
-The two decisive research questions are:
-
-1. How much of an existing video DiT's global computation can be localized in practice?
-2. Do skip, cache, and neighbor exchange save more work than orchestration costs?
+This is an architecture hypothesis, not a speedup claim. See
+[`docs/COMPOUND_EYE_HYPOTHESIS.md`](docs/COMPOUND_EYE_HYPOTHESIS.md) and the
+preserved
+[`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md).
 
 ## Project rules
 
@@ -28,6 +36,8 @@ The two decisive research questions are:
 - Never hide seam defects with blur or count evaluator misses as successes.
 - Do not begin adapter training until structural savings, failure attribution, and measurable targets are demonstrated.
 - Escalate or fail explicitly when local execution is unsafe; never silently corrupt the full result.
+- Record unsupported metrics as `null` with status and reason; never invent a
+  zero.
 
 ## Initial backend strategy
 
@@ -72,6 +82,28 @@ hiveframe/
 ├─ reports/
 └─ docs/
 ```
+
+Compound-eye reference packages live under:
+
+- `python/hive_eyes`;
+- `python/hive_fusion`;
+- `python/hive_visual_state`;
+- `python/hive_probes`.
+
+The four v0 interchange schemas are in `schemas/`. The reference path uses
+NumPy only and does not load Wan, Torch, CUDA, or model weights.
+
+## Model-free compound-eye probe
+
+```bash
+PYTHONPATH=python python -m hive_probes.compound_eye_v0 \
+  --seed 101 \
+  --output-dir /tmp/hiveframe-eye-v0
+```
+
+This emits contracts, observations, shared state, compute plan, and an
+observation receipt. It does not satisfy an M0 backend gate or support a sparse
+speedup claim.
 
 ## First run target
 

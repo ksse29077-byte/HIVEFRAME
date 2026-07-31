@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/eye-contract/v0.schema.json",
+  "title": "HIVEFRAME EyeContract v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "eye_id",
+    "eye_type",
+    "purpose",
+    "receptive_field",
+    "sampling",
+    "write_policy",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "eye_id": { "type": "string", "minLength": 1 },
+    "eye_type": {
+      "enum": [
+        "global_low_resolution",
+        "regional",
+        "overlap_boundary",
+        "frame_difference_motion"
+      ]
+    },
+    "purpose": { "type": "string", "minLength": 1 },
+    "receptive_field": { "$ref": "#/$defs/receptiveField" },
+    "sampling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spatial_scale", "temporal_stride"],
+      "properties": {
+        "spatial_scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "temporal_stride": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "write_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "windows"],
+      "properties": {
+        "mode": { "enum": ["read_only", "bounded"] },
+        "windows": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/window" }
+        }
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "box": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "number", "minimum": 0 },
+        { "type": "number", "minimum": 0 },
+        { "type": "number", "exclusiveMinimum": 0 },
+        { "type": "number", "exclusiveMinimum": 0 }
+      ],
+      "items": false
+    },
+    "normalizedBox": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+      ],
+      "items": false
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_id",
+        "pixel_xywh",
+        "normalized_xywh",
+        "frame_range",
+        "local_to_global"
+      ],
+      "properties": {
+        "window_id": { "type": "string", "minLength": 1 },
+        "pixel_xywh": { "$ref": "#/$defs/box" },
+        "normalized_xywh": { "$ref": "#/$defs/normalizedBox" },
+        "frame_range": {
+          "type": "array",
+          "prefixItems": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "integer", "minimum": 1 }
+          ],
+          "items": false
+        },
+        "local_to_global": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scale_xy", "offset_xy"],
+          "properties": {
+            "scale_xy": {
+              "type": "array",
+              "prefixItems": [
+                { "type": "number", "exclusiveMinimum": 0 },
+                { "type": "number", "exclusiveMinimum": 0 }
+              ],
+              "items": false
+            },
+            "offset_xy": {
+              "type": "array",
+              "prefixItems": [
+                { "type": "number", "minimum": 0 },
+                { "type": "number", "minimum": 0 }
+              ],
+              "items": false
+            }
+          }
+        }
+      }
+    },
+    "receptiveField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coordinate_space", "windows"],
+      "properties": {
+        "coordinate_space": { "const": "pixel_xywh" },
+        "windows": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/window" }
+        }
+      }
+    }
+  }
+}

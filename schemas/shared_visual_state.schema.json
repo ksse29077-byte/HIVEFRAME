@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/shared-visual-state/v0.schema.json",
+  "title": "HIVEFRAME SharedVisualState v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "state_id",
+    "source_sequence_id",
+    "canvas",
+    "global_context",
+    "regions",
+    "observation_ids",
+    "fusion_policy",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "state_id": { "type": "string", "minLength": 1 },
+    "source_sequence_id": { "type": "string", "minLength": 1 },
+    "canvas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "frames", "channels"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "frames": { "type": "integer", "minimum": 2 },
+        "channels": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "global_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_observation_id", "mean_intensity", "low_resolution_shape"],
+      "properties": {
+        "source_observation_id": { "type": "string", "minLength": 1 },
+        "mean_intensity": { "type": "number" },
+        "low_resolution_shape": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "regions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "region_id",
+          "pixel_xywh",
+          "state",
+          "confidence",
+          "sources"
+        ],
+        "properties": {
+          "region_id": { "type": "string", "minLength": 1 },
+          "pixel_xywh": {
+            "type": "array",
+            "prefixItems": [
+              { "type": "integer", "minimum": 0 },
+              { "type": "integer", "minimum": 0 },
+              { "type": "integer", "minimum": 1 },
+              { "type": "integer", "minimum": 1 }
+            ],
+            "items": false
+          },
+          "state": { "enum": ["dirty", "stable", "uncertain"] },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "observation_id",
+                "eye_id",
+                "reported_state",
+                "confidence"
+              ],
+              "properties": {
+                "observation_id": { "type": "string", "minLength": 1 },
+                "eye_id": { "type": "string", "minLength": 1 },
+                "reported_state": {
+                  "enum": ["dirty", "stable", "uncertain"]
+                },
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "observation_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "fusion_policy": { "const": "deterministic_conservative_v0" },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_sha256", "observation_sha256"],
+      "properties": {
+        "input_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "observation_sha256": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    }
+  }
+}

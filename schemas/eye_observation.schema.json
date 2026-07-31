@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/eye-observation/v0.schema.json",
+  "title": "HIVEFRAME EyeObservation v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_id",
+    "eye_id",
+    "eye_type",
+    "source_sequence_id",
+    "seed",
+    "receptive_field",
+    "write_scope",
+    "features",
+    "regions",
+    "confidence",
+    "provenance",
+    "unsupported_metrics"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "observation_id": { "type": "string", "minLength": 1 },
+    "eye_id": { "type": "string", "minLength": 1 },
+    "eye_type": {
+      "enum": [
+        "global_low_resolution",
+        "regional",
+        "overlap_boundary",
+        "frame_difference_motion"
+      ]
+    },
+    "source_sequence_id": { "type": "string", "minLength": 1 },
+    "seed": { "type": "integer", "minimum": 0 },
+    "receptive_field": { "$ref": "#/$defs/receptiveField" },
+    "write_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "windows"],
+      "properties": {
+        "mode": { "enum": ["read_only", "bounded"] },
+        "windows": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/window" }
+        }
+      }
+    },
+    "features": { "type": "object" },
+    "regions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/region" }
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eye_contract_id", "algorithm", "input_sha256"],
+      "properties": {
+        "eye_contract_id": { "type": "string", "minLength": 1 },
+        "algorithm": { "type": "string", "minLength": 1 },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "unsupported_metrics": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/unsupportedMetric" }
+    }
+  },
+  "$defs": {
+    "box": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "number", "minimum": 0 },
+        { "type": "number", "minimum": 0 },
+        { "type": "number", "exclusiveMinimum": 0 },
+        { "type": "number", "exclusiveMinimum": 0 }
+      ],
+      "items": false
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_id",
+        "pixel_xywh",
+        "normalized_xywh",
+        "frame_range",
+        "local_to_global"
+      ],
+      "properties": {
+        "window_id": { "type": "string", "minLength": 1 },
+        "pixel_xywh": { "$ref": "#/$defs/box" },
+        "normalized_xywh": {
+          "type": "array",
+          "prefixItems": [
+            { "type": "number", "minimum": 0, "maximum": 1 },
+            { "type": "number", "minimum": 0, "maximum": 1 },
+            { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+          ],
+          "items": false
+        },
+        "frame_range": {
+          "type": "array",
+          "prefixItems": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "integer", "minimum": 1 }
+          ],
+          "items": false
+        },
+        "local_to_global": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scale_xy", "offset_xy"],
+          "properties": {
+            "scale_xy": {
+              "type": "array",
+              "prefixItems": [
+                { "type": "number", "exclusiveMinimum": 0 },
+                { "type": "number", "exclusiveMinimum": 0 }
+              ],
+              "items": false
+            },
+            "offset_xy": {
+              "type": "array",
+              "prefixItems": [
+                { "type": "number", "minimum": 0 },
+                { "type": "number", "minimum": 0 }
+              ],
+              "items": false
+            }
+          }
+        }
+      }
+    },
+    "receptiveField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coordinate_space", "windows"],
+      "properties": {
+        "coordinate_space": { "const": "pixel_xywh" },
+        "windows": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/window" }
+        }
+      }
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "region_id",
+        "pixel_xywh",
+        "state",
+        "confidence",
+        "evidence"
+      ],
+      "properties": {
+        "region_id": { "type": "string", "minLength": 1 },
+        "pixel_xywh": { "$ref": "#/$defs/box" },
+        "state": { "enum": ["dirty", "stable", "uncertain"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["metric", "value", "unit"],
+          "properties": {
+            "metric": { "type": "string", "minLength": 1 },
+            "value": { "type": ["number", "null"] },
+            "unit": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "unsupportedMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "value",
+        "unit",
+        "support_status",
+        "reason",
+        "measurement_method"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "type": "null" },
+        "unit": { "type": "string", "minLength": 1 },
+        "support_status": { "enum": ["unsupported", "not_collected"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "measurement_method": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
