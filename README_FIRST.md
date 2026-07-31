@@ -16,7 +16,9 @@ As of 2026-07-31:
 - repository visibility is `PUBLIC`;
 - the RFC branch and annotated preservation tag are published with exact Git
   history;
-- GitHub Issue and draft PR were not yet created.
+- RFC Issue
+  [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32) and Draft PR
+  [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33) are open.
 
 Always run `git status -sb` and `git rev-parse HEAD` before relying on this
 snapshot.
@@ -55,12 +57,9 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Complete the remaining R0 review publication on the public repository:
-
-1. reconcile the official Compound I/O roadmap on the RFC branch;
-2. create Issue `RFC: Reframe HIVEFRAME as a compound-eye visual runtime`;
-3. create a Draft PR;
-4. record links and CI state in `docs/WORKLOG.md`.
+Review the official Compound I/O roadmap and architecture RFC in Draft PR
+[`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33). Record review and
+CI outcomes in `docs/WORKLOG.md` before merge.
 
 Do not begin M1 model integration while R0 publication and review remain
 unresolved.

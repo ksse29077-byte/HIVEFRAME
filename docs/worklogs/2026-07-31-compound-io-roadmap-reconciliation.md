@@ -1,6 +1,6 @@
 # 2026-07-31 — Compound I/O Roadmap Reconciliation
 
-Status: implemented on RFC branch; final review pending
+Status: published on RFC branch; Draft PR review pending
 
 ## Purpose
 
@@ -23,6 +23,13 @@ direction without deleting evidence or overstating performance.
 The RFC branch and annotated tag were published with normal Git transport.
 The remote RFC branch contains `041311b...` as an exact ancestor. No GitHub
 Contents API reconstruction was used and `main` was not modified.
+
+Review links:
+
+- RFC Issue
+  [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32);
+- Draft PR
+  [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33).
 
 ## Preserved assets
 

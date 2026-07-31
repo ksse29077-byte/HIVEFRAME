@@ -105,8 +105,10 @@ Architecture commit:
 - repository visibility: `PUBLIC`;
 - branch push: `published`;
 - annotated tag push: `published`;
-- RFC Issue: not created;
-- draft PR: not created.
+- RFC Issue:
+  [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32);
+- Draft PR:
+  [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33).
 
 The RFC branch and tag were published with normal Git transport. Commit
 `041311bf6c3aad144f1a64980a36fd399c6c17d8` remains an exact ancestor of the
@@ -177,8 +179,10 @@ preserving M0 evidence and the patch-centric comparison design.
 ### Publication and review
 
 The changes remain isolated on `agent/compound-eye-architecture-v1`. They are
-not written directly to `main`; an RFC Issue and Draft PR are required before
-review completion.
+not written directly to `main`. RFC Issue
+[`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32) and Draft PR
+[`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33) provide the review
+surface.
 
 ### Verification
 

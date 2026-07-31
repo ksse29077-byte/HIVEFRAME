@@ -29,9 +29,9 @@ Status date: 2026-07-31
 | Reconcile official Compound I/O roadmap | `verified` | RFC branch; 59 Python tests, Cargo, schemas, and diff check passed |
 | Push RFC branch | `published` | exact local Git history verified remotely |
 | Push preservation tag | `published` | annotated tag object and target verified remotely |
-| Create RFC Issue | `planned` | create after reconciled branch verification |
-| Create draft PR | `planned` | review RFC branch against `main` |
-| Confirm CI | `planned` | requires draft PR or pushed branch |
+| Create RFC Issue | `published` | [Issue #32](https://github.com/ksse29077-byte/HIVEFRAME/issues/32) |
+| Create Draft PR | `published` | [Draft PR #33](https://github.com/ksse29077-byte/HIVEFRAME/pull/33) |
+| Confirm CI | `planned` | review checks on Draft PR #33 |
 
 ## M0 — Single-Eye Cost Truth
 
