@@ -1,0 +1,69 @@
+{
+  "suite": {
+    "id": "canonical-v0",
+    "status": "draft",
+    "deterministic": true
+  },
+  "prompts": [
+    {
+      "id": "static-speaking-person",
+      "category": "static_background",
+      "seed": 101,
+      "intent": "A person speaks to camera while the room and camera remain still."
+    },
+    {
+      "id": "static-eyes-mouth",
+      "category": "static_background",
+      "seed": 202,
+      "intent": "A close portrait with motion limited to blinking eyes and a speaking mouth."
+    },
+    {
+      "id": "static-hand",
+      "category": "static_background",
+      "seed": 303,
+      "intent": "A seated person moves one hand while the body, background, and camera remain still."
+    },
+    {
+      "id": "camera-slow-pan",
+      "category": "camera",
+      "seed": 404,
+      "intent": "A slow horizontal camera pan across a structured room."
+    },
+    {
+      "id": "camera-zoom",
+      "category": "camera",
+      "seed": 505,
+      "intent": "A smooth zoom in followed by a smooth zoom out."
+    },
+    {
+      "id": "boundary-face",
+      "category": "patch_boundary",
+      "seed": 606,
+      "intent": "A face centered exactly across a planned patch boundary."
+    },
+    {
+      "id": "boundary-cable",
+      "category": "patch_boundary",
+      "seed": 707,
+      "intent": "A long cable crosses several planned patches with continuous geometry."
+    },
+    {
+      "id": "constraint-two-objects",
+      "category": "constraints",
+      "seed": 808,
+      "intent": "Exactly two objects maintain a specified distance and depth order."
+    },
+    {
+      "id": "edit-background",
+      "category": "editing",
+      "seed": 909,
+      "intent": "Replace only the background while preserving foreground identity and motion."
+    },
+    {
+      "id": "edit-face-lips",
+      "category": "editing",
+      "seed": 1010,
+      "intent": "Preserve face identity and geometry while changing only lip motion."
+    }
+  ]
+}

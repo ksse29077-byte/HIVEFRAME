@@ -1,24 +1,39 @@
 # HIVEFRAME
 
-HIVEFRAME is a research-first runtime for hierarchical visual swarm video generation and editing. It explores whether a shared-weight video diffusion backend can reduce real end-to-end work by scheduling logical visual workers over latent patches, exchanging bounded neighbor context, and reusing stable temporal state without sacrificing global quality or constraints.
+New contributors and Codex sessions should begin with
+[`README_FIRST.md`](README_FIRST.md), then check [`TASKS.md`](TASKS.md) and
+[`docs/WORKLOG.md`](docs/WORKLOG.md) before changing the repository.
+
+HIVEFRAME is a research-first compound-eye visual runtime for video generation
+and editing. It explores whether small, purpose-specific logical eyes can
+observe change before generation, fuse that evidence into a shared visual
+state, and selectively schedule backend work without sacrificing global
+quality, constraints, or failure safety.
 
 > Status: pre-alpha research scaffold. The first implementation priority is **M0 — Reproducible Baseline**. Training and GUI work are intentionally deferred.
 
 ## Core thesis
 
-HIVEFRAME treats patch execution as a runtime concern rather than a collection of independently replicated models:
+- `EyeContract` assigns spatial, temporal, resolution, and semantic receptive
+  purposes without copying the full input for every eye.
+- Each eye emits a small `EyeObservation`.
+- Sensory Fusion creates a provenance-preserving `SharedVisualState`.
+- A deterministic compiler produces a `ComputePlan` for patch, token, block,
+  timestep, resolution, or cache candidates.
+- Backend adapters translate only supported selectors and preserve shared
+  model weights.
+- Boundary, temporal-cache, evaluator, and repair mechanisms remain safety
+  layers.
+- Every real claim is measured against M0 Single-Eye Cost Truth with all
+  observation and orchestration overhead included.
 
-- a central `SceneContract` expresses geometry, identity, depth, motion, and write permissions;
-- deterministic compilation turns the contract into patch-local work and dependency closures;
-- logical workers share base-model weights;
-- a boundary bus exchanges compact halo and semantic packets;
-- temporal cache decisions skip only work proven stable;
-- every run emits a receipt covering time, memory, transferred bytes, cache behavior, quality, hashes, and environment.
-
-The two decisive research questions are:
-
-1. How much of an existing video DiT's global computation can be localized in practice?
-2. Do skip, cache, and neighbor exchange save more work than orchestration costs?
+This is an architecture hypothesis, not a speedup claim. See
+[`docs/COMPOUND_EYE_HYPOTHESIS.md`](docs/COMPOUND_EYE_HYPOTHESIS.md) and the
+preserved
+[`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md).
+The official milestone sequence is the Compound I/O M0–M8 plan in
+[`ROADMAP.md`](ROADMAP.md); its evidence and advancement rules are normative in
+[`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
 
 ## Project rules
 
@@ -28,6 +43,8 @@ The two decisive research questions are:
 - Never hide seam defects with blur or count evaluator misses as successes.
 - Do not begin adapter training until structural savings, failure attribution, and measurable targets are demonstrated.
 - Escalate or fail explicitly when local execution is unsafe; never silently corrupt the full result.
+- Record unsupported metrics as `null` with status and reason; never invent a
+  zero.
 
 ## Initial backend strategy
 
@@ -73,6 +90,28 @@ hiveframe/
 └─ docs/
 ```
 
+Compound-eye reference packages live under:
+
+- `python/hive_eyes`;
+- `python/hive_fusion`;
+- `python/hive_visual_state`;
+- `python/hive_probes`.
+
+The four v0 interchange schemas are in `schemas/`. The reference path uses
+NumPy only and does not load Wan, Torch, CUDA, or model weights.
+
+## Model-free compound-eye probe
+
+```bash
+PYTHONPATH=python python -m hive_probes.compound_eye_v0 \
+  --seed 101 \
+  --output-dir reports/compound-eye-v0
+```
+
+This emits contracts, observations, shared state, compute plan, and an
+observation receipt. It does not satisfy an M0 backend gate or support a sparse
+speedup claim.
+
 ## First run target
 
 The scaffold does not download model weights or claim a working generation backend. M0 first establishes a deterministic receipt format and ten-prompt canonical baseline:
@@ -83,11 +122,63 @@ hiveframe baseline run --suite canonical-v0 --backend wan21
 
 Target configuration is in [`configs/research.example.yaml`](configs/research.example.yaml). CLI behavior is specified in [`docs/CLI_GOALS.md`](docs/CLI_GOALS.md).
 
+The implemented M0 preflight and receipt wrapper is documented in
+[`docs/M0_BASELINE.md`](docs/M0_BASELINE.md). It reports the exact model
+download plan without downloading weights:
+
+```bash
+python hiveframe_m0.py download-plan
+python hiveframe_m0.py preflight
+```
+
+After an approved model setup on a compatible NVIDIA CUDA host, M0 enforces:
+
+```bash
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID --plan
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID \
+  --expect-settings-hash SMOKE_SETTINGS_HASH_FROM_PLAN
+python hiveframe_m0.py run --profile smoke-cold-warm \
+  --prompt-id static-speaking-person --plan
+python hiveframe_m0.py run --profile smoke-cold-warm \
+  --prompt-id static-speaking-person \
+  --expect-settings-hash SETTINGS_HASH_FROM_PLAN
+python hiveframe_m0.py run-suite
+```
+
+Smoke execution requires a unique `--run-id`; any existing artifact with that
+ID blocks execution before preflight. Its model-free plan fixes repeat to one
+and prints the approval hash required by the execution command.
+
+`run` requires an explicit profile. `smoke-cold-warm` selects the 17-frame,
+4-step smoke cost with two in-process generations. The preserved
+`baseline-reproducibility` profile selects the 49-frame, 50-step baseline.
+`--plan` loads neither the model nor CUDA and prints the exact settings hash
+that must be approved and passed to the execution command.
+
+The ten-prompt suite cannot run before the smoke and same-seed cold/warm
+reproducibility gates pass.
+
+Use [`docs/M0_CUDA_HOST_HANDOFF.md`](docs/M0_CUDA_HOST_HANDOFF.md) to move this
+runner to an NVIDIA host, configure short external model/result paths, verify
+the approved revision, and collect the complete receipt bundle.
+
+The complete current-state Korean handoff for moving the repository,
+environment, pinned Wan code, and verified checkpoint to another PC is
+[`docs/M0_OTHER_PC_HANDOFF_KO.md`](docs/M0_OTHER_PC_HANDOFF_KO.md).
+
 ## Milestones
 
-M0 Reproducible Baseline → M1 Directed Regional Repair → M2 Patch Runtime Parity → M3 Neighbor-Sealed Patches → M4 Constraint-Compliant Generation → M5 Temporal Sparse Gain → M6 Closed-loop Local Repair → M7 Backend-Independent Runtime → M8 Creator MVP.
+M0 Single-Eye Cost Truth → M1 Eye Topology Ground Truth Lab → M2 Scout Eye and
+Adaptive Topology Planner → M3 Sensory Fusion and Dynamic Eye Activation → M4
+Perception-to-Compute Compiler → M5 Compound I/O Net Gain → M6 Closed-Loop
+Adaptive Retina → M7 Temporal Eye Swarm and Backend Independence → M8
+Commercial Compound Visual Engine.
 
-See [ROADMAP.md](ROADMAP.md) for exit criteria and Sprint A–E.
+See [ROADMAP.md](ROADMAP.md) for milestone questions and exit gates, and
+[Roadmap execution rules](docs/ROADMAP_EXECUTION_RULES.md) for the
+same-condition, complete-cost, safety, evidence, and publication policy. The
+earlier patch-centric milestones remain preserved as comparison and execution
+assets; they were not deleted.
 
 ## Success threshold for the sparse MVP
 
@@ -105,6 +196,7 @@ See [ROADMAP.md](ROADMAP.md) for exit criteria and Sprint A–E.
 - [Project charter](PROJECT_CHARTER.md)
 - [Architecture](ARCHITECTURE.md)
 - [Roadmap](ROADMAP.md)
+- [Roadmap execution rules](docs/ROADMAP_EXECUTION_RULES.md)
 - [Evaluation and benchmark protocol](docs/EVALUATION.md)
 - [Risk, pivot, and IP notes](docs/RISKS_AND_IP.md)
 - [CLI goals](docs/CLI_GOALS.md)

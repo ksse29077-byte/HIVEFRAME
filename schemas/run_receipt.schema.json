@@ -1,0 +1,441 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/run-receipt/compat.schema.json",
+  "title": "HIVEFRAME M0 RunReceipt compatibility schema",
+  "description": "Accepts immutable legacy v0.1 receipts and metadata-rich v0.2 receipts. Existing receipt files are never rewritten during migration.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "run_id",
+    "status",
+    "partial",
+    "profile",
+    "started_at",
+    "finished_at",
+    "backend",
+    "sample",
+    "settings",
+    "settings_hash",
+    "configuration_hash",
+    "command",
+    "timing",
+    "resources",
+    "artifacts",
+    "environment",
+    "unsupported_metrics",
+    "error"
+  ],
+  "properties": {
+    "schema_version": { "enum": ["0.1.0", "0.2.0"] },
+    "kind": { "const": "hiveframe.m0.run_receipt" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["blocked", "failed", "succeeded"] },
+    "partial": { "type": "boolean" },
+    "profile": {
+      "enum": [
+        "smoke",
+        "smoke-cold-warm",
+        "baseline-memory-admission",
+        "baseline-reproducibility",
+        "reproducibility",
+        "canonical"
+      ]
+    },
+    "run_kind": { "type": "string", "minLength": 1 },
+    "benchmark_eligibility": {
+      "type": "object",
+      "required": [
+        "benchmark_status",
+        "quality_eligible",
+        "speedup_comparison_eligible",
+        "official_baseline_eligible",
+        "memory_admission_eligible"
+      ],
+      "properties": {
+        "benchmark_status": { "type": "string", "minLength": 1 },
+        "quality_eligible": { "type": "boolean" },
+        "speedup_comparison_eligible": { "type": "boolean" },
+        "official_baseline_eligible": { "type": "boolean" },
+        "memory_admission_eligible": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "backend": { "type": "object" },
+    "sample": { "type": "object" },
+    "settings": { "type": "object" },
+    "settings_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "configuration_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "command": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "timing": { "type": "object" },
+    "resources": { "type": "object" },
+    "artifacts": { "type": "object" },
+    "environment": { "type": "object" },
+    "preflight": { "type": "object" },
+    "reproducibility": { "type": "object" },
+    "unsupported_metrics": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "error": {
+      "type": ["object", "null"]
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "measurement": {
+      "type": "object",
+      "required": [
+        "value",
+        "unit",
+        "scope",
+        "measurement_method",
+        "aggregation",
+        "support_status",
+        "unsupported_reason",
+        "parent_span",
+        "run_label",
+        "repeat_index"
+      ],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "unit": { "type": "string", "minLength": 1 },
+        "scope": { "type": "string", "minLength": 1 },
+        "measurement_method": { "type": "string", "minLength": 1 },
+        "aggregation": { "type": "string", "minLength": 1 },
+        "support_status": {
+          "enum": [
+            "supported",
+            "unsupported",
+            "not_collected",
+            "not_applicable"
+          ]
+        },
+        "unsupported_reason": { "type": ["string", "null"] },
+        "parent_span": { "type": ["string", "null"] },
+        "run_label": { "type": ["string", "null"] },
+        "repeat_index": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "support_status": { "const": "supported" }
+            },
+            "required": ["support_status"]
+          },
+          "then": {
+            "properties": {
+              "value": { "type": "number" },
+              "unsupported_reason": { "type": "null" }
+            }
+          },
+          "else": {
+            "properties": {
+              "value": { "type": "null" },
+              "unsupported_reason": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "timingV2": {
+      "type": "object",
+      "required": [
+        "cli_python_process_wall",
+        "cli_to_receipt_wall",
+        "runner_child_process_wall",
+        "instrumented_child_process_wall",
+        "setup_finalization_wall",
+        "unattributed_wall",
+        "model_load",
+        "runs",
+        "span_relationships",
+        "process_cuda_event_span",
+        "process_gpu_kernel",
+        "profiling_contract"
+      ],
+      "properties": {
+        "cli_python_process_wall": { "$ref": "#/$defs/measurement" },
+        "cli_to_receipt_wall": { "$ref": "#/$defs/measurement" },
+        "runner_child_process_wall": { "$ref": "#/$defs/measurement" },
+        "instrumented_child_process_wall": { "$ref": "#/$defs/measurement" },
+        "setup_finalization_wall": { "$ref": "#/$defs/measurement" },
+        "unattributed_wall": { "$ref": "#/$defs/measurement" },
+        "model_load": {
+          "type": "object",
+          "required": ["wall", "cuda_event_span", "gpu_kernel"],
+          "properties": {
+            "wall": { "$ref": "#/$defs/measurement" },
+            "cuda_event_span": { "$ref": "#/$defs/measurement" },
+            "gpu_kernel": { "$ref": "#/$defs/measurement" }
+          }
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "label",
+              "repeat_index",
+              "run_wall",
+              "unattributed_wall",
+              "prompt_encode",
+              "denoising",
+              "vae_decode",
+              "generation",
+              "video_encode"
+            ],
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "repeat_index": { "type": "integer", "minimum": 0 },
+              "run_wall": { "$ref": "#/$defs/measurement" },
+              "unattributed_wall": { "$ref": "#/$defs/measurement" },
+              "prompt_encode": {
+                "type": "object",
+                "required": ["wall", "cuda_event_span", "calls"],
+                "properties": {
+                  "wall": { "$ref": "#/$defs/measurement" },
+                  "cuda_event_span": { "$ref": "#/$defs/measurement" },
+                  "calls": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["label", "wall", "cuda_event_span"],
+                      "properties": {
+                        "label": { "type": "string" },
+                        "wall": { "$ref": "#/$defs/measurement" },
+                        "cuda_event_span": {
+                          "$ref": "#/$defs/measurement"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "denoising": {
+                "type": "object",
+                "required": ["wall", "cuda_event_span", "steps"],
+                "properties": {
+                  "wall": { "$ref": "#/$defs/measurement" },
+                  "cuda_event_span": { "$ref": "#/$defs/measurement" },
+                  "steps": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "index",
+                        "model_forward_calls",
+                        "wall",
+                        "cuda_event_span"
+                      ],
+                      "properties": {
+                        "index": { "type": "integer", "minimum": 0 },
+                        "model_forward_calls": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "wall": { "$ref": "#/$defs/measurement" },
+                        "cuda_event_span": {
+                          "$ref": "#/$defs/measurement"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "vae_decode": {
+                "type": "object",
+                "required": ["wall", "cuda_event_span"],
+                "properties": {
+                  "wall": { "$ref": "#/$defs/measurement" },
+                  "cuda_event_span": { "$ref": "#/$defs/measurement" }
+                }
+              },
+              "generation": {
+                "type": "object",
+                "required": [
+                  "wall",
+                  "cuda_event_span",
+                  "gpu_kernel",
+                  "unattributed_wall"
+                ],
+                "properties": {
+                  "wall": { "$ref": "#/$defs/measurement" },
+                  "cuda_event_span": { "$ref": "#/$defs/measurement" },
+                  "gpu_kernel": { "$ref": "#/$defs/measurement" },
+                  "unattributed_wall": { "$ref": "#/$defs/measurement" }
+                }
+              },
+              "video_encode": {
+                "type": "object",
+                "required": ["wall", "cuda_event_span", "gpu_kernel"],
+                "properties": {
+                  "wall": { "$ref": "#/$defs/measurement" },
+                  "cuda_event_span": { "$ref": "#/$defs/measurement" },
+                  "gpu_kernel": { "$ref": "#/$defs/measurement" }
+                }
+              }
+            }
+          }
+        },
+        "span_relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["parent", "child"],
+            "properties": {
+              "parent": { "type": "string" },
+              "child": { "type": "string" }
+            }
+          }
+        },
+        "process_cuda_event_span": { "$ref": "#/$defs/measurement" },
+        "process_gpu_kernel": { "$ref": "#/$defs/measurement" },
+        "profiling_contract": {
+          "type": "object",
+          "required": [
+            "official_wall_clock_eligible",
+            "kernel_profiler_mode",
+            "overhead_disclosure"
+          ]
+        }
+      }
+    },
+    "resourcesV2": {
+      "type": "object",
+      "required": ["process", "runs", "host_ram", "allocator"],
+      "properties": {
+        "process": {
+          "type": "object",
+          "required": [
+            "peak_vram_allocated",
+            "peak_vram_reserved",
+            "final_current_vram_allocated",
+            "final_current_vram_reserved",
+            "nvidia_system_sampled_peak",
+            "average_gpu_utilization"
+          ],
+          "properties": {
+            "peak_vram_allocated": { "$ref": "#/$defs/measurement" },
+            "peak_vram_reserved": { "$ref": "#/$defs/measurement" },
+            "final_current_vram_allocated": { "$ref": "#/$defs/measurement" },
+            "final_current_vram_reserved": { "$ref": "#/$defs/measurement" },
+            "nvidia_system_sampled_peak": { "$ref": "#/$defs/measurement" },
+            "average_gpu_utilization": { "$ref": "#/$defs/measurement" }
+          }
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "label",
+              "repeat_index",
+              "generation_peak_vram_allocated",
+              "generation_peak_vram_reserved",
+              "generation_end_current_vram_allocated",
+              "generation_end_current_vram_reserved"
+            ],
+            "properties": {
+              "generation_peak_vram_allocated": {
+                "$ref": "#/$defs/measurement"
+              },
+              "generation_peak_vram_reserved": {
+                "$ref": "#/$defs/measurement"
+              },
+              "generation_end_current_vram_allocated": {
+                "$ref": "#/$defs/measurement"
+              },
+              "generation_end_current_vram_reserved": {
+                "$ref": "#/$defs/measurement"
+              }
+            }
+          }
+        },
+        "host_ram": {
+          "type": "object",
+          "required": [
+            "main_process_peak_rss",
+            "child_process_peak_rss",
+            "process_tree_peak_rss"
+          ],
+          "properties": {
+            "main_process_peak_rss": { "$ref": "#/$defs/measurement" },
+            "child_process_peak_rss": { "$ref": "#/$defs/measurement" },
+            "process_tree_peak_rss": { "$ref": "#/$defs/measurement" }
+          }
+        },
+        "allocator": {
+          "type": "object",
+          "required": [
+            "allocator_backend",
+            "pytorch_alloc_conf",
+            "pytorch_cuda_alloc_conf_alias",
+            "device_total_memory_bytes",
+            "pool_statistics",
+            "support_status",
+            "unsupported_reason",
+            "measurement_method",
+            "scope"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": { "const": "baseline-memory-admission" }
+        },
+        "required": ["profile"]
+      },
+      "then": {
+        "required": ["run_kind", "benchmark_eligibility"],
+        "properties": {
+          "run_kind": { "const": "baseline memory admission probe" },
+          "benchmark_eligibility": {
+            "properties": {
+              "benchmark_status": { "const": "safety_test" },
+              "quality_eligible": { "const": false },
+              "speedup_comparison_eligible": { "const": false },
+              "official_baseline_eligible": { "const": false },
+              "memory_admission_eligible": { "const": true }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": { "const": "0.2.0" }
+        },
+        "required": ["schema_version"]
+      },
+      "then": {
+        "properties": {
+          "timing": { "$ref": "#/$defs/timingV2" },
+          "resources": { "$ref": "#/$defs/resourcesV2" }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}

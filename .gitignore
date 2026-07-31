@@ -19,9 +19,13 @@ Thumbs.db
 *.ckpt
 *.pt
 *.pth
-models/
+/models/
+/vendor/
 outputs/
 reports/*.json
 reports/*.mp4
+reports/**/*.json
+reports/**/*.log
+reports/**/*.mp4
 benchmarks/canonical_clips/*
 !benchmarks/canonical_clips/README.md

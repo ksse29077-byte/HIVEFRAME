@@ -1,0 +1,69 @@
+{
+  "record_id": "model-wan21-t2v-1.3b-37ec512",
+  "status": "approved_for_research_baseline",
+  "reviewed_at": "2026-07-30",
+  "scope": "M0 reproducible research baseline only",
+  "artifact": {
+    "type": "model_checkpoint",
+    "name": "Wan 2.1 T2V 1.3B",
+    "repository": "Wan-AI/Wan2.1-T2V-1.3B",
+    "source_url": "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B",
+    "revision": "37ec512624d61f7aa208f7ea8140a131f93afc9a",
+    "expected_repository_bytes": 17573837064,
+    "gated": false,
+    "private": false
+  },
+  "official_code": {
+    "repository": "https://github.com/Wan-Video/Wan2.1",
+    "revision": "9737cba9c1c3c4d04b33fcad41c111989865d315",
+    "license": {
+      "spdx": "Apache-2.0",
+      "source_url": "https://github.com/Wan-Video/Wan2.1/blob/9737cba9c1c3c4d04b33fcad41c111989865d315/LICENSE.txt",
+      "commercial_use": true,
+      "modification": true,
+      "redistribution": true,
+      "notice_file_present_at_revision": false
+    }
+  },
+  "checkpoint_license": {
+    "spdx": "Apache-2.0",
+    "source_url": "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B/blob/37ec512624d61f7aa208f7ea8140a131f93afc9a/LICENSE.txt",
+    "model_card_url": "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B",
+    "copyright_license_verified": true,
+    "commercial_use_under_license": true,
+    "modification_under_license": true,
+    "redistribution_conditions": [
+      "Provide a copy of the Apache-2.0 license.",
+      "Mark modified files prominently.",
+      "Retain applicable copyright, patent, trademark, and attribution notices.",
+      "Preserve NOTICE attributions if a NOTICE file is distributed."
+    ],
+    "trademark_grant": false,
+    "warranty": "none",
+    "notice_file_present_at_revision": false
+  },
+  "additional_model_card_use_conditions": {
+    "source": "Model card usage notice; separate from the Apache-2.0 license text",
+    "conditions": [
+      "The publisher claims no rights over generated content.",
+      "Users remain responsible for lawful and non-harmful use.",
+      "Do not use outputs to harm people or groups, maliciously expose personal information, spread misinformation, or target vulnerable populations."
+    ]
+  },
+  "provenance": {
+    "publisher": "Wan-AI / Wan Team",
+    "verification_method": "Official GitHub repository, Hugging Face model card, license file, repository API metadata, and pinned remote revisions.",
+    "verified_by": "Codex-assisted source verification",
+    "commercial_release_review_required": true
+  },
+  "download": {
+    "approved": true,
+    "approval_scope": "Exact official checkpoint and pinned revision only",
+    "completed": true,
+    "completed_at": "2026-07-30T07:55:47Z",
+    "local_destination": "/home/ksse2/ai/models/Wan2.1-T2V-1.3B",
+    "cache_destination": "/home/ksse2/ai/cache/huggingface",
+    "verification_receipt": "data_ledger/downloads/wan21_t2v_1_3b_37ec512.json",
+    "sha256_manifest": "data_ledger/models/wan21_t2v_1_3b_37ec512.sha256"
+  }
+}

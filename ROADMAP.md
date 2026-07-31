@@ -1,190 +1,300 @@
-# Roadmap
+# HIVEFRAME Compound I/O Roadmap
 
-The roadmap advances only when the prior milestone's evidence is recorded. M0 is the first implementation priority.
+Status: research roadmap
 
-## Milestones
+Architecture: compound-eye input observation and selective generation
 
-### M0 — Reproducible Baseline
+Evidence policy: no speedup claim before same-condition end-to-end proof
 
-Run the same pinned base model under identical conditions and record all cost and quality dimensions.
+## Product objective
 
-Exit criteria:
+HIVEFRAME does not optimize for the largest number of eyes. It chooses the
+safest Eye Topology with the lowest accepted-result cost, including a valid
+non-split `1×1 Mono Eye`.
 
-- Wan 2.1 1.3B checkpoint and code/license records admitted and pinned;
-- ten deterministic prompts run with fixed seeds and settings;
-- environment fingerprint and output hashes emitted;
-- wall time, GPU time, denoising step time, VAE time, peak VRAM, and host RAM recorded;
-- repeatability report distinguishes deterministic hashes from tolerated numeric variation;
-- no patch, cache, or training optimization mixed into baseline.
+```text
+T* = argmin_T (
+  C_scout
+  + C_eyes(T)
+  + C_fusion(T)
+  + C_generation(T)
+  + C_boundary(T)
+  + C_audit(T)
+  + E[C_repair_and_fallback | T]
+)
+```
 
-### M1 — Directed Regional Repair
+Topology `T` may choose eye count, receptive fields, spatial resolution,
+temporal windows and stride, semantic roles, overlap, activation policy,
+backend selectors, and fallback scope.
 
-Modify only a centrally specified region while preserving the remainder.
+The cheapest candidate is admissible only when it satisfies declared quality,
+identity, geometry, constraint, memory, false-stable, license, and failure
+safety limits. The initial false-stable target remains at or below 0.5% and
+relative quality loss at or below 2%; later changes require recorded evidence.
 
-Exit criteria:
+## Non-negotiable principles
 
-- scene graph and box/mask/depth contract validated;
-- target patch write permission enforced;
-- non-target change measured and below the declared threshold;
-- one-object deletion, clothing change, background replacement, and face-preserving lip edit evaluated.
+- **Mono is valid.** Do not split when 1×1 is safer or cheaper.
+- **Measure before learning.** Build cost and safety ground truth before
+  training a topology planner.
+- **No fake speedup.** Include scout, observation, fusion, planning, boundary,
+  audit, repair, fallback, VAE, and output costs.
+- **Global safety path.** Retain low-cost whole-scene awareness.
+- **Uncertainty blocks skip.** Promote or recompute uncertain work.
+- **Reversible topology.** Every choice can escalate to a safer topology or
+  full computation.
+- **Backend truthfulness.** Unsupported selectors remain `unsupported`.
+- **M0 is immutable evidence.** Compound-eye work cannot weaken or reinterpret
+  the pinned baseline.
+- **Every decision has provenance.** Record why work was observed, selected,
+  skipped, promoted, repaired, or failed.
 
-### M2 — Patch Runtime Parity
+Detailed execution rules are normative in
+[`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
 
-When every patch executes, match full-frame quality.
+## M0 — Single-Eye Cost Truth
 
-Exit criteria:
+### Question
 
-- full-vs-patch parity under the same backend, resolution, steps, and seed;
-- patch and boundary costs separated;
-- no meaningful increase in global quality loss, flicker, geometry errors, or seams.
+What does the complete pinned Wan path cost when the input is handled as one
+whole-scene observation and one full generation path?
 
-### M3 — Neighbor-Sealed Patches
+### Preserved evidence
 
-Resolve seams through bounded neighbor communication and central escalation.
+- official Wan 2.1 T2V 1.3B code, checkpoint, and license pins;
+- validated RTX 3060 WSL CUDA/BF16/FlashAttention environment;
+- Smoke and regression Smoke;
+- cold/warm and same-seed reproducibility;
+- Receipt 0.2.0 measurement-scope corrections;
+- 49-frame memory-admission safety result.
 
-Exit criteria:
+### Remaining work
 
-- `BoundaryPacket v0` and receipt implemented;
-- halo-width study completed;
-- two-round reconciliation works;
-- unresolved semantic conflicts promote safely.
+- complete the eligible canonical same-condition baseline;
+- add input decode, resize/crop/normalization, input bytes, conditioning,
+  host-to-device transfer, and input-side peak memory scopes;
+- publish a Single-Eye Cost Table by resolution, frames, and scene class.
 
-### M4 — Constraint-Compliant Generation
+### Exit gate
 
-Numerically obey object size, placement, landmarks, count, depth, distance, and symmetry commands.
+All costs from input through output are attributable and reproducible. No
+compound-eye optimization is mixed into the baseline.
 
-Exit criteria:
+## M1 — Eye Topology Ground Truth Lab
 
-- synthetic constraint suite passes at least 95%;
-- mask, depth, and pose enforcement measured independently;
-- failed local repairs promote scope rather than corrupting other regions.
+### Question
 
-### M5 — Temporal Sparse Gain
+Which topology is safest and cheapest for each input class?
 
-Skip unchanged work and obtain real end-to-end acceleration.
+### Experiment
 
-Exit criteria:
+Admit at least 12 small rights-cleared clips covering:
 
-- at least 1.5× end-to-end speedup against the identical backend baseline;
-- no more than 2% relative quality loss or blind-test non-inferiority;
-- at least 50% average interior skip on the static suite;
-- false skips at or below 0.5%;
-- no meaningful seam increase;
-- scene-cut invalidation and periodic refresh verified;
-- orchestration and communication included in wall time.
+- static background and local face/hand motion;
+- pan, zoom, shake, and scene cut;
+- multiple objects, occlusion, reflection, hair, smoke, and lighting change.
 
-### M6 — Closed-loop Local Repair
+Create oracle dirty masks and scene-cut labels. Compare at least:
 
-Automatically locate errors and regenerate the smallest safe scope.
+- T0: 1×1 Mono Eye;
+- T1: global low-resolution + fixed 2×2 regional eyes;
+- T2: global + fixed 4×4 regional eyes;
+- T3: adaptive quadtree eyes;
+- T4: object-centered eyes;
+- T5: motion-centered eyes;
+- T6: multi-resolution eyes;
+- T7: mixed spatial and temporal topology.
 
-Exit criteria:
+Measure observation/fusion/coordinate time, bytes, active eyes, overlap,
+dirty precision/recall, false-stable rate, uncertainty coverage, process-tree
+RAM, and complete topology cost.
 
-- evaluator routes defects by type;
-- scope expands strip → patch → object → frame;
-- repair overhead and non-target change are recorded;
-- max rounds and terminal failure are explicit.
+### Exit gate
 
-### M7 — Backend-Independent Runtime
+Produce a Topology Cost Surface and oracle topology label per input. Evidence
+must show that 1×1 wins where splitting is wasteful and that another topology
+wins safely on at least one declared class. No model speedup claim is allowed.
 
-Run one control plane on at least two backends, selected from Wan and LTX.
+## M2 — Scout Eye and Adaptive Topology Planner
 
-Exit criteria:
+### Question
 
-- common backend capability contract and compatibility matrix;
-- the same scene contract and receipt semantics on both backends;
-- architecture benefit persists or its backend-specific limits are documented.
+Can a cheap scout choose near-oracle topology without executing every
+candidate?
 
-### M8 — Creator MVP
+### Work
 
-Allow a user to create a scene, correct a selected region, and export the result.
+Start with deterministic rules using resolution, frames, thumbnail, motion
+concentration, camera motion, texture, object candidates, scene cuts, user
+intent, hardware memory, load, and backend capabilities.
 
-Exit criteria:
+Only after sufficient M1 receipts may a small cost predictor be evaluated.
+Measure topology regret:
 
-- minimal creator workflow over stable CLI/runtime primitives;
-- generation, targeted correction, progress, receipt, and export;
-- explicit license provenance and failure messages.
+```text
+Topology Regret = Cost(selected topology) - Cost(oracle topology)
+```
 
-## First execution backlog
+### Exit gate
 
-### Sprint A — Repository and baseline → M0
+- median topology regret at or below 15%;
+- p90 regret at or below 30%;
+- scout and planning cost do not consume expected savings;
+- conservative choice under uncertainty;
+- reliable 1×1 selection on simple or low-resolution inputs.
 
-- [ ] Create independent repository.
-- [ ] Define project name and scope.
-- [ ] Install and pin Wan 2.1 1.3B only after license admission.
-- [ ] Run ten deterministic prompts.
-- [ ] Emit latency and VRAM receipts.
-- [ ] Create model/license manifest.
-- [ ] Record output hashes and environment fingerprint.
+## M3 — Sensory Fusion and Dynamic Eye Activation
 
-### Sprint B — External supervision → M1
+### Question
 
-- [ ] Define scene graph schema.
-- [ ] Compile box, mask, and depth contract.
-- [ ] Render a 2×2 patch overlay.
-- [ ] Apply video-to-video modification to one patch.
-- [ ] Measure non-target region change.
-- [ ] Implement seam detector v0.
+Can multiple observations preserve global relationships without becoming a
+new full-frame bottleneck?
 
-### Sprint C — Denoising hook → M2
+### Work
 
-- [ ] Add scheduler-step callback.
-- [ ] Save latent snapshots.
-- [ ] Run patch-freeze experiment.
-- [ ] Compare full path and hook parity.
-- [ ] Analyze change by timestep.
-- [ ] Identify reusable feature candidates.
+- normalize spatial and temporal coordinates;
+- preserve observation provenance;
+- calibrate confidence and propagate uncertainty;
+- reconcile object identity and global/local conflicts;
+- activate neighbors as objects cross boundaries;
+- reduce observation frequency for proven-stable regions;
+- invalidate topology and cache safely on scene cuts.
 
-### Sprint D — Workers and boundaries → M3
+### Exit gate
 
-- [ ] Implement logical worker queue.
-- [ ] Define `BoundaryPacket v0`.
-- [ ] Study halo width.
-- [ ] Implement two-round neighbor reconciliation.
-- [ ] Add central escalation.
-- [ ] Emit boundary receipt.
+Dirty recall targets at least 99.5%, false-stable remains at or below 0.5%,
+canonical scene cuts are not missed, provenance is complete, and fusion cost
+does not erase the measured opportunity.
 
-### Sprint E — Temporal sparse MVP → M5
+## M4 — Perception-to-Compute Compiler
 
-- [ ] Warp previous latent.
-- [ ] Measure patch delta.
-- [ ] Freeze static patches.
-- [ ] Support boundary-only dirty state.
-- [ ] Invalidate on scene cuts.
-- [ ] Publish baseline speed and quality report.
+### Question
 
-M4 constraint work proceeds from the contract foundations in Sprints B–D and must be satisfied before M5 is declared complete.
+Can observations be compiled into safe backend work and write permissions?
 
-## Development order
+```text
+InputProfile
+  → EyeTopology
+  → EyeObservation[]
+  → SharedVisualState
+  → ComputePlan
+  → Backend selector adapter
+```
 
-### Must happen first
+### Work
 
-1. Baseline reproduction.
-2. Model license pinning.
-3. Scheduler-step hook.
-4. Patch and boundary quality measurement.
-5. Proof that actual computation decreases.
-6. Central contract schema.
-7. Synthetic constraint tests.
-8. Temporal cache.
+Classify patch, latent, VAE tile, token, block, timestep, resolution,
+attention, and cache selectors as `supported`, `experimental`, or
+`unsupported` per backend. Preserve full-compute fallback and full-compute
+parity before enabling skip.
 
-### Later
+The first product-oriented experiment is directed local editing that changes
+only an authorized region while preserving the remainder.
 
-Polished GUI, broad large-model support, worker conversation, feature-film generation, foundation pretraining, mobile deployment, and wholesale custom kernels.
+### Exit gate
 
-## Stop and pivot rules
+At least one selector maps to demonstrably less backend work in a diagnostic
+run, unsupported selectors promote or fail explicitly, and M0 regression
+fingerprints remain intact. This is feasibility, not an official speed claim.
 
-Stop deep patch integration for the current backend when repeated evidence shows:
+## M5 — Compound I/O Net Gain
 
-- global attention is mandatory across major layers and patch-local work cannot reduce computation;
-- communication plus coordination exceeds saved compute;
-- quality remains degraded even at practical grids of 4×4 or coarser;
-- temporal drift cannot be controlled for stable patch skips;
-- speedups repeatedly remain at or below 1.2×.
+### Question
 
-Pivot instead of ending the project when:
+Does better observation produce real generation savings after every added
+cost?
 
-- only multi-GPU improves → define a server parallel runtime;
-- generation acceleration is weak but repair is strong → become an AI video editor;
-- constraint compliance is strong but speedup is weak → become a precision-control creator;
-- Wan hooks are difficult while LTX control is accessible → change backend priority;
-- token/head sparsity beats spatial patching → schedule semantic token groups.
+### Required comparison
+
+Use the same checkpoint, resolution, frames, FPS, steps, scheduler, precision,
+seed policy, VAE scope, hardware class, and eligibility rules as M0.
+
+### Provisional exit gate
+
+- median end-to-end improvement of at least 1.2× on the eligible suite;
+- at least 1.5× on the declared static/local-motion subset;
+- actual GPU-kernel time or token/block operations decrease;
+- relative quality loss stays within 2% or blind-test non-inferiority;
+- false skips stay at or below 0.5%;
+- repair and fallback costs are included;
+- gains repeat outside curated static scenes.
+
+If orchestration exceeds savings, quality degrades, fallback dominates, or
+global attention prevents locality, stop deep integration for that backend or
+pivot the selector granularity.
+
+## M6 — Closed-Loop Adaptive Retina
+
+### Question
+
+Can output evidence safely change the next observation and compute scope?
+
+```text
+observe
+→ compute
+→ audit output
+→ adapt topology
+→ reobserve/recompute the smallest safe closure
+```
+
+Promote through reobservation, boundary refresh, region, object, larger
+closure, and full-frame computation. Track accepted-edit cost, first-pass
+acceptance, silent-failure rate, repair overhead, fallback rate, and operator
+minutes saved.
+
+### Exit gate
+
+Accepted-result cost is lower than the full path with bounded retries,
+explicit terminal failure, and no unauthorized regional change.
+
+## M7 — Temporal Eye Swarm and Backend Independence
+
+### Work
+
+- immediate motion, object history, drift, scene transition, and predictive
+  temporal eyes;
+- online but reversible topology adaptation;
+- common `EyeContract`, `EyeObservation`, `SharedVisualState`, `ComputePlan`,
+  and receipt semantics on at least two backends;
+- backend-specific selector adapters only at the integration boundary.
+
+### Exit gate
+
+The same topology principles and failure semantics work on two backends.
+Backend differences are explicit and the benefit is not dependent on a hidden
+Wan-only shortcut.
+
+## M8 — Commercial Compound Visual Engine
+
+### Delivery order
+
+1. Python SDK and CLI;
+2. REST API;
+3. production-tool or node integration;
+4. minimal audit UI;
+5. creator or B2B product surface.
+
+### Product gate
+
+- at least one paid pilot;
+- at least 100 real customer videos processed;
+- target first-pass acceptance of 70% or better;
+- measurable operator-time or total-cost reduction of 30% or better;
+- known cost per accepted edit and positive GPU-inclusive margin;
+- repeat use intent and bounded customer-specific support.
+
+## Preserved legacy mapping
+
+| Legacy asset | Compound I/O role |
+|---|---|
+| Reproducible Baseline | M0 Single-Eye Cost Truth |
+| Directed Regional Repair | M4 local-edit track and M6 repair |
+| Patch Runtime Parity | M4 full-compute parity |
+| BoundaryPacket and halo | M3/M4 overlap reconciliation |
+| Temporal cache and false skip | M5–M7 selective reuse evidence |
+| Patch-centric architecture | preserved comparison design |
+
+The complete pre-rebase design remains in
+[`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md)
+and tag `pre-compound-eye-v1`.

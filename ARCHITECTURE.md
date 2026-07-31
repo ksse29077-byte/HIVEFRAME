@@ -1,202 +1,172 @@
 # Architecture
 
-## System view
+## Current architecture hypothesis
+
+HIVEFRAME is an input-observation and selective-generation runtime. It does not
+first treat every frame as one equally rich input and only later split output
+into patches.
 
 ```text
-Prompt / edit request / references
-                  │
-                  ▼
-              Director
-                  │ relationships and intent
-                  ▼
-            SceneContract
-                  │ schema validation
-                  ▼
-       Deterministic Constraint Compiler
-                  │ geometry, masks, depth, permissions
-                  ▼
- Dependency Graph + Affected Closure + Patch Scheduler
-          │             │                │
-          ├─────────────┼────────────────┤
-          ▼             ▼                ▼
-     Logical worker  Logical worker  Logical worker
-          │        shared model weights       │
-          └────────── Boundary Bus ────────────┘
-                         │
-                  Temporal Cache
-                         │
-         Evaluator + Repair Controller
-                         │
-               Receipt + artifacts
+input sequence + intent
+          |
+     EyeContract[]
+          |
+ purpose-specific logical eyes
+          |
+    EyeObservation[]
+          |
+     Sensory Fusion
+          |
+  SharedVisualState
+          |
+ ComputePlan compiler
+          |
+ patch | token | block | timestep | resolution | cache selectors
+          |
+ backend capability adapter
+          |
+ generation + boundary + evaluation + repair
+          |
+ receipts + artifacts
 ```
 
-## Control plane and data plane
+The detailed RFC is
+[`docs/COMPOUND_EYE_ARCHITECTURE.md`](docs/COMPOUND_EYE_ARCHITECTURE.md).
+The official delivery order and proof gates are
+[`ROADMAP.md`](ROADMAP.md) and
+[`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
+The prior output-side patch-centric design is preserved at
+[`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md)
+and tag `pre-compound-eye-v1`.
 
-### Control plane
+## Control plane and model plane
 
-The Rust control plane owns structures that should remain deterministic, portable, and model-independent:
+The deterministic control plane owns contracts, coordinate transforms,
+Sensory Fusion policy, state provenance, selector compilation, dependency and
+affected-closure rules, boundary and repair policy, ledgers, and receipts.
+These structures remain backend-neutral and are candidates for Rust after the
+reference contracts stabilize.
 
-- `SceneContract`;
-- constraint compiler;
-- dependency graph and affected closure;
-- patch scheduler;
-- boundary and repair policy;
-- temporal cache index;
-- receipts;
-- model-license and data ledgers;
-- command-line interface and future product orchestration.
+Python remains the initial observation and model-integration plane. The v0
+reference simulation uses only NumPy. Existing Wan/PyTorch M0 code remains
+unchanged and is not imported by the reference path.
 
-### Model data plane
-
-The first model worker remains Python/PyTorch because the backend ecosystem, Diffusers integration, Wan/LTX reference code, attention/scheduler hooks, and adapter training are PyTorch-centered. Starting Rust-only would make integration a larger bottleneck than the research.
-
-Initial process layout:
-
-```text
-One Python process
-├─ backend
-├─ scheduler/attention hooks
-├─ patch experiment logic
-└─ receipt adapter
-```
-
-Intermediate layout after structure is proven:
-
-```text
-Rust control plane
-        │ shared memory / FFI
-Python model worker
-        │
-CUDA device
-```
-
-Multi-GPU work must measure NCCL bytes. Replicated data parallelism is only a comparison baseline; the target is latent/token partitioning with boundary packets and previous-step features.
-
-## Core data contracts
+## Core contracts
 
 ### SceneContract
 
-The canonical scene state must be backend-neutral and schema-versioned. It includes:
+Scene intent remains the canonical source for objects, identities, landmarks,
+masks, boxes, depth, motion, camera, symmetry, count, distance, preserved
+regions, edit targets, and evaluator expectations.
 
-- canvas, frame range, and coordinate system;
-- objects, identities, landmarks, masks, boxes, and depth order;
-- motion and camera instructions;
-- symmetry, count, distance, and geometry constraints;
-- patch ownership and write permissions;
-- preserved regions and edit targets;
-- shared seed and conditioning references;
-- expected evaluator checks.
+### EyeContract
 
-An initial schema is provided in [`schemas/scene_contract.schema.json`](schemas/scene_contract.schema.json).
+Defines an eye's role, spatial/temporal receptive windows, sampling,
+local-to-global transform, write policy, and expected outputs.
 
-### BoundaryPacket
+### EyeObservation
 
-Version 0 should carry only bounded information:
+Carries small derived features, dirty/stable/uncertain reports, confidence,
+provenance, and explicit unsupported metrics. It is not a full-frame feature
+copy or generated output.
 
-- source and destination patch IDs;
-- timestep and latent-space edge;
-- halo strip or a compact feature reference;
-- position metadata;
-- semantic ownership/conflict hints;
-- uncertainty and checksum;
-- round number.
+### SharedVisualState
 
-Two neighbor reconciliation rounds are the initial maximum. Remaining disagreement escalates centrally.
+Carries global context and fused regional state while retaining every source
+observation and confidence. Conservative fusion converts missing or conflicting
+evidence into uncertainty.
+
+### ComputePlan
+
+Maps state to candidate generation, reuse, or reconciliation work. It can
+describe patch, token, block, timestep, resolution, and cache selectors without
+claiming the backend supports or economically benefits from them.
 
 ### RunReceipt
 
-Every baseline and experiment receipt must identify:
+Existing M0 RunReceipt behavior remains authoritative and unchanged:
 
-- source revision and dirty state;
-- backend, checkpoint digest, license record, runtime versions;
-- prompt/suite/config digests and random seed;
-- width, height, frames, fps, steps, scheduler, precision;
-- wall, GPU, denoising-step, VAE, communication, scheduler, and repair time;
-- peak VRAM, host RAM, utilization, transferred bytes, cache memory;
-- patch activity, skip, closure, cache, and false-skip measures;
-- quality and constraint results;
-- output hashes, environment fingerprint, warnings, escalation, and failure state.
+- schema 0.2.0 uses metadata-bearing measurements;
+- immutable 0.1.0 receipts remain accepted;
+- CUDA event spans are not GPU kernel-duration sums;
+- profiler kernel durations require a separate profiled path;
+- generation allocator, process allocator, NVIDIA sampling, and process-tree
+  RAM have distinct scopes;
+- unsupported metrics are `null` with status, reason, and method;
+- memory admission is not an official quality or speed baseline.
 
-## Execution sequence
+The model-free observation receipt is a different kind and cannot satisfy an
+M0 backend gate.
 
-1. Validate model and data admission.
-2. Compile input intent into a `SceneContract`.
-3. Build dependency graph and numeric constraints.
-4. Partition into object-aware adaptive patches.
-5. Compute affected closure and write permissions.
-6. Schedule logical workers against shared weights.
-7. Exchange boundary context for at most the configured rounds.
-8. Evaluate uncertainty, constraints, seams, and drift.
-9. Accept, refresh, or expand repair strip → patch → object → frame.
-10. Emit receipt and artifacts even on failure.
+## Reference data flow
 
-## Patching
+1. Validate a `[frames, height, width, channels]` NumPy sequence.
+2. Compile global, fixed 2×2 regional, overlap-boundary, and motion eye
+   contracts.
+3. Produce one observation per eye without Torch, CUDA, or model weights.
+4. Validate receptive and write scopes.
+5. Fuse observations while retaining source and confidence.
+6. Compile dirty→generate, stable→reuse candidate, and
+   uncertain→reconcile units.
+7. Hash contracts, observations, state, and plan in an observation receipt.
 
-Initial settings use a 2×2 grid, growing adaptively to at most 8×8 with object-aligned subdivision and a latent halo of 16. Minimum work size and merging protect against scheduling overhead. Complex regions subdivide; stable regions may merge.
+## Future backend flow
 
-Patch execution is not assumed independent. Head- and layer-level sparsity must be measured. If global attention dominates, experiments may use previous-step context, mixed resolution, a different backend, or semantic token groups instead of spatial patches.
+1. Validate model/data admission and the M0 Single-Eye Cost Truth comparator.
+2. Allow a scout to retain 1×1 Mono or propose a multi-eye topology.
+3. Query backend selector capabilities.
+4. Compile intent and observations.
+5. Build `SharedVisualState` and affected closure.
+6. Translate supported selectors; promote or reject unsupported selectors.
+7. Execute shared model weights without per-eye model replication.
+8. Exchange bounded context where required.
+9. Evaluate change, constraints, seams, drift, and false skips.
+10. Repair the smallest safe scope or fail explicitly.
+11. Emit complete receipts including all observation and orchestration costs.
 
-## Temporal cache
+## Retained patch, boundary, and cache mechanisms
 
-Freeze decisions combine:
-
-- warped previous latent/state;
-- latent delta;
-- semantic delta;
-- motion and object dependencies;
-- uncertainty;
-- periodic refresh;
-- object-level anchors;
-- scene-cut invalidation.
-
-Boundary-only dirty states permit halo refresh while interiors stay frozen. False skips and static-region drift are first-class metrics.
-
-## GPU optimization order
-
-1. Existing PyTorch operations.
-2. `torch.compile` and CUDA Graphs.
-3. Triton kernels for measured hotspots.
-4. CUDA C++ only when justified.
-5. Mojo only after a clear bottleneck is measured.
+Patches remain one possible execution selector. Boundary packets, object-aware
+ownership, halo exchange, temporal cache, scene-cut invalidation, periodic
+refresh, and repair promotion remain available after a plan selects work. The
+architecture does not assume patch independence or that patches are the best
+unit for every backend.
 
 ## Backend contract
 
-Each backend adapter must expose:
+Existing deterministic construction, pinned metadata, hooks, VAE timing,
+output hashing, and compatibility checks remain. A future extension will add
+explicit capability reporting for:
 
-- deterministic pipeline construction;
-- pinned model/checkpoint metadata;
-- scheduler-step callbacks;
-- latent snapshots;
-- VAE encode/decode timing;
-- attention or feature hooks when supported;
-- common conditioning inputs;
-- output hashing;
-- a compatibility test matrix.
+- patch selection;
+- token selection;
+- block selection;
+- timestep selection;
+- resolution selection;
+- cache reuse and refresh.
 
-Backend updates must not silently change behavior. Pinned versions and adapter contract tests guard hooks.
+Backend updates cannot silently alter M0 behavior or selector semantics.
 
 ## Module ownership
 
-| Module | Initial language | Responsibility |
-|---|---|---|
-| `hive-contracts` | Rust | versioned scene, boundary, receipt structures |
-| `hive-director` | Rust | relationship-level scene planning |
-| `hive-constraint-compiler` | Rust | numeric geometry and permissions |
-| `hive-patch-scheduler` | Rust | graph, closure, patch queue |
-| `hive-boundary-bus` | Rust | neighbor packets and escalation |
-| `hive-temporal-cache` | Rust | cache index and invalidation |
-| `hive-evaluator` | Rust + Python | metric contracts and model-backed evaluators |
-| `hive-cli` | Rust | stable command surface |
-| `hive_backends` | Python | Wan/LTX adapters |
-| `hive_hooks` | Python | scheduler, attention, latent capture |
-| `hive_training` | Python | gated LoRA/IC-LoRA experiments |
-| `hive_benchmarks` | Python | suites, measurements, comparisons |
+| Module | Responsibility |
+|---|---|
+| `hive_eyes` | purpose-specific input observation |
+| `hive_fusion` | deterministic Sensory Fusion |
+| `hive_visual_state` | coordinates, validators, state, and plan |
+| `hive_probes` | model-free and future backend feasibility probes |
+| `hive_backends` | pinned Wan/LTX adapters |
+| `hive_hooks` | existing scheduler, attention, and latent capture |
+| `hive_benchmarks` | M0 baselines, measurements, and comparisons |
+| `hive-contracts` | future stabilized Rust contract types |
+| `hive-evaluator` | quality, constraint, boundary, and drift evaluation |
 
 ## Safety and failure semantics
 
-- Invalid contracts fail before GPU work.
-- Unsupported backend hooks are explicit capability errors.
-- Boundary conflicts exceeding the round budget escalate.
-- Cache uncertainty triggers refresh.
-- Local repair cannot write outside compiled permissions.
-- Receipts record partial results, promotion scope, and failure causes.
+- invalid contracts fail before backend work;
+- bounded eyes cannot write outside their scopes;
+- fusion requires global context and one input identity;
+- uncertainty cannot be converted to stable without evidence;
+- unsupported selectors produce promotion or capability errors;
+- selective claims require same-condition M0 comparison;
+- failures emit partial evidence rather than silently degrading output.

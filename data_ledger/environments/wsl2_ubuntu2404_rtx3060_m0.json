@@ -1,0 +1,99 @@
+{
+  "schema_version": "0.1.0",
+  "captured_at": "2026-07-30T07:40:52.983770+00:00",
+  "purpose": "M0 model-free CUDA host qualification",
+  "model_downloaded": false,
+  "model_execution_performed": false,
+  "host": {
+    "distribution": "Ubuntu 24.04.4 LTS",
+    "wsl_version": 2,
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "linux_user": "ksse2",
+    "logical_cpu_count": 12,
+    "assigned_ram_bytes": 32386969600,
+    "swap_bytes": 8589934592
+  },
+  "python": {
+    "system_version": "3.12.3",
+    "isolated_version": "3.10.20",
+    "executable": "/home/ksse2/.venvs/hiveframe-m0/bin/python",
+    "prefix": "/home/ksse2/.local/python-3.10.20",
+    "source_sha256": "de6517421601e39a9a3bc3e1bc4c7b2f239297423ee05e282598c83ec0647505"
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3060",
+    "windows_driver_version": "610.88",
+    "compute_capability": "8.6",
+    "nvidia_smi_total_vram_mib": 12288,
+    "torch_total_vram_bytes": 12884377600
+  },
+  "runtime": {
+    "torch": "2.4.1+cu124",
+    "torchvision": "0.19.1+cu124",
+    "torch_cuda": "12.4",
+    "cudnn": 90100,
+    "cuda_toolkit_installed": false,
+    "flash_attn": "2.7.4.post1",
+    "flash_attn_wheel_sha256": "a8719a86d0cd12a105739151f9e45ac8c2ecb840a83ed7a080a88d1645a98440"
+  },
+  "validation": {
+    "torch_cuda_available": true,
+    "fp16_matmul_finite": true,
+    "torch_bf16_supported": true,
+    "bf16_matmul_finite": true,
+    "torchvision_import": true,
+    "diffusers_import": true,
+    "transformers_import": true,
+    "accelerate_import": true,
+    "flash_attn_import": true,
+    "flash_attn_bf16_shape": [
+      1,
+      128,
+      8,
+      64
+    ],
+    "flash_attn_bf16_finite": true,
+    "pip_check": "passed",
+    "m0_unit_tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "m0_preflight_ready": false,
+    "m0_preflight_blockers": [
+      "model_missing"
+    ],
+    "m0_preflight_warnings": []
+  },
+  "source_revisions": {
+    "hiveframe_base_commit": "c71ff25f46cb6cd5d6703eacf4781a23a6508242",
+    "wan21_code_commit": "9737cba9c1c3c4d04b33fcad41c111989865d315",
+    "wan21_code_clean": true,
+    "checkpoint_repository": "Wan-AI/Wan2.1-T2V-1.3B",
+    "checkpoint_revision": "37ec512624d61f7aa208f7ea8140a131f93afc9a"
+  },
+  "paths": {
+    "wan_code": "/home/ksse2/src/Wan2.1",
+    "proposed_model": "/home/ksse2/ai/models/Wan2.1-T2V-1.3B",
+    "proposed_huggingface_cache": "/home/ksse2/ai/cache/huggingface",
+    "report_root": "/home/ksse2/hiveframe-m0-state",
+    "proposed_model_path_exists": false,
+    "proposed_cache_path_exists": false
+  },
+  "storage": {
+    "linux_filesystem_total_bytes": 1081101176832,
+    "linux_filesystem_used_bytes": 12067241984,
+    "linux_filesystem_available_bytes": 1014041579520,
+    "setup_incremental_bytes": 10666201088,
+    "python_prefix_bytes": 232369624,
+    "virtual_environment_bytes": 6288043910,
+    "pip_cache_bytes": 3245092641,
+    "wan_source_bytes": 21931650
+  },
+  "lock_file": "python/requirements-m0.wsl2.lock.txt",
+  "notes": [
+    "The checkpoint and Hugging Face model files were not downloaded.",
+    "The proposed model and cache directories were not created.",
+    "The full CUDA Toolkit was not installed because a matching official FlashAttention wheel was available.",
+    "The only expected preflight blocker is model_missing."
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "hiveframe.model_download_receipt",
+  "status": "verified",
+  "verified_at": "2026-07-30T08:06:17.120683+00:00",
+  "artifact": {
+    "repository": "Wan-AI/Wan2.1-T2V-1.3B",
+    "revision": "37ec512624d61f7aa208f7ea8140a131f93afc9a",
+    "source": "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B",
+    "variant": "official checkpoint",
+    "local_path": "/home/ksse2/ai/models/Wan2.1-T2V-1.3B",
+    "cache_path": "/home/ksse2/ai/cache/huggingface"
+  },
+  "download": {
+    "first_file_completed_at": "2026-07-30T07:50:30Z",
+    "last_file_completed_at": "2026-07-30T07:55:47Z",
+    "payload_bytes": 17573837064,
+    "network_transfer_bytes_measured": false,
+    "network_transfer_note": "Payload size is exact; transport retries and protocol overhead were not instrumented.",
+    "payload_file_count": 22,
+    "local_metadata_file_count": 23,
+    "tree_file_count": 45,
+    "tree_apparent_bytes": 17573839664,
+    "tree_allocated_bytes": 17574035456,
+    "external_cache_apparent_bytes": 0,
+    "external_cache_allocated_bytes": 4096,
+    "disk_available_after_bytes": 996197502976
+  },
+  "revision_verification": {
+    "metadata_files_checked": 22,
+    "unique_revisions": [
+      "37ec512624d61f7aa208f7ea8140a131f93afc9a"
+    ],
+    "all_match_approved_revision": true
+  },
+  "completeness": {
+    "zero_byte_payload_files": 0,
+    "incomplete_or_lock_files": 0,
+    "config_json_valid": true,
+    "model_type": "t2v",
+    "model_class": "WanModel",
+    "required_files_present": true,
+    "required_files": [
+      "config.json",
+      "diffusion_pytorch_model.safetensors",
+      "Wan2.1_VAE.pth",
+      "models_t5_umt5-xxl-enc-bf16.pth",
+      "google/umt5-xxl/tokenizer.json",
+      "google/umt5-xxl/spiece.model"
+    ]
+  },
+  "key_file_verification": [
+    {
+      "path": "Wan2.1_VAE.pth",
+      "bytes": 507609880,
+      "sha256": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981",
+      "matches_pinned_value": true
+    },
+    {
+      "path": "diffusion_pytorch_model.safetensors",
+      "bytes": 5676070424,
+      "sha256": "96b6b242ca1c2f24e9d02cd6596066fab6d310e2d7538f33ae267cb18d957e8f",
+      "matches_pinned_value": true
+    },
+    {
+      "path": "models_t5_umt5-xxl-enc-bf16.pth",
+      "bytes": 11361920418,
+      "sha256": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d",
+      "matches_pinned_value": true
+    }
+  ],
+  "full_manifest": "data_ledger/models/wan21_t2v_1_3b_37ec512.sha256",
+  "file_size_and_sha256_manifest": "data_ledger/models/wan21_t2v_1_3b_37ec512.files.tsv",
+  "offline_verification": {
+    "hf_hub_offline": true,
+    "transformers_offline": true,
+    "local_files_only": true,
+    "snapshot_path": "/home/ksse2/ai/models/Wan2.1-T2V-1.3B",
+    "snapshot_discovery_succeeded": true,
+    "m0_preflight_ready": true,
+    "m0_preflight_blockers": [],
+    "m0_preflight_warnings": [],
+    "preflight_receipt": "/home/ksse2/hiveframe-m0-state/preflight.post-download.json"
+  },
+  "repository_safety": {
+    "model_is_outside_hiveframe_repository": true,
+    "model_path_git_tracked": false,
+    "checkpoint_extensions_ignored": [
+      "*.safetensors",
+      "*.pth"
+    ]
+  },
+  "execution_scope": {
+    "model_loaded": false,
+    "video_generated": false,
+    "smoke_run_performed": false,
+    "cold_warm_run_performed": false,
+    "canonical_suite_performed": false
+  },
+  "warnings": [
+    "The first short-lived download invocation left a duplicate process; after the identical pinned-revision retry completed and no regular files remained open, the orphaned process was terminated with SIGTERM.",
+    "Hugging Face local_dir stores 2,600 bytes of download metadata under the model tree; the separately assigned HF_HOME remained empty apart from its directory allocation.",
+    "Offline snapshot discovery returns the existing local_dir when remote access is disabled; completeness is therefore established by revision metadata, the full file manifest, required-file checks, and pinned large-file hashes."
+  ]
+}
