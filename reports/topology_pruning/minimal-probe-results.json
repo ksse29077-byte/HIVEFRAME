@@ -1,0 +1,909 @@
+{
+  "analytical_issue": 37,
+  "base_main_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "benchmark_status": "model_free_pre_gate",
+  "cuda_used": false,
+  "m0_completion_eligible": false,
+  "m1_completion_eligible": false,
+  "measurements": [
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 768,
+        "dirty_precision": 0.003125,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 245760,
+        "true_positive_pixels": 768
+      },
+      "calibration_profile": "low",
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "comparison": {
+        "absolute_error_seconds": 0.001161727,
+        "measured_S_required_seconds": 0.0,
+        "measured_seconds": 0.002788473,
+        "predicted_S_required_seconds": 0.0,
+        "predicted_seconds": 0.0039502,
+        "relative_error": 0.41661762548893244
+      },
+      "eye_count": 1,
+      "metrics": {
+        "allocation_count": {
+          "method": "requires coordinated allocator instrumentation",
+          "reason": "Python and NumPy allocators are not jointly instrumented.",
+          "status": "unsupported",
+          "unit": "allocations",
+          "value": null
+        },
+        "bytes_copied": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "bytes_processed": {
+          "method": "packed input length",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 3932160.0
+        },
+        "compute_plan_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 4.3314e-06
+        },
+        "coordinate_transform_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 2.12655e-06
+        },
+        "frames_per_second": {
+          "method": "frames divided by p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "frames/second",
+          "value": 5737.907449704551
+        },
+        "fusion_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 7.7733e-06
+        },
+        "logical_bytes_read": {
+          "method": "algorithmic read accounting",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 11304960.0
+        },
+        "observation_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0011682239
+        },
+        "overlap_ratio": {
+          "method": "extra receptive area / write area",
+          "reason": null,
+          "status": "collected",
+          "unit": "ratio",
+          "value": 0.0
+        },
+        "overlap_seconds_mean": {
+          "method": "not separately instrumented",
+          "reason": "The v0 reference has no isolated overlap timer.",
+          "status": "unavailable",
+          "unit": "seconds",
+          "value": null
+        },
+        "p50_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.002788473
+        },
+        "p95_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.002936252
+        },
+        "peak_rss_bytes": {
+          "method": "getrusage RUSAGE_SELF ru_maxrss",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 53317632.0
+        },
+        "process_cpu_seconds": {
+          "method": "time.process_time_ns mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0028431669500000004
+        },
+        "routing_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.03545e-05
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 3932160.0
+        },
+        "thread_count": {
+          "method": "threading.active_count after measured case",
+          "reason": null,
+          "status": "collected",
+          "unit": "threads",
+          "value": 1.0
+        },
+        "total_wall_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.00282771295
+        }
+      },
+      "repetitions": 20,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "d0eb1acb28d21e61c38e15009a701d5eefa812b71932149145500d9a1ceef7b7",
+      "warmups": 5
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.002916666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 2073600,
+        "true_positive_pixels": 6048
+      },
+      "calibration_profile": "high",
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "comparison": {
+        "absolute_error_seconds": 0.004006161999999999,
+        "measured_S_required_seconds": 0.0,
+        "measured_seconds": 0.014231538,
+        "predicted_S_required_seconds": 0.0,
+        "predicted_seconds": 0.0182377,
+        "relative_error": 0.28149887946053326
+      },
+      "eye_count": 1,
+      "metrics": {
+        "allocation_count": {
+          "method": "requires coordinated allocator instrumentation",
+          "reason": "Python and NumPy allocators are not jointly instrumented.",
+          "status": "unsupported",
+          "unit": "allocations",
+          "value": null
+        },
+        "bytes_copied": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "bytes_processed": {
+          "method": "packed input length",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 16588800.0
+        },
+        "compute_plan_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.0641450000000001e-05
+        },
+        "coordinate_transform_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 5.9016e-06
+        },
+        "frames_per_second": {
+          "method": "frames divided by p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "frames/second",
+          "value": 562.1317948910371
+        },
+        "fusion_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.680375e-05
+        },
+        "logical_bytes_read": {
+          "method": "algorithmic read accounting",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 45619200.0
+        },
+        "observation_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0071028841
+        },
+        "overlap_ratio": {
+          "method": "extra receptive area / write area",
+          "reason": null,
+          "status": "collected",
+          "unit": "ratio",
+          "value": 0.0
+        },
+        "overlap_seconds_mean": {
+          "method": "not separately instrumented",
+          "reason": "The v0 reference has no isolated overlap timer.",
+          "status": "unavailable",
+          "unit": "seconds",
+          "value": null
+        },
+        "p50_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.014231538
+        },
+        "p95_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.015505728
+        },
+        "peak_rss_bytes": {
+          "method": "getrusage RUSAGE_SELF ru_maxrss",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 120565760.0
+        },
+        "process_cpu_seconds": {
+          "method": "time.process_time_ns mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.014475278199999999
+        },
+        "routing_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 2.4047400000000003e-05
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 16588800.0
+        },
+        "thread_count": {
+          "method": "threading.active_count after measured case",
+          "reason": null,
+          "status": "collected",
+          "unit": "threads",
+          "value": 1.0
+        },
+        "total_wall_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.01445391745
+        }
+      },
+      "repetitions": 20,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "warmups": 5
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.011666666666666667,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 518400,
+        "true_positive_pixels": 6048
+      },
+      "calibration_profile": "high",
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "comparison": {
+        "absolute_error_seconds": 0.006158216000000001,
+        "measured_S_required_seconds": 0.0056163459999999995,
+        "measured_seconds": 0.019847884,
+        "predicted_S_required_seconds": 0.0032493,
+        "predicted_seconds": 0.0260061,
+        "relative_error": 0.3102706565596615
+      },
+      "eye_count": 5,
+      "metrics": {
+        "allocation_count": {
+          "method": "requires coordinated allocator instrumentation",
+          "reason": "Python and NumPy allocators are not jointly instrumented.",
+          "status": "unsupported",
+          "unit": "allocations",
+          "value": null
+        },
+        "bytes_copied": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "bytes_processed": {
+          "method": "packed input length",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 16588800.0
+        },
+        "compute_plan_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.18147e-05
+        },
+        "coordinate_transform_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 4.8613500000000005e-06
+        },
+        "frames_per_second": {
+          "method": "frames divided by p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "frames/second",
+          "value": 403.0656366189968
+        },
+        "fusion_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 2.42677e-05
+        },
+        "logical_bytes_read": {
+          "method": "algorithmic read accounting",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 62208000.0
+        },
+        "observation_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0126098934
+        },
+        "overlap_ratio": {
+          "method": "extra receptive area / write area",
+          "reason": null,
+          "status": "collected",
+          "unit": "ratio",
+          "value": 0.0
+        },
+        "overlap_seconds_mean": {
+          "method": "not separately instrumented",
+          "reason": "The v0 reference has no isolated overlap timer.",
+          "status": "unavailable",
+          "unit": "seconds",
+          "value": null
+        },
+        "p50_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.019847884
+        },
+        "p95_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.020626642
+        },
+        "peak_rss_bytes": {
+          "method": "getrusage RUSAGE_SELF ru_maxrss",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 120725504.0
+        },
+        "process_cpu_seconds": {
+          "method": "time.process_time_ns mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.019998699300000002
+        },
+        "routing_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 4.62e-05
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 16588800.0
+        },
+        "thread_count": {
+          "method": "threading.active_count after measured case",
+          "reason": null,
+          "status": "collected",
+          "unit": "threads",
+          "value": 1.0
+        },
+        "total_wall_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.01998139165
+        }
+      },
+      "repetitions": 20,
+      "runtime_topology": "uniform_2x2",
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "warmups": 5
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 6048,
+        "dirty_precision": 0.5013262599469496,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 12064,
+        "true_positive_pixels": 6048
+      },
+      "calibration_profile": "high",
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "comparison": {
+        "absolute_error_seconds": 0.007990810000000001,
+        "measured_S_required_seconds": 0.008364651999999998,
+        "measured_seconds": 0.02259619,
+        "predicted_S_required_seconds": 0.0044551,
+        "predicted_seconds": 0.030587,
+        "relative_error": 0.3536352809920611
+      },
+      "eye_count": 3,
+      "metrics": {
+        "allocation_count": {
+          "method": "requires coordinated allocator instrumentation",
+          "reason": "Python and NumPy allocators are not jointly instrumented.",
+          "status": "unsupported",
+          "unit": "allocations",
+          "value": null
+        },
+        "bytes_copied": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "bytes_processed": {
+          "method": "packed input length",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 16588800.0
+        },
+        "compute_plan_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.02064e-05
+        },
+        "coordinate_transform_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 5.8591e-06
+        },
+        "frames_per_second": {
+          "method": "frames divided by p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "frames/second",
+          "value": 354.0419867243106
+        },
+        "fusion_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 2.03069e-05
+        },
+        "logical_bytes_read": {
+          "method": "algorithmic read accounting",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 62304512.0
+        },
+        "observation_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.011383240900000001
+        },
+        "overlap_ratio": {
+          "method": "extra receptive area / write area",
+          "reason": null,
+          "status": "collected",
+          "unit": "ratio",
+          "value": 0.0
+        },
+        "overlap_seconds_mean": {
+          "method": "not separately instrumented",
+          "reason": "The v0 reference has no isolated overlap timer.",
+          "status": "unavailable",
+          "unit": "seconds",
+          "value": null
+        },
+        "p50_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.02259619
+        },
+        "p95_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.023748788
+        },
+        "peak_rss_bytes": {
+          "method": "getrusage RUSAGE_SELF ru_maxrss",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 120725504.0
+        },
+        "process_cpu_seconds": {
+          "method": "time.process_time_ns mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.02273013925
+        },
+        "routing_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0038437662000000003
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 16588800.0
+        },
+        "thread_count": {
+          "method": "threading.active_count after measured case",
+          "reason": null,
+          "status": "collected",
+          "unit": "threads",
+          "value": 1.0
+        },
+        "total_wall_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.022749110899999998
+        }
+      },
+      "repetitions": 20,
+      "runtime_topology": "motion_focused",
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "warmups": 5
+    },
+    {
+      "accuracy": {
+        "actual_dirty_pixels": 921600,
+        "dirty_precision": 1.0,
+        "dirty_recall": 1.0,
+        "false_stable_pixels": 0,
+        "false_stable_rate": 0.0,
+        "selected_dirty_pixels": 921600,
+        "true_positive_pixels": 921600
+      },
+      "calibration_profile": "medium",
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "comparison": {
+        "absolute_error_seconds": 0.0014848499999999994,
+        "measured_S_required_seconds": 0.0,
+        "measured_seconds": 0.01388995,
+        "predicted_S_required_seconds": 0.0,
+        "predicted_seconds": 0.0153748,
+        "relative_error": 0.10690103276109701
+      },
+      "eye_count": 1,
+      "metrics": {
+        "allocation_count": {
+          "method": "requires coordinated allocator instrumentation",
+          "reason": "Python and NumPy allocators are not jointly instrumented.",
+          "status": "unsupported",
+          "unit": "allocations",
+          "value": null
+        },
+        "bytes_copied": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "bytes_processed": {
+          "method": "packed input length",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 14745600.0
+        },
+        "compute_plan_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.044055e-05
+        },
+        "coordinate_transform_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 5.0486e-06
+        },
+        "frames_per_second": {
+          "method": "frames divided by p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "frames/second",
+          "value": 1151.9119939236643
+        },
+        "fusion_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.67883e-05
+        },
+        "logical_bytes_read": {
+          "method": "algorithmic read accounting",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 42393600.0
+        },
+        "observation_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0072664792
+        },
+        "overlap_ratio": {
+          "method": "extra receptive area / write area",
+          "reason": null,
+          "status": "collected",
+          "unit": "ratio",
+          "value": 0.0
+        },
+        "overlap_seconds_mean": {
+          "method": "not separately instrumented",
+          "reason": "The v0 reference has no isolated overlap timer.",
+          "status": "unavailable",
+          "unit": "seconds",
+          "value": null
+        },
+        "p50_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.01388995
+        },
+        "p95_latency_seconds": {
+          "method": "nearest_rank",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.014637817
+        },
+        "peak_rss_bytes": {
+          "method": "getrusage RUSAGE_SELF ru_maxrss",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 120725504.0
+        },
+        "process_cpu_seconds": {
+          "method": "time.process_time_ns mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.01392999865
+        },
+        "routing_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 1.741835e-05
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 14745600.0
+        },
+        "thread_count": {
+          "method": "threading.active_count after measured case",
+          "reason": null,
+          "status": "collected",
+          "unit": "threads",
+          "value": 1.0
+        },
+        "total_wall_seconds_mean": {
+          "method": "steady_clock_mean",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.013935634300000001
+        }
+      },
+      "repetitions": 20,
+      "runtime_topology": "mono_1x1",
+      "semantic_hash": "87e44a6030eebe66da68f680786dae3bde649f72db0623bb4733c16f74464d56",
+      "warmups": 5
+    }
+  ],
+  "model_loaded": false,
+  "official_m0_run_receipt": false,
+  "rankings": [
+    {
+      "case_id": "case-a-low-resolution-simple",
+      "measured_ranking": [
+        "T0"
+      ],
+      "predicted_ranking": [
+        "T0"
+      ],
+      "ranking_match": null,
+      "reason": "Analytical pruning left only the mandatory Mono comparator.",
+      "status": "unavailable_single_candidate"
+    },
+    {
+      "case_id": "case-b-high-resolution-local-change",
+      "measured_ranking": [
+        "T0",
+        "T1",
+        "T2"
+      ],
+      "predicted_ranking": [
+        "T0",
+        "T1",
+        "T2"
+      ],
+      "ranking_match": true,
+      "reason": null,
+      "status": "available"
+    },
+    {
+      "case_id": "case-c-global-motion",
+      "measured_ranking": [
+        "T0"
+      ],
+      "predicted_ranking": [
+        "T0"
+      ],
+      "ranking_match": null,
+      "reason": "Analytical pruning left only the mandatory Mono comparator.",
+      "status": "unavailable_single_candidate"
+    }
+  ],
+  "repetitions": 20,
+  "run_kind": "analytical_topology_pruning_probe",
+  "runner_wall_seconds": 2.185239213999992,
+  "rust_probe_issue_35_closed": true,
+  "rust_probe_merge_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "schema_version": "0.1.0",
+  "seed": 101,
+  "summary": {
+    "amdahl": {
+      "end_to_end_upper_bound": {
+        "method": "cannot evaluate 1/((1-f)+f/s) without f",
+        "reason": "Amdahl optimized fraction f_input is unavailable.",
+        "status": "unavailable",
+        "unit": "ratio",
+        "value": null
+      },
+      "f_input": {
+        "method": "not measured in M0 Single-Eye Cost Truth",
+        "reason": "M0 does not isolate eligible input/orchestration share.",
+        "status": "unavailable",
+        "unit": "ratio",
+        "value": null
+      },
+      "formula": "Speedup_max=1/((1-f_input)+f_input/s_control)",
+      "meaning": "Only the local control-plane speedup factor is available. No end-to-end Wan or product bound is asserted.",
+      "s_control": {
+        "maximum": 1.625342742364019,
+        "method": "merged Rust Probe Python p50 / Rust p50",
+        "minimum": 1.2331273022413687,
+        "status": "available"
+      },
+      "status": "partially_available"
+    },
+    "analytical_combinations": 9,
+    "decision": {
+      "decision": "REFINE_COST_MODEL",
+      "reason": "Prediction error repeatedly exceeded the predeclared refine limit."
+    },
+    "maximum_false_stable": 0.0,
+    "measured_combinations": 5,
+    "pruned_combinations": 4,
+    "repetitions": 20,
+    "warmups": 5
+  },
+  "warmups": 5
+}

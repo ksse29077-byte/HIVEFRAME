@@ -1,0 +1,1333 @@
+{
+  "analytical_issue": 37,
+  "base_main_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "benchmark_status": "model_free_pre_gate",
+  "cases": [
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0
+      },
+      "candidate_id": "T0",
+      "candidate_label": "Mono Eye",
+      "case_id": "case-a-low-resolution-simple",
+      "case_receipt": {
+        "calibration_profile": "low",
+        "case_id": "case-a-low-resolution-simple",
+        "expected": "Mono should dominate a small input with one local change.",
+        "frames": 16,
+        "height": 384,
+        "input_bytes": 3932160,
+        "input_pixels": 3932160,
+        "input_sha256": "353266b162b846a3e6c4c7b2e7186a04e027eb29b1d9c2aafe359cea51ce78f2",
+        "label": "Low-resolution Simple",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 32,
+              "width": 24,
+              "x": 324,
+              "y": 112
+            }
+          ],
+          "frames": 16,
+          "height": 384,
+          "profile_id": "case-a-low-resolution-simple",
+          "seed": 101,
+          "width": 640
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 768,
+        "spatial_dirty_ratio": 0.003125,
+        "width": 640
+      },
+      "geometry": {
+        "coordinate_transform_count": 1,
+        "eye_count": 1,
+        "full_canvas_generate_candidate": true,
+        "full_canvas_generate_reason": "The declared change activates a full-canvas generation scope.",
+        "fusion_input_count": 1,
+        "generation_scope_pixels": 245760,
+        "generation_scope_ratio": 1.0,
+        "generation_scopes": [
+          {
+            "height": 384,
+            "width": 640,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "input_bytes": 3932160,
+        "input_pixels": 3932160,
+        "input_spatial_pixels": 245760,
+        "observation_multiplier_vs_mono": 1.0,
+        "overlap_duplicate_bytes": 0,
+        "overlap_duplicate_pixels": 0,
+        "potential_generation_savings_ratio": 0.0,
+        "receptive_fields": [
+          {
+            "height": 384,
+            "width": 640,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "scheduler_call_count": 1,
+        "spatial_dirty_pixels": 768,
+        "spatial_dirty_ratio": 0.003125,
+        "total_observation_bytes": 3932160,
+        "total_observation_pixels": 3932160
+      },
+      "precheck": {
+        "evidence": {
+          "mandatory_comparator": true
+        },
+        "reason": "Mono is the mandatory comparator.",
+        "status": "retained_for_probe"
+      },
+      "runtime_topology": "mono_1x1"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0006069000000000001
+      },
+      "candidate_id": "T1",
+      "candidate_label": "Global + Fixed 2x2",
+      "case_id": "case-a-low-resolution-simple",
+      "case_receipt": {
+        "calibration_profile": "low",
+        "case_id": "case-a-low-resolution-simple",
+        "expected": "Mono should dominate a small input with one local change.",
+        "frames": 16,
+        "height": 384,
+        "input_bytes": 3932160,
+        "input_pixels": 3932160,
+        "input_sha256": "353266b162b846a3e6c4c7b2e7186a04e027eb29b1d9c2aafe359cea51ce78f2",
+        "label": "Low-resolution Simple",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 32,
+              "width": 24,
+              "x": 324,
+              "y": 112
+            }
+          ],
+          "frames": 16,
+          "height": 384,
+          "profile_id": "case-a-low-resolution-simple",
+          "seed": 101,
+          "width": 640
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 768,
+        "spatial_dirty_ratio": 0.003125,
+        "width": 640
+      },
+      "geometry": {
+        "coordinate_transform_count": 5,
+        "eye_count": 5,
+        "full_canvas_generate_candidate": false,
+        "full_canvas_generate_reason": null,
+        "fusion_input_count": 5,
+        "generation_scope_pixels": 61440,
+        "generation_scope_ratio": 0.25,
+        "generation_scopes": [
+          {
+            "height": 192,
+            "width": 320,
+            "x": 320,
+            "y": 0
+          }
+        ],
+        "input_bytes": 3932160,
+        "input_pixels": 3932160,
+        "input_spatial_pixels": 245760,
+        "observation_multiplier_vs_mono": 2.0,
+        "overlap_duplicate_bytes": 3932160,
+        "overlap_duplicate_pixels": 3932160,
+        "potential_generation_savings_ratio": 0.75,
+        "receptive_fields": [
+          {
+            "height": 384,
+            "width": 640,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 192,
+            "width": 320,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 192,
+            "width": 320,
+            "x": 320,
+            "y": 0
+          },
+          {
+            "height": 192,
+            "width": 320,
+            "x": 0,
+            "y": 192
+          },
+          {
+            "height": 192,
+            "width": 320,
+            "x": 320,
+            "y": 192
+          }
+        ],
+        "scheduler_call_count": 5,
+        "spatial_dirty_pixels": 768,
+        "spatial_dirty_ratio": 0.003125,
+        "total_observation_bytes": 7864320,
+        "total_observation_pixels": 7864320
+      },
+      "precheck": {
+        "evidence": {
+          "geometry": {
+            "coordinate_transform_count": 5,
+            "eye_count": 5,
+            "full_canvas_generate_candidate": false,
+            "full_canvas_generate_reason": null,
+            "fusion_input_count": 5,
+            "generation_scope_pixels": 61440,
+            "generation_scope_ratio": 0.25,
+            "generation_scopes": [
+              {
+                "height": 192,
+                "width": 320,
+                "x": 320,
+                "y": 0
+              }
+            ],
+            "input_bytes": 3932160,
+            "input_pixels": 3932160,
+            "input_spatial_pixels": 245760,
+            "observation_multiplier_vs_mono": 2.0,
+            "overlap_duplicate_bytes": 3932160,
+            "overlap_duplicate_pixels": 3932160,
+            "potential_generation_savings_ratio": 0.75,
+            "receptive_fields": [
+              {
+                "height": 384,
+                "width": 640,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 192,
+                "width": 320,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 192,
+                "width": 320,
+                "x": 320,
+                "y": 0
+              },
+              {
+                "height": 192,
+                "width": 320,
+                "x": 0,
+                "y": 192
+              },
+              {
+                "height": 192,
+                "width": 320,
+                "x": 320,
+                "y": 192
+              }
+            ],
+            "scheduler_call_count": 5,
+            "spatial_dirty_pixels": 768,
+            "spatial_dirty_ratio": 0.003125,
+            "total_observation_bytes": 7864320,
+            "total_observation_pixels": 7864320
+          },
+          "triggered_rules": [
+            {
+              "observed": 3932160,
+              "reason": "The declared small input does not justify split management.",
+              "rule": "small_input_management_cost",
+              "threshold": 3932160
+            }
+          ]
+        },
+        "reason": "The declared small input does not justify split management.",
+        "status": "analytically_pruned"
+      },
+      "runtime_topology": "uniform_2x2"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0006033000000000002
+      },
+      "candidate_id": "T2",
+      "candidate_label": "Global + Motion-focused Eye",
+      "case_id": "case-a-low-resolution-simple",
+      "case_receipt": {
+        "calibration_profile": "low",
+        "case_id": "case-a-low-resolution-simple",
+        "expected": "Mono should dominate a small input with one local change.",
+        "frames": 16,
+        "height": 384,
+        "input_bytes": 3932160,
+        "input_pixels": 3932160,
+        "input_sha256": "353266b162b846a3e6c4c7b2e7186a04e027eb29b1d9c2aafe359cea51ce78f2",
+        "label": "Low-resolution Simple",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 32,
+              "width": 24,
+              "x": 324,
+              "y": 112
+            }
+          ],
+          "frames": 16,
+          "height": 384,
+          "profile_id": "case-a-low-resolution-simple",
+          "seed": 101,
+          "width": 640
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 768,
+        "spatial_dirty_ratio": 0.003125,
+        "width": 640
+      },
+      "geometry": {
+        "coordinate_transform_count": 3,
+        "eye_count": 3,
+        "full_canvas_generate_candidate": false,
+        "full_canvas_generate_reason": null,
+        "fusion_input_count": 3,
+        "generation_scope_pixels": 1584,
+        "generation_scope_ratio": 0.0064453125,
+        "generation_scopes": [
+          {
+            "height": 44,
+            "width": 36,
+            "x": 318,
+            "y": 106
+          }
+        ],
+        "input_bytes": 3932160,
+        "input_pixels": 3932160,
+        "input_spatial_pixels": 245760,
+        "observation_multiplier_vs_mono": 2.0064453125,
+        "overlap_duplicate_bytes": 3957504,
+        "overlap_duplicate_pixels": 3957504,
+        "potential_generation_savings_ratio": 0.9935546875,
+        "receptive_fields": [
+          {
+            "height": 384,
+            "width": 640,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 384,
+            "width": 640,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 44,
+            "width": 36,
+            "x": 318,
+            "y": 106
+          }
+        ],
+        "scheduler_call_count": 3,
+        "spatial_dirty_pixels": 768,
+        "spatial_dirty_ratio": 0.003125,
+        "total_observation_bytes": 7889664,
+        "total_observation_pixels": 7889664
+      },
+      "precheck": {
+        "evidence": {
+          "geometry": {
+            "coordinate_transform_count": 3,
+            "eye_count": 3,
+            "full_canvas_generate_candidate": false,
+            "full_canvas_generate_reason": null,
+            "fusion_input_count": 3,
+            "generation_scope_pixels": 1584,
+            "generation_scope_ratio": 0.0064453125,
+            "generation_scopes": [
+              {
+                "height": 44,
+                "width": 36,
+                "x": 318,
+                "y": 106
+              }
+            ],
+            "input_bytes": 3932160,
+            "input_pixels": 3932160,
+            "input_spatial_pixels": 245760,
+            "observation_multiplier_vs_mono": 2.0064453125,
+            "overlap_duplicate_bytes": 3957504,
+            "overlap_duplicate_pixels": 3957504,
+            "potential_generation_savings_ratio": 0.9935546875,
+            "receptive_fields": [
+              {
+                "height": 384,
+                "width": 640,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 384,
+                "width": 640,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 44,
+                "width": 36,
+                "x": 318,
+                "y": 106
+              }
+            ],
+            "scheduler_call_count": 3,
+            "spatial_dirty_pixels": 768,
+            "spatial_dirty_ratio": 0.003125,
+            "total_observation_bytes": 7889664,
+            "total_observation_pixels": 7889664
+          },
+          "triggered_rules": [
+            {
+              "observed": 3932160,
+              "reason": "The declared small input does not justify split management.",
+              "rule": "small_input_management_cost",
+              "threshold": 3932160
+            }
+          ]
+        },
+        "reason": "The declared small input does not justify split management.",
+        "status": "analytically_pruned"
+      },
+      "runtime_topology": "motion_focused"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0
+      },
+      "candidate_id": "T0",
+      "candidate_label": "Mono Eye",
+      "case_id": "case-b-high-resolution-local-change",
+      "case_receipt": {
+        "calibration_profile": "high",
+        "case_id": "case-b-high-resolution-local-change",
+        "expected": "Motion-focused remains plausible only if full-scene work disappears.",
+        "frames": 8,
+        "height": 1080,
+        "input_bytes": 16588800,
+        "input_pixels": 16588800,
+        "input_sha256": "7314e93d769e311051dee2a2e8f5dc61eed67c2ad5fc985b9fb8150b1f0757f9",
+        "label": "High-resolution Local Change",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 84,
+              "width": 72,
+              "x": 968,
+              "y": 238
+            }
+          ],
+          "frames": 8,
+          "height": 1080,
+          "profile_id": "case-b-high-resolution-local-change",
+          "seed": 101,
+          "width": 1920
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 6048,
+        "spatial_dirty_ratio": 0.002916666666666667,
+        "width": 1920
+      },
+      "geometry": {
+        "coordinate_transform_count": 1,
+        "eye_count": 1,
+        "full_canvas_generate_candidate": true,
+        "full_canvas_generate_reason": "The declared change activates a full-canvas generation scope.",
+        "fusion_input_count": 1,
+        "generation_scope_pixels": 2073600,
+        "generation_scope_ratio": 1.0,
+        "generation_scopes": [
+          {
+            "height": 1080,
+            "width": 1920,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "input_bytes": 16588800,
+        "input_pixels": 16588800,
+        "input_spatial_pixels": 2073600,
+        "observation_multiplier_vs_mono": 1.0,
+        "overlap_duplicate_bytes": 0,
+        "overlap_duplicate_pixels": 0,
+        "potential_generation_savings_ratio": 0.0,
+        "receptive_fields": [
+          {
+            "height": 1080,
+            "width": 1920,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "scheduler_call_count": 1,
+        "spatial_dirty_pixels": 6048,
+        "spatial_dirty_ratio": 0.002916666666666667,
+        "total_observation_bytes": 16588800,
+        "total_observation_pixels": 16588800
+      },
+      "precheck": {
+        "evidence": {
+          "mandatory_comparator": true
+        },
+        "reason": "Mono is the mandatory comparator.",
+        "status": "retained_for_probe"
+      },
+      "runtime_topology": "mono_1x1"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0032493
+      },
+      "candidate_id": "T1",
+      "candidate_label": "Global + Fixed 2x2",
+      "case_id": "case-b-high-resolution-local-change",
+      "case_receipt": {
+        "calibration_profile": "high",
+        "case_id": "case-b-high-resolution-local-change",
+        "expected": "Motion-focused remains plausible only if full-scene work disappears.",
+        "frames": 8,
+        "height": 1080,
+        "input_bytes": 16588800,
+        "input_pixels": 16588800,
+        "input_sha256": "7314e93d769e311051dee2a2e8f5dc61eed67c2ad5fc985b9fb8150b1f0757f9",
+        "label": "High-resolution Local Change",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 84,
+              "width": 72,
+              "x": 968,
+              "y": 238
+            }
+          ],
+          "frames": 8,
+          "height": 1080,
+          "profile_id": "case-b-high-resolution-local-change",
+          "seed": 101,
+          "width": 1920
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 6048,
+        "spatial_dirty_ratio": 0.002916666666666667,
+        "width": 1920
+      },
+      "geometry": {
+        "coordinate_transform_count": 5,
+        "eye_count": 5,
+        "full_canvas_generate_candidate": false,
+        "full_canvas_generate_reason": null,
+        "fusion_input_count": 5,
+        "generation_scope_pixels": 518400,
+        "generation_scope_ratio": 0.25,
+        "generation_scopes": [
+          {
+            "height": 540,
+            "width": 960,
+            "x": 960,
+            "y": 0
+          }
+        ],
+        "input_bytes": 16588800,
+        "input_pixels": 16588800,
+        "input_spatial_pixels": 2073600,
+        "observation_multiplier_vs_mono": 2.0,
+        "overlap_duplicate_bytes": 16588800,
+        "overlap_duplicate_pixels": 16588800,
+        "potential_generation_savings_ratio": 0.75,
+        "receptive_fields": [
+          {
+            "height": 1080,
+            "width": 1920,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 540,
+            "width": 960,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 540,
+            "width": 960,
+            "x": 960,
+            "y": 0
+          },
+          {
+            "height": 540,
+            "width": 960,
+            "x": 0,
+            "y": 540
+          },
+          {
+            "height": 540,
+            "width": 960,
+            "x": 960,
+            "y": 540
+          }
+        ],
+        "scheduler_call_count": 5,
+        "spatial_dirty_pixels": 6048,
+        "spatial_dirty_ratio": 0.002916666666666667,
+        "total_observation_bytes": 33177600,
+        "total_observation_pixels": 33177600
+      },
+      "precheck": {
+        "evidence": {
+          "geometry": {
+            "coordinate_transform_count": 5,
+            "eye_count": 5,
+            "full_canvas_generate_candidate": false,
+            "full_canvas_generate_reason": null,
+            "fusion_input_count": 5,
+            "generation_scope_pixels": 518400,
+            "generation_scope_ratio": 0.25,
+            "generation_scopes": [
+              {
+                "height": 540,
+                "width": 960,
+                "x": 960,
+                "y": 0
+              }
+            ],
+            "input_bytes": 16588800,
+            "input_pixels": 16588800,
+            "input_spatial_pixels": 2073600,
+            "observation_multiplier_vs_mono": 2.0,
+            "overlap_duplicate_bytes": 16588800,
+            "overlap_duplicate_pixels": 16588800,
+            "potential_generation_savings_ratio": 0.75,
+            "receptive_fields": [
+              {
+                "height": 1080,
+                "width": 1920,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 540,
+                "width": 960,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 540,
+                "width": 960,
+                "x": 960,
+                "y": 0
+              },
+              {
+                "height": 540,
+                "width": 960,
+                "x": 0,
+                "y": 540
+              },
+              {
+                "height": 540,
+                "width": 960,
+                "x": 960,
+                "y": 540
+              }
+            ],
+            "scheduler_call_count": 5,
+            "spatial_dirty_pixels": 6048,
+            "spatial_dirty_ratio": 0.002916666666666667,
+            "total_observation_bytes": 33177600,
+            "total_observation_pixels": 33177600
+          },
+          "triggered_rules": []
+        },
+        "reason": "No predeclared analytical rejection rule fired.",
+        "status": "retained_for_probe"
+      },
+      "runtime_topology": "uniform_2x2"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0044551
+      },
+      "candidate_id": "T2",
+      "candidate_label": "Global + Motion-focused Eye",
+      "case_id": "case-b-high-resolution-local-change",
+      "case_receipt": {
+        "calibration_profile": "high",
+        "case_id": "case-b-high-resolution-local-change",
+        "expected": "Motion-focused remains plausible only if full-scene work disappears.",
+        "frames": 8,
+        "height": 1080,
+        "input_bytes": 16588800,
+        "input_pixels": 16588800,
+        "input_sha256": "7314e93d769e311051dee2a2e8f5dc61eed67c2ad5fc985b9fb8150b1f0757f9",
+        "label": "High-resolution Local Change",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 84,
+              "width": 72,
+              "x": 968,
+              "y": 238
+            }
+          ],
+          "frames": 8,
+          "height": 1080,
+          "profile_id": "case-b-high-resolution-local-change",
+          "seed": 101,
+          "width": 1920
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 6048,
+        "spatial_dirty_ratio": 0.002916666666666667,
+        "width": 1920
+      },
+      "geometry": {
+        "coordinate_transform_count": 3,
+        "eye_count": 3,
+        "full_canvas_generate_candidate": false,
+        "full_canvas_generate_reason": null,
+        "fusion_input_count": 3,
+        "generation_scope_pixels": 12064,
+        "generation_scope_ratio": 0.005817901234567901,
+        "generation_scopes": [
+          {
+            "height": 116,
+            "width": 104,
+            "x": 952,
+            "y": 222
+          }
+        ],
+        "input_bytes": 16588800,
+        "input_pixels": 16588800,
+        "input_spatial_pixels": 2073600,
+        "observation_multiplier_vs_mono": 2.005817901234568,
+        "overlap_duplicate_bytes": 16685312,
+        "overlap_duplicate_pixels": 16685312,
+        "potential_generation_savings_ratio": 0.9941820987654321,
+        "receptive_fields": [
+          {
+            "height": 1080,
+            "width": 1920,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 1080,
+            "width": 1920,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 116,
+            "width": 104,
+            "x": 952,
+            "y": 222
+          }
+        ],
+        "scheduler_call_count": 3,
+        "spatial_dirty_pixels": 6048,
+        "spatial_dirty_ratio": 0.002916666666666667,
+        "total_observation_bytes": 33274112,
+        "total_observation_pixels": 33274112
+      },
+      "precheck": {
+        "evidence": {
+          "geometry": {
+            "coordinate_transform_count": 3,
+            "eye_count": 3,
+            "full_canvas_generate_candidate": false,
+            "full_canvas_generate_reason": null,
+            "fusion_input_count": 3,
+            "generation_scope_pixels": 12064,
+            "generation_scope_ratio": 0.005817901234567901,
+            "generation_scopes": [
+              {
+                "height": 116,
+                "width": 104,
+                "x": 952,
+                "y": 222
+              }
+            ],
+            "input_bytes": 16588800,
+            "input_pixels": 16588800,
+            "input_spatial_pixels": 2073600,
+            "observation_multiplier_vs_mono": 2.005817901234568,
+            "overlap_duplicate_bytes": 16685312,
+            "overlap_duplicate_pixels": 16685312,
+            "potential_generation_savings_ratio": 0.9941820987654321,
+            "receptive_fields": [
+              {
+                "height": 1080,
+                "width": 1920,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 1080,
+                "width": 1920,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 116,
+                "width": 104,
+                "x": 952,
+                "y": 222
+              }
+            ],
+            "scheduler_call_count": 3,
+            "spatial_dirty_pixels": 6048,
+            "spatial_dirty_ratio": 0.002916666666666667,
+            "total_observation_bytes": 33274112,
+            "total_observation_pixels": 33274112
+          },
+          "triggered_rules": []
+        },
+        "reason": "No predeclared analytical rejection rule fired.",
+        "status": "retained_for_probe"
+      },
+      "runtime_topology": "motion_focused"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0
+      },
+      "candidate_id": "T0",
+      "candidate_label": "Mono Eye",
+      "case_id": "case-c-global-motion",
+      "case_receipt": {
+        "calibration_profile": "medium",
+        "case_id": "case-c-global-motion",
+        "expected": "Mono should dominate when every spatial location changes.",
+        "frames": 16,
+        "height": 720,
+        "input_bytes": 14745600,
+        "input_pixels": 14745600,
+        "input_sha256": "253cd47f5aecc95a7b10561187ea249d35365c1ddded173e835ac6c61fff688c",
+        "label": "Global Motion",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 720,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "frames": 16,
+          "height": 720,
+          "profile_id": "case-c-global-motion",
+          "seed": 101,
+          "width": 1280
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 921600,
+        "spatial_dirty_ratio": 1.0,
+        "width": 1280
+      },
+      "geometry": {
+        "coordinate_transform_count": 1,
+        "eye_count": 1,
+        "full_canvas_generate_candidate": true,
+        "full_canvas_generate_reason": "The declared change activates a full-canvas generation scope.",
+        "fusion_input_count": 1,
+        "generation_scope_pixels": 921600,
+        "generation_scope_ratio": 1.0,
+        "generation_scopes": [
+          {
+            "height": 720,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "input_bytes": 14745600,
+        "input_pixels": 14745600,
+        "input_spatial_pixels": 921600,
+        "observation_multiplier_vs_mono": 1.0,
+        "overlap_duplicate_bytes": 0,
+        "overlap_duplicate_pixels": 0,
+        "potential_generation_savings_ratio": 0.0,
+        "receptive_fields": [
+          {
+            "height": 720,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "scheduler_call_count": 1,
+        "spatial_dirty_pixels": 921600,
+        "spatial_dirty_ratio": 1.0,
+        "total_observation_bytes": 14745600,
+        "total_observation_pixels": 14745600
+      },
+      "precheck": {
+        "evidence": {
+          "mandatory_comparator": true
+        },
+        "reason": "Mono is the mandatory comparator.",
+        "status": "retained_for_probe"
+      },
+      "runtime_topology": "mono_1x1"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0026847999999999993
+      },
+      "candidate_id": "T1",
+      "candidate_label": "Global + Fixed 2x2",
+      "case_id": "case-c-global-motion",
+      "case_receipt": {
+        "calibration_profile": "medium",
+        "case_id": "case-c-global-motion",
+        "expected": "Mono should dominate when every spatial location changes.",
+        "frames": 16,
+        "height": 720,
+        "input_bytes": 14745600,
+        "input_pixels": 14745600,
+        "input_sha256": "253cd47f5aecc95a7b10561187ea249d35365c1ddded173e835ac6c61fff688c",
+        "label": "Global Motion",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 720,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "frames": 16,
+          "height": 720,
+          "profile_id": "case-c-global-motion",
+          "seed": 101,
+          "width": 1280
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 921600,
+        "spatial_dirty_ratio": 1.0,
+        "width": 1280
+      },
+      "geometry": {
+        "coordinate_transform_count": 5,
+        "eye_count": 5,
+        "full_canvas_generate_candidate": true,
+        "full_canvas_generate_reason": "The declared change activates a full-canvas generation scope.",
+        "fusion_input_count": 5,
+        "generation_scope_pixels": 921600,
+        "generation_scope_ratio": 1.0,
+        "generation_scopes": [
+          {
+            "height": 360,
+            "width": 640,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 360,
+            "width": 640,
+            "x": 640,
+            "y": 0
+          },
+          {
+            "height": 360,
+            "width": 640,
+            "x": 0,
+            "y": 360
+          },
+          {
+            "height": 360,
+            "width": 640,
+            "x": 640,
+            "y": 360
+          }
+        ],
+        "input_bytes": 14745600,
+        "input_pixels": 14745600,
+        "input_spatial_pixels": 921600,
+        "observation_multiplier_vs_mono": 2.0,
+        "overlap_duplicate_bytes": 14745600,
+        "overlap_duplicate_pixels": 14745600,
+        "potential_generation_savings_ratio": 0.0,
+        "receptive_fields": [
+          {
+            "height": 720,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 360,
+            "width": 640,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 360,
+            "width": 640,
+            "x": 640,
+            "y": 0
+          },
+          {
+            "height": 360,
+            "width": 640,
+            "x": 0,
+            "y": 360
+          },
+          {
+            "height": 360,
+            "width": 640,
+            "x": 640,
+            "y": 360
+          }
+        ],
+        "scheduler_call_count": 5,
+        "spatial_dirty_pixels": 921600,
+        "spatial_dirty_ratio": 1.0,
+        "total_observation_bytes": 29491200,
+        "total_observation_pixels": 29491200
+      },
+      "precheck": {
+        "evidence": {
+          "geometry": {
+            "coordinate_transform_count": 5,
+            "eye_count": 5,
+            "full_canvas_generate_candidate": true,
+            "full_canvas_generate_reason": "The declared change activates a full-canvas generation scope.",
+            "fusion_input_count": 5,
+            "generation_scope_pixels": 921600,
+            "generation_scope_ratio": 1.0,
+            "generation_scopes": [
+              {
+                "height": 360,
+                "width": 640,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 360,
+                "width": 640,
+                "x": 640,
+                "y": 0
+              },
+              {
+                "height": 360,
+                "width": 640,
+                "x": 0,
+                "y": 360
+              },
+              {
+                "height": 360,
+                "width": 640,
+                "x": 640,
+                "y": 360
+              }
+            ],
+            "input_bytes": 14745600,
+            "input_pixels": 14745600,
+            "input_spatial_pixels": 921600,
+            "observation_multiplier_vs_mono": 2.0,
+            "overlap_duplicate_bytes": 14745600,
+            "overlap_duplicate_pixels": 14745600,
+            "potential_generation_savings_ratio": 0.0,
+            "receptive_fields": [
+              {
+                "height": 720,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 360,
+                "width": 640,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 360,
+                "width": 640,
+                "x": 640,
+                "y": 0
+              },
+              {
+                "height": 360,
+                "width": 640,
+                "x": 0,
+                "y": 360
+              },
+              {
+                "height": 360,
+                "width": 640,
+                "x": 640,
+                "y": 360
+              }
+            ],
+            "scheduler_call_count": 5,
+            "spatial_dirty_pixels": 921600,
+            "spatial_dirty_ratio": 1.0,
+            "total_observation_bytes": 29491200,
+            "total_observation_pixels": 29491200
+          },
+          "triggered_rules": [
+            {
+              "observed": true,
+              "reason": "The declared change activates a full-canvas generation scope.",
+              "rule": "full_canvas_generate_candidate",
+              "threshold": false
+            },
+            {
+              "observed": 2.0,
+              "reason": "Observation work exceeds the limit without enough possible generation savings.",
+              "rule": "observation_multiplier",
+              "threshold": 1.5
+            },
+            {
+              "observed": 1.0,
+              "reason": "Global change activates the complete spatial domain.",
+              "rule": "global_motion",
+              "threshold": 0.5
+            }
+          ]
+        },
+        "reason": "The declared change activates a full-canvas generation scope.",
+        "status": "analytically_pruned"
+      },
+      "runtime_topology": "uniform_2x2"
+    },
+    {
+      "S_required": {
+        "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+        "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+        "status": "derived",
+        "unit": "seconds",
+        "value": 0.0029280999999999995
+      },
+      "candidate_id": "T2",
+      "candidate_label": "Global + Motion-focused Eye",
+      "case_id": "case-c-global-motion",
+      "case_receipt": {
+        "calibration_profile": "medium",
+        "case_id": "case-c-global-motion",
+        "expected": "Mono should dominate when every spatial location changes.",
+        "frames": 16,
+        "height": 720,
+        "input_bytes": 14745600,
+        "input_pixels": 14745600,
+        "input_sha256": "253cd47f5aecc95a7b10561187ea249d35365c1ddded173e835ac6c61fff688c",
+        "label": "Global Motion",
+        "profile": {
+          "change_regions": [
+            {
+              "height": 720,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "frames": 16,
+          "height": 720,
+          "profile_id": "case-c-global-motion",
+          "seed": 101,
+          "width": 1280
+        },
+        "seed": 101,
+        "spatial_dirty_pixels": 921600,
+        "spatial_dirty_ratio": 1.0,
+        "width": 1280
+      },
+      "geometry": {
+        "coordinate_transform_count": 3,
+        "eye_count": 3,
+        "full_canvas_generate_candidate": true,
+        "full_canvas_generate_reason": "The declared change activates a full-canvas generation scope.",
+        "fusion_input_count": 3,
+        "generation_scope_pixels": 921600,
+        "generation_scope_ratio": 1.0,
+        "generation_scopes": [
+          {
+            "height": 720,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "input_bytes": 14745600,
+        "input_pixels": 14745600,
+        "input_spatial_pixels": 921600,
+        "observation_multiplier_vs_mono": 3.0,
+        "overlap_duplicate_bytes": 29491200,
+        "overlap_duplicate_pixels": 29491200,
+        "potential_generation_savings_ratio": 0.0,
+        "receptive_fields": [
+          {
+            "height": 720,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 720,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "height": 720,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "scheduler_call_count": 3,
+        "spatial_dirty_pixels": 921600,
+        "spatial_dirty_ratio": 1.0,
+        "total_observation_bytes": 44236800,
+        "total_observation_pixels": 44236800
+      },
+      "precheck": {
+        "evidence": {
+          "geometry": {
+            "coordinate_transform_count": 3,
+            "eye_count": 3,
+            "full_canvas_generate_candidate": true,
+            "full_canvas_generate_reason": "The declared change activates a full-canvas generation scope.",
+            "fusion_input_count": 3,
+            "generation_scope_pixels": 921600,
+            "generation_scope_ratio": 1.0,
+            "generation_scopes": [
+              {
+                "height": 720,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              }
+            ],
+            "input_bytes": 14745600,
+            "input_pixels": 14745600,
+            "input_spatial_pixels": 921600,
+            "observation_multiplier_vs_mono": 3.0,
+            "overlap_duplicate_bytes": 29491200,
+            "overlap_duplicate_pixels": 29491200,
+            "potential_generation_savings_ratio": 0.0,
+            "receptive_fields": [
+              {
+                "height": 720,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 720,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              {
+                "height": 720,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              }
+            ],
+            "scheduler_call_count": 3,
+            "spatial_dirty_pixels": 921600,
+            "spatial_dirty_ratio": 1.0,
+            "total_observation_bytes": 44236800,
+            "total_observation_pixels": 44236800
+          },
+          "triggered_rules": [
+            {
+              "observed": true,
+              "reason": "The declared change activates a full-canvas generation scope.",
+              "rule": "full_canvas_generate_candidate",
+              "threshold": false
+            },
+            {
+              "observed": 3.0,
+              "reason": "Observation work exceeds the limit without enough possible generation savings.",
+              "rule": "observation_multiplier",
+              "threshold": 1.5
+            },
+            {
+              "observed": 1.0,
+              "reason": "Global change activates the complete spatial domain.",
+              "rule": "global_motion",
+              "threshold": 0.5
+            }
+          ]
+        },
+        "reason": "The declared change activates a full-canvas generation scope.",
+        "status": "analytically_pruned"
+      },
+      "runtime_topology": "motion_focused"
+    }
+  ],
+  "cuda_used": false,
+  "m0_completion_eligible": false,
+  "m1_completion_eligible": false,
+  "model_loaded": false,
+  "official_m0_run_receipt": false,
+  "repetitions": 20,
+  "run_kind": "analytical_topology_pruning_probe",
+  "rust_probe_issue_35_closed": true,
+  "rust_probe_merge_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "schema_version": "0.1.0",
+  "seed": 101,
+  "summary": {
+    "pruned": 4,
+    "retained": 5,
+    "total": 9
+  },
+  "warmups": 5
+}

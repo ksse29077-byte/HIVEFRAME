@@ -6,6 +6,22 @@ Architecture: compound-eye input observation and selective generation
 
 Evidence policy: no speedup claim before same-condition end-to-end proof
 
+## Backend target policy
+
+- **MiniMax H3:** highest-priority product backend target. Official API
+  documentation exists, but HIVEFRAME admission is pending Issue #39 and no
+  integration or speedup is claimed.
+- **MiniMax H3 open weights:** future white-box candidate, blocked until the
+  official weights, source, license, immutable digest, and runtime are
+  verified. A publication plan is not a released checkpoint.
+- **Wan 2.1 T2V 1.3B:** frozen legacy comparator. Its M0 code, pins, receipts,
+  reproducibility evidence, fingerprints, and reports remain immutable.
+- **LTX:** inactive and removed from active development scope. Historical
+  assets remain preserved.
+
+M0 is not retroactively converted into an H3 baseline. A future H3 admission
+baseline must be a separate approved stage or profile after admission.
+
 ## Product objective
 
 HIVEFRAME does not optimize for the largest number of eyes. It chooses the
@@ -86,27 +102,24 @@ compound-eye optimization is mixed into the baseline.
 
 ## M1-P0 — Analytical Topology Pre-Gate
 
+**Status: `verified`; decision `REFINE_COST_MODEL`.**
+
 This is a bounded preparation step, not M1 entry or an M1 exit gate. It may
 draft analytical cost equations, schemas, synthetic cases, tests,
 unavailable-metric semantics, and topology pre-rejection rules.
 
-The Rust I/O Admission Probe may be treated as a provisional dependency while
-its Draft PR is under review, but its `CONDITIONAL_ADMIT` measurements cannot
-be fixed as official Amdahl inputs until the exact report, commit, and
-measurement semantics are merged into `main`.
+The Rust I/O Admission Probe is merged into `main` at
+`a71eea742f5a804c30f6f095c1a256ee2d2561a6`. Its `CONDITIONAL_ADMIT`
+measurements may calibrate model-free orchestration, but M0 input share and
+end-to-end Amdahl gain remain unavailable.
 
-Before final M1-P0 measurement or Gate classification:
+The first bounded probe analytically pruned four of nine combinations and
+measured five. Case B ranking matched, dirty recall was 1.0, and false-stable
+was 0.0, but absolute p50 prediction exceeded its 35% threshold twice.
 
-1. merge the reviewed Rust I/O evidence through its PR;
-2. update from the resulting `origin/main`;
-3. rebase the preserved Analytical WIP branch onto that main;
-4. read the merged decision report and measurement semantics;
-5. revalidate the cost model and Amdahl inputs;
-6. only then rerun the benchmark and classify the pre-gate.
-
-M1-P0 cannot close M0 or M1. A final benchmark report, a
-`PROCEED_TO_COST_SURFACE`-style decision, or an Analytical remote branch/PR is
-blocked until those prerequisites are satisfied.
+Do not enlarge the corpus. Refine same-run Mono normalization and missing
+stage attribution, then rerun the same five combinations. M1-P0 still cannot
+close M0 or M1.
 
 ## M1 — Eye Topology Ground Truth Lab
 

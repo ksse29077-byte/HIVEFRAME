@@ -254,6 +254,9 @@ Review is tracked in Issue
 [`#35`](https://github.com/ksse29077-byte/HIVEFRAME/issues/35) and Draft PR
 [`#36`](https://github.com/ksse29077-byte/HIVEFRAME/pull/36).
 
+PR #36 was later merged at `2026-07-31T08:45:53Z` with merge commit
+`a71eea742f5a804c30f6f095c1a256ee2d2561a6`; Issue #35 closed.
+
 ### Verification
 
 Python compile passed; all 70 Python tests passed; Rust format, locked
@@ -267,11 +270,11 @@ workspace check, and workspace tests passed; JSON parsing and
 Analytical Topology Pruning is classified as `M1-P0`, not full M1 entry or
 completion. M0 remains `in_progress`.
 
-Rust I/O evidence is `CONDITIONAL_ADMIT` on Draft PR #36 but is not yet merged
-into `main`. Final Analytical measurements, fixed Amdahl inputs, Gate
-classification, completion, branch push, and PR creation are blocked until
-that merge. Existing Analytical WIP must be preserved and rebased onto the
-post-merge `origin/main` before its benchmark is rerun.
+At the time of this hold, Rust I/O evidence was `CONDITIONAL_ADMIT` on Draft
+PR #36 and was not yet merged into `main`. Final Analytical measurements,
+fixed Amdahl inputs, Gate classification, completion, branch push, and PR
+creation were blocked until that merge. The later M1-P0 entry below records
+the resolved hold and resumed work.
 
 No Analytical branch or implementation was visible in this checkout or its
 known local/remote refs, so this correction created or modified no Analytical
@@ -279,6 +282,106 @@ code. Detailed hold conditions are recorded in
 [`worklogs/2026-07-31-analytical-topology-pre-gate-wip.md`](worklogs/2026-07-31-analytical-topology-pre-gate-wip.md).
 
 Model loads: 0. CUDA runs: 0. Analytical benchmark runs: 0.
+
+---
+
+## 2026-07-31 — M1-P0 Analytical Topology Pre-Gate
+
+### Purpose
+
+Eliminate structurally uneconomic T0/T1/T2 combinations before the
+rights-cleared M1 Cost Surface and measure only the retained model-free
+combinations.
+
+### Verified result
+
+- base main and Rust merge:
+  `a71eea742f5a804c30f6f095c1a256ee2d2561a6`;
+- no existing Analytical implementation was found;
+- Issue:
+  [`#37`](https://github.com/ksse29077-byte/HIVEFRAME/issues/37);
+- implementation commit:
+  `30ebdf0b3937c4e7a16dc4f72c7750437ff7dc53`;
+- Draft PR:
+  [`#38`](https://github.com/ksse29077-byte/HIVEFRAME/pull/38), open for
+  review and not merged;
+- analytical combinations: 9;
+- pruned: Case A T1/T2 and Case C T1/T2;
+- measured: five combinations, each with 5 warm-ups and 20 repetitions;
+- Case B predicted/measured ranking: `T0 < T1 < T2`;
+- dirty recall: 1.0;
+- maximum false-stable: 0.0;
+- Amdahl status: `partially_available`; M0 optimized fraction and end-to-end
+  upper bound remain unavailable.
+
+### Decision
+
+`REFINE_COST_MODEL`.
+
+Absolute p50 prediction exceeded the 35% threshold for Case A T0 and Case B
+T2. Keep the same five measured combinations; normalize prediction to a
+same-run Mono anchor and improve missing stage attribution before expanding
+the corpus.
+
+### Failure and correction
+
+An initial analytical assumption incorrectly treated local T1/T2 as
+full-canvas generate. A model-free integration test disproved it. Generation
+scope geometry was corrected, Case B T1/T2 were retained, and superseded
+development reports were excluded from evidence.
+
+Detailed design, measurements, and limitations are in
+[`M1_ANALYTICAL_TOPOLOGY_PRUNING.md`](M1_ANALYTICAL_TOPOLOGY_PRUNING.md) and
+[`worklogs/2026-07-31-m1-p0-analytical-topology-pruning.md`](worklogs/2026-07-31-m1-p0-analytical-topology-pruning.md).
+
+### Verification
+
+- Python compile: passed.
+- Python unittest: 88 passed.
+- Rust format, locked workspace check, and workspace tests: passed.
+- Schema, config, and result JSON parsing: passed.
+- `git diff --check`: passed.
+
+Model loads: 0. CUDA runs: 0.
+
+---
+
+## 2026-07-31 — Product backend target policy
+
+### Decision
+
+- MiniMax H3 is the highest-priority product backend target.
+- H3 remains a pending black-box API admission; a future open-weight path is
+  blocked until official source, weights, license, digest, and runtime are
+  verified.
+- Wan 2.1 T2V 1.3B is the frozen legacy comparator. Existing M0 code, pins,
+  receipts, reproducibility evidence, fingerprints, and reports are immutable.
+- LTX is inactive and removed from active development scope. Historical code
+  and Git history remain intact.
+
+### Verified source state
+
+The official MiniMax V2 documentation reviewed on 2026-07-31 names model
+`MiniMax-H3` and endpoint `POST /v2/video_generation`. Documentation
+availability is not HIVEFRAME support. H3 price/billing, H3-specific data
+handling, commercial fitness, runtime behavior, provenance, and receipt
+integration remain unadmitted. No official H3 source, checkpoint, license, and
+digest set was jointly verified for a white-box path.
+
+Official API documentation is the technical source of truth. Secondary press
+coverage was recorded only as launch context and supplied no admission facts.
+Follow-up admission is tracked in Issue
+[`#39`](https://github.com/ksse29077-byte/HIVEFRAME/issues/39).
+
+### M1-P0 boundary
+
+M1-P0 remains the same backend-neutral model-free analysis. No H3 value was
+inserted into its cost model, and its `REFINE_COST_MODEL` decision is
+unchanged. This is not H3 admission, H3 support, H3 speedup, M0 completion, or
+M1 completion.
+
+H3 API calls: 0. H3 model loads: 0. Paid API runs: 0. Model loads: 0. CUDA
+runs: 0. Wan evidence changed: 0. Existing receipts deleted or rewritten: 0.
 
 ---
 

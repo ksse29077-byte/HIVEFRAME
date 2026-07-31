@@ -52,19 +52,31 @@ scopes remain outstanding.
 
 ## M1-P0 — Analytical Topology Pre-Gate
 
-Overall pre-gate status: `blocked`.
+Overall pre-gate status: `verified`; decision `REFINE_COST_MODEL`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Preserve existing Analytical Topology Pruning work | `in_progress` | WIP must not be deleted or recreated |
-| Draft cost equations, schemas, synthetic cases, unavailable-metric handling, and pre-rejection rules | `in_progress` | allowed before the dependency merges |
-| Use Rust I/O measurements as fixed Amdahl inputs | `blocked` | [Rust I/O PR #36](https://github.com/ksse29077-byte/HIVEFRAME/pull/36) is Draft/Open and not merged into `main` |
-| Run final benchmark or issue a topology Gate decision | `blocked` | requires the Rust probe report, commit, and measurement semantics from merged `main` |
-| Publish an Analytical branch or PR | `blocked` | rebase onto post-merge `origin/main` first |
+| Search and preserve existing Analytical WIP | `verified` | no implementation found; new branch starts at post-PR36 main |
+| Cost equations, synthetic cases, unavailable metrics, and pruning rules | `verified` | 9 analytical combinations |
+| Use merged Rust I/O measurements | `verified` | local control-plane calibration only; Amdahl end-to-end remains unavailable |
+| Minimal model-free probe | `verified` | 4 pruned, 5 measured at 5 warm-ups / 20 repetitions |
+| M1-P0 decision | `verified` | `REFINE_COST_MODEL`; prediction error exceeded 35% twice |
+| Publish Analytical branch and Draft PR | `published` | [Issue #37](https://github.com/ksse29077-byte/HIVEFRAME/issues/37), [Draft PR #38](https://github.com/ksse29077-byte/HIVEFRAME/pull/38) |
 
-M1-P0 does not start or close M1, does not close M0, and cannot emit
-`PROCEED_TO_COST_SURFACE` or another final Gate decision while PR #36 remains
-unmerged.
+M1-P0 does not start or close M1 and does not close M0. Keep the same five
+measured combinations and correct the cost model before another decision.
+
+## Backend product target policy
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Designate MiniMax H3 as primary product target | `verified` | policy only; no runtime or speedup claim |
+| Review current official H3 API documentation | `verified` | V2 contract names `MiniMax-H3`; runtime admission remains pending |
+| Admit official H3 API | `planned` | [Issue #39](https://github.com/ksse29077-byte/HIVEFRAME/issues/39); explicit approval required before API key or paid call |
+| Admit future H3 open weights | `blocked` | official repository, checkpoint, source, license, digest, and runtime not jointly verified |
+| Preserve Wan M0 comparator | `done` | frozen code, pins, receipts, fingerprints, and reports; no new feature development |
+| Remove LTX from active scope | `done` | historical code and Git history retained; no cleanup in this change |
+| Create backend capability matrix | `planned` | no standalone matrix exists; black-box/white-box evidence belongs to Issue #39 |
 
 ## M1 — Exact next experiment
 
@@ -72,8 +84,8 @@ Supporting evidence:
 
 | Task | Status | Evidence |
 |---|---|---|
-| Model-free Rust I/O admission | `published` | 15-case parity and benchmark are in Draft PR #36; not yet merged into `main` |
-| Rust migration decision | `implemented` | `CONDITIONAL_ADMIT` is recorded on the probe branch; it is not an M0/M1 Gate decision |
+| Model-free Rust I/O admission | `published` | merged through PR #36 at `a71eea7...` |
+| Rust migration decision | `published` | `CONDITIONAL_ADMIT`; it is not an M0/M1 Gate decision |
 
 1. Admit 12 small rights-cleared clips and record provenance.
 2. Add oracle dirty masks and scene-cut labels.

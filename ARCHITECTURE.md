@@ -138,6 +138,46 @@ refresh, and repair promotion remain available after a plan selects work. The
 architecture does not assume patch independence or that patches are the best
 unit for every backend.
 
+## Backend priority and admission
+
+```yaml
+primary_product_target:
+  id: minimax_h3
+  name: MiniMax H3
+  execution_class: black_box_pending
+  admission_status: pending_official_api
+  product_priority: highest
+
+future_white_box_target:
+  id: minimax_h3_open_weights
+  execution_class: white_box_candidate
+  admission_status: blocked_until_weights_and_license_verified
+
+legacy_comparator:
+  id: wan21_t2v_1_3b
+  status: frozen
+  new_feature_development: false
+  evidence_policy: immutable
+
+inactive_backend:
+  id: ltx
+  status: removed_from_active_scope
+  new_feature_development: false
+```
+
+The `pending_official_api` label is an HIVEFRAME admission state, not a claim
+that no documentation page exists. The official MiniMax V2 documentation
+reviewed on 2026-07-31 names model `MiniMax-H3` and endpoint
+`POST /v2/video_generation`. Documentation alone does not prove runtime
+behavior, price, data handling, commercial fitness, provenance, selective
+execution, or HIVEFRAME integration. Issue #39 owns that admission work.
+
+No Hailuo 2.3 or Hailuo 02 identifier may substitute for `MiniMax-H3`. A future
+open-weight path remains nonexistent for admission purposes until its official
+repository, weights, source, license, digest, and runtime are directly
+verified. Wan M0 evidence is not reinterpreted as H3 evidence. Historical LTX
+assets remain in Git, but LTX is inactive.
+
 ## Backend contract
 
 Existing deterministic construction, pinned metadata, hooks, VAE timing,
@@ -151,6 +191,11 @@ explicit capability reporting for:
 - resolution selection;
 - cache reuse and refresh.
 
+Black-box API adapters may report only capabilities and lifecycle spans that
+their admitted public contract and receipts support. They cannot imply latent,
+token, block, timestep, attention, cache, VRAM, or GPU-kernel control from an
+API output alone. Unsupported selectors must promote or fail.
+
 Backend updates cannot silently alter M0 behavior or selector semantics.
 
 ## Module ownership
@@ -162,7 +207,7 @@ Backend updates cannot silently alter M0 behavior or selector semantics.
 | `hive_visual_state` | coordinates, validators, state, and plan |
 | `hive_probes` | model-free and future backend feasibility probes |
 | `hive-retina-runtime` | model-free Rust control-plane admission candidate |
-| `hive_backends` | pinned Wan/LTX adapters |
+| `hive_backends` | frozen Wan comparator adapter, historical inactive LTX adapter, and future admitted backends |
 | `hive_hooks` | existing scheduler, attention, and latent capture |
 | `hive_benchmarks` | M0 baselines, measurements, and comparisons |
 | `hive-contracts` | future stabilized Rust contract types |
