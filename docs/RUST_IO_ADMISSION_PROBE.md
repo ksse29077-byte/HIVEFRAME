@@ -2,6 +2,12 @@
 
 Status: model-free evidence complete; decision `CONDITIONAL_ADMIT`
 
+Publication status: the evidence is published in Draft PR
+[#36](https://github.com/ksse29077-byte/HIVEFRAME/pull/36) but is not yet
+merged into `main`. Downstream M1-P0 Analytical Topology Pruning may preserve
+WIP drafts, but must not freeze these measurements as official inputs or issue
+a final Gate decision before that merge.
+
 ## Research question
 
 Does a Rust implementation of Compound I/O input profiling, Eye routing,

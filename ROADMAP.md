@@ -55,6 +55,9 @@ Detailed execution rules are normative in
 
 ## M0 — Single-Eye Cost Truth
 
+**Status: `in_progress`.** Preserved successful probes are component evidence,
+not milestone closure.
+
 ### Question
 
 What does the complete pinned Wan path cost when the input is handled as one
@@ -80,6 +83,30 @@ whole-scene observation and one full generation path?
 
 All costs from input through output are attributable and reproducible. No
 compound-eye optimization is mixed into the baseline.
+
+## M1-P0 — Analytical Topology Pre-Gate
+
+This is a bounded preparation step, not M1 entry or an M1 exit gate. It may
+draft analytical cost equations, schemas, synthetic cases, tests,
+unavailable-metric semantics, and topology pre-rejection rules.
+
+The Rust I/O Admission Probe may be treated as a provisional dependency while
+its Draft PR is under review, but its `CONDITIONAL_ADMIT` measurements cannot
+be fixed as official Amdahl inputs until the exact report, commit, and
+measurement semantics are merged into `main`.
+
+Before final M1-P0 measurement or Gate classification:
+
+1. merge the reviewed Rust I/O evidence through its PR;
+2. update from the resulting `origin/main`;
+3. rebase the preserved Analytical WIP branch onto that main;
+4. read the merged decision report and measurement semantics;
+5. revalidate the cost model and Amdahl inputs;
+6. only then rerun the benchmark and classify the pre-gate.
+
+M1-P0 cannot close M0 or M1. A final benchmark report, a
+`PROCEED_TO_COST_SURFACE`-style decision, or an Analytical remote branch/PR is
+blocked until those prerequisites are satisfied.
 
 ## M1 — Eye Topology Ground Truth Lab
 

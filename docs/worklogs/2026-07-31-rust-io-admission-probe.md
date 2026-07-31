@@ -251,3 +251,15 @@ CUDA runs: 0.
   and is resolved authoritatively by the branch and Draft PR refs;
 - local/remote HEAD equality and the clean final worktree are verified after
   publishing that commit and reported in the task handoff.
+
+## Downstream M1-P0 prerequisite correction
+
+The Rust evidence is not in `main` while Draft PR #36 remains open. Therefore
+Analytical Topology Pruning is classified as `M1-P0 — Analytical Topology
+Pre-Gate` and remains WIP/blocked for final measurement and Gate
+classification.
+
+Before using this receipt as a fixed Amdahl input, the downstream work must
+wait for this PR to merge, update from the resulting `origin/main`, rebase its
+preserved WIP branch, read the merged report and measurement semantics, and
+revalidate the cost model. This result closes neither M0 nor M1.

@@ -262,6 +262,26 @@ workspace check, and workspace tests passed; JSON parsing and
 
 ---
 
+## 2026-07-31 — M1-P0 Analytical pre-gate hold
+
+Analytical Topology Pruning is classified as `M1-P0`, not full M1 entry or
+completion. M0 remains `in_progress`.
+
+Rust I/O evidence is `CONDITIONAL_ADMIT` on Draft PR #36 but is not yet merged
+into `main`. Final Analytical measurements, fixed Amdahl inputs, Gate
+classification, completion, branch push, and PR creation are blocked until
+that merge. Existing Analytical WIP must be preserved and rebased onto the
+post-merge `origin/main` before its benchmark is rerun.
+
+No Analytical branch or implementation was visible in this checkout or its
+known local/remote refs, so this correction created or modified no Analytical
+code. Detailed hold conditions are recorded in
+[`worklogs/2026-07-31-analytical-topology-pre-gate-wip.md`](worklogs/2026-07-31-analytical-topology-pre-gate-wip.md).
+
+Model loads: 0. CUDA runs: 0. Analytical benchmark runs: 0.
+
+---
+
 ## Entry template
 
 ```markdown
