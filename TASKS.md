@@ -52,8 +52,8 @@ Supporting evidence:
 
 | Task | Status | Evidence |
 |---|---|---|
-| Model-free Rust I/O admission | `in_progress` | 15-case parity and benchmark complete; final verification/publication pending |
-| Rust migration decision | `in_progress` | `CONDITIONAL_ADMIT`; FFI and attributable end-to-end share remain unmeasured |
+| Model-free Rust I/O admission | `done` | 15-case parity, benchmark, repository-wide verification, and evidence branch publication complete |
+| Rust migration decision | `done` | `CONDITIONAL_ADMIT`; FFI and attributable end-to-end share remain unmeasured |
 
 1. Admit 12 small rights-cleared clips and record provenance.
 2. Add oracle dirty masks and scene-cut labels.

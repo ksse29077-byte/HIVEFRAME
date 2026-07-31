@@ -237,10 +237,15 @@ CUDA runs: 0.
 
 ## Publication
 
-- implementation/evidence commit: pending;
+- implementation/evidence commit:
+  `5a03e761f039c7b4e611f56c4ba7d7f55ce8ed5b`;
 - final documentation commit: pending;
-- remote branch: `agent/m1-rust-io-admission-probe` (not yet published);
-- Issue: pending;
+- remote branch: `agent/m1-rust-io-admission-probe` (published with exact Git
+  history);
+- Issue:
+  [`#35`](https://github.com/ksse29077-byte/HIVEFRAME/issues/35);
 - Draft PR: pending;
-- local/remote HEAD: pending;
+- local/remote implementation HEAD matched at
+  `5a03e761f039c7b4e611f56c4ba7d7f55ce8ed5b` before this publication metadata
+  update;
 - final worktree: pending.
