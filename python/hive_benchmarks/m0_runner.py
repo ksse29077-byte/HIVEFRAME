@@ -13,6 +13,7 @@ import importlib.metadata
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -61,6 +62,7 @@ PROFILE_RUN_KINDS = {
     "smoke-cold-warm": "smoke-based same-seed cold/warm pair",
     "baseline-reproducibility": "baseline same-seed cold/warm pair",
 }
+RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
 def utc_now() -> str:
@@ -648,20 +650,29 @@ def settings_for_profile(
     return settings
 
 
-def build_run_plan(
+def validate_run_id(run_id: str) -> str:
+    if not RUN_ID_PATTERN.fullmatch(run_id):
+        raise argparse.ArgumentTypeError(
+            "Run ID must be 1-128 characters, start with an ASCII letter or "
+            "digit, and contain only ASCII letters, digits, '.', '_', or '-'."
+        )
+    return run_id
+
+
+def build_execution_plan(
     config: dict[str, Any],
     prompt: dict[str, Any],
     profile: str,
+    *,
+    repeat: int,
+    expected_run_kind: str,
+    run_id: str,
 ) -> dict[str, Any]:
-    if profile not in RUN_PROFILES:
-        choices = ", ".join(RUN_PROFILES)
-        raise ValueError(
-            f"Unknown run profile {profile!r}; choose one of: {choices}."
-        )
+    validate_run_id(run_id)
     settings = settings_for_profile(
         config,
         profile,
-        repeat=int(config["reproducibility"]["repeat"]),
+        repeat=repeat,
     )
     settings_hash = stable_hash({"sample": prompt, "settings": settings})
     return {
@@ -669,7 +680,8 @@ def build_run_plan(
         "kind": "hiveframe.m0.run_plan",
         "execution_started": False,
         "selected_profile": profile,
-        "expected_run_kind": PROFILE_RUN_KINDS[profile],
+        "expected_run_kind": expected_run_kind,
+        "run_id": run_id,
         "prompt_id": prompt["id"],
         "sample": prompt,
         "effective_settings": settings,
@@ -686,6 +698,69 @@ def build_run_plan(
             "required_value": settings_hash,
         },
     }
+
+
+def build_run_plan(
+    config: dict[str, Any],
+    prompt: dict[str, Any],
+    profile: str,
+) -> dict[str, Any]:
+    if profile not in RUN_PROFILES:
+        choices = ", ".join(RUN_PROFILES)
+        raise ValueError(
+            f"Unknown run profile {profile!r}; choose one of: {choices}."
+        )
+    run_id = f"{profile}-{prompt['id']}-{prompt['seed']}"
+    return build_execution_plan(
+        config,
+        prompt,
+        profile,
+        repeat=int(config["reproducibility"]["repeat"]),
+        expected_run_kind=PROFILE_RUN_KINDS[profile],
+        run_id=run_id,
+    )
+
+
+def build_smoke_plan(
+    config: dict[str, Any],
+    prompt: dict[str, Any],
+    run_id: str,
+) -> dict[str, Any]:
+    return build_execution_plan(
+        config,
+        prompt,
+        "smoke",
+        repeat=1,
+        expected_run_kind="single regression smoke",
+        run_id=run_id,
+    )
+
+
+def settings_approval_error(
+    plan: dict[str, Any], expected_settings_hash: str | None
+) -> dict[str, Any] | None:
+    if not expected_settings_hash:
+        return stage_gate_error(
+            "settings-approval",
+            "Execution requires --expect-settings-hash from an approved plan.",
+        )
+    if expected_settings_hash != plan["settings_hash"]:
+        return stage_gate_error(
+            "settings-approval",
+            (
+                "Approved settings hash does not match the final effective "
+                f"settings: expected {expected_settings_hash}, "
+                f"actual {plan['settings_hash']}."
+            ),
+        )
+    return None
+
+
+def run_artifact_collisions(output_dir: Path, run_id: str) -> list[str]:
+    validate_run_id(run_id)
+    if not output_dir.exists():
+        return []
+    return sorted(str(path) for path in output_dir.glob(f"{run_id}.*"))
 
 
 def gate_state_path(config: dict[str, Any]) -> Path:
@@ -953,9 +1028,12 @@ def run_sample(
     *,
     profile: str,
     repeat: int | None = None,
+    run_id: str | None = None,
 ) -> tuple[int, dict[str, Any]]:
     settings = settings_for_profile(config, profile, repeat=repeat)
-    run_id = f"{profile}-{prompt['id']}-{prompt['seed']}"
+    run_id = validate_run_id(
+        run_id or f"{profile}-{prompt['id']}-{prompt['seed']}"
+    )
     output_prefix = output_dir / run_id
     metrics_path = output_dir / f"{run_id}.instrumentation.json"
     stdout_path = output_dir / f"{run_id}.stdout.log"
@@ -1213,8 +1291,35 @@ def command_smoke(args: argparse.Namespace, config: dict[str, Any]) -> int:
         if args.output_dir
         else project_path(config["paths"]["run_dir"])
     )
+    plan = build_smoke_plan(config, prompt, args.run_id)
+    if args.plan:
+        print_json(plan)
+        return 0
+    approval_error = settings_approval_error(
+        plan, args.expect_settings_hash
+    )
+    if approval_error:
+        print_json(approval_error)
+        return 2
+    collisions = run_artifact_collisions(output_dir, args.run_id)
+    if collisions:
+        print_json(
+            stage_gate_error(
+                "run-id-collision",
+                (
+                    f"Run ID {args.run_id!r} already has artifacts; "
+                    f"refusing to overwrite: {', '.join(collisions)}"
+                ),
+            )
+        )
+        return 2
     return_code, receipt = run_sample(
-        config, prompt, output_dir, profile="smoke", repeat=1
+        config,
+        prompt,
+        output_dir,
+        profile="smoke",
+        repeat=1,
+        run_id=args.run_id,
     )
     if return_code == 0:
         state = read_gate_state(config)
@@ -1239,25 +1344,11 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
     if args.plan:
         print_json(plan)
         return 0
-    if not args.expect_settings_hash:
-        print_json(
-            stage_gate_error(
-                "settings-approval",
-                "Execution requires --expect-settings-hash from an approved run plan.",
-            )
-        )
-        return 2
-    if args.expect_settings_hash != plan["settings_hash"]:
-        print_json(
-            stage_gate_error(
-                "settings-approval",
-                (
-                    "Approved settings hash does not match the final effective "
-                    f"settings: expected {args.expect_settings_hash}, "
-                    f"actual {plan['settings_hash']}."
-                ),
-            )
-        )
+    approval_error = settings_approval_error(
+        plan, args.expect_settings_hash
+    )
+    if approval_error:
+        print_json(approval_error)
         return 2
     state = read_gate_state(config)
     if not gate_matches(state.get("smoke"), config, "succeeded"):
@@ -1383,6 +1474,29 @@ def build_parser() -> argparse.ArgumentParser:
         "smoke", help="Run the minimum-cost gated smoke profile once."
     )
     smoke.add_argument("--output-dir")
+    smoke.add_argument(
+        "--run-id",
+        required=True,
+        type=validate_run_id,
+        help=(
+            "Unique receipt and artifact ID (ASCII letters, digits, '.', "
+            "'_', and '-' only)."
+        ),
+    )
+    smoke.add_argument(
+        "--plan",
+        "--dry-run",
+        action="store_true",
+        help="Print final smoke settings and hash without loading the model.",
+    )
+    smoke.add_argument(
+        "--expect-settings-hash",
+        metavar="SHA256",
+        help=(
+            "Required for execution; must exactly match the hash printed by "
+            "--plan."
+        ),
+    )
     smoke.set_defaults(handler=command_smoke)
 
     run = subparsers.add_parser(

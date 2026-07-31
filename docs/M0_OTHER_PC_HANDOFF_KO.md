@@ -339,7 +339,8 @@ python hiveframe_m0.py preflight \
 인수 직후 자동으로 다음 명령을 실행하지 않는다.
 
 ```bash
-python hiveframe_m0.py smoke
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID --plan
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID --expect-settings-hash SMOKE_SETTINGS_HASH_FROM_PLAN
 python hiveframe_m0.py run --profile smoke-cold-warm --prompt-id static-speaking-person --plan
 python hiveframe_m0.py run --profile smoke-cold-warm --prompt-id static-speaking-person --expect-settings-hash SETTINGS_HASH_FROM_PLAN
 python hiveframe_m0.py run-suite

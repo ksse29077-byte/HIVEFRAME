@@ -6,6 +6,7 @@ import io
 import json
 import os
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 from pathlib import Path
@@ -19,7 +20,9 @@ from hive_benchmarks.m0_runner import (
     blocked_receipt,
     build_parser,
     build_run_plan,
+    build_smoke_plan,
     command_run,
+    command_smoke,
     download_plan,
     load_config,
     load_suite,
@@ -194,6 +197,185 @@ class M0ConfigTests(unittest.TestCase):
         )
         self.assertEqual(len(plan["settings_hash"]), 64)
 
+    def test_smoke_plan_uses_one_low_cost_run(self) -> None:
+        prompt = next(
+            item for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        plan = build_smoke_plan(
+            self.config,
+            prompt,
+            "smoke-regression-test-001",
+        )
+        settings = plan["effective_settings"]
+        self.assertFalse(plan["execution_started"])
+        self.assertEqual(plan["selected_profile"], "smoke")
+        self.assertEqual(plan["expected_run_kind"], "single regression smoke")
+        self.assertEqual(plan["run_id"], "smoke-regression-test-001")
+        self.assertEqual(settings["size"], "832*480")
+        self.assertEqual(settings["frame_num"], 17)
+        self.assertEqual(settings["fps"], 16)
+        self.assertEqual(settings["sample_steps"], 4)
+        self.assertEqual(settings["repeat"], 1)
+        self.assertEqual(plan["sample"]["seed"], 101)
+
+    def test_smoke_cli_plan_does_not_start_preflight_or_execution(self) -> None:
+        args = argparse.Namespace(
+            output_dir=None,
+            run_id="smoke-regression-test-002",
+            plan=True,
+            expect_settings_hash=None,
+        )
+        output = io.StringIO()
+        with (
+            patch("hive_benchmarks.m0_runner.evaluate_preflight") as preflight,
+            patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+            patch("hive_benchmarks.m0_runner.subprocess.Popen") as popen,
+            contextlib.redirect_stdout(output),
+        ):
+            return_code = command_smoke(args, self.config)
+        self.assertEqual(return_code, 0)
+        preflight.assert_not_called()
+        run_sample.assert_not_called()
+        popen.assert_not_called()
+        payload = json.loads(output.getvalue())
+        self.assertFalse(payload["execution_started"])
+        self.assertEqual(payload["effective_settings"]["repeat"], 1)
+
+    def test_smoke_missing_approval_hash_blocks_before_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            args = argparse.Namespace(
+                output_dir=temporary,
+                run_id="smoke-regression-test-003",
+                plan=False,
+                expect_settings_hash=None,
+            )
+            output = io.StringIO()
+            with (
+                patch(
+                    "hive_benchmarks.m0_runner.evaluate_preflight"
+                ) as preflight,
+                patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+                contextlib.redirect_stdout(output),
+            ):
+                return_code = command_smoke(args, self.config)
+        self.assertEqual(return_code, 2)
+        preflight.assert_not_called()
+        run_sample.assert_not_called()
+        self.assertEqual(
+            json.loads(output.getvalue())["stage"],
+            "settings-approval",
+        )
+
+    def test_smoke_mismatched_approval_hash_blocks_before_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            args = argparse.Namespace(
+                output_dir=temporary,
+                run_id="smoke-regression-test-004",
+                plan=False,
+                expect_settings_hash="0" * 64,
+            )
+            output = io.StringIO()
+            with (
+                patch(
+                    "hive_benchmarks.m0_runner.evaluate_preflight"
+                ) as preflight,
+                patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+                contextlib.redirect_stdout(output),
+            ):
+                return_code = command_smoke(args, self.config)
+        self.assertEqual(return_code, 2)
+        preflight.assert_not_called()
+        run_sample.assert_not_called()
+        self.assertIn("does not match", output.getvalue())
+
+    def test_smoke_approved_hash_and_run_id_reach_receipt_execution(self) -> None:
+        prompt = next(
+            item for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        run_id = "smoke-regression-test-005"
+        plan = build_smoke_plan(self.config, prompt, run_id)
+        receipt = {
+            "run_id": run_id,
+            "profile": "smoke",
+            "settings_hash": plan["settings_hash"],
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            args = argparse.Namespace(
+                output_dir=temporary,
+                run_id=run_id,
+                plan=False,
+                expect_settings_hash=plan["settings_hash"],
+            )
+            output = io.StringIO()
+            with (
+                patch(
+                    "hive_benchmarks.m0_runner.run_sample",
+                    return_value=(0, receipt),
+                ) as run_sample,
+                patch(
+                    "hive_benchmarks.m0_runner.read_gate_state",
+                    return_value={
+                        "schema_version": "0.1.0",
+                        "smoke": None,
+                        "reproducibility": None,
+                    },
+                ),
+                patch("hive_benchmarks.m0_runner.write_gate_state"),
+                contextlib.redirect_stdout(output),
+            ):
+                return_code = command_smoke(args, self.config)
+        self.assertEqual(return_code, 0)
+        self.assertEqual(run_sample.call_args.kwargs["profile"], "smoke")
+        self.assertEqual(run_sample.call_args.kwargs["repeat"], 1)
+        self.assertEqual(run_sample.call_args.kwargs["run_id"], run_id)
+        self.assertEqual(json.loads(output.getvalue())["run_id"], run_id)
+
+    def test_smoke_existing_run_id_blocks_before_overwrite(self) -> None:
+        prompt = next(
+            item for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        run_id = "smoke-regression-test-006"
+        plan = build_smoke_plan(self.config, prompt, run_id)
+        with tempfile.TemporaryDirectory() as temporary:
+            collision = Path(temporary) / f"{run_id}.receipt.json"
+            collision.write_text("existing", encoding="utf-8")
+            args = argparse.Namespace(
+                output_dir=temporary,
+                run_id=run_id,
+                plan=False,
+                expect_settings_hash=plan["settings_hash"],
+            )
+            output = io.StringIO()
+            with (
+                patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+                contextlib.redirect_stdout(output),
+            ):
+                return_code = command_smoke(args, self.config)
+        self.assertEqual(return_code, 2)
+        run_sample.assert_not_called()
+        payload = json.loads(output.getvalue())
+        self.assertEqual(payload["stage"], "run-id-collision")
+        self.assertIn(str(collision), payload["message"])
+
+    def test_smoke_invalid_run_id_has_understandable_cli_error(self) -> None:
+        error = io.StringIO()
+        with (
+            contextlib.redirect_stderr(error),
+            self.assertRaises(SystemExit),
+        ):
+            build_parser().parse_args(
+                [
+                    "smoke",
+                    "--run-id",
+                    "../unsafe",
+                    "--plan",
+                ]
+            )
+        self.assertIn("Run ID must be", error.getvalue())
+
     def test_cli_plan_does_not_start_preflight_or_model_execution(self) -> None:
         args = argparse.Namespace(
             profile="smoke-cold-warm",
@@ -305,6 +487,20 @@ class M0ConfigTests(unittest.TestCase):
             encoding="utf-8"
         )
         parser = build_parser()
+        smoke_args = parser.parse_args(
+            [
+                "smoke",
+                "--run-id",
+                "smoke-regression-documented",
+                "--plan",
+            ]
+        )
+        self.assertTrue(smoke_args.plan)
+        self.assertEqual(
+            smoke_args.run_id,
+            "smoke-regression-documented",
+        )
+        self.assertIn("smoke --run-id", document)
         for profile in ("smoke-cold-warm", "baseline-reproducibility"):
             command = [
                 "run",
@@ -327,6 +523,8 @@ class M0ConfigTests(unittest.TestCase):
         with path.open(encoding="utf-8") as handle:
             payload = json.load(handle)
         self.assertEqual(payload["properties"]["status"]["enum"][0], "blocked")
+        self.assertIn("smoke", payload["properties"]["profile"]["enum"])
+        self.assertEqual(payload["properties"]["run_id"]["minLength"], 1)
         self.assertIn(
             "smoke-cold-warm",
             payload["properties"]["profile"]["enum"],

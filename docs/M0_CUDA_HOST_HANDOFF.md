@@ -182,8 +182,10 @@ It does not claim a full hash manifest for every small metadata file.
 Use one result root consistently so the gate receipts remain together:
 
 ```bash
-# 1. One low-cost smoke generation.
-python hiveframe_m0.py smoke
+# 1. Plan and approve one uniquely identified low-cost smoke generation.
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID --plan
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID \
+  --expect-settings-hash SMOKE_SETTINGS_HASH_FROM_PLAN
 
 # 2. Print and approve the low-cost cold/warm plan without loading the model.
 python hiveframe_m0.py run --profile smoke-cold-warm \
@@ -197,6 +199,10 @@ python hiveframe_m0.py run --profile smoke-cold-warm \
 # 5. Run the ten canonical prompts only after both gates pass.
 python hiveframe_m0.py run-suite
 ```
+
+Smoke plan fixes repeat to one. A missing or mismatched approval hash, invalid
+run ID, or existing artifact with the same run ID blocks before preflight and
+model loading.
 
 There are no separate cold and warm commands. `run` executes them consecutively
 inside one process so model state and runtime caches are comparable. The

@@ -112,19 +112,23 @@ python hiveframe_m0.py verify-model --full
 Execution order is enforced:
 
 ```powershell
-# 1. One low-cost pipeline check
-python hiveframe_m0.py smoke
+# 1. Plan one low-cost pipeline check without loading the model
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID --plan
 
-# 2. Inspect the exact low-cost cold/warm settings without loading the model
+# 2. Execute the unique Smoke ID only with its approved settings hash
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID `
+  --expect-settings-hash SMOKE_SETTINGS_HASH_FROM_PLAN
+
+# 3. Inspect the exact low-cost cold/warm settings without loading the model
 python hiveframe_m0.py run --profile smoke-cold-warm `
   --prompt-id static-speaking-person --plan
 
-# 3. Execute only with the settings hash copied from the approved plan
+# 4. Execute only with the settings hash copied from the approved plan
 python hiveframe_m0.py run --profile smoke-cold-warm `
   --prompt-id static-speaking-person `
   --expect-settings-hash SETTINGS_HASH_FROM_PLAN
 
-# 4. Only after smoke and hash reproducibility pass
+# 5. Only after smoke and hash reproducibility pass
 python hiveframe_m0.py run-suite
 ```
 
@@ -152,6 +156,12 @@ complete effective settings, model/code revisions, expected run kind, and
 settings hash. Execution requires the exact hash through
 `--expect-settings-hash`; a missing or different hash is rejected before
 preflight or the model child process starts.
+
+The `smoke` command uses the same plan and approval-hash validation path with
+profile `smoke`, expected run kind `single regression smoke`, and repeat 1.
+`--run-id` is required. It accepts only ASCII letters, digits, `.`, `_`, and
+`-`; any existing artifact beginning with `<run-id>.` blocks execution before
+preflight so earlier receipts, logs, and videos cannot be overwritten.
 
 ## Fixed generation inputs
 

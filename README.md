@@ -95,7 +95,9 @@ python hiveframe_m0.py preflight
 After an approved model setup on a compatible NVIDIA CUDA host, M0 enforces:
 
 ```bash
-python hiveframe_m0.py smoke
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID --plan
+python hiveframe_m0.py smoke --run-id SMOKE_RUN_ID \
+  --expect-settings-hash SMOKE_SETTINGS_HASH_FROM_PLAN
 python hiveframe_m0.py run --profile smoke-cold-warm \
   --prompt-id static-speaking-person --plan
 python hiveframe_m0.py run --profile smoke-cold-warm \
@@ -103,6 +105,10 @@ python hiveframe_m0.py run --profile smoke-cold-warm \
   --expect-settings-hash SETTINGS_HASH_FROM_PLAN
 python hiveframe_m0.py run-suite
 ```
+
+Smoke execution requires a unique `--run-id`; any existing artifact with that
+ID blocks execution before preflight. Its model-free plan fixes repeat to one
+and prints the approval hash required by the execution command.
 
 `run` requires an explicit profile. `smoke-cold-warm` selects the 17-frame,
 4-step smoke cost with two in-process generations. The preserved
