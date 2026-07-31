@@ -1,0 +1,1666 @@
+{
+  "amdahl": {
+    "end_to_end_upper_bound": {
+      "method": "cannot evaluate 1/((1-f)+f/s) without f",
+      "reason": "Amdahl optimized fraction f_input is unavailable.",
+      "status": "unavailable",
+      "unit": "ratio",
+      "value": null
+    },
+    "f_input": {
+      "method": "not measured in M0 Single-Eye Cost Truth",
+      "reason": "M0 does not isolate eligible input/orchestration share.",
+      "status": "unavailable",
+      "unit": "ratio",
+      "value": null
+    },
+    "formula": "Speedup_max=1/((1-f_input)+f_input/s_control)",
+    "meaning": "Only the local control-plane speedup factor is available. No end-to-end Wan or product bound is asserted.",
+    "s_control": {
+      "maximum": 1.625342742364019,
+      "method": "merged Rust Probe Python p50 / Rust p50",
+      "minimum": 1.2331273022413687,
+      "status": "available"
+    },
+    "status": "partially_available"
+  },
+  "analytical_issue": 37,
+  "base_main_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "benchmark_status": "model_free_pre_gate",
+  "break_even_equation": "S_required(T)=C_input_and_orchestration(T)-C_input_and_orchestration(Mono)",
+  "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+  "cost_records": [
+    {
+      "candidate_id": "T0",
+      "case_id": "case-a-low-resolution-simple",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0032034
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0
+        },
+        "calibration_profile": "low",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 7.966666666666666e-07
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.0016975
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 7.1e-07
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 4.1e-07
+          },
+          "C_scout": {
+            "method": "structural absence: this topology has no scout stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 1
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 1
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 1.9366666666666666e-06
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 1
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 3932160
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0032034
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 0
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0039502
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 1
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 245760.0
+        },
+        "topology": "mono_1x1",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 3932160
+        }
+      }
+    },
+    {
+      "candidate_id": "T1",
+      "case_id": "case-a-low-resolution-simple",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0038103
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0006069000000000001
+        },
+        "calibration_profile": "low",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 1.6266666666666668e-06
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.0023309566666666667
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 1.3266666666666667e-06
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 1.1933333333333333e-06
+          },
+          "C_scout": {
+            "method": "structural absence: this topology has no scout stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 5
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 5
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 8.360000000000001e-07
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 5
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 3932160
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0032034
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 3932160
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0056472
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 5
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 245760.0
+        },
+        "topology": "uniform_2x2",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 7864320
+        }
+      }
+    },
+    {
+      "candidate_id": "T2",
+      "case_id": "case-a-low-resolution-simple",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0038067
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0006033000000000002
+        },
+        "calibration_profile": "low",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 9.2e-07
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.00130233
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 9.566666666666667e-07
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.0010247033333333334
+          },
+          "C_scout": {
+            "method": "merged Rust Probe routing aggregate",
+            "reason": "Motion detection is included in routing and was not isolated.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 3
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 3
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 0.00034220111111111113
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 3
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 3932160
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0032034
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 3957504
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0056166
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 3
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 245760.0
+        },
+        "topology": "motion_focused",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 7889664
+        }
+      }
+    },
+    {
+      "candidate_id": "T0",
+      "case_id": "case-b-high-resolution-local-change",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0143637
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0
+        },
+        "calibration_profile": "high",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 1.1233333333333333e-06
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.008044186666666666
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 1.65e-06
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.866666666666667e-07
+          },
+          "C_scout": {
+            "method": "structural absence: this topology has no scout stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 1
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 1
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 3.11e-06
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 1
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 16588800
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0143637
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 0
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0182377
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 1
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 2073600.0
+        },
+        "topology": "mono_1x1",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 16588800
+        }
+      }
+    },
+    {
+      "candidate_id": "T1",
+      "case_id": "case-b-high-resolution-local-change",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.017613
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0032493
+        },
+        "calibration_profile": "high",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 5.5333333333333334e-06
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.011150483333333334
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.5566666666666666e-06
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.49e-06
+          },
+          "C_scout": {
+            "method": "structural absence: this topology has no scout stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 5
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 5
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 2.124e-06
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 5
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 16588800
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0143637
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 16588800
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0260061
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 5
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 2073600.0
+        },
+        "topology": "uniform_2x2",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 33177600
+        }
+      }
+    },
+    {
+      "candidate_id": "T2",
+      "case_id": "case-b-high-resolution-local-change",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0188188
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0044551
+        },
+        "calibration_profile": "high",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.48e-06
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.007594106666666667
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.1733333333333334e-06
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.004755046666666667
+          },
+          "C_scout": {
+            "method": "merged Rust Probe routing aggregate",
+            "reason": "Motion detection is included in routing and was not isolated.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 3
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 3
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 0.0015865777777777778
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 3
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 16588800
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0143637
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 16685312
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.030587
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 3
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 2073600.0
+        },
+        "topology": "motion_focused",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 33274112
+        }
+      }
+    },
+    {
+      "candidate_id": "T0",
+      "case_id": "case-c-global-motion",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0118324
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0
+        },
+        "calibration_profile": "medium",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 8.8e-07
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.006285
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 1.5166666666666668e-06
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.5666666666666666e-07
+          },
+          "C_scout": {
+            "method": "structural absence: this topology has no scout stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 1
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 1
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 2.7100000000000003e-06
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 1
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 14745600
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0118324
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 0
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0153748
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 1
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 921600.0
+        },
+        "topology": "mono_1x1",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 14745600
+        }
+      }
+    },
+    {
+      "candidate_id": "T1",
+      "case_id": "case-c-global-motion",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0145172
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0026847999999999993
+        },
+        "calibration_profile": "medium",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.5766666666666664e-06
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.008830296666666666
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 1.9133333333333334e-06
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.2666666666666664e-06
+          },
+          "C_scout": {
+            "method": "structural absence: this topology has no scout stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 5
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 5
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 1.358e-06
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 5
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 14745600
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0118324
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 14745600
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0213406
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 5
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 921600.0
+        },
+        "topology": "uniform_2x2",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 29491200
+        }
+      }
+    },
+    {
+      "candidate_id": "T2",
+      "case_id": "case-c-global-motion",
+      "cost": {
+        "C_input_and_orchestration": {
+          "method": "merged Rust Probe p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0147605
+        },
+        "C_total": {
+          "method": "not measured",
+          "reason": "Generation, audit, and recovery components are unavailable.",
+          "status": "partially_available",
+          "unit": "seconds",
+          "value": null
+        },
+        "S_required": {
+          "method": "max(0, candidate Rust p50 - Mono Rust p50)",
+          "reason": "Minimum downstream output savings required to repay measured input/orchestration overhead.",
+          "status": "derived",
+          "unit": "seconds",
+          "value": 0.0029280999999999995
+        },
+        "calibration_profile": "medium",
+        "components": {
+          "C_audit": {
+            "method": "not measured",
+            "reason": "No output quality or safety audit executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_fusion": {
+            "method": "merged Rust Probe fusion_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.48e-06
+          },
+          "C_generation": {
+            "method": "not measured",
+            "reason": "The model-free probe does not execute backend generation.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "C_observe": {
+            "method": "merged Rust Probe observation_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.005192176666666667
+          },
+          "C_overlap": {
+            "method": "structural absence: selected M1-P0 candidates have no halo stage",
+            "reason": null,
+            "status": "derived",
+            "unit": "seconds",
+            "value": 0.0
+          },
+          "C_plan": {
+            "method": "merged Rust Probe compute_plan_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 2.0733333333333335e-06
+          },
+          "C_route": {
+            "method": "merged Rust Probe routing_seconds_mean",
+            "reason": null,
+            "status": "collected",
+            "unit": "seconds",
+            "value": 0.00391939
+          },
+          "C_scout": {
+            "method": "merged Rust Probe routing aggregate",
+            "reason": "Motion detection is included in routing and was not isolated.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          },
+          "E_C_recovery": {
+            "method": "not measured",
+            "reason": "No backend failure or repair path executes in this probe.",
+            "status": "unavailable",
+            "unit": "seconds",
+            "value": null
+          }
+        },
+        "coordinate_transform_count": {
+          "method": "one local-to-global transform per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "transforms",
+          "value": 3
+        },
+        "copied_bytes": {
+          "method": "explicit pixel-buffer copies",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 0.0
+        },
+        "cost_equation": "C_total(T)=C_scout+C_route(T)+C_observe(T)+C_overlap(T)+C_fusion(T)+C_plan(T)+C_generation(T)+C_audit(T)+E[C_recovery|T]",
+        "eye_count": {
+          "method": "declared topology geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "eyes",
+          "value": 3
+        },
+        "fixed_eye_cost_proxy": {
+          "method": "merged Rust routing+coordinate+fusion+plan means divided by reported eye count; proxy, not isolated allocation cost",
+          "reason": null,
+          "status": "derived",
+          "unit": "seconds/eye",
+          "value": 0.0013079922222222222
+        },
+        "fusion_input_count": {
+          "method": "one Fusion input per declared Eye",
+          "reason": null,
+          "status": "derived",
+          "unit": "observations",
+          "value": 3
+        },
+        "logical_input_bytes": {
+          "method": "declared packed uint8 input geometry",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 14745600
+        },
+        "mono_input_and_orchestration": {
+          "method": "merged Rust Probe Mono p50 core latency",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0118324
+        },
+        "overlap_duplicate_bytes": {
+          "method": "max(total observation bytes - unique input bytes, 0)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 29491200
+        },
+        "predicted_probe_p50": {
+          "method": "merged Python reference p50 for matching shape/topology",
+          "reason": null,
+          "status": "collected",
+          "unit": "seconds",
+          "value": 0.0226508
+        },
+        "scheduler_call_count": {
+          "method": "one candidate unit per declared Eye in the v0 reference",
+          "reason": null,
+          "status": "derived",
+          "unit": "calls",
+          "value": 3
+        },
+        "temporary_buffer_bytes": {
+          "method": "dominant pixel-sized temporary buffers",
+          "reason": null,
+          "status": "collected",
+          "unit": "bytes",
+          "value": 921600.0
+        },
+        "topology": "motion_focused",
+        "total_observation_bytes": {
+          "method": "sum(receptive-field pixels * frames * bytes_per_pixel)",
+          "reason": null,
+          "status": "derived",
+          "unit": "bytes",
+          "value": 44236800
+        }
+      }
+    }
+  ],
+  "cuda_used": false,
+  "m0_completion_eligible": false,
+  "m1_completion_eligible": false,
+  "model_loaded": false,
+  "official_m0_run_receipt": false,
+  "repetitions": 20,
+  "run_kind": "analytical_topology_pruning_probe",
+  "rust_probe_issue_35_closed": true,
+  "rust_probe_merge_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "schema_version": "0.1.0",
+  "seed": 101,
+  "thresholds": {
+    "false_stable_max": 0.005,
+    "global_motion_dirty_ratio": 0.5,
+    "max_observation_multiplier_without_backend_savings": 1.5,
+    "minimum_potential_generation_savings_to_keep": 0.01,
+    "prediction_relative_error_refine": 0.35,
+    "prune_full_canvas_generate_candidate": true,
+    "small_input_max_pixels": 3932160
+  },
+  "warmups": 5
+}

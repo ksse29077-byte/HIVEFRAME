@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0",
+  "run_kind": "analytical_topology_pruning_probe",
+  "base_main_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "rust_probe_merge_commit": "a71eea742f5a804c30f6f095c1a256ee2d2561a6",
+  "analytical_issue": 37,
+  "seed": 101,
+  "warmups": 5,
+  "repetitions": 20,
+  "thresholds": {
+    "prune_full_canvas_generate_candidate": true,
+    "max_observation_multiplier_without_backend_savings": 1.5,
+    "minimum_potential_generation_savings_to_keep": 0.01,
+    "small_input_max_pixels": 3932160,
+    "global_motion_dirty_ratio": 0.5,
+    "false_stable_max": 0.005,
+    "prediction_relative_error_refine": 0.35
+  }
+}
