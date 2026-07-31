@@ -33,10 +33,10 @@ absent.
 ## Installed locations
 
 ```text
-/home/ksse2/.local/python-3.10.20
-/home/ksse2/.venvs/hiveframe-m0
-/home/ksse2/src/Wan2.1
-/home/ksse2/hiveframe-m0-state
+$HOME/.local/python-3.10.20
+$HOME/.venvs/hiveframe-m0
+$HOME/src/Wan2.1
+$HOME/hiveframe-m0-state
 ```
 
 The official Wan source checkout is detached and clean at:
@@ -72,19 +72,20 @@ outside the model-free M0 execution path.
 From Ubuntu:
 
 ```bash
-source /home/ksse2/.venvs/hiveframe-m0/bin/activate
-export PYTHONPATH=/mnt/c/Users/ksse2/Documents/Codex/2026-07-30/referenced-chatgpt-conversation-this-is-untrusted-2/outputs/HIVEFRAME/python
-export HIVEFRAME_WAN_CODE_DIR=/home/ksse2/src/Wan2.1
-export HIVEFRAME_MODEL_DIR=/home/ksse2/ai/models/Wan2.1-T2V-1.3B
-export HIVEFRAME_HF_CACHE_DIR=/home/ksse2/ai/cache/huggingface
-export HIVEFRAME_M0_REPORT_DIR=/home/ksse2/hiveframe-m0-state
-cd /mnt/c/Users/ksse2/Documents/Codex/2026-07-30/referenced-chatgpt-conversation-this-is-untrusted-2/outputs/HIVEFRAME
+source "$HOME/.venvs/hiveframe-m0/bin/activate"
+export HIVEFRAME_REPO="$HOME/src/HIVEFRAME"
+export PYTHONPATH="$HIVEFRAME_REPO/python"
+export HIVEFRAME_WAN_CODE_DIR="$HOME/src/Wan2.1"
+export HIVEFRAME_MODEL_DIR="$HOME/ai/models/Wan2.1-T2V-1.3B"
+export HIVEFRAME_HF_CACHE_DIR="$HOME/ai/cache/huggingface"
+export HIVEFRAME_M0_REPORT_DIR="$HOME/hiveframe-m0-state"
+cd "$HIVEFRAME_REPO"
 
 python -m pip check
 python -m unittest discover -s python/tests -v
 python hiveframe_m0.py download-plan
 python hiveframe_m0.py preflight \
-  --output /home/ksse2/hiveframe-m0-state/preflight.json
+  --output "$HIVEFRAME_M0_REPORT_DIR/preflight.json"
 ```
 
 Before checkpoint approval, `preflight` must stop with exactly one blocker:
@@ -95,15 +96,15 @@ Before checkpoint approval, `preflight` must stop with exactly one blocker:
 Use the WSL Linux filesystem for large, frequently read model and cache files:
 
 ```text
-Model: /home/ksse2/ai/models/Wan2.1-T2V-1.3B
-Cache: /home/ksse2/ai/cache/huggingface
+Model: $HOME/ai/models/Wan2.1-T2V-1.3B
+Cache: $HOME/ai/cache/huggingface
 ```
 
 These paths are short, separate, and were deliberately not created during host
-qualification. The earlier Windows locations are addressable as
-`/mnt/c/AI/Models` and `/mnt/c/AI/HFCache`, but Linux-native ext4 storage is
-preferred for model loading, cache metadata, and many-file workloads. Keeping
-the source repository on `/mnt/c` is acceptable for the small M0 codebase.
+qualification. Windows-mounted locations are addressable from WSL, but
+Linux-native ext4 storage is preferred for model loading, cache metadata, and
+many-file workloads. Keeping the small M0 source repository on a Windows mount
+is acceptable.
 
 ## Pending checkpoint gate
 

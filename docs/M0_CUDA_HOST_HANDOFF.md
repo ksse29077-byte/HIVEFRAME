@@ -56,7 +56,7 @@ python3.10 --version
 Create an isolated environment and install the anchored pair:
 
 ```bash
-cd /opt/hiveframe
+cd "$HOME/src/HIVEFRAME"
 python3.10 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel packaging psutil ninja
@@ -92,14 +92,14 @@ the official Wan source separately and detach it at the already admitted
 revision:
 
 ```bash
-git clone https://github.com/ksse29077-byte/HIVEFRAME.git /opt/hiveframe
-cd /opt/hiveframe
+git clone https://github.com/ksse29077-byte/HIVEFRAME.git "$HOME/src/HIVEFRAME"
+cd "$HOME/src/HIVEFRAME"
 git checkout <approved-hiveframe-commit>
 
-git clone https://github.com/Wan-Video/Wan2.1.git /opt/wan21
-git -C /opt/wan21 checkout --detach 9737cba9c1c3c4d04b33fcad41c111989865d315
-git -C /opt/wan21 status --short
-git -C /opt/wan21 rev-parse HEAD
+git clone https://github.com/Wan-Video/Wan2.1.git "$HOME/src/Wan2.1"
+git -C "$HOME/src/Wan2.1" checkout --detach 9737cba9c1c3c4d04b33fcad41c111989865d315
+git -C "$HOME/src/Wan2.1" status --short
+git -C "$HOME/src/Wan2.1" rev-parse HEAD
 ```
 
 The Wan checkout must be clean and the final command must print exactly
@@ -111,10 +111,10 @@ The runner accepts absolute paths in `configs/m0.wan21.toml`. Environment
 variables are preferred because they keep the tracked configuration unchanged:
 
 ```bash
-export HIVEFRAME_WAN_CODE_DIR=/opt/wan21
-export HIVEFRAME_MODEL_DIR=/mnt/models/wan21-1.3b
-export HIVEFRAME_HF_CACHE_DIR=/mnt/cache/huggingface
-export HIVEFRAME_M0_REPORT_DIR=/mnt/results/hiveframe-m0
+export HIVEFRAME_WAN_CODE_DIR="$HOME/src/Wan2.1"
+export HIVEFRAME_MODEL_DIR="$HOME/ai/models/Wan2.1-T2V-1.3B"
+export HIVEFRAME_HF_CACHE_DIR="$HOME/ai/cache/huggingface"
+export HIVEFRAME_M0_REPORT_DIR="$HOME/hiveframe-m0-state"
 ```
 
 Supported overrides:
@@ -129,10 +129,10 @@ Supported overrides:
 Windows also accepts short absolute paths. For example:
 
 ```powershell
-$env:HIVEFRAME_WAN_CODE_DIR = 'D:\wan'
-$env:HIVEFRAME_MODEL_DIR = 'D:\models\wan13'
-$env:HIVEFRAME_HF_CACHE_DIR = 'D:\hf-cache'
-$env:HIVEFRAME_M0_REPORT_DIR = 'D:\m0'
+$env:HIVEFRAME_WAN_CODE_DIR = '<wan-code-dir>'
+$env:HIVEFRAME_MODEL_DIR = '<model-dir>'
+$env:HIVEFRAME_HF_CACHE_DIR = '<hf-cache-dir>'
+$env:HIVEFRAME_M0_REPORT_DIR = '<result-dir>'
 ```
 
 Run `download-plan` after setting the variables. Its printed destinations are
@@ -213,10 +213,10 @@ fails the reproducibility gate and blocks the canonical suite.
 
 ## Result collection
 
-With `HIVEFRAME_M0_REPORT_DIR=/mnt/results/hiveframe-m0`, collect:
+Collect from the directory selected by `HIVEFRAME_M0_REPORT_DIR`:
 
 ```text
-/mnt/results/hiveframe-m0/
+<result-dir>/
 ├── preflight.json
 ├── gates.json
 └── runs/

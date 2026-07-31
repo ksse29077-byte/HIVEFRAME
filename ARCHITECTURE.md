@@ -32,6 +32,9 @@ input sequence + intent
 
 The detailed RFC is
 [`docs/COMPOUND_EYE_ARCHITECTURE.md`](docs/COMPOUND_EYE_ARCHITECTURE.md).
+The official delivery order and proof gates are
+[`ROADMAP.md`](ROADMAP.md) and
+[`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
 The prior output-side patch-centric design is preserved at
 [`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md)
 and tag `pre-compound-eye-v1`.
@@ -109,16 +112,17 @@ M0 backend gate.
 
 ## Future backend flow
 
-1. Validate model/data admission and M0 comparator fingerprint.
-2. Query backend selector capabilities.
-3. Compile intent and observations.
-4. Build `SharedVisualState` and affected closure.
-5. Translate supported selectors; promote or reject unsupported selectors.
-6. Execute shared model weights without per-eye model replication.
-7. Exchange bounded context where required.
-8. Evaluate change, constraints, seams, drift, and false skips.
-9. Repair the smallest safe scope or fail explicitly.
-10. Emit complete receipts including all observation and orchestration costs.
+1. Validate model/data admission and the M0 Single-Eye Cost Truth comparator.
+2. Allow a scout to retain 1×1 Mono or propose a multi-eye topology.
+3. Query backend selector capabilities.
+4. Compile intent and observations.
+5. Build `SharedVisualState` and affected closure.
+6. Translate supported selectors; promote or reject unsupported selectors.
+7. Execute shared model weights without per-eye model replication.
+8. Exchange bounded context where required.
+9. Evaluate change, constraints, seams, drift, and false skips.
+10. Repair the smallest safe scope or fail explicitly.
+11. Emit complete receipts including all observation and orchestration costs.
 
 ## Retained patch, boundary, and cache mechanisms
 

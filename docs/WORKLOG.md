@@ -50,7 +50,7 @@ their architecture documents.
 
 ---
 
-## 2026-07-31 — Compound-eye architecture RFC implemented locally
+## 2026-07-31 — Compound-eye architecture RFC implemented
 
 ### Purpose
 
@@ -60,7 +60,7 @@ assets.
 
 ### Change
 
-- Preserved the pre-rebase snapshot with local tag
+- Preserved the pre-rebase snapshot with annotated tag
   `pre-compound-eye-v1` at
   `2bc35ff4a0d442dc5fa43924d719de942960762b`.
 - Created branch `agent/compound-eye-architecture-v1`.
@@ -87,7 +87,7 @@ assets.
 
 ### Commit
 
-Local commit:
+Architecture commit:
 
 `041311bf6c3aad144f1a64980a36fd399c6c17d8`
 
@@ -102,14 +102,16 @@ Local commit:
 
 ### Publication state
 
-- branch push: `blocked`;
-- tag push: `blocked`;
+- repository visibility: `PUBLIC`;
+- branch push: `published`;
+- annotated tag push: `published`;
 - RFC Issue: not created;
 - draft PR: not created.
 
-Reason: external publication requires explicit approval for the exact private
-GitHub repository and an authenticated GitHub write path. Do not report remote
-links until verified.
+The RFC branch and tag were published with normal Git transport. Commit
+`041311bf6c3aad144f1a64980a36fd399c6c17d8` remains an exact ancestor of the
+remote branch. The tag resolves to the preserved pre-rebase commit. No GitHub
+Contents API reconstruction was used, and `main` was not modified.
 
 ### Rollback
 
@@ -152,7 +154,41 @@ into one oversized log.
 - `git diff --check`: passed.
 - Model load: 0.
 - CUDA execution: 0.
-- Publication state remains unchanged and blocked pending explicit approval.
+- Publication of the operating-log commit was verified later with the RFC
+  branch; Issue and Draft PR remained pending.
+
+---
+
+## 2026-07-31 — Compound I/O roadmap reconciliation
+
+### Purpose
+
+Make the adaptive Compound I/O M0–M8 sequence the official roadmap while
+preserving M0 evidence and the patch-centric comparison design.
+
+### Change
+
+- Replaced the milestone sequence in `ROADMAP.md`.
+- Added normative `ROADMAP_EXECUTION_RULES.md`.
+- Added a dated reconciliation record under `docs/worklogs/`.
+- Aligned README, charter, architecture, tasks, and operating handoff.
+- Corrected repository visibility to `PUBLIC`.
+
+### Publication and review
+
+The changes remain isolated on `agent/compound-eye-architecture-v1`. They are
+not written directly to `main`; an RFC Issue and Draft PR are required before
+review completion.
+
+### Verification
+
+- Python compile: passed in the existing isolated environment.
+- Python unittest: 59 passed.
+- Rust `cargo check --workspace --locked`: passed.
+- JSON Schema parsing: 6 files passed.
+- `git diff --check`: passed.
+- Model load: 0.
+- CUDA execution: 0.
 
 ---
 

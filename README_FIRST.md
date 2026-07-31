@@ -13,7 +13,9 @@ As of 2026-07-31:
   49-frame memory admission have succeeded on the recorded RTX 3060 host;
 - compound-eye schemas and NumPy reference simulation passed 59 model-free
   Python tests and the Rust workspace check;
-- the branch and tag were local-only at the last verified publication check;
+- repository visibility is `PUBLIC`;
+- the RFC branch and annotated preservation tag are published with exact Git
+  history;
 - GitHub Issue and draft PR were not yet created.
 
 Always run `git status -sb` and `git rev-parse HEAD` before relying on this
@@ -44,6 +46,8 @@ bypass, weaken, or silently rerun it.
    `docs/HIVEFRAME_COMPOUND_EYE_RUNTIME_ADDENDUM.md`.
 5. For M0 work, read `docs/M0_BASELINE.md`.
 6. For compound-eye experiments, read:
+   - `ROADMAP.md`
+   - `docs/ROADMAP_EXECUTION_RULES.md`
    - `docs/COMPOUND_EYE_HYPOTHESIS.md`
    - `docs/COMPOUND_EYE_ARCHITECTURE.md`
    - `docs/EXPERIMENT_PROTOCOL_EYE_V0.md`
@@ -51,14 +55,12 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Complete R0 publication only after explicit approval for
-`ksse29077-byte/HIVEFRAME`:
+Complete the remaining R0 review publication on the public repository:
 
-1. push `agent/compound-eye-architecture-v1`;
-2. push `pre-compound-eye-v1`;
-3. create Issue `RFC: Reframe HIVEFRAME as a compound-eye visual runtime`;
-4. create a draft PR;
-5. record links and CI state in `docs/WORKLOG.md`.
+1. reconcile the official Compound I/O roadmap on the RFC branch;
+2. create Issue `RFC: Reframe HIVEFRAME as a compound-eye visual runtime`;
+3. create a Draft PR;
+4. record links and CI state in `docs/WORKLOG.md`.
 
 Do not begin M1 model integration while R0 publication and review remain
 unresolved.

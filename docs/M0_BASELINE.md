@@ -74,16 +74,18 @@ No model or large file has been downloaded.
 | Recommended free space before download | 46,737,418,240 bytes / 46.737 GB / about 43.53 GiB |
 | Free space observed on C | about 705.5 GiB |
 
-Exact model destination:
+The model destination is external to the repository and is selected by
+`HIVEFRAME_MODEL_DIR` or the corresponding local configuration:
 
 ```text
-C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversation-this-is-untrusted-2\outputs\HIVEFRAME\models\Wan2.1-T2V-1.3B
+<model-dir>/Wan2.1-T2V-1.3B
 ```
 
-Exact Hugging Face cache and temporary-download destination:
+The Hugging Face cache and temporary-download destination is selected
+independently:
 
 ```text
-C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversation-this-is-untrusted-2\outputs\HIVEFRAME\models\.hf-cache
+<hf-cache-dir>
 ```
 
 Both directories are excluded from Git. The download command is only printed by `download-plan`; the runner has no command that automatically downloads weights. Explicit user approval is required before running the printed download command.
@@ -157,7 +159,7 @@ iteration uses the first-order update.
 ```powershell
 python hiveframe_m0.py run --profile baseline-memory-admission `
   --prompt-id static-speaking-person `
-  --output-dir /home/ksse2/hiveframe-m0-state/runs/ADMISSION_RUN `
+  --output-dir "$HIVEFRAME_M0_REPORT_DIR/runs/ADMISSION_RUN" `
   --plan
 ```
 

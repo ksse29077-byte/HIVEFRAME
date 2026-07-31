@@ -77,7 +77,7 @@ CUDA runtime과 공식 FlashAttention wheel만 사용하며 `nvcc` 없이
 2. 공식 Wan 코드 checkout
 3. 17.57GB checkpoint 디렉터리
 4. Python 환경을 재구축할 경우 package lock
-5. 필요하면 `/home/ksse2/hiveframe-m0-state`의 로컬 preflight 기록
+5. 필요하면 `$HOME/hiveframe-m0-state`의 로컬 preflight 기록
 
 현재 최신 커밋은 GitHub에 push되지 않았다. GitHub에서 단순 clone하면
 `943deb5`가 없을 수 있으므로, push가 승인되기 전에는 Git bundle 또는
@@ -92,12 +92,13 @@ CUDA runtime과 공식 FlashAttention wheel만 사용하며 `nvcc` 없이
 Windows PowerShell 예시:
 
 ```powershell
-New-Item -ItemType Directory -Force D:\HIVEFRAME-HANDOFF
-git -C "C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversation-this-is-untrusted-2\outputs\HIVEFRAME" `
-  bundle create D:\HIVEFRAME-HANDOFF\HIVEFRAME-handoff.bundle `
+$HandoffDir = "<handoff-dir>"
+New-Item -ItemType Directory -Force $HandoffDir
+git -C "<repo-root>" `
+  bundle create "$HandoffDir\HIVEFRAME-handoff.bundle" `
   agent/m0-baseline-runner
-git -C "C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversation-this-is-untrusted-2\outputs\HIVEFRAME" `
-  bundle verify D:\HIVEFRAME-HANDOFF\HIVEFRAME-handoff.bundle
+git -C "<repo-root>" `
+  bundle verify "$HandoffDir\HIVEFRAME-handoff.bundle"
 ```
 
 ### 5.2 기존 PC에서 모델과 Wan 코드를 묶기
@@ -105,12 +106,13 @@ git -C "C:\Users\ksse2\Documents\Codex\2026-07-30\referenced-chatgpt-conversatio
 Ubuntu에서:
 
 ```bash
-tar -C /home/ksse2/ai/models \
-  -cf /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-T2V-1.3B.tar \
+export HANDOFF_DIR="<mounted-handoff-dir>"
+tar -C "$HOME/ai/models" \
+  -cf "$HANDOFF_DIR/Wan2.1-T2V-1.3B.tar" \
   Wan2.1-T2V-1.3B
 
-tar -C /home/ksse2/src \
-  -cf /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-code-9737cba.tar \
+tar -C "$HOME/src" \
+  -cf "$HANDOFF_DIR/Wan2.1-code-9737cba.tar" \
   Wan2.1
 ```
 
@@ -120,9 +122,9 @@ SHA-256도 별도로 기록한다.
 
 ```bash
 sha256sum \
-  /mnt/d/HIVEFRAME-HANDOFF/HIVEFRAME-handoff.bundle \
-  /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-T2V-1.3B.tar \
-  /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-code-9737cba.tar
+  "$HANDOFF_DIR/HIVEFRAME-handoff.bundle" \
+  "$HANDOFF_DIR/Wan2.1-T2V-1.3B.tar" \
+  "$HANDOFF_DIR/Wan2.1-code-9737cba.tar"
 ```
 
 ### 5.3 새 PC에서 저장소 복원
@@ -133,7 +135,7 @@ sha256sum \
 mkdir -p ~/src
 git clone \
   -b agent/m0-baseline-runner \
-  /mnt/d/HIVEFRAME-HANDOFF/HIVEFRAME-handoff.bundle \
+  "$HANDOFF_DIR/HIVEFRAME-handoff.bundle" \
   ~/src/HIVEFRAME
 
 git -C ~/src/HIVEFRAME rev-parse HEAD
@@ -151,15 +153,15 @@ test -f ~/src/HIVEFRAME/docs/M0_OTHER_PC_HANDOFF_KO.md
 
 ```bash
 mkdir -p ~/ai/models ~/ai/cache/huggingface ~/src
-tar -xf /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-T2V-1.3B.tar \
+tar -xf "$HANDOFF_DIR/Wan2.1-T2V-1.3B.tar" \
   -C ~/ai/models
-tar -xf /mnt/d/HIVEFRAME-HANDOFF/Wan2.1-code-9737cba.tar \
+tar -xf "$HANDOFF_DIR/Wan2.1-code-9737cba.tar" \
   -C ~/src
 ```
 
-모델과 캐시는 `/mnt/c` 또는 `/mnt/d`에서 직접 실행하지 말고 WSL ext4
-내부에 둔다. Windows 마운트 경로는 많은 파일과 대형 weight 로딩에서
-성능이 불리할 수 있다.
+모델과 캐시는 Windows 마운트에서 직접 실행하지 말고 WSL ext4 내부에
+둔다. Windows 마운트 경로는 많은 파일과 대형 weight 로딩에서 성능이
+불리할 수 있다.
 
 ## 6. 대안 이동 방식 B — WSL 배포판 전체 export/import
 
@@ -168,16 +170,16 @@ PowerShell에서:
 
 ```powershell
 wsl --shutdown
-wsl --export Ubuntu-24.04 D:\HIVEFRAME-HANDOFF\Ubuntu-24.04-HIVEFRAME.tar
+wsl --export Ubuntu-24.04 "<handoff-dir>\Ubuntu-24.04-HIVEFRAME.tar"
 ```
 
 새 PC에서:
 
 ```powershell
-wsl --import HIVEFRAME-Ubuntu C:\WSL\HIVEFRAME `
-  D:\HIVEFRAME-HANDOFF\Ubuntu-24.04-HIVEFRAME.tar `
+wsl --import HIVEFRAME-Ubuntu "<wsl-install-dir>" `
+  "<handoff-dir>\Ubuntu-24.04-HIVEFRAME.tar" `
   --version 2
-wsl -d HIVEFRAME-Ubuntu -u ksse2
+wsl -d HIVEFRAME-Ubuntu -u <linux-user>
 ```
 
 이 방식은 빠르지만 기존 Ubuntu 사용자 파일과 캐시를 함께 전달한다.

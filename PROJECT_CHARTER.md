@@ -24,6 +24,9 @@ capabilities or speedup claims.
 
 The falsifiable hypothesis and counterexamples are defined in
 [`docs/COMPOUND_EYE_HYPOTHESIS.md`](docs/COMPOUND_EYE_HYPOTHESIS.md).
+The official milestone sequence is defined in [`ROADMAP.md`](ROADMAP.md), and
+its evidence, cost, safety, and review gates are governed by
+[`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
 
 ## Preserved foundation
 
@@ -120,9 +123,10 @@ Existing executions, receipts, smoke gates, and environment fingerprints remain
 valid. M0 is not rerun or weakened merely because the architecture hypothesis
 changed.
 
-The next research milestone is **M1 — Eye Observation Correctness**. It compares
-model-free and recorded-input observations with oracle change masks before any
-Wan attention-hook or selective generation change.
+The next research milestone is **M1 — Eye Topology Ground Truth Lab**. It
+compares the valid 1×1 Mono Eye and declared multi-eye topologies against oracle
+change masks and complete observation costs before any Wan attention-hook or
+selective generation change.
 
 ## Decision record
 

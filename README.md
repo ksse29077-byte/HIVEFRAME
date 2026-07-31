@@ -31,6 +31,9 @@ This is an architecture hypothesis, not a speedup claim. See
 [`docs/COMPOUND_EYE_HYPOTHESIS.md`](docs/COMPOUND_EYE_HYPOTHESIS.md) and the
 preserved
 [`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md).
+The official milestone sequence is the Compound I/O M0–M8 plan in
+[`ROADMAP.md`](ROADMAP.md); its evidence and advancement rules are normative in
+[`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
 
 ## Project rules
 
@@ -102,7 +105,7 @@ NumPy only and does not load Wan, Torch, CUDA, or model weights.
 ```bash
 PYTHONPATH=python python -m hive_probes.compound_eye_v0 \
   --seed 101 \
-  --output-dir /tmp/hiveframe-eye-v0
+  --output-dir reports/compound-eye-v0
 ```
 
 This emits contracts, observations, shared state, compute plan, and an
@@ -165,9 +168,17 @@ environment, pinned Wan code, and verified checkpoint to another PC is
 
 ## Milestones
 
-M0 Reproducible Baseline → M1 Directed Regional Repair → M2 Patch Runtime Parity → M3 Neighbor-Sealed Patches → M4 Constraint-Compliant Generation → M5 Temporal Sparse Gain → M6 Closed-loop Local Repair → M7 Backend-Independent Runtime → M8 Creator MVP.
+M0 Single-Eye Cost Truth → M1 Eye Topology Ground Truth Lab → M2 Scout Eye and
+Adaptive Topology Planner → M3 Sensory Fusion and Dynamic Eye Activation → M4
+Perception-to-Compute Compiler → M5 Compound I/O Net Gain → M6 Closed-Loop
+Adaptive Retina → M7 Temporal Eye Swarm and Backend Independence → M8
+Commercial Compound Visual Engine.
 
-See [ROADMAP.md](ROADMAP.md) for exit criteria and Sprint A–E.
+See [ROADMAP.md](ROADMAP.md) for milestone questions and exit gates, and
+[Roadmap execution rules](docs/ROADMAP_EXECUTION_RULES.md) for the
+same-condition, complete-cost, safety, evidence, and publication policy. The
+earlier patch-centric milestones remain preserved as comparison and execution
+assets; they were not deleted.
 
 ## Success threshold for the sparse MVP
 
@@ -185,6 +196,7 @@ See [ROADMAP.md](ROADMAP.md) for exit criteria and Sprint A–E.
 - [Project charter](PROJECT_CHARTER.md)
 - [Architecture](ARCHITECTURE.md)
 - [Roadmap](ROADMAP.md)
+- [Roadmap execution rules](docs/ROADMAP_EXECUTION_RULES.md)
 - [Evaluation and benchmark protocol](docs/EVALUATION.md)
 - [Risk, pivot, and IP notes](docs/RISKS_AND_IP.md)
 - [CLI goals](docs/CLI_GOALS.md)

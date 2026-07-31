@@ -40,7 +40,7 @@ Use a new or empty output directory:
 ```bash
 PYTHONPATH=python python -W error -m hive_probes.compound_eye_v0 \
   --seed 101 \
-  --output-dir /tmp/hiveframe-eye-v0
+  --output-dir reports/compound-eye-v0
 ```
 
 Expected artifacts:
@@ -59,10 +59,10 @@ backend gate.
 Set the approved external paths for the current machine before using M0:
 
 ```bash
-export HIVEFRAME_WAN_CODE_DIR=/home/ksse2/src/Wan2.1
-export HIVEFRAME_MODEL_DIR=/home/ksse2/ai/models/Wan2.1-T2V-1.3B
-export HIVEFRAME_HF_CACHE_DIR=/home/ksse2/ai/cache/huggingface
-export HIVEFRAME_M0_REPORT_DIR=/home/ksse2/hiveframe-m0-state
+export HIVEFRAME_WAN_CODE_DIR="$HOME/src/Wan2.1"
+export HIVEFRAME_MODEL_DIR="$HOME/ai/models/Wan2.1-T2V-1.3B"
+export HIVEFRAME_HF_CACHE_DIR="$HOME/ai/cache/huggingface"
+export HIVEFRAME_M0_REPORT_DIR="$HOME/hiveframe-m0-state"
 ```
 
 Model-free checks:

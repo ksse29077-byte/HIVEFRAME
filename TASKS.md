@@ -16,8 +16,9 @@ Status date: 2026-07-31
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Preserve pre-rebase state | `done` | local tag `pre-compound-eye-v1` → `2bc35ff...` |
-| Create RFC branch | `done` | `agent/compound-eye-architecture-v1` |
+| Verify repository visibility | `done` | GitHub reports `PUBLIC` |
+| Preserve pre-rebase state | `published` | annotated tag `pre-compound-eye-v1` → `2bc35ff...` |
+| Create RFC branch | `published` | `agent/compound-eye-architecture-v1` |
 | Preserve patch-centric architecture | `done` | `docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md` |
 | Add hypothesis, architecture, protocol, gates | `done` | four RFC documents |
 | Add four JSON Schema drafts | `done` | `schemas/*eye*`, shared state, compute plan |
@@ -25,10 +26,11 @@ Status date: 2026-07-31
 | Verify deterministic simulation | `done` | 59 Python tests at `041311b...` |
 | Verify Rust workspace | `done` | `cargo check --workspace --locked` |
 | Add operating worklog documents | `done` | operating documents; 59 Python tests and Rust check passed |
-| Push RFC branch | `blocked` | exact private-repository approval required |
-| Push preservation tag | `blocked` | exact private-repository approval required |
-| Create RFC Issue | `blocked` | GitHub write authentication/approval required |
-| Create draft PR | `blocked` | branch must be published first |
+| Reconcile official Compound I/O roadmap | `verified` | RFC branch; 59 Python tests, Cargo, schemas, and diff check passed |
+| Push RFC branch | `published` | exact local Git history verified remotely |
+| Push preservation tag | `published` | annotated tag object and target verified remotely |
+| Create RFC Issue | `planned` | create after reconciled branch verification |
+| Create draft PR | `planned` | review RFC branch against `main` |
 | Confirm CI | `planned` | requires draft PR or pushed branch |
 
 ## M0 — Single-Eye Cost Truth

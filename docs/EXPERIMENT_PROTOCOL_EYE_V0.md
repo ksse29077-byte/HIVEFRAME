@@ -32,7 +32,7 @@ From the repository root in an environment with NumPy:
 ```bash
 PYTHONPATH=python python -m hive_probes.compound_eye_v0 \
   --seed 101 \
-  --output-dir /tmp/hiveframe-eye-v0
+  --output-dir reports/compound-eye-v0
 ```
 
 The output directory must be new or empty. The probe emits:
