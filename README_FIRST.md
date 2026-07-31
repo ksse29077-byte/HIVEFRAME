@@ -20,7 +20,9 @@ As of 2026-07-31:
   [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32) is closed and
   PR [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33) is merged;
 - the model-free Rust I/O admission result is `CONDITIONAL_ADMIT`, not a model
-  or product speedup claim.
+  or product speedup claim;
+- Rust I/O PR #36 is merged at `a71eea7...`;
+- M1-P0 is `REFINE_COST_MODEL`, not M1 entry or completion.
 
 Always run `git status -sb` and `git rev-parse HEAD` before relying on this
 snapshot.
@@ -59,8 +61,10 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Complete the M1 rights-cleared clip/oracle Topology Cost Surface. Treat the
-Rust I/O result as supporting evidence only; a separate approved shared-buffer
-or PyO3 probe must measure process/FFI cost before production migration.
+Refine the M1-P0 absolute cost calibration on the same five measured
+combinations before expanding to the rights-cleared M1 Topology Cost Surface.
+Treat the Rust I/O result as supporting evidence only; a separate approved
+shared-buffer or PyO3 probe must measure process/FFI cost before production
+migration.
 
 Do not modify Wan hooks or claim backend speedup from the model-free plan.

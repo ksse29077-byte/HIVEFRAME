@@ -263,3 +263,10 @@ Before using this receipt as a fixed Amdahl input, the downstream work must
 wait for this PR to merge, update from the resulting `origin/main`, rebase its
 preserved WIP branch, read the merged report and measurement semantics, and
 revalidate the cost model. This result closes neither M0 nor M1.
+
+## Merge confirmation
+
+PR #36 merged at `2026-07-31T08:45:53Z` with merge commit
+`a71eea742f5a804c30f6f095c1a256ee2d2561a6`. Issue #35 closed through the
+merge. The report, receipt semantics, and this worklog are now present on
+`main`.

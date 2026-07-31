@@ -63,3 +63,11 @@ After Draft PR #36 is reviewed and merged:
 - Analytical benchmark runs: 0;
 - Analytical branch pushes: 0;
 - Analytical PRs created: 0.
+
+## Hold resolution
+
+PR #36 merged into `main` at
+`a71eea742f5a804c30f6f095c1a256ee2d2561a6`. Issue #35 closed. The hold was
+therefore cleared and implementation resumed on
+`agent/m1-p0-analytical-topology-pruning`. The resulting evidence and decision
+are recorded in `2026-07-31-m1-p0-analytical-topology-pruning.md`.
