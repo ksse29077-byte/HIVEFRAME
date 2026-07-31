@@ -9,6 +9,7 @@ members = [
   "crates/hive-temporal-cache",
   "crates/hive-evaluator",
   "crates/hive-cli",
+  "crates/hive-retina-runtime",
 ]
 
 [workspace.package]

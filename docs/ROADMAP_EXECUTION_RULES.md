@@ -85,6 +85,12 @@ No subsystem may be excluded merely because it weakens the speedup.
   reason, and measurement method.
 - Historical receipts are immutable.
 
+Cross-language control-plane benchmarks additionally require exact integer
+parity, a fixed float tolerance, identical input/topology, and deterministic
+semantic hashes. Core pipeline, interpreter/process startup, compilation, and
+process/FFI handoff are separate scopes. A core-language improvement cannot be
+reported as end-to-end model or product speedup.
+
 ## 7. Safety and fallback
 
 - `uncertain` blocks skip.

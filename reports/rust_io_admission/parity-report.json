@@ -1,0 +1,131 @@
+{
+  "cases": [
+    {
+      "differences": [],
+      "profile_id": "high",
+      "python_semantic_hash": "104aa4c677ba4b9f865232294e6e50a5d465fd6b30008883a272dfb16847ae4f",
+      "rust_semantic_hash": "104aa4c677ba4b9f865232294e6e50a5d465fd6b30008883a272dfb16847ae4f",
+      "status": "passed",
+      "topology": "mono_1x1"
+    },
+    {
+      "differences": [],
+      "profile_id": "high",
+      "python_semantic_hash": "98befcdbff6c007ade1a026c03d36e362e6958ed27448e0ec3b33eda1f8d3bf6",
+      "rust_semantic_hash": "98befcdbff6c007ade1a026c03d36e362e6958ed27448e0ec3b33eda1f8d3bf6",
+      "status": "passed",
+      "topology": "motion_focused"
+    },
+    {
+      "differences": [],
+      "profile_id": "high",
+      "python_semantic_hash": "199439ea3ebb676273580bc540ee8d3ba7b3dae72d098f55d3f45171ff580598",
+      "rust_semantic_hash": "199439ea3ebb676273580bc540ee8d3ba7b3dae72d098f55d3f45171ff580598",
+      "status": "passed",
+      "topology": "overlap_2x2"
+    },
+    {
+      "differences": [],
+      "profile_id": "high",
+      "python_semantic_hash": "ad7c716b327282b4d4dd38637c7ef1199d95c069c11457dcac63bef3ed596445",
+      "rust_semantic_hash": "ad7c716b327282b4d4dd38637c7ef1199d95c069c11457dcac63bef3ed596445",
+      "status": "passed",
+      "topology": "uniform_2x2"
+    },
+    {
+      "differences": [],
+      "profile_id": "high",
+      "python_semantic_hash": "be0f09782b674e7224a461f3e2f9ec3bbd24ae47bcd1684e55b5c030dffe48d3",
+      "rust_semantic_hash": "be0f09782b674e7224a461f3e2f9ec3bbd24ae47bcd1684e55b5c030dffe48d3",
+      "status": "passed",
+      "topology": "uniform_4x4"
+    },
+    {
+      "differences": [],
+      "profile_id": "low",
+      "python_semantic_hash": "cdbf540b1a0c36f787a2536f942b9cde837d22dbf9aa786db25df32e26b80f10",
+      "rust_semantic_hash": "cdbf540b1a0c36f787a2536f942b9cde837d22dbf9aa786db25df32e26b80f10",
+      "status": "passed",
+      "topology": "mono_1x1"
+    },
+    {
+      "differences": [],
+      "profile_id": "low",
+      "python_semantic_hash": "fc997af90c599e1c53f31fbe92d96b52192b3568b164fa00f6753ff6ca54f252",
+      "rust_semantic_hash": "fc997af90c599e1c53f31fbe92d96b52192b3568b164fa00f6753ff6ca54f252",
+      "status": "passed",
+      "topology": "motion_focused"
+    },
+    {
+      "differences": [],
+      "profile_id": "low",
+      "python_semantic_hash": "da23dc103e3c40d05c6e22faa65af20d1007d3cb9e6a1dd2e233bcd76e571ff9",
+      "rust_semantic_hash": "da23dc103e3c40d05c6e22faa65af20d1007d3cb9e6a1dd2e233bcd76e571ff9",
+      "status": "passed",
+      "topology": "overlap_2x2"
+    },
+    {
+      "differences": [],
+      "profile_id": "low",
+      "python_semantic_hash": "bf7f4219f1ad6bb7c75d3fc186934fdeff3487f30e3da161eafcfbfa19edd1b1",
+      "rust_semantic_hash": "bf7f4219f1ad6bb7c75d3fc186934fdeff3487f30e3da161eafcfbfa19edd1b1",
+      "status": "passed",
+      "topology": "uniform_2x2"
+    },
+    {
+      "differences": [],
+      "profile_id": "low",
+      "python_semantic_hash": "0e603d9429dbb18c3fdb55b4ca677cc6707cdd602237a7720261de510c59093c",
+      "rust_semantic_hash": "0e603d9429dbb18c3fdb55b4ca677cc6707cdd602237a7720261de510c59093c",
+      "status": "passed",
+      "topology": "uniform_4x4"
+    },
+    {
+      "differences": [],
+      "profile_id": "medium",
+      "python_semantic_hash": "9ccd6737c5f4e4c6348febe73309b8539da99254d6b941bb074a0bd3b06ae0e7",
+      "rust_semantic_hash": "9ccd6737c5f4e4c6348febe73309b8539da99254d6b941bb074a0bd3b06ae0e7",
+      "status": "passed",
+      "topology": "mono_1x1"
+    },
+    {
+      "differences": [],
+      "profile_id": "medium",
+      "python_semantic_hash": "4dbc019d86584dcf6b036d71f82ce1e72742617154e49f64318f56a0bd05da7b",
+      "rust_semantic_hash": "4dbc019d86584dcf6b036d71f82ce1e72742617154e49f64318f56a0bd05da7b",
+      "status": "passed",
+      "topology": "motion_focused"
+    },
+    {
+      "differences": [],
+      "profile_id": "medium",
+      "python_semantic_hash": "a2c5036fb758510c1d36256c1b02cbbd247e8905607dad6a6392a2e6a859e29a",
+      "rust_semantic_hash": "a2c5036fb758510c1d36256c1b02cbbd247e8905607dad6a6392a2e6a859e29a",
+      "status": "passed",
+      "topology": "overlap_2x2"
+    },
+    {
+      "differences": [],
+      "profile_id": "medium",
+      "python_semantic_hash": "b0e6d231e0f19050bf90d013c8e3567c31fa4c78da8eaae4436a93ca543f0efb",
+      "rust_semantic_hash": "b0e6d231e0f19050bf90d013c8e3567c31fa4c78da8eaae4436a93ca543f0efb",
+      "status": "passed",
+      "topology": "uniform_2x2"
+    },
+    {
+      "differences": [],
+      "profile_id": "medium",
+      "python_semantic_hash": "31116537154aea93fc6980bab570b368e20ba63f05293412a2daaab483270f6a",
+      "rust_semantic_hash": "31116537154aea93fc6980bab570b368e20ba63f05293412a2daaab483270f6a",
+      "status": "passed",
+      "topology": "uniform_4x4"
+    }
+  ],
+  "cuda_used": false,
+  "float_tolerance": 1e-09,
+  "integer_comparison": "exact",
+  "kind": "rust_io_admission_parity_report",
+  "model_loaded": false,
+  "schema_version": "0.1.0",
+  "status": "passed"
+}

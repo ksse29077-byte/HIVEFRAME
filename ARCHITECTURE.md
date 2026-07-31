@@ -51,6 +51,12 @@ Python remains the initial observation and model-integration plane. The v0
 reference simulation uses only NumPy. Existing Wan/PyTorch M0 code remains
 unchanged and is not imported by the reference path.
 
+`hive-retina-runtime` is a model-free Rust admission candidate for input
+profiling, Eye routing, coordinate transforms, Sensory Fusion, shared state,
+ComputePlan construction, and receipt control. Its benchmark evidence does not
+authorize a Rust-only rewrite or move Wan/LTX, PyTorch tensors, VAE, denoising,
+hooks, evaluators, or training out of Python.
+
 ## Core contracts
 
 ### SceneContract
@@ -155,6 +161,7 @@ Backend updates cannot silently alter M0 behavior or selector semantics.
 | `hive_fusion` | deterministic Sensory Fusion |
 | `hive_visual_state` | coordinates, validators, state, and plan |
 | `hive_probes` | model-free and future backend feasibility probes |
+| `hive-retina-runtime` | model-free Rust control-plane admission candidate |
 | `hive_backends` | pinned Wan/LTX adapters |
 | `hive_hooks` | existing scheduler, attention, and latent capture |
 | `hive_benchmarks` | M0 baselines, measurements, and comparisons |

@@ -110,6 +110,12 @@ Measure observation/fusion/coordinate time, bytes, active eyes, overlap,
 dirty precision/recall, false-stable rate, uncertainty coverage, process-tree
 RAM, and complete topology cost.
 
+A model-free Python/Rust I/O admission probe may run as a supporting M1
+experiment after semantic contracts stabilize. It may compare routing, Fusion,
+planning, copies, temporary buffers, and core latency. It does not replace the
+rights-cleared clip/oracle suite, complete M1, or prove model/backend speedup.
+Rust remains optional when Mono or Python is cheaper after process/FFI cost.
+
 ### Exit gate
 
 Produce a Topology Cost Surface and oracle topology label per input. Evidence

@@ -224,6 +224,41 @@ surface.
 
 ---
 
+## 2026-07-31 — Rust I/O admission evidence
+
+### Purpose
+
+Measure whether the model-free Compound I/O control-plane candidate preserves
+Python semantics and merits a bounded Rust integration follow-up.
+
+### Verified evidence
+
+- 15 Python/Rust profile-topology cases achieved exact semantic SHA-256
+  parity with integer-exact and `1e-9` float comparison.
+- Five warm-ups and 30 measured repetitions were used per case.
+- Rust p50 core latency was lower by 18.91–38.47%.
+- Dominant temporary-buffer accounting was lower by 87.50–93.75%.
+- Explicit pixel-buffer copies were zero in both paths.
+- Decision: `CONDITIONAL_ADMIT`.
+
+### Meaning limits
+
+This is a model-free orchestration result, not a Wan, GPU, quality, product, or
+commercial speedup claim. PyO3/FFI, DLPack, shared buffers, backend execution,
+and attributable M0 end-to-end impact remain unmeasured.
+
+Detailed methods and results are in
+[`RUST_IO_ADMISSION_PROBE.md`](RUST_IO_ADMISSION_PROBE.md) and
+[`reports/rust_io_admission`](../reports/rust_io_admission/).
+
+### Verification
+
+Python compile passed; all 70 Python tests passed; Rust format, locked
+workspace check, and workspace tests passed; JSON parsing and
+`git diff --check` passed. Model loads: 0. CUDA runs: 0.
+
+---
+
 ## Entry template
 
 ```markdown
