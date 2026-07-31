@@ -1,6 +1,6 @@
 use hive_retina_runtime::{
-    benchmark_case, benchmark_r2_batch, benchmark_suite, semantic_hash, InputProfile, Topology,
-    TOPOLOGIES,
+    benchmark_case, benchmark_r2_batch, benchmark_suite, semantic_hash, InputProfile, PixelBox,
+    Topology, TOPOLOGIES,
 };
 use std::env;
 use std::fs;
@@ -42,7 +42,8 @@ Usage:
   hive-retina-runtime semantic --profile PROFILE --topology TOPOLOGY [--seed N]
   hive-retina-runtime suite --profiles LIST --topologies LIST \\
     --warmups N --repetitions N --output FILE [--seed N]
-  hive-retina-runtime r2-batch --profile high --input FILE --output FILE \\
+  hive-retina-runtime r2-batch --profile case-b-high-resolution-local-change \\
+    --input FILE --output FILE \\
     --warmups 5 --repetitions 20 [--seed 101]
 
 Profiles: low, medium, high, extended
@@ -121,8 +122,8 @@ fn suite_command(args: &[String]) -> Result<(), String> {
 }
 
 fn r2_batch_command(args: &[String]) -> Result<(), String> {
-    let profile_name = optional_value(args, "--profile", "high")?;
-    if profile_name != "high" {
+    let profile_name = optional_value(args, "--profile", "case-b-high-resolution-local-change")?;
+    if profile_name != "case-b-high-resolution-local-change" {
         return Err("R2 is restricted to the existing Case B high profile.".to_string());
     }
     let seed = optional_value(args, "--seed", "101")?
@@ -146,7 +147,14 @@ fn r2_batch_command(args: &[String]) -> Result<(), String> {
     let sequence =
         fs::read(&input).map_err(|error| format!("Cannot read {}: {error}", input.display()))?;
     let input_read_ns = input_started.elapsed().as_nanos();
-    let profile = InputProfile::named(&profile_name, seed)?;
+    let profile = InputProfile::new(
+        &profile_name,
+        1920,
+        1080,
+        8,
+        seed,
+        vec![PixelBox::new(968, 238, 72, 84)?],
+    )?;
     let report = benchmark_r2_batch(&profile, &sequence, warmups, repetitions)?;
     let serialization_started = Instant::now();
     let serialization_probe = serde_json::to_vec(&report)

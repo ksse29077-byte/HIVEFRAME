@@ -36,6 +36,10 @@ R2 measures only Case B:
 No new topology or corpus is added. A/T1, A/T2, C/T1, and C/T2 remain
 analytically pruned and are not executed.
 
+The executable profile ID and single declared change region are the exact R1
+Case B contract, not the older three-region Rust-admission profile named
+`high`.
+
 ## Python stage taxonomy and timing
 
 The fixed taxonomy is input validation, Eye contract construction, Eye setup,

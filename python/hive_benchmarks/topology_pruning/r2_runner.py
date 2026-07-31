@@ -24,7 +24,8 @@ from hive_benchmarks.topology_pruning.r2_attribution import (
     run_attributed,
 )
 from hive_benchmarks.topology_pruning.report import write_json
-from hive_probes.rust_io_reference import generate_sequence, input_profile, run_pipeline
+from hive_benchmarks.topology_pruning.synthetic_cases import CASES, generate_case
+from hive_probes.rust_io_reference import run_pipeline
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -70,7 +71,10 @@ def validate_immutable_git_blobs(config: dict[str, Any]) -> None:
 def validate_config(config: dict[str, Any]) -> None:
     if config.get("run_kind") != RUN_KIND:
         raise ValueError("Unexpected R2 run kind.")
-    if config.get("profile") != "high" or config.get("case_id") != "case-b-high-resolution-local-change":
+    if (
+        config.get("profile") != "case-b-high-resolution-local-change"
+        or config.get("case_id") != "case-b-high-resolution-local-change"
+    ):
         raise ValueError("R2 is restricted to the existing Case B profile.")
     if config.get("topologies") != ["T0", "T1", "T2"]:
         raise ValueError("R2 must retain exactly B/T0, B/T1, and B/T2.")
@@ -613,8 +617,8 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
     args.output_dir.mkdir(parents=True, exist_ok=False)
     write_json(args.output_dir / "predeclared-attribution-model.json", predeclared)
 
-    profile = input_profile(config["profile"], config["seed"])
-    sequence = generate_sequence(profile)
+    case_b = next(case for case in CASES if case.case_id == config["case_id"])
+    profile, sequence = generate_case(case_b, config["seed"])
     expected = _expected_hashes()
     python_result = _python_measurement(config, profile, sequence, expected)
     rust_result = _rust_measurement(config, sequence, args.rust_binary, expected)

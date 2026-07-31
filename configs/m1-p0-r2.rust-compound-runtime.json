@@ -5,7 +5,7 @@
   "base_main_commit": "e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388",
   "pr_41_merge_commit": "e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388",
   "seed": 101,
-  "profile": "high",
+  "profile": "case-b-high-resolution-local-change",
   "case_id": "case-b-high-resolution-local-change",
   "topologies": [
     "T0",

@@ -12,6 +12,7 @@ from hive_benchmarks.topology_pruning.r2_attribution import (
     run_attributed,
 )
 from hive_benchmarks.topology_pruning.r2_runner import (
+    _expected_hashes,
     _assert_output_available,
     build_parser,
     decide,
@@ -19,6 +20,7 @@ from hive_benchmarks.topology_pruning.r2_runner import (
     validate_config,
     validate_immutable_git_blobs,
 )
+from hive_benchmarks.topology_pruning.synthetic_cases import CASES, generate_case
 from hive_probes.rust_io_reference import generate_sequence, input_profile, run_pipeline
 
 
@@ -64,6 +66,9 @@ class TopologyPruningR2Tests(unittest.TestCase):
         self.assertEqual(self.config["repetitions"], 20)
         self.assertEqual(tuple(self.config["stage_taxonomy"]), STAGE_TAXONOMY)
         self.assertNotIn("MONO_FIRST", self.config["decision_rules"])
+        self.assertEqual(
+            self.config["profile"], "case-b-high-resolution-local-change"
+        )
 
     def test_v1_and_r1_git_blobs_are_immutable(self) -> None:
         validate_immutable_git_blobs(self.config)
@@ -88,6 +93,22 @@ class TopologyPruningR2Tests(unittest.TestCase):
         calibration = calibrate_instrumentation(5)
         self.assertGreater(calibration["p50_ns"], 0)
         self.assertFalse(calibration["subtracted_from_results"])
+
+    def test_exact_case_b_hashes_match_r1(self) -> None:
+        case_b = next(
+            case for case in CASES if case.case_id == "case-b-high-resolution-local-change"
+        )
+        profile, sequence = generate_case(case_b, 101)
+        expected = _expected_hashes()
+        for candidate, topology in {
+            "T0": "mono_1x1",
+            "T1": "uniform_2x2",
+            "T2": "motion_focused",
+        }.items():
+            plain = run_pipeline(profile, topology, sequence)
+            attributed = run_attributed(profile, topology, sequence)
+            self.assertEqual(plain["semantic_hash"], expected[candidate])
+            self.assertEqual(attributed["semantic_hash"], expected[candidate])
 
     def test_gate_viable_requires_collected_ffi(self) -> None:
         python_result, rust_result = gate_inputs()
