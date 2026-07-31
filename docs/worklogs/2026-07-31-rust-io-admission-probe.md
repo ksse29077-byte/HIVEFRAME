@@ -239,13 +239,15 @@ CUDA runs: 0.
 
 - implementation/evidence commit:
   `5a03e761f039c7b4e611f56c4ba7d7f55ce8ed5b`;
-- final documentation commit: pending;
+- Issue/publication-status documentation commit:
+  `16f53e2be692c988bbddb4dd014ee9d208493697`;
 - remote branch: `agent/m1-rust-io-admission-probe` (published with exact Git
   history);
 - Issue:
   [`#35`](https://github.com/ksse29077-byte/HIVEFRAME/issues/35);
-- Draft PR: pending;
-- local/remote implementation HEAD matched at
-  `5a03e761f039c7b4e611f56c4ba7d7f55ce8ed5b` before this publication metadata
-  update;
-- final worktree: pending.
+- Draft PR:
+  [`#36`](https://github.com/ksse29077-byte/HIVEFRAME/pull/36);
+- final PR-head commit is the commit containing this publication-link update
+  and is resolved authoritatively by the branch and Draft PR refs;
+- local/remote HEAD equality and the clean final worktree are verified after
+  publishing that commit and reported in the task handoff.

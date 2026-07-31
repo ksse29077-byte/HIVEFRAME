@@ -250,6 +250,9 @@ and attributable M0 end-to-end impact remain unmeasured.
 Detailed methods and results are in
 [`RUST_IO_ADMISSION_PROBE.md`](RUST_IO_ADMISSION_PROBE.md) and
 [`reports/rust_io_admission`](../reports/rust_io_admission/).
+Review is tracked in Issue
+[`#35`](https://github.com/ksse29077-byte/HIVEFRAME/issues/35) and Draft PR
+[`#36`](https://github.com/ksse29077-byte/HIVEFRAME/pull/36).
 
 ### Verification
 
