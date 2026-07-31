@@ -67,6 +67,23 @@ offload_model = true
 t5_cpu = true
 repeat = 1
 
+[memory_admission]
+prompt_id = "static-speaking-person"
+size = "832*480"
+frame_num = 49
+fps = 16
+sample_solver = "unipc"
+sample_steps = 1
+sample_shift = 8.0
+sample_guide_scale = 6.0
+dtype = "bfloat16"
+device = "cuda:0"
+offload_model = true
+t5_cpu = true
+kernel_profiler = "disabled"
+wall_clock_mode = "official_unprofiled"
+repeat = 1
+
 [reproducibility]
 repeat = 2
 require_output_hash_match = true

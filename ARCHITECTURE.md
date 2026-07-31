@@ -124,6 +124,9 @@ kernel durations are separate metrics. Per-generation allocator peaks,
 process-wide allocator peaks, system-sampled GPU memory, main-process RSS, and
 process-tree RSS are also separate scopes. The compatibility schema continues
 to accept immutable `0.1.0` receipts; historical files are never rewritten.
+The `baseline-memory-admission` execution class is explicitly ineligible for
+quality, speedup, and official-baseline claims and writes only its independent
+memory-admission gate.
 
 ## Execution sequence
 

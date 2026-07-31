@@ -36,10 +36,30 @@
       "enum": [
         "smoke",
         "smoke-cold-warm",
+        "baseline-memory-admission",
         "baseline-reproducibility",
         "reproducibility",
         "canonical"
       ]
+    },
+    "run_kind": { "type": "string", "minLength": 1 },
+    "benchmark_eligibility": {
+      "type": "object",
+      "required": [
+        "benchmark_status",
+        "quality_eligible",
+        "speedup_comparison_eligible",
+        "official_baseline_eligible",
+        "memory_admission_eligible"
+      ],
+      "properties": {
+        "benchmark_status": { "type": "string", "minLength": 1 },
+        "quality_eligible": { "type": "boolean" },
+        "speedup_comparison_eligible": { "type": "boolean" },
+        "official_baseline_eligible": { "type": "boolean" },
+        "memory_admission_eligible": { "type": "boolean" }
+      },
+      "additionalProperties": false
     },
     "started_at": { "type": "string", "format": "date-time" },
     "finished_at": { "type": "string", "format": "date-time" },
@@ -379,6 +399,29 @@
     }
   },
   "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": { "const": "baseline-memory-admission" }
+        },
+        "required": ["profile"]
+      },
+      "then": {
+        "required": ["run_kind", "benchmark_eligibility"],
+        "properties": {
+          "run_kind": { "const": "baseline memory admission probe" },
+          "benchmark_eligibility": {
+            "properties": {
+              "benchmark_status": { "const": "safety_test" },
+              "quality_eligible": { "const": false },
+              "speedup_comparison_eligible": { "const": false },
+              "official_baseline_eligible": { "const": false },
+              "memory_admission_eligible": { "const": true }
+            }
+          }
+        }
+      }
+    },
     {
       "if": {
         "properties": {

@@ -137,12 +137,29 @@ The smoke gate is tied to the project Git commit, code revision, model revision,
 `run` has no implicit profile. The caller must choose one of:
 
 - `smoke-cold-warm`: 832x480, 17 frames, 16 FPS, 4 steps, repeat 2;
+- `baseline-memory-admission`: 832x480, 49 frames, 16 FPS, 1 step,
+  repeat 1;
 - `baseline-reproducibility`: 832x480, 49 frames, 16 FPS, 50 steps,
   repeat 2.
 
-Both profiles retain the pinned prompt inputs, guidance 6.0, UniPC, BF16,
+All profiles retain the pinned prompt inputs, guidance 6.0, UniPC, BF16,
 CUDA device, model CPU offload, and T5 CPU placement. The baseline profile is
 preserved and is never silently replaced by the smoke-cost profile.
+
+The memory-admission profile is only an RTX 3060 12 GB safety probe for the
+49-frame latent, model-forward, VAE-decode, MP4, and receipt path. It is not
+eligible for quality evaluation, speedup comparison, or official baseline use.
+It records `memory_admission_eligible: true` and all three benchmark eligibility
+flags as false. Its one step is accepted by the pinned Wan UniPC implementation:
+`set_timesteps(1)` creates one timestep and two sigma endpoints, and the single
+iteration uses the first-order update.
+
+```powershell
+python hiveframe_m0.py run --profile baseline-memory-admission `
+  --prompt-id static-speaking-person `
+  --output-dir /home/ksse2/hiveframe-m0-state/runs/ADMISSION_RUN `
+  --plan
+```
 
 Use the same model-free plan flow before a baseline-cost pair:
 
@@ -164,6 +181,11 @@ profile `smoke`, expected run kind `single regression smoke`, and repeat 1.
 `-`; any existing artifact beginning with `<run-id>.` blocks execution before
 preflight so earlier receipts, logs, and videos cannot be overwritten.
 The same no-overwrite rule applies to `run`; there is no override flag.
+
+An admission execution requires a successful smoke gate matching the current
+project commit. It writes only the separate `memory_admission` gate entry.
+Success or failure never changes `smoke` or `reproducibility`, and the canonical
+suite continues to require the reproducibility gate rather than admission.
 
 ## Fixed generation inputs
 

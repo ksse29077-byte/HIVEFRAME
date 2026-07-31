@@ -82,6 +82,29 @@ class Wan21CommandTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             spec.validate()
 
+    def test_one_step_memory_admission_spec_is_valid(self) -> None:
+        spec = Wan21RunSpec(
+            prompt="Memory admission.",
+            negative_prompt="No blur.",
+            seed=101,
+            output_prefix=Path("out"),
+            metrics_path=Path("metrics.json"),
+            frame_num=49,
+            sample_steps=1,
+            repeat=1,
+        )
+        spec.validate()
+        command = build_generate_command(
+            python_executable=Path("python"),
+            driver_path=Path("python/hive_hooks/wan21_m0_instrumented.py"),
+            code_dir=Path("vendor/Wan2.1"),
+            checkpoint_dir=Path("models/Wan2.1-T2V-1.3B"),
+            spec=spec,
+        )
+        steps_index = command.index("--sample-steps")
+        self.assertEqual(command[steps_index + 1], "1")
+        self.assertEqual(command[command.index("--repeat") + 1], "1")
+
 
 class M0ConfigTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -171,6 +194,63 @@ class M0ConfigTests(unittest.TestCase):
         self.assertTrue(settings["offload_model"])
         self.assertTrue(settings["t5_cpu"])
 
+    def test_memory_admission_profile_is_exact_and_non_benchmark(self) -> None:
+        prompt = next(
+            item
+            for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        plan = build_run_plan(
+            self.config,
+            prompt,
+            "baseline-memory-admission",
+        )
+        settings = plan["effective_settings"]
+        self.assertFalse(plan["execution_started"])
+        self.assertEqual(
+            plan["expected_run_kind"],
+            "baseline memory admission probe",
+        )
+        self.assertEqual(plan["prompt_id"], "static-speaking-person")
+        self.assertEqual(plan["sample"]["seed"], 101)
+        self.assertEqual(
+            settings["negative_prompt"],
+            self.config["generation"]["negative_prompt"],
+        )
+        self.assertEqual(settings["size"], "832*480")
+        self.assertEqual(settings["frame_num"], 49)
+        self.assertEqual(settings["fps"], 16)
+        self.assertEqual(settings["sample_steps"], 1)
+        self.assertEqual(settings["repeat"], 1)
+        self.assertEqual(settings["sample_guide_scale"], 6.0)
+        self.assertEqual(settings["sample_solver"], "unipc")
+        self.assertEqual(settings["dtype"], "bfloat16")
+        self.assertEqual(settings["device"], "cuda:0")
+        self.assertTrue(settings["offload_model"])
+        self.assertTrue(settings["t5_cpu"])
+        self.assertEqual(settings["kernel_profiler"], "disabled")
+        self.assertEqual(
+            settings["wall_clock_mode"], "official_unprofiled"
+        )
+        self.assertEqual(
+            plan["backend"]["model_revision"],
+            "37ec512624d61f7aa208f7ea8140a131f93afc9a",
+        )
+        self.assertEqual(
+            plan["backend"]["code_revision"],
+            "9737cba9c1c3c4d04b33fcad41c111989865d315",
+        )
+        self.assertEqual(
+            plan["settings_hash"],
+            "0a100b5ee62af0e85cdf859383b1b9dd54badc1655f9a8a48b357d922a6c90ee",
+        )
+        eligibility = plan["benchmark_eligibility"]
+        self.assertEqual(eligibility["benchmark_status"], "safety_test")
+        self.assertFalse(eligibility["quality_eligible"])
+        self.assertFalse(eligibility["speedup_comparison_eligible"])
+        self.assertFalse(eligibility["official_baseline_eligible"])
+        self.assertTrue(eligibility["memory_admission_eligible"])
+
     def test_explicit_profile_settings_hashes_differ(self) -> None:
         prompt = next(
             item for item in load_suite(self.config)
@@ -184,7 +264,15 @@ class M0ConfigTests(unittest.TestCase):
         )
         smoke_hash = stable_hash({"sample": prompt, "settings": smoke})
         baseline_hash = stable_hash({"sample": prompt, "settings": baseline})
+        admission = settings_for_profile(
+            self.config, "baseline-memory-admission", repeat=1
+        )
+        admission_hash = stable_hash(
+            {"sample": prompt, "settings": admission}
+        )
         self.assertNotEqual(smoke_hash, baseline_hash)
+        self.assertNotEqual(admission_hash, smoke_hash)
+        self.assertNotEqual(admission_hash, baseline_hash)
         self.assertEqual(
             smoke_hash,
             "76f0a1ab1196788431a1de4af3319ef5427c3353c1bdb7c6df9641881a2a4588",
@@ -192,6 +280,10 @@ class M0ConfigTests(unittest.TestCase):
         self.assertEqual(
             baseline_hash,
             "5a4da7ba8926901ce705c6724b7953afae91bc6e53c0d222145807a741417598",
+        )
+        self.assertEqual(
+            admission_hash,
+            "0a100b5ee62af0e85cdf859383b1b9dd54badc1655f9a8a48b357d922a6c90ee",
         )
 
     def test_run_plan_exposes_final_settings_without_execution(self) -> None:
@@ -416,6 +508,60 @@ class M0ConfigTests(unittest.TestCase):
         payload = json.loads(output.getvalue())
         self.assertFalse(payload["execution_started"])
 
+    def test_admission_plan_starts_no_preflight_child_or_gpu_path(self) -> None:
+        args = argparse.Namespace(
+            profile="baseline-memory-admission",
+            prompt_id="static-speaking-person",
+            output_dir=None,
+            plan=True,
+            expect_settings_hash=None,
+        )
+        output = io.StringIO()
+        with (
+            patch("hive_benchmarks.m0_runner.evaluate_preflight") as preflight,
+            patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+            patch("hive_benchmarks.m0_runner.subprocess.Popen") as popen,
+            contextlib.redirect_stdout(output),
+        ):
+            return_code = command_run(args, self.config)
+        self.assertEqual(return_code, 0)
+        preflight.assert_not_called()
+        run_sample.assert_not_called()
+        popen.assert_not_called()
+        payload = json.loads(output.getvalue())
+        self.assertFalse(payload["execution_started"])
+        self.assertEqual(payload["effective_settings"]["sample_steps"], 1)
+        self.assertEqual(len(payload["output"]["expected_artifacts"]), 5)
+
+    def test_admission_missing_or_mismatched_hash_blocks_before_model(self) -> None:
+        for approval_hash in (None, "0" * 64):
+            with self.subTest(approval_hash=approval_hash):
+                args = argparse.Namespace(
+                    profile="baseline-memory-admission",
+                    prompt_id="static-speaking-person",
+                    output_dir=None,
+                    plan=False,
+                    expect_settings_hash=approval_hash,
+                )
+                output = io.StringIO()
+                with (
+                    patch(
+                        "hive_benchmarks.m0_runner.read_gate_state"
+                    ) as gate_state,
+                    patch(
+                        "hive_benchmarks.m0_runner.run_sample"
+                    ) as run_sample,
+                    contextlib.redirect_stdout(output),
+                ):
+                    return_code = command_run(args, self.config)
+                self.assertEqual(return_code, 2)
+                gate_state.assert_not_called()
+                run_sample.assert_not_called()
+                self.assertEqual(
+                    json.loads(output.getvalue())["stage"],
+                    "settings-approval",
+                )
+
     def test_settings_hash_mismatch_blocks_before_model_execution(self) -> None:
         args = argparse.Namespace(
             profile="smoke-cold-warm",
@@ -520,7 +666,11 @@ class M0ConfigTests(unittest.TestCase):
             "smoke-regression-documented",
         )
         self.assertIn("smoke --run-id", document)
-        for profile in ("smoke-cold-warm", "baseline-reproducibility"):
+        for profile in (
+            "smoke-cold-warm",
+            "baseline-memory-admission",
+            "baseline-reproducibility",
+        ):
             command = [
                 "run",
                 "--profile",
@@ -550,6 +700,10 @@ class M0ConfigTests(unittest.TestCase):
         )
         self.assertIn(
             "baseline-reproducibility",
+            payload["properties"]["profile"]["enum"],
+        )
+        self.assertIn(
+            "baseline-memory-admission",
             payload["properties"]["profile"]["enum"],
         )
 
@@ -593,6 +747,50 @@ class M0ConfigTests(unittest.TestCase):
         self.assertEqual(receipt["environment"]["project_git"]["revision"], "test-revision")
         self.assertEqual(receipt["schema_version"], "0.2.0")
         validate_receipt_contract(receipt)
+
+    def test_memory_admission_receipt_v02_requires_safe_classification(self) -> None:
+        prompt = next(
+            item
+            for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        settings = settings_for_profile(
+            self.config, "baseline-memory-admission", repeat=1
+        )
+        preflight = {
+            "environment": {
+                "project_git": {
+                    "revision": "test-revision",
+                    "dirty": False,
+                }
+            },
+            "blockers": [
+                {
+                    "code": "gate_refresh_required",
+                    "message": "Regression smoke must run on the new commit.",
+                }
+            ],
+            "warnings": [],
+        }
+        receipt = blocked_receipt(
+            self.config,
+            prompt,
+            preflight,
+            settings,
+            "baseline-memory-admission",
+            ["python", "instrumented.py"],
+        )
+        validate_receipt_contract(receipt)
+        self.assertEqual(receipt["schema_version"], "0.2.0")
+        self.assertEqual(
+            receipt["run_kind"], "baseline memory admission probe"
+        )
+        eligibility = receipt["benchmark_eligibility"]
+        self.assertEqual(eligibility["benchmark_status"], "safety_test")
+        self.assertFalse(eligibility["quality_eligible"])
+        self.assertFalse(eligibility["speedup_comparison_eligible"])
+        self.assertFalse(eligibility["official_baseline_eligible"])
+        self.assertTrue(eligibility["memory_admission_eligible"])
 
     def test_cuda_event_span_is_not_reported_as_kernel_time(self) -> None:
         instrumentation = self._instrumentation_fixture()
@@ -921,6 +1119,109 @@ class M0ConfigTests(unittest.TestCase):
             json.loads(output.getvalue())["stage"],
             "run-id-collision",
         )
+
+    def test_admission_collision_blocks_before_gate_or_model_execution(self) -> None:
+        prompt = next(
+            item
+            for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            output_dir = Path(temporary)
+            plan = build_run_plan(
+                self.config,
+                prompt,
+                "baseline-memory-admission",
+                output_dir,
+            )
+            collision = output_dir / f"{plan['run_id']}.cold.mp4"
+            collision.write_bytes(b"existing")
+            args = argparse.Namespace(
+                profile="baseline-memory-admission",
+                prompt_id="static-speaking-person",
+                output_dir=temporary,
+                plan=False,
+                expect_settings_hash=plan["settings_hash"],
+            )
+            output = io.StringIO()
+            with (
+                patch("hive_benchmarks.m0_runner.read_gate_state") as gate,
+                patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+                contextlib.redirect_stdout(output),
+            ):
+                return_code = command_run(args, self.config)
+        self.assertEqual(return_code, 2)
+        gate.assert_not_called()
+        run_sample.assert_not_called()
+        self.assertEqual(
+            json.loads(output.getvalue())["stage"],
+            "run-id-collision",
+        )
+
+    def test_admission_gate_never_changes_official_gates(self) -> None:
+        from hive_benchmarks.m0_runner import gate_fingerprint
+
+        prompt = next(
+            item
+            for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        plan = build_run_plan(
+            self.config, prompt, "baseline-memory-admission"
+        )
+        for return_code, expected_status in ((0, "passed"), (1, "failed")):
+            with self.subTest(return_code=return_code):
+                original_reproducibility = {
+                    "status": "passed",
+                    "receipt": "preserve-existing-receipt",
+                }
+                state = {
+                    "schema_version": "0.1.0",
+                    "smoke": {
+                        "status": "succeeded",
+                        **gate_fingerprint(self.config),
+                    },
+                    "reproducibility": dict(original_reproducibility),
+                }
+                receipt = {
+                    "run_id": plan["run_id"],
+                    "profile": "baseline-memory-admission",
+                    "reproducibility": {"status": "not_evaluated"},
+                }
+                args = argparse.Namespace(
+                    profile="baseline-memory-admission",
+                    prompt_id="static-speaking-person",
+                    output_dir=None,
+                    plan=False,
+                    expect_settings_hash=plan["settings_hash"],
+                )
+                output = io.StringIO()
+                with (
+                    patch(
+                        "hive_benchmarks.m0_runner.read_gate_state",
+                        return_value=state,
+                    ),
+                    patch(
+                        "hive_benchmarks.m0_runner.run_sample",
+                        return_value=(return_code, receipt),
+                    ) as run_sample,
+                    patch(
+                        "hive_benchmarks.m0_runner.write_gate_state"
+                    ) as write_gate,
+                    contextlib.redirect_stdout(output),
+                ):
+                    actual = command_run(args, self.config)
+                self.assertEqual(actual, return_code)
+                written = write_gate.call_args.args[1]
+                self.assertEqual(
+                    written["reproducibility"],
+                    original_reproducibility,
+                )
+                self.assertEqual(
+                    written["memory_admission"]["status"],
+                    expected_status,
+                )
+                self.assertEqual(run_sample.call_args.kwargs["repeat"], 1)
 
     def test_plan_lists_output_directory_and_expected_artifacts(self) -> None:
         prompt = next(

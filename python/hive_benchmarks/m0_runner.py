@@ -56,11 +56,25 @@ REQUIRED_DISTRIBUTIONS = (
 )
 RUN_PROFILES = (
     "smoke-cold-warm",
+    "baseline-memory-admission",
     "baseline-reproducibility",
 )
 PROFILE_RUN_KINDS = {
     "smoke-cold-warm": "smoke-based same-seed cold/warm pair",
+    "baseline-memory-admission": "baseline memory admission probe",
     "baseline-reproducibility": "baseline same-seed cold/warm pair",
+}
+PROFILE_REPEATS = {
+    "smoke-cold-warm": 2,
+    "baseline-memory-admission": 1,
+    "baseline-reproducibility": 2,
+}
+MEMORY_ADMISSION_ELIGIBILITY = {
+    "benchmark_status": "safety_test",
+    "quality_eligible": False,
+    "speedup_comparison_eligible": False,
+    "official_baseline_eligible": False,
+    "memory_admission_eligible": True,
 }
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 RECEIPT_SCHEMA_VERSION = "0.2.0"
@@ -189,6 +203,20 @@ def validate_receipt_contract(receipt: dict[str, Any]) -> None:
         raise ValueError(f"Unsupported receipt schema version: {version}")
     if version == "0.1.0":
         return
+    if receipt["profile"] == "baseline-memory-admission":
+        if receipt.get("run_kind") != PROFILE_RUN_KINDS[
+            "baseline-memory-admission"
+        ]:
+            raise ValueError(
+                "Memory-admission receipt has an incorrect run kind."
+            )
+        if receipt.get("benchmark_eligibility") != (
+            MEMORY_ADMISSION_ELIGIBILITY
+        ):
+            raise ValueError(
+                "Memory-admission receipt must be excluded from quality, "
+                "speedup, and official-baseline use."
+            )
 
     timing_required = {
         "cli_python_process_wall",
@@ -782,6 +810,7 @@ def settings_for_profile(
     known_profiles = {
         "smoke",
         "smoke-cold-warm",
+        "baseline-memory-admission",
         "baseline-reproducibility",
         "reproducibility",
         "canonical",
@@ -796,12 +825,29 @@ def settings_for_profile(
         smoke = dict(config["smoke"])
         smoke.pop("prompt_id", None)
         settings.update(smoke)
+    elif profile == "baseline-memory-admission":
+        admission = dict(config["memory_admission"])
+        admission.pop("prompt_id", None)
+        settings.update(admission)
     settings["repeat"] = (
         repeat
         if repeat is not None
-        else int(config["reproducibility"]["repeat"])
+        else (
+            int(config["memory_admission"]["repeat"])
+            if profile == "baseline-memory-admission"
+            else int(config["reproducibility"]["repeat"])
+        )
     )
     return settings
+
+
+def receipt_execution_classification(profile: str) -> dict[str, Any]:
+    if profile != "baseline-memory-admission":
+        return {}
+    return {
+        "run_kind": PROFILE_RUN_KINDS[profile],
+        "benchmark_eligibility": dict(MEMORY_ADMISSION_ELIGIBILITY),
+    }
 
 
 def validate_run_id(run_id: str) -> str:
@@ -864,6 +910,7 @@ def build_execution_plan(
         "execution_started": False,
         "selected_profile": profile,
         "expected_run_kind": expected_run_kind,
+        **receipt_execution_classification(profile),
         "run_id": run_id,
         "prompt_id": prompt["id"],
         "sample": prompt,
@@ -907,7 +954,7 @@ def build_run_plan(
         config,
         prompt,
         profile,
-        repeat=int(config["reproducibility"]["repeat"]),
+        repeat=PROFILE_REPEATS[profile],
         expected_run_kind=PROFILE_RUN_KINDS[profile],
         run_id=run_id,
         output_dir=output_dir or project_path(config["paths"]["run_dir"]),
@@ -965,7 +1012,12 @@ def gate_state_path(config: dict[str, Any]) -> Path:
 def read_gate_state(config: dict[str, Any]) -> dict[str, Any]:
     path = gate_state_path(config)
     if not path.is_file():
-        return {"schema_version": "0.1.0", "smoke": None, "reproducibility": None}
+        return {
+            "schema_version": "0.1.0",
+            "smoke": None,
+            "reproducibility": None,
+            "memory_admission": None,
+        }
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -1275,6 +1327,7 @@ def blocked_receipt(
         "status": "blocked",
         "partial": True,
         "profile": profile,
+        **receipt_execution_classification(profile),
         "started_at": started,
         "finished_at": utc_now(),
         "backend": {
@@ -2653,7 +2706,7 @@ def run_sample(
         offload_model=bool(settings["offload_model"]),
         t5_cpu=bool(settings["t5_cpu"]),
         repeat=int(settings["repeat"]),
-        kernel_profiler=kernel_profiler,
+        kernel_profiler=str(settings.get("kernel_profiler", kernel_profiler)),
     )
     command = build_generate_command(
         python_executable=Path(sys.executable),
@@ -2858,6 +2911,7 @@ def run_sample(
         "status": status,
         "partial": status != "succeeded",
         "profile": profile,
+        **receipt_execution_classification(profile),
         "started_at": started_at,
         "finished_at": utc_now(),
         "backend": {
@@ -3021,10 +3075,19 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
         return 2
     state = read_gate_state(config)
     if not gate_matches(state.get("smoke"), config, "succeeded"):
+        admission = args.profile == "baseline-memory-admission"
         print_json(
             stage_gate_error(
-                "reproducibility",
-                "A successful matching smoke gate is required before a cold/warm run.",
+                "memory_admission" if admission else "reproducibility",
+                (
+                    "A successful matching regression smoke gate is required "
+                    "before the memory admission probe."
+                    if admission
+                    else (
+                        "A successful matching smoke gate is required before "
+                        "a cold/warm run."
+                    )
+                ),
             )
         )
         return 2
@@ -3033,21 +3096,29 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
         prompt,
         output_dir,
         profile=args.profile,
-        repeat=int(config["reproducibility"]["repeat"]),
+        repeat=int(plan["effective_settings"]["repeat"]),
         cli_started_perf=getattr(args, "_cli_started_perf", None),
     )
     state = read_gate_state(config)
-    state["reproducibility"] = {
-        "status": (
-            "passed"
-            if return_code == 0
-            and receipt["reproducibility"]["status"] == "hash_match"
-            else "failed"
-        ),
-        "receipt": str(output_dir / f"{receipt['run_id']}.receipt.json"),
-        "completed_at": utc_now(),
-        **gate_fingerprint(config),
-    }
+    if args.profile == "baseline-memory-admission":
+        state["memory_admission"] = {
+            "status": "passed" if return_code == 0 else "failed",
+            "receipt": str(output_dir / f"{receipt['run_id']}.receipt.json"),
+            "completed_at": utc_now(),
+            **gate_fingerprint(config),
+        }
+    else:
+        state["reproducibility"] = {
+            "status": (
+                "passed"
+                if return_code == 0
+                and receipt["reproducibility"]["status"] == "hash_match"
+                else "failed"
+            ),
+            "receipt": str(output_dir / f"{receipt['run_id']}.receipt.json"),
+            "completed_at": utc_now(),
+            **gate_fingerprint(config),
+        }
     write_gate_state(config, state)
     print_json(receipt)
     return return_code
@@ -3167,8 +3238,7 @@ def build_parser() -> argparse.ArgumentParser:
     run = subparsers.add_parser(
         "run",
         help=(
-            "Plan or run one explicit same-seed cold/warm profile after the "
-            "smoke gate succeeds."
+            "Plan or run one explicit M0 profile after the smoke gate succeeds."
         ),
     )
     run.add_argument(
@@ -3177,6 +3247,8 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help=(
             "smoke-cold-warm uses the 17-frame/4-step smoke settings; "
+            "baseline-memory-admission uses 49 frames/1 step/repeat 1 and is "
+            "not an official performance or quality baseline; "
             "baseline-reproducibility preserves the 49-frame/50-step baseline."
         ),
     )
