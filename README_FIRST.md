@@ -4,7 +4,7 @@
 
 As of 2026-07-31:
 
-- active architecture branch: `agent/compound-eye-architecture-v1`;
+- official Compound I/O architecture and roadmap are merged into `main`;
 - architecture RFC commit before this worklog addition:
   `041311bf6c3aad144f1a64980a36fd399c6c17d8`;
 - preserved pre-rebase tag: `pre-compound-eye-v1` at
@@ -17,8 +17,10 @@ As of 2026-07-31:
 - the RFC branch and annotated preservation tag are published with exact Git
   history;
 - RFC Issue
-  [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32) and Draft PR
-  [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33) are open.
+  [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32) is closed and
+  PR [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33) is merged;
+- the model-free Rust I/O admission result is `CONDITIONAL_ADMIT`, not a model
+  or product speedup claim.
 
 Always run `git status -sb` and `git rev-parse HEAD` before relying on this
 snapshot.
@@ -57,9 +59,8 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Review the official Compound I/O roadmap and architecture RFC in Draft PR
-[`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33). Record review and
-CI outcomes in `docs/WORKLOG.md` before merge.
+Complete the M1 rights-cleared clip/oracle Topology Cost Surface. Treat the
+Rust I/O result as supporting evidence only; a separate approved shared-buffer
+or PyO3 probe must measure process/FFI cost before production migration.
 
-Do not begin M1 model integration while R0 publication and review remain
-unresolved.
+Do not modify Wan hooks or claim backend speedup from the model-free plan.

@@ -34,6 +34,9 @@ Do not silently promote `implemented` to `verified` or `verified` to
 ## 3. Milestone ordering
 
 - M0 evidence remains independent of compound-eye changes.
+- M0 remains `in_progress` until its own exit evidence is complete; successful
+  Smoke, reproducibility, or memory-admission components do not close it.
+- M1-P0 analytical preparation is a pre-gate, not M1 entry or M1 completion.
 - M1 cost and safety ground truth precedes learned planning.
 - M2 planning precedes dynamic activation.
 - M3 observation/fusion safety precedes backend skipping.
@@ -42,6 +45,15 @@ Do not silently promote `implemented` to `verified` or `verified` to
 
 Parallel research is allowed only when it cannot be mistaken for passing a
 later gate.
+
+For M1-P0 Analytical Topology Pruning, draft equations, schemas, synthetic
+cases, test scaffolding, unavailable-metric handling, and pre-rejection rules
+may remain WIP. Final measurements, fixed Rust/Amdahl inputs, Gate decisions,
+completion claims, and remote Analytical publication require the depended-on
+Rust I/O report and its measurement semantics to be merged into `main`.
+After that merge, the WIP branch must update from `origin/main` and rebase
+before the final benchmark is rerun. Existing WIP must be preserved rather
+than deleted or recreated.
 
 ## 4. Same-condition rule
 
@@ -84,6 +96,12 @@ No subsystem may be excluded merely because it weakens the speedup.
 - Unsupported or uncollected values are `null` with unit, scope, status,
   reason, and measurement method.
 - Historical receipts are immutable.
+
+Cross-language control-plane benchmarks additionally require exact integer
+parity, a fixed float tolerance, identical input/topology, and deterministic
+semantic hashes. Core pipeline, interpreter/process startup, compilation, and
+process/FFI handoff are separate scopes. A core-language improvement cannot be
+reported as end-to-end model or product speedup.
 
 ## 7. Safety and fallback
 
