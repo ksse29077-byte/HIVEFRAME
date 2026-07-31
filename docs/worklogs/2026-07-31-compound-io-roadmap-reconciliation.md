@@ -1,6 +1,6 @@
 # 2026-07-31 — Compound I/O Roadmap Reconciliation
 
-Status: published on RFC branch; Draft PR review pending
+Status: merged into main
 
 ## Purpose
 
@@ -19,16 +19,27 @@ direction without deleting evidence or overstating performance.
 - Preservation tag: `pre-compound-eye-v1`
 - Tag target:
   `2bc35ff4a0d442dc5fa43924d719de942960762b`
+- Merged PR:
+  [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33)
+- Merge commit:
+  `237c298899ae9a5d46470d18255f7ff6a704bb65`
+- Merged at:
+  `2026-07-31T07:33:59Z`
+- RFC Issue
+  [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32):
+  closed through merged PR #33
 
 The RFC branch and annotated tag were published with normal Git transport.
 The remote RFC branch contains `041311b...` as an exact ancestor. No GitHub
-Contents API reconstruction was used and `main` was not modified.
+Contents API reconstruction was used. At the time of RFC publication, `main`
+was not modified directly; PR #33 was subsequently merged into `main` as merge
+commit `237c298899ae9a5d46470d18255f7ff6a704bb65`.
 
-Review links:
+## Issue and merge links
 
 - RFC Issue
   [`#32`](https://github.com/ksse29077-byte/HIVEFRAME/issues/32);
-- Draft PR
+- Merged PR
   [`#33`](https://github.com/ksse29077-byte/HIVEFRAME/pull/33).
 
 ## Preserved assets
@@ -100,6 +111,16 @@ parity, end-to-end speedup, backend independence, or commercial value.
 
 ## Rollback and review
 
-The Draft PR can be closed without changing `main`. The previous architecture
-remains at the preservation tag, and every roadmap change is isolated on the
-RFC branch for review.
+PR #33 is merged. Reversing the integration now requires an explicit revert of
+merge commit `237c298899ae9a5d46470d18255f7ff6a704bb65`; history must not be
+rewritten. The previous architecture remains reachable at the preservation
+tag, and the RFC branch remains available for review.
+
+## Post-merge status sync validation
+
+- Python compile: passed;
+- Python unittest: 59 passed;
+- Rust `cargo check --workspace --locked`: passed;
+- `git diff --check`: passed;
+- model loads: 0;
+- CUDA runs: 0.
