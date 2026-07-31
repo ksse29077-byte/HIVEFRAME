@@ -1,5 +1,9 @@
 # HIVEFRAME
 
+New contributors and Codex sessions should begin with
+[`README_FIRST.md`](README_FIRST.md), then check [`TASKS.md`](TASKS.md) and
+[`docs/WORKLOG.md`](docs/WORKLOG.md) before changing the repository.
+
 HIVEFRAME is a research-first compound-eye visual runtime for video generation
 and editing. It explores whether small, purpose-specific logical eyes can
 observe change before generation, fuse that evidence into a shared visual
