@@ -96,9 +96,19 @@ After an approved model setup on a compatible NVIDIA CUDA host, M0 enforces:
 
 ```bash
 python hiveframe_m0.py smoke
-python hiveframe_m0.py run --prompt-id static-speaking-person
+python hiveframe_m0.py run --profile smoke-cold-warm \
+  --prompt-id static-speaking-person --plan
+python hiveframe_m0.py run --profile smoke-cold-warm \
+  --prompt-id static-speaking-person \
+  --expect-settings-hash SETTINGS_HASH_FROM_PLAN
 python hiveframe_m0.py run-suite
 ```
+
+`run` requires an explicit profile. `smoke-cold-warm` selects the 17-frame,
+4-step smoke cost with two in-process generations. The preserved
+`baseline-reproducibility` profile selects the 49-frame, 50-step baseline.
+`--plan` loads neither the model nor CUDA and prints the exact settings hash
+that must be approved and passed to the execution command.
 
 The ten-prompt suite cannot run before the smoke and same-seed cold/warm
 reproducibility gates pass.

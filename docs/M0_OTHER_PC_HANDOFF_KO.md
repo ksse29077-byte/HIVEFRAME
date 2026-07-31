@@ -340,7 +340,8 @@ python hiveframe_m0.py preflight \
 
 ```bash
 python hiveframe_m0.py smoke
-python hiveframe_m0.py run --prompt-id static-speaking-person
+python hiveframe_m0.py run --profile smoke-cold-warm --prompt-id static-speaking-person --plan
+python hiveframe_m0.py run --profile smoke-cold-warm --prompt-id static-speaking-person --expect-settings-hash SETTINGS_HASH_FROM_PLAN
 python hiveframe_m0.py run-suite
 ```
 

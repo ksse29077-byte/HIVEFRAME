@@ -185,17 +185,25 @@ Use one result root consistently so the gate receipts remain together:
 # 1. One low-cost smoke generation.
 python hiveframe_m0.py smoke
 
-# 2-4. One command loads the model once, then produces cold and warm outputs
-# with the same prompt and seed and evaluates their SHA-256 reproducibility.
-python hiveframe_m0.py run --prompt-id static-speaking-person
+# 2. Print and approve the low-cost cold/warm plan without loading the model.
+python hiveframe_m0.py run --profile smoke-cold-warm \
+  --prompt-id static-speaking-person --plan
+
+# 3-4. One command loads the model once, then produces cold and warm outputs.
+python hiveframe_m0.py run --profile smoke-cold-warm \
+  --prompt-id static-speaking-person \
+  --expect-settings-hash SETTINGS_HASH_FROM_PLAN
 
 # 5. Run the ten canonical prompts only after both gates pass.
 python hiveframe_m0.py run-suite
 ```
 
 There are no separate cold and warm commands. `run` executes them consecutively
-inside one process so model state and runtime caches are comparable. A hash
-mismatch fails the reproducibility gate and blocks the canonical suite.
+inside one process so model state and runtime caches are comparable. The
+explicit `smoke-cold-warm` profile uses 17 frames and 4 steps; the separately
+preserved `baseline-reproducibility` profile uses 49 frames and 50 steps.
+Execution requires the exact settings hash printed by `--plan`. A hash mismatch
+fails the reproducibility gate and blocks the canonical suite.
 
 ## Result collection
 

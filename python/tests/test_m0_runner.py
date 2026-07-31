@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import argparse
+import contextlib
+import io
 import json
 import os
 import sys
@@ -14,6 +17,9 @@ sys.path.insert(0, str(ROOT / "python"))
 from hive_backends.wan21 import Wan21RunSpec, build_generate_command
 from hive_benchmarks.m0_runner import (
     blocked_receipt,
+    build_parser,
+    build_run_plan,
+    command_run,
     download_plan,
     load_config,
     load_suite,
@@ -123,7 +129,7 @@ class M0ConfigTests(unittest.TestCase):
     def test_smoke_and_baseline_profiles_are_separate(self) -> None:
         smoke = settings_for_profile(self.config, "smoke", repeat=1)
         baseline = settings_for_profile(
-            self.config, "reproducibility", repeat=2
+            self.config, "baseline-reproducibility", repeat=2
         )
         self.assertEqual(smoke["frame_num"], 17)
         self.assertEqual(smoke["sample_steps"], 4)
@@ -135,6 +141,184 @@ class M0ConfigTests(unittest.TestCase):
         self.assertEqual(baseline["device"], "cuda:0")
         self.assertTrue(baseline["negative_prompt"])
 
+    def test_smoke_cold_warm_profile_uses_smoke_cost_with_two_runs(self) -> None:
+        settings = settings_for_profile(
+            self.config, "smoke-cold-warm", repeat=2
+        )
+        self.assertEqual(settings["size"], "832*480")
+        self.assertEqual(settings["frame_num"], 17)
+        self.assertEqual(settings["fps"], 16)
+        self.assertEqual(settings["sample_steps"], 4)
+        self.assertEqual(settings["repeat"], 2)
+        self.assertEqual(settings["sample_guide_scale"], 6.0)
+        self.assertEqual(settings["sample_solver"], "unipc")
+        self.assertEqual(settings["dtype"], "bfloat16")
+        self.assertEqual(settings["device"], "cuda:0")
+        self.assertTrue(settings["offload_model"])
+        self.assertTrue(settings["t5_cpu"])
+
+    def test_explicit_profile_settings_hashes_differ(self) -> None:
+        prompt = next(
+            item for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        smoke = settings_for_profile(
+            self.config, "smoke-cold-warm", repeat=2
+        )
+        baseline = settings_for_profile(
+            self.config, "baseline-reproducibility", repeat=2
+        )
+        smoke_hash = stable_hash({"sample": prompt, "settings": smoke})
+        baseline_hash = stable_hash({"sample": prompt, "settings": baseline})
+        self.assertNotEqual(smoke_hash, baseline_hash)
+
+    def test_run_plan_exposes_final_settings_without_execution(self) -> None:
+        prompt = next(
+            item for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        plan = build_run_plan(self.config, prompt, "smoke-cold-warm")
+        self.assertFalse(plan["execution_started"])
+        self.assertEqual(plan["selected_profile"], "smoke-cold-warm")
+        self.assertEqual(plan["prompt_id"], "static-speaking-person")
+        self.assertEqual(plan["effective_settings"]["frame_num"], 17)
+        self.assertEqual(plan["effective_settings"]["sample_steps"], 4)
+        self.assertEqual(plan["effective_settings"]["repeat"], 2)
+        self.assertEqual(
+            plan["backend"]["model_revision"],
+            self.config["model"]["revision"],
+        )
+        self.assertEqual(
+            plan["backend"]["code_revision"],
+            self.config["upstream"]["code_revision"],
+        )
+        self.assertEqual(len(plan["settings_hash"]), 64)
+
+    def test_cli_plan_does_not_start_preflight_or_model_execution(self) -> None:
+        args = argparse.Namespace(
+            profile="smoke-cold-warm",
+            prompt_id="static-speaking-person",
+            output_dir=None,
+            plan=True,
+            expect_settings_hash=None,
+        )
+        output = io.StringIO()
+        with (
+            patch("hive_benchmarks.m0_runner.evaluate_preflight") as preflight,
+            patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+            contextlib.redirect_stdout(output),
+        ):
+            return_code = command_run(args, self.config)
+        self.assertEqual(return_code, 0)
+        preflight.assert_not_called()
+        run_sample.assert_not_called()
+        payload = json.loads(output.getvalue())
+        self.assertFalse(payload["execution_started"])
+
+    def test_settings_hash_mismatch_blocks_before_model_execution(self) -> None:
+        args = argparse.Namespace(
+            profile="smoke-cold-warm",
+            prompt_id="static-speaking-person",
+            output_dir=None,
+            plan=False,
+            expect_settings_hash="0" * 64,
+        )
+        output = io.StringIO()
+        with (
+            patch("hive_benchmarks.m0_runner.read_gate_state") as gate_state,
+            patch("hive_benchmarks.m0_runner.run_sample") as run_sample,
+            contextlib.redirect_stdout(output),
+        ):
+            return_code = command_run(args, self.config)
+        self.assertEqual(return_code, 2)
+        gate_state.assert_not_called()
+        run_sample.assert_not_called()
+        payload = json.loads(output.getvalue())
+        self.assertEqual(payload["stage"], "settings-approval")
+        self.assertIn("does not match", payload["message"])
+
+    def test_approved_profile_is_forwarded_to_receipt_execution(self) -> None:
+        prompt = next(
+            item for item in load_suite(self.config)
+            if item["id"] == "static-speaking-person"
+        )
+        plan = build_run_plan(self.config, prompt, "smoke-cold-warm")
+        args = argparse.Namespace(
+            profile="smoke-cold-warm",
+            prompt_id="static-speaking-person",
+            output_dir=None,
+            plan=False,
+            expect_settings_hash=plan["settings_hash"],
+        )
+        receipt = {
+            "run_id": "smoke-cold-warm-static-speaking-person-101",
+            "profile": "smoke-cold-warm",
+            "reproducibility": {"status": "hash_match"},
+        }
+        output = io.StringIO()
+        with (
+            patch(
+                "hive_benchmarks.m0_runner.read_gate_state",
+                return_value={"schema_version": "0.1.0", "smoke": {}},
+            ),
+            patch(
+                "hive_benchmarks.m0_runner.gate_matches",
+                return_value=True,
+            ),
+            patch(
+                "hive_benchmarks.m0_runner.run_sample",
+                return_value=(0, receipt),
+            ) as run_sample,
+            patch("hive_benchmarks.m0_runner.write_gate_state"),
+            contextlib.redirect_stdout(output),
+        ):
+            return_code = command_run(args, self.config)
+        self.assertEqual(return_code, 0)
+        self.assertEqual(
+            run_sample.call_args.kwargs["profile"],
+            "smoke-cold-warm",
+        )
+        self.assertEqual(run_sample.call_args.kwargs["repeat"], 2)
+        self.assertEqual(json.loads(output.getvalue())["profile"], args.profile)
+
+    def test_invalid_run_profile_has_understandable_cli_error(self) -> None:
+        error = io.StringIO()
+        with (
+            contextlib.redirect_stderr(error),
+            self.assertRaises(SystemExit),
+        ):
+            build_parser().parse_args(
+                [
+                    "run",
+                    "--profile",
+                    "unknown-profile",
+                    "--prompt-id",
+                    "static-speaking-person",
+                    "--plan",
+                ]
+            )
+        self.assertIn("invalid choice", error.getvalue())
+        self.assertIn("smoke-cold-warm", error.getvalue())
+
+    def test_documented_plan_commands_match_the_parser(self) -> None:
+        document = (ROOT / "docs" / "M0_BASELINE.md").read_text(
+            encoding="utf-8"
+        )
+        parser = build_parser()
+        for profile in ("smoke-cold-warm", "baseline-reproducibility"):
+            command = [
+                "run",
+                "--profile",
+                profile,
+                "--prompt-id",
+                "static-speaking-person",
+                "--plan",
+            ]
+            args = parser.parse_args(command)
+            self.assertEqual(args.profile, profile)
+            self.assertTrue(args.plan)
+            self.assertIn(f"--profile {profile}", document)
+
     def test_settings_hash_is_order_independent(self) -> None:
         self.assertEqual(stable_hash({"a": 1, "b": 2}), stable_hash({"b": 2, "a": 1}))
 
@@ -143,6 +327,14 @@ class M0ConfigTests(unittest.TestCase):
         with path.open(encoding="utf-8") as handle:
             payload = json.load(handle)
         self.assertEqual(payload["properties"]["status"]["enum"][0], "blocked")
+        self.assertIn(
+            "smoke-cold-warm",
+            payload["properties"]["profile"]["enum"],
+        )
+        self.assertIn(
+            "baseline-reproducibility",
+            payload["properties"]["profile"]["enum"],
+        )
 
     def test_blocked_receipt_contains_required_provenance(self) -> None:
         prompt = load_suite(self.config)[0]

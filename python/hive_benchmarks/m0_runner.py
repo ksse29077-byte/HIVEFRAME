@@ -53,6 +53,14 @@ REQUIRED_DISTRIBUTIONS = (
     "numpy",
     "flash-attn",
 )
+RUN_PROFILES = (
+    "smoke-cold-warm",
+    "baseline-reproducibility",
+)
+PROFILE_RUN_KINDS = {
+    "smoke-cold-warm": "smoke-based same-seed cold/warm pair",
+    "baseline-reproducibility": "baseline same-seed cold/warm pair",
+}
 
 
 def utc_now() -> str:
@@ -615,8 +623,20 @@ def stable_hash(payload: Any) -> str:
 def settings_for_profile(
     config: dict[str, Any], profile: str, *, repeat: int | None = None
 ) -> dict[str, Any]:
+    known_profiles = {
+        "smoke",
+        "smoke-cold-warm",
+        "baseline-reproducibility",
+        "reproducibility",
+        "canonical",
+    }
+    if profile not in known_profiles:
+        choices = ", ".join(sorted(known_profiles))
+        raise ValueError(
+            f"Unknown M0 profile {profile!r}; choose one of: {choices}."
+        )
     settings = dict(config["generation"])
-    if profile == "smoke":
+    if profile in {"smoke", "smoke-cold-warm"}:
         smoke = dict(config["smoke"])
         smoke.pop("prompt_id", None)
         settings.update(smoke)
@@ -626,6 +646,46 @@ def settings_for_profile(
         else int(config["reproducibility"]["repeat"])
     )
     return settings
+
+
+def build_run_plan(
+    config: dict[str, Any],
+    prompt: dict[str, Any],
+    profile: str,
+) -> dict[str, Any]:
+    if profile not in RUN_PROFILES:
+        choices = ", ".join(RUN_PROFILES)
+        raise ValueError(
+            f"Unknown run profile {profile!r}; choose one of: {choices}."
+        )
+    settings = settings_for_profile(
+        config,
+        profile,
+        repeat=int(config["reproducibility"]["repeat"]),
+    )
+    settings_hash = stable_hash({"sample": prompt, "settings": settings})
+    return {
+        "schema_version": "0.1.0",
+        "kind": "hiveframe.m0.run_plan",
+        "execution_started": False,
+        "selected_profile": profile,
+        "expected_run_kind": PROFILE_RUN_KINDS[profile],
+        "prompt_id": prompt["id"],
+        "sample": prompt,
+        "effective_settings": settings,
+        "settings_hash": settings_hash,
+        "backend": {
+            "name": config["backend"]["name"],
+            "model_id": config["model"]["repo_id"],
+            "model_revision": config["model"]["revision"],
+            "code_repository": config["upstream"]["code_repository"],
+            "code_revision": config["upstream"]["code_revision"],
+        },
+        "execution_approval": {
+            "required_argument": "--expect-settings-hash",
+            "required_value": settings_hash,
+        },
+    }
 
 
 def gate_state_path(config: dict[str, Any]) -> Path:
@@ -1170,6 +1230,35 @@ def command_smoke(args: argparse.Namespace, config: dict[str, Any]) -> int:
 
 
 def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
+    suite = load_suite(config)
+    prompt = next((item for item in suite if item["id"] == args.prompt_id), None)
+    if prompt is None:
+        print(f"Unknown prompt id: {args.prompt_id}", file=sys.stderr)
+        return 2
+    plan = build_run_plan(config, prompt, args.profile)
+    if args.plan:
+        print_json(plan)
+        return 0
+    if not args.expect_settings_hash:
+        print_json(
+            stage_gate_error(
+                "settings-approval",
+                "Execution requires --expect-settings-hash from an approved run plan.",
+            )
+        )
+        return 2
+    if args.expect_settings_hash != plan["settings_hash"]:
+        print_json(
+            stage_gate_error(
+                "settings-approval",
+                (
+                    "Approved settings hash does not match the final effective "
+                    f"settings: expected {args.expect_settings_hash}, "
+                    f"actual {plan['settings_hash']}."
+                ),
+            )
+        )
+        return 2
     state = read_gate_state(config)
     if not gate_matches(state.get("smoke"), config, "succeeded"):
         print_json(
@@ -1178,11 +1267,6 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
                 "A successful matching smoke gate is required before a cold/warm run.",
             )
         )
-        return 2
-    suite = load_suite(config)
-    prompt = next((item for item in suite if item["id"] == args.prompt_id), None)
-    if prompt is None:
-        print(f"Unknown prompt id: {args.prompt_id}", file=sys.stderr)
         return 2
     output_dir = (
         Path(args.output_dir).resolve()
@@ -1193,7 +1277,7 @@ def command_run(args: argparse.Namespace, config: dict[str, Any]) -> int:
         config,
         prompt,
         output_dir,
-        profile="reproducibility",
+        profile=args.profile,
         repeat=int(config["reproducibility"]["repeat"]),
     )
     state = read_gate_state(config)
@@ -1303,10 +1387,36 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = subparsers.add_parser(
         "run",
-        help="Run one same-seed cold/warm pair after the smoke gate succeeds.",
+        help=(
+            "Plan or run one explicit same-seed cold/warm profile after the "
+            "smoke gate succeeds."
+        ),
+    )
+    run.add_argument(
+        "--profile",
+        choices=RUN_PROFILES,
+        required=True,
+        help=(
+            "smoke-cold-warm uses the 17-frame/4-step smoke settings; "
+            "baseline-reproducibility preserves the 49-frame/50-step baseline."
+        ),
     )
     run.add_argument("--prompt-id", required=True)
     run.add_argument("--output-dir")
+    run.add_argument(
+        "--plan",
+        "--dry-run",
+        action="store_true",
+        help="Print final effective settings and hash without loading the model.",
+    )
+    run.add_argument(
+        "--expect-settings-hash",
+        metavar="SHA256",
+        help=(
+            "Required for execution; must exactly match the hash printed by "
+            "--plan."
+        ),
+    )
     run.set_defaults(handler=command_run)
 
     suite = subparsers.add_parser(

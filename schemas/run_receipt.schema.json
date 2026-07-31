@@ -32,7 +32,13 @@
     "status": { "enum": ["blocked", "failed", "succeeded"] },
     "partial": { "type": "boolean" },
     "profile": {
-      "enum": ["smoke", "reproducibility", "canonical"]
+      "enum": [
+        "smoke",
+        "smoke-cold-warm",
+        "baseline-reproducibility",
+        "reproducibility",
+        "canonical"
+      ]
     },
     "started_at": { "type": "string", "format": "date-time" },
     "finished_at": { "type": "string", "format": "date-time" },

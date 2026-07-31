@@ -115,14 +115,43 @@ Execution order is enforced:
 # 1. One low-cost pipeline check
 python hiveframe_m0.py smoke
 
-# 2. Same prompt and seed, cold then warm in one loaded process
-python hiveframe_m0.py run --prompt-id static-speaking-person
+# 2. Inspect the exact low-cost cold/warm settings without loading the model
+python hiveframe_m0.py run --profile smoke-cold-warm `
+  --prompt-id static-speaking-person --plan
 
-# 3. Only after smoke and hash reproducibility pass
+# 3. Execute only with the settings hash copied from the approved plan
+python hiveframe_m0.py run --profile smoke-cold-warm `
+  --prompt-id static-speaking-person `
+  --expect-settings-hash SETTINGS_HASH_FROM_PLAN
+
+# 4. Only after smoke and hash reproducibility pass
 python hiveframe_m0.py run-suite
 ```
 
 The smoke gate is tied to the project Git commit, code revision, model revision, and configuration hash. A changed input invalidates the gate. The canonical ten-prompt suite is a separate stage and cannot start until both smoke and cold/warm reproducibility gates pass.
+
+`run` has no implicit profile. The caller must choose one of:
+
+- `smoke-cold-warm`: 832x480, 17 frames, 16 FPS, 4 steps, repeat 2;
+- `baseline-reproducibility`: 832x480, 49 frames, 16 FPS, 50 steps,
+  repeat 2.
+
+Both profiles retain the pinned prompt inputs, guidance 6.0, UniPC, BF16,
+CUDA device, model CPU offload, and T5 CPU placement. The baseline profile is
+preserved and is never silently replaced by the smoke-cost profile.
+
+Use the same model-free plan flow before a baseline-cost pair:
+
+```powershell
+python hiveframe_m0.py run --profile baseline-reproducibility `
+  --prompt-id static-speaking-person --plan
+```
+
+The plan prints `execution_started: false`, the selected profile, prompt ID,
+complete effective settings, model/code revisions, expected run kind, and
+settings hash. Execution requires the exact hash through
+`--expect-settings-hash`; a missing or different hash is rejected before
+preflight or the model child process starts.
 
 ## Fixed generation inputs
 
@@ -171,7 +200,8 @@ Failed and blocked runs still write partial receipts.
 
 ## Cold, warm, and reproducibility
 
-The reproducibility command loads the model once, then runs the same prompt and seed twice:
+Each explicit reproducibility profile loads the model once, then runs the same
+prompt and seed twice:
 
 - `cold`: first generation after model load;
 - `warm`: second generation with the same in-process model and runtime caches.
