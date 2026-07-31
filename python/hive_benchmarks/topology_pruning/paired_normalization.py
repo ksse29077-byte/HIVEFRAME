@@ -236,7 +236,11 @@ def summarize_paired_deltas(
 def assert_unavailable_values_are_null(value: Any, path: str = "root") -> None:
     if isinstance(value, dict):
         status = value.get("status")
-        if status in {"unavailable", "uncollected", "unsupported", "partially_available"}:
+        if (
+            "value" in value
+            and status
+            in {"unavailable", "uncollected", "unsupported", "partially_available"}
+        ):
             if value.get("value", object()) is not None:
                 raise ValueError(f"Unavailable metric is not null at {path}.")
             if not value.get("reason") or not value.get("method"):

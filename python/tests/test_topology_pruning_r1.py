@@ -164,6 +164,19 @@ class TopologyPruningR1Tests(unittest.TestCase):
                 }
             )
 
+    def test_partially_available_aggregate_is_not_misclassified_as_metric(self) -> None:
+        assert_unavailable_values_are_null(
+            {
+                "status": "partially_available",
+                "f_input": {
+                    "value": None,
+                    "status": "unavailable",
+                    "reason": "not isolated",
+                    "method": "not measured",
+                },
+            }
+        )
+
     def test_deterministic_interleaving(self) -> None:
         first = [deterministic_case_b_order(101, "measured", index) for index in range(20)]
         second = [deterministic_case_b_order(101, "measured", index) for index in range(20)]

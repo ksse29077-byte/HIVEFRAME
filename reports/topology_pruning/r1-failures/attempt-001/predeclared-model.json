@@ -1,0 +1,112 @@
+{
+  "analytically_pruned_combinations": [
+    "case-a-low-resolution-simple/T1",
+    "case-a-low-resolution-simple/T2",
+    "case-c-global-motion/T1",
+    "case-c-global-motion/T2"
+  ],
+  "base_main_commit": "ad091add498e5c8ec68b4cc5a03937c4d3d3cb62",
+  "benchmark_status": "model_free_pre_gate_refinement",
+  "coefficient_sources": [
+    {
+      "fields": "Case B T1/T2 cost.S_required values",
+      "path": "reports/topology_pruning/analytical-model.json",
+      "sha256": "4a5e14fca3474f7d43ba7415be25e2ae170670bc8b4aed866285f24b08fe36c5"
+    },
+    {
+      "fields": "merged Rust p50 and stage means already fixed by v1",
+      "path": "reports/rust_io_admission/benchmark-summary.json",
+      "sha256": "c4e6e60572f8252abd9b3cf11ee5f61634ce6ea3e45ba432f3854f9f0f90450e"
+    }
+  ],
+  "config_path": "configs/m1-p0-r1.same-run-mono-normalization.json",
+  "config_sha256": "28466e97a38d72d5a13d908668be9b2c8e32b228fac5c13db19122fecee56c1a",
+  "cost_model": {
+    "comparison_statistic": "paired_delta_p50",
+    "measured_delta_equation": "Delta_C_measured(T,i)=C_measured(T,i)-C_measured(T0,paired_i)",
+    "observed_equation": "C_observed(T)=C_session_fixed+C_case_shared+C_topology_variable(T)+C_measurement_noise",
+    "predicted_delta_equation": "Delta_C_predicted(T)=C_predicted(T)-C_predicted(T0)",
+    "prediction_source": "immutable v1 analytical-model cost.S_required",
+    "topology_variable_terms": [
+      "eye_setup",
+      "routing",
+      "coordinate_transform",
+      "observation",
+      "overlap",
+      "fusion",
+      "planning",
+      "logical_bytes",
+      "copied_bytes",
+      "temporary_bytes"
+    ]
+  },
+  "evidence_boundaries": {
+    "backend_neutral": true,
+    "cuda_runs": 0,
+    "h3_api_calls": 0,
+    "m0_completion_eligible": false,
+    "m1_completion_eligible": false,
+    "model_downloads": 0,
+    "model_free": true,
+    "model_loads": 0,
+    "official_speedup_eligible": false,
+    "paid_api_runs": 0
+  },
+  "gate_rules": {
+    "MONO_FIRST": "All compound candidates are analytically rejected or measured required savings exceeds an admitted downstream opportunity. Backend opportunity is unavailable in R1, so R1 cannot infer this outcome from zero.",
+    "PAUSE_COMPOUND_INPUT": "Safety, deterministic-hash, pairing, or unavailable-metric semantics fail.",
+    "PROCEED_TO_COST_SURFACE": "B/T1 and B/T2 paired p50 relative errors are <= 0.35, predicted and measured rankings match, dirty recall is 1.0, false-stable is 0.0, hashes are deterministic, and unavailable metrics remain null.",
+    "REFINE_COST_MODEL": "Safety holds but paired prediction error or ranking still fails and a concrete measurable calibration omission remains."
+  },
+  "issue": 40,
+  "pairing": {
+    "case_id": "case-b-high-resolution-local-change",
+    "compound_candidates": [
+      "T1",
+      "T2"
+    ],
+    "interleaving": "sha256(seed,phase,block,candidate) ascending",
+    "median_subtraction_forbidden": true,
+    "members_per_block": [
+      "T0",
+      "T1",
+      "T2"
+    ],
+    "mono_candidate": "T0",
+    "same_process": true,
+    "same_repetition_block": true,
+    "same_sequence_object": true,
+    "samples_per_member_per_block": 1
+  },
+  "pr_38_merge_commit": "ad091add498e5c8ec68b4cc5a03937c4d3d3cb62",
+  "predicted_case_b_deltas_seconds": {
+    "T1": 0.0032493,
+    "T2": 0.0044551
+  },
+  "premeasurement_commit": "885a3b6d27cc5514920928a90bb049c7ff66b4c7",
+  "retained_combinations": [
+    "case-a-low-resolution-simple/T0",
+    "case-b-high-resolution-local-change/T0",
+    "case-b-high-resolution-local-change/T1",
+    "case-b-high-resolution-local-change/T2",
+    "case-c-global-motion/T0"
+  ],
+  "run_kind": "m1_p0_r1_same_run_mono_normalization",
+  "schema_version": "0.1.0",
+  "thresholds": {
+    "deterministic_hash_required": true,
+    "dirty_recall_required": 1.0,
+    "false_stable_required": 0.0,
+    "prediction_relative_error_max": 0.35,
+    "unavailable_values_must_be_null": true
+  },
+  "v1_immutable_sha256": {
+    "configs/m1-p0.analytical-topology-pruning.json": "575b2be52988974e3b892482086d88b88c7a715fda3e41ef6ed9a5c34715cba4",
+    "docs/M1_ANALYTICAL_TOPOLOGY_PRUNING.md": "e09711d88a71ad02225b5c9bb6d514bc9710fbdb3c7a8c17712e7d3a1a697040",
+    "docs/worklogs/2026-07-31-m1-p0-analytical-topology-pruning.md": "83918d70182c33da1550987f9a807f3172593611fef2e7f61f753387add43528",
+    "reports/topology_pruning/analytical-model.json": "4a5e14fca3474f7d43ba7415be25e2ae170670bc8b4aed866285f24b08fe36c5",
+    "reports/topology_pruning/candidate-pruning-report.json": "6e2f0aaff8d64bac7b85b4271150fc526b020575db733b551599eab8b64ed267",
+    "reports/topology_pruning/decision-report.md": "c3944dc7078d7a9461bc7c0926e4c33878a96356aaf39713c9d80112ba80c1a8",
+    "reports/topology_pruning/minimal-probe-results.json": "bb659f703b7ed5cfffbd934a073dcc5319d1af8b49760623a223c69f60d99f41"
+  }
+}
