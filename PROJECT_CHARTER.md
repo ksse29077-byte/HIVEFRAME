@@ -125,13 +125,16 @@ changed.
 
 The next research milestone is **M1 — Eye Topology Ground Truth Lab**. It
 compares the valid 1×1 Mono Eye and declared multi-eye topologies against oracle
-change masks and complete observation costs before any Wan attention-hook or
-selective generation change.
+change masks and complete observation costs before any admitted backend
+integration or selective-generation change. Wan attention hooks remain frozen
+unless separately authorized.
 
 ## Decision record
 
-> Preserve Wan as the primary baseline renderer and LTX as a future control and
-> audio research backend. Test compound-eye observation and selective planning
-> as a backend-independent control layer. Retain patch, boundary, temporal
-> cache, and repair mechanisms as possible execution tools rather than defining
-> the product solely as a patch runtime.
+> Designate MiniMax H3 as the primary product backend target while keeping its
+> API admission pending and any future open-weight path blocked until official
+> artifacts and terms are verified. Preserve Wan as the frozen historical M0
+> comparator and immutable evidence. Remove LTX from active development scope
+> without deleting its history. Continue compound-eye observation and selective
+> planning as a backend-neutral control layer; none of these policy choices is
+> an H3 integration or speedup claim.

@@ -48,12 +48,21 @@ The official milestone sequence is the Compound I/O M0–M8 plan in
 
 ## Initial backend strategy
 
-- Primary commercial rendering candidate: Wan 2.1, starting with the 1.3B path for baseline work.
-- Reference path: Wan 2.2 TI2V-5B.
-- Optional control and audio-video research backend: LTX-2.
-- Base weights remain shared and frozen in the initial architecture.
+- Primary product backend target: MiniMax H3. Its official V2 API documents
+  the model identifier `MiniMax-H3`, but HIVEFRAME admission remains pending
+  until the API, pricing, data, commercial, provenance, and runtime contract is
+  reviewed in Issue #39.
+- Future white-box target: MiniMax H3 open weights, blocked until an official
+  repository, checkpoint, license, digest, source, and runtime are verified.
+- Frozen legacy comparator: Wan 2.1 T2V 1.3B. Existing M0 code, receipts,
+  fingerprints, and reports remain immutable evidence; no new Wan feature work
+  is implied.
+- Inactive backend: LTX-2. Historical code and documents remain preserved, but
+  it is removed from active development scope.
 
-All checkpoint licenses, model cards, and distribution terms must be re-verified and pinned before downloading or using weights. See [MODEL_LICENSE_MATRIX.md](MODEL_LICENSE_MATRIX.md).
+API availability is not HIVEFRAME support, and no H3 speedup is claimed.
+Checkpoint licenses, model cards, API terms, and distribution terms must be
+verified before use. See [MODEL_LICENSE_MATRIX.md](MODEL_LICENSE_MATRIX.md).
 
 ## Repository map
 

@@ -22,7 +22,10 @@ As of 2026-07-31:
 - the model-free Rust I/O admission result is `CONDITIONAL_ADMIT`, not a model
   or product speedup claim;
 - Rust I/O PR #36 is merged at `a71eea7...`;
-- M1-P0 is `REFINE_COST_MODEL`, not M1 entry or completion.
+- M1-P0 is `REFINE_COST_MODEL`, not M1 entry or completion;
+- MiniMax H3 is the primary product backend target, with API and future
+  open-weight admission still gated separately; Wan remains the frozen M0
+  comparator and LTX is inactive.
 
 Always run `git status -sb` and `git rev-parse HEAD` before relying on this
 snapshot.

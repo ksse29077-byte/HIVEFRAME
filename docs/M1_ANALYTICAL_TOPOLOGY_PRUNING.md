@@ -6,6 +6,10 @@ This probe is a pre-gate. It does not close M0 or M1, replace the
 rights-cleared M1 Cost Surface, or claim model, GPU, quality, product, or
 commercial speedup.
 
+MiniMax H3 is now the primary product backend target, but this probe remains
+backend-neutral. It does not admit, invoke, integrate, or benchmark H3. Wan is
+the frozen historical M0 comparator, and LTX is inactive.
+
 ## Provenance
 
 - base and Rust Probe merge commit:
@@ -75,6 +79,21 @@ S_required(T) =
 
 Negative cost inputs are rejected. Missing measurements are never replaced
 with zero.
+
+H3 generation, queue, model compute, GPU kernel, VRAM, latent/token/block,
+selector, partial denoising, repair/fallback, API unit cost, and quality values
+were not measured and do not participate in this decision. Their contract is:
+
+```json
+{
+  "value": null,
+  "unit": "ms",
+  "scope": "minimax_h3_generation",
+  "status": "unavailable",
+  "reason": "H3 has not passed the separate HIVEFRAME API or open-weight admission gate",
+  "method": "not measured"
+}
+```
 
 ## Amdahl status
 
@@ -160,6 +179,10 @@ Do not grow the corpus yet. The next exact work is:
    contract;
 5. reconsider the M1-P0 decision only after prediction error is within the
    declared rule.
+
+This decision is not H3 backend admission, proof of H3 API or open-weight
+support, or proof of H3 speedup. It does not close M0 or M1. H3 is only the
+highest-priority target for a separate admission gate in Issue #39.
 
 ## Artifacts
 

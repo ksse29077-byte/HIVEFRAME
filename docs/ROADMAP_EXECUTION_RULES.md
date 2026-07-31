@@ -120,6 +120,13 @@ must have provenance, rights, license terms, digest, and admission status
 before use. Unadmitted data cannot enter M1 or later training/evaluation
 receipts.
 
+Backend priority is not backend admission. MiniMax H3 is the primary product
+target, but it remains unsupported by HIVEFRAME until its separate black-box
+API gate is accepted. Any future open-weight H3 path requires independent
+source, checkpoint, license, digest, and runtime admission. Do not substitute
+another Hailuo model identifier, infer unreleased weights, or use unavailable
+H3 costs as zero. Wan remains a frozen M0 comparator; LTX is inactive.
+
 ## 9. Git and review policy
 
 - Never write roadmap changes directly to `main`.

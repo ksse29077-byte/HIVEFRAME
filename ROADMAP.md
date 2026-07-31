@@ -6,6 +6,22 @@ Architecture: compound-eye input observation and selective generation
 
 Evidence policy: no speedup claim before same-condition end-to-end proof
 
+## Backend target policy
+
+- **MiniMax H3:** highest-priority product backend target. Official API
+  documentation exists, but HIVEFRAME admission is pending Issue #39 and no
+  integration or speedup is claimed.
+- **MiniMax H3 open weights:** future white-box candidate, blocked until the
+  official weights, source, license, immutable digest, and runtime are
+  verified. A publication plan is not a released checkpoint.
+- **Wan 2.1 T2V 1.3B:** frozen legacy comparator. Its M0 code, pins, receipts,
+  reproducibility evidence, fingerprints, and reports remain immutable.
+- **LTX:** inactive and removed from active development scope. Historical
+  assets remain preserved.
+
+M0 is not retroactively converted into an H3 baseline. A future H3 admission
+baseline must be a separate approved stage or profile after admission.
+
 ## Product objective
 
 HIVEFRAME does not optimize for the largest number of eyes. It chooses the

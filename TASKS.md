@@ -66,6 +66,18 @@ Overall pre-gate status: `verified`; decision `REFINE_COST_MODEL`.
 M1-P0 does not start or close M1 and does not close M0. Keep the same five
 measured combinations and correct the cost model before another decision.
 
+## Backend product target policy
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Designate MiniMax H3 as primary product target | `verified` | policy only; no runtime or speedup claim |
+| Review current official H3 API documentation | `verified` | V2 contract names `MiniMax-H3`; runtime admission remains pending |
+| Admit official H3 API | `planned` | [Issue #39](https://github.com/ksse29077-byte/HIVEFRAME/issues/39); explicit approval required before API key or paid call |
+| Admit future H3 open weights | `blocked` | official repository, checkpoint, source, license, digest, and runtime not jointly verified |
+| Preserve Wan M0 comparator | `done` | frozen code, pins, receipts, fingerprints, and reports; no new feature development |
+| Remove LTX from active scope | `done` | historical code and Git history retained; no cleanup in this change |
+| Create backend capability matrix | `planned` | no standalone matrix exists; black-box/white-box evidence belongs to Issue #39 |
+
 ## M1 — Exact next experiment
 
 Supporting evidence:

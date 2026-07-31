@@ -35,6 +35,43 @@ new branch was created from post-PR36 `main`.
 No 4×4, object-centered, temporal, learned planner, model hook, model load, or
 CUDA work was added.
 
+## Backend target policy correction
+
+Decision date: 2026-07-31.
+
+- MiniMax H3 is the highest-priority product backend target.
+- The official MiniMax V2 video API documentation reviewed on this date names
+  `MiniMax-H3` and `POST /v2/video_generation`.
+- This documentation fact does not admit the API into HIVEFRAME. Runtime,
+  price/billing, H3-specific data handling, commercial fitness, provenance,
+  and receipts remain pending Issue #39.
+- The official MiniMax GitHub and Hugging Face organizations did not provide a
+  jointly verified H3 source, checkpoint, license, and digest for admission at
+  review time. Future open weights therefore remain blocked.
+- Wan remains the frozen legacy comparator and all M0 evidence is preserved.
+- LTX is inactive; no historical code or Git history was removed.
+- No standalone backend capability matrix existed in the repository; Issue
+  #39 plans the black-box/white-box matrix after evidence is admitted.
+
+Official sources:
+
+- [MiniMax H3 video guide](https://platform.minimax.io/docs/guides/video-generation)
+- [MiniMax V2 create contract](https://platform.minimax.io/docs/api-reference/video-generation-v2-create)
+- [MiniMax V2 OpenAPI](https://platform.minimax.io/docs/api-reference/video/generation/api/v2-video-generation.json)
+- [MiniMax pay-as-you-go pricing](https://platform.minimax.io/docs/guides/pricing-paygo)
+- [MiniMax privacy policy](https://platform.minimax.io/docs/guides/privacy-policy)
+- [MiniMax terms of service](https://platform.minimax.io/docs/guides/terms-of-service)
+- [MiniMax official GitHub](https://github.com/MiniMax-AI) and
+  [official Hugging Face organization](https://huggingface.co/MiniMaxAI)
+
+Secondary press context was separated from admission evidence. A
+[Reuters report republished by MarketScreener](https://www.marketscreener.com/news/china-s-minimax-plans-to-launch-giant-2-7-trillion-parameter-model-ce7f5ed9d98ffe27)
+reported the planned H3 launch earlier in July; it was not used to establish
+an API identifier, license, checkpoint, capability, or M1-P0 numeric input.
+
+H3 API calls: 0. H3 model loads: 0. Paid API runs: 0. CUDA runs added by this
+policy correction: 0.
+
 ## Cost and Amdahl model
 
 ```text
@@ -138,6 +175,9 @@ CUDA runs: 0.
 - PyO3/FFI/DLPack cost;
 - generalization beyond the three synthetic cases;
 - rights-cleared M1 Cost Surface behavior.
+- H3 runtime behavior, queue/generation/download timing, price, data handling,
+  commercial fitness, integration, selective execution, or speedup;
+- an admitted H3 open-weight source, checkpoint, license, digest, or runtime.
 
 ## Next exact work
 
@@ -157,5 +197,9 @@ contract. Do not add corpus or proceed to M1 until the cost model is corrected.
 - Draft PR:
   [#38](https://github.com/ksse29077-byte/HIVEFRAME/pull/38), open and not
   merged;
+- Issue #37 scope clarification:
+  [comment](https://github.com/ksse29077-byte/HIVEFRAME/issues/37#issuecomment-5143736348);
+- H3 Admission Issue:
+  [#39](https://github.com/ksse29077-byte/HIVEFRAME/issues/39);
 - local/remote HEAD equality: verified after publication;
 - final worktree: verified clean after publication.

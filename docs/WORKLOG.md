@@ -346,6 +346,45 @@ Model loads: 0. CUDA runs: 0.
 
 ---
 
+## 2026-07-31 — Product backend target policy
+
+### Decision
+
+- MiniMax H3 is the highest-priority product backend target.
+- H3 remains a pending black-box API admission; a future open-weight path is
+  blocked until official source, weights, license, digest, and runtime are
+  verified.
+- Wan 2.1 T2V 1.3B is the frozen legacy comparator. Existing M0 code, pins,
+  receipts, reproducibility evidence, fingerprints, and reports are immutable.
+- LTX is inactive and removed from active development scope. Historical code
+  and Git history remain intact.
+
+### Verified source state
+
+The official MiniMax V2 documentation reviewed on 2026-07-31 names model
+`MiniMax-H3` and endpoint `POST /v2/video_generation`. Documentation
+availability is not HIVEFRAME support. H3 price/billing, H3-specific data
+handling, commercial fitness, runtime behavior, provenance, and receipt
+integration remain unadmitted. No official H3 source, checkpoint, license, and
+digest set was jointly verified for a white-box path.
+
+Official API documentation is the technical source of truth. Secondary press
+coverage was recorded only as launch context and supplied no admission facts.
+Follow-up admission is tracked in Issue
+[`#39`](https://github.com/ksse29077-byte/HIVEFRAME/issues/39).
+
+### M1-P0 boundary
+
+M1-P0 remains the same backend-neutral model-free analysis. No H3 value was
+inserted into its cost model, and its `REFINE_COST_MODEL` decision is
+unchanged. This is not H3 admission, H3 support, H3 speedup, M0 completion, or
+M1 completion.
+
+H3 API calls: 0. H3 model loads: 0. Paid API runs: 0. Model loads: 0. CUDA
+runs: 0. Wan evidence changed: 0. Existing receipts deleted or rewritten: 0.
+
+---
+
 ## Entry template
 
 ```markdown
