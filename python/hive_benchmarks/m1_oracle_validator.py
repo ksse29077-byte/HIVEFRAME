@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .m1_protocol import is_sha256, load_json, public_sanitation_errors, require_keys, sha256_json
+from .m1_schema_contract import validate_m1_schema
 
 
 PRIMARY_STATES = {"dirty", "stable", "uncertain"}
@@ -253,7 +254,8 @@ def validate_annotation(annotation: Any, path: str = "$.annotations[]") -> list[
 
 
 def validate_oracle_document(document: Any) -> list[str]:
-    errors = require_keys(document, ("schema_version", "annotation_version", "annotations"), "$")
+    errors = validate_m1_schema(document, "m1-oracle-annotation.schema.json")
+    errors.extend(require_keys(document, ("schema_version", "annotation_version", "annotations"), "$"))
     if errors or not isinstance(document, dict):
         return errors
     if document["schema_version"] != "0.1.0":

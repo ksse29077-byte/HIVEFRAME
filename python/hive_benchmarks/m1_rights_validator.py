@@ -15,6 +15,7 @@ from .m1_protocol import (
     public_sanitation_errors,
     require_keys,
 )
+from .m1_schema_contract import validate_m1_schema
 
 
 REQUIRED_RECEIPT_KEYS = (
@@ -42,8 +43,9 @@ def validate_rights_receipt(receipt: Any, path: str = "$.receipts[]") -> list[st
         errors.append(f"{path}.permissions: expected object")
     else:
         for permission in REQUIRED_PERMISSIONS:
-            if not isinstance(permissions.get(permission), bool):
-                errors.append(f"{path}.permissions.{permission}: expected boolean")
+            value = permissions.get(permission)
+            if not isinstance(value, bool) and not is_unavailable(value):
+                errors.append(f"{path}.permissions.{permission}: expected boolean or explicit unavailable/pending metadata")
     attribution = receipt.get("attribution_obligation")
     if not isinstance(attribution, dict) or not isinstance(attribution.get("required"), bool):
         errors.append(f"{path}.attribution_obligation: expected required/text object")
@@ -76,7 +78,8 @@ def validate_rights_receipt(receipt: Any, path: str = "$.receipts[]") -> list[st
 
 
 def validate_rights_document(document: Any) -> list[str]:
-    errors = require_keys(document, ("schema_version", "receipts"), "$")
+    errors = validate_m1_schema(document, "m1-video-rights-receipt.schema.json")
+    errors.extend(require_keys(document, ("schema_version", "receipts"), "$"))
     if errors or not isinstance(document, dict):
         return errors
     if document["schema_version"] != "0.1.0":

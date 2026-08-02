@@ -12,6 +12,7 @@
     "required_scene_classes": {
       "type": "array",
       "minItems": 12,
+      "maxItems": 12,
       "uniqueItems": true,
       "items": {"type": "string", "minLength": 1}
     },
@@ -39,11 +40,11 @@
       "additionalProperties": false,
       "required": ["research", "commercial", "copy", "derivative", "redistribution"],
       "properties": {
-        "research": {"type": "boolean"},
-        "commercial": {"type": "boolean"},
-        "copy": {"type": "boolean"},
-        "derivative": {"type": "boolean"},
-        "redistribution": {"type": "boolean"}
+        "research": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "commercial": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "copy": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "derivative": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "redistribution": {"$ref": "#/$defs/knownBooleanOrUnavailable"}
       }
     },
     "derivativeContract": {
@@ -125,7 +126,71 @@
         "reviewed_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"$ref": "#/$defs/unavailable"}]},
         "review_method": {"type": "string", "minLength": 1},
         "evidence_notes": {"type": "array", "items": {"type": "string", "minLength": 1}}
-      }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"admission_status": {"const": "eligible"}}, "required": ["admission_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"enum": ["eligible_self_recorded", "eligible_public_domain", "eligible_cc0", "eligible_explicit_license"]},
+              "rights_status": {"const": "admitted"},
+              "rights_holder": {"type": "string", "minLength": 1},
+              "source_authority": {"type": "string", "minLength": 1},
+              "license_identifier": {"type": "string", "minLength": 1},
+              "license_terms_digest": {"$ref": "#/$defs/sha256"},
+              "attribution_required": {"type": "boolean"},
+              "attribution_text": {"type": "string", "minLength": 1},
+              "permissions": {
+                "properties": {
+                  "research": {"const": true},
+                  "commercial": {"const": true},
+                  "copy": {"const": true},
+                  "derivative": {"const": true},
+                  "redistribution": {"const": true}
+                }
+              },
+              "identifiable_people": {"type": "boolean"},
+              "consent_required": {"type": "boolean"},
+              "consent_status": {"enum": ["verified", "not_required"]},
+              "sensitive_content_status": {"enum": ["none_observed", "reviewed_allowed"]},
+              "derivative_sha256": {"$ref": "#/$defs/sha256"},
+              "oracle_sha256": {"$ref": "#/$defs/sha256"},
+              "reviewed_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"admission_status": {"const": "pending"}}, "required": ["admission_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"const": "pending_rights_review"},
+              "rights_status": {"const": "pending"},
+              "rejection_reason": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["value", "status", "reason", "method"],
+                "properties": {
+                  "value": {"type": "null"},
+                  "status": {"const": "pending"},
+                  "reason": {"type": "string", "minLength": 1},
+                  "method": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"admission_status": {"const": "rejected"}}, "required": ["admission_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"const": "rejected"},
+              "rights_status": {"const": "rejected"},
+              "rejection_reason": {"type": "string", "minLength": 1},
+              "reviewed_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        }
+      ]
     }
   }
 }

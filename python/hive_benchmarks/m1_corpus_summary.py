@@ -82,22 +82,92 @@ def validate_measurement_contract(config: Any) -> list[str]:
 
 def cross_document_errors(manifest: dict[str, Any], rights: dict[str, Any], oracle: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    rights_by_clip = {item.get("clip_id"): item for item in rights.get("receipts", [])}
-    oracle_by_clip = {item.get("clip_id"): item for item in oracle.get("annotations", [])}
-    for clip in manifest.get("clips", []):
-        if clip.get("admission_status") != "eligible":
+    manifest_clips = [item for item in manifest.get("clips", []) if isinstance(item, dict)]
+    receipts = [item for item in rights.get("receipts", []) if isinstance(item, dict)]
+    annotations = [item for item in oracle.get("annotations", []) if isinstance(item, dict)]
+    manifest_ids = {item.get("clip_id") for item in manifest_clips}
+
+    rights_groups: dict[Any, list[dict[str, Any]]] = {}
+    for receipt in receipts:
+        rights_groups.setdefault(receipt.get("clip_id"), []).append(receipt)
+    oracle_groups: dict[Any, list[dict[str, Any]]] = {}
+    for annotation in annotations:
+        oracle_groups.setdefault(annotation.get("clip_id"), []).append(annotation)
+
+    for clip_id, grouped in rights_groups.items():
+        if len(grouped) > 1:
+            errors.append(f"duplicate rights receipts for clip {clip_id}")
+        if clip_id not in manifest_ids:
+            errors.append(f"orphan rights receipt for clip {clip_id}")
+    for clip_id, grouped in oracle_groups.items():
+        if len(grouped) > 1:
+            errors.append(f"duplicate oracle annotations for clip {clip_id}")
+        if clip_id not in manifest_ids:
+            errors.append(f"orphan oracle annotation for clip {clip_id}")
+
+    for clip in manifest_clips:
+        clip_id = clip.get("clip_id")
+        receipt_group = rights_groups.get(clip_id, [])
+        annotation_group = oracle_groups.get(clip_id, [])
+        receipt = receipt_group[0] if len(receipt_group) == 1 else None
+        annotation = annotation_group[0] if len(annotation_group) == 1 else None
+        admission_status = clip.get("admission_status")
+
+        if admission_status != "eligible":
+            if annotation is not None and annotation.get("review_status") == "verified":
+                errors.append(f"non-eligible clip {clip_id} has a verified oracle annotation")
+            if receipt is not None:
+                expected_review = {"pending": "pending", "rejected": "rejected"}.get(admission_status)
+                if expected_review is not None and receipt.get("review_status") != expected_review:
+                    errors.append(
+                        f"non-eligible clip {clip_id} rights review status does not match {admission_status} admission"
+                    )
             continue
-        clip_id = clip["clip_id"]
-        receipt = rights_by_clip.get(clip_id)
-        annotation = oracle_by_clip.get(clip_id)
+
         if receipt is None:
             errors.append(f"eligible clip {clip_id} has no rights receipt")
-        elif receipt.get("review_status") != "admitted" or receipt.get("original_sha256") != clip.get("original_sha256"):
-            errors.append(f"eligible clip {clip_id} rights receipt is not admitted or digest-matched")
+        else:
+            if receipt.get("review_status") != "admitted":
+                errors.append(f"eligible clip {clip_id} rights review_status is not admitted")
+            if receipt.get("original_sha256") != clip.get("original_sha256"):
+                errors.append(f"eligible clip {clip_id} rights original_sha256 does not match manifest")
+            if receipt.get("source_class") != clip.get("source_class"):
+                errors.append(f"eligible clip {clip_id} rights source_class does not match manifest")
+            if receipt.get("license_identifier") != clip.get("license_identifier"):
+                errors.append(f"eligible clip {clip_id} rights license_identifier does not match manifest")
+            if receipt.get("terms_digest") != clip.get("license_terms_digest"):
+                errors.append(f"eligible clip {clip_id} rights terms_digest does not match manifest")
+            if receipt.get("permissions") != clip.get("permissions"):
+                errors.append(f"eligible clip {clip_id} rights permissions do not match manifest")
+            attribution = receipt.get("attribution_obligation", {})
+            if attribution.get("required") != clip.get("attribution_required"):
+                errors.append(f"eligible clip {clip_id} rights attribution requirement does not match manifest")
+            if attribution.get("text") != clip.get("attribution_text"):
+                errors.append(f"eligible clip {clip_id} rights attribution text does not match manifest")
+            if receipt.get("consent_status") != clip.get("consent_status"):
+                errors.append(f"eligible clip {clip_id} rights consent_status does not match manifest")
+            if receipt.get("identifiable_people") != clip.get("identifiable_people"):
+                errors.append(f"eligible clip {clip_id} rights identifiable_people does not match manifest")
+
         if annotation is None:
             errors.append(f"eligible clip {clip_id} has no oracle annotation")
-        elif annotation.get("review_status") != "verified" or annotation.get("artifact_digest") != clip.get("oracle_sha256"):
-            errors.append(f"eligible clip {clip_id} oracle is not verified or digest-matched")
+        else:
+            if annotation.get("review_status") != "verified":
+                errors.append(f"eligible clip {clip_id} oracle review_status is not verified")
+            if annotation.get("source_sha256") != clip.get("original_sha256"):
+                errors.append(f"eligible clip {clip_id} oracle source_sha256 does not match manifest")
+            if annotation.get("derivative_sha256") != clip.get("derivative_sha256"):
+                errors.append(f"eligible clip {clip_id} oracle derivative_sha256 does not match manifest")
+            if annotation.get("artifact_digest") != clip.get("oracle_sha256"):
+                errors.append(f"eligible clip {clip_id} oracle artifact_digest does not match manifest")
+            if not isinstance(annotation.get("semantic_payloads"), dict) or not annotation.get("transitions"):
+                errors.append(f"eligible clip {clip_id} oracle artifact/reference payload is missing")
+            if "hard_cut" in clip.get("scene_classes", []) and not any(
+                transition.get("scene_cut") is True
+                for transition in annotation.get("transitions", [])
+                if isinstance(transition, dict)
+            ):
+                errors.append(f"eligible hard_cut clip {clip_id} has no scene_cut oracle transition")
     return errors
 
 
@@ -108,7 +178,13 @@ def decide(
     protocol_errors: list[str],
     cross_errors: list[str],
 ) -> str:
-    if protocol_errors or not manifest_summary["valid"] or not oracle_summary["valid"] or cross_errors:
+    if (
+        protocol_errors
+        or not manifest_summary["valid"]
+        or not rights_summary["valid"]
+        or not oracle_summary["valid"]
+        or cross_errors
+    ):
         return "ORACLE_PROTOCOL_REVISE"
     if rights_summary["counts"]["pending"] or rights_summary["counts"]["rejected"]:
         return "RIGHTS_REVIEW_BLOCKED"

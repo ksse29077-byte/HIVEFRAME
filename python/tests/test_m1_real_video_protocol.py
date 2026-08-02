@@ -20,6 +20,7 @@ from hive_benchmarks.m1_corpus_validator import summarize_manifest, validate_man
 from hive_benchmarks.m1_oracle_validator import validate_oracle_document
 from hive_benchmarks.m1_protocol import public_sanitation_errors, sha256_json, tracked_binary_errors
 from hive_benchmarks.m1_rights_validator import validate_rights_document
+from hive_benchmarks.m1_schema_contract import load_m1_schema, validate_m1_schema
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -326,6 +327,19 @@ class M1RealVideoProtocolTests(unittest.TestCase):
         self.assertEqual(admission["counts"]["eligible"], 0)
         self.assertTrue(all(value == 0 for value in admission["execution_counts"].values()))
 
+    def test_empty_corpus_reports_remain_byte_equivalent_to_tracked_evidence(self) -> None:
+        manifest = json.loads((ROOT / "configs" / "m1-real-video-corpus.json").read_text(encoding="utf-8"))
+        rights = json.loads((ROOT / "data_ledger" / "m1-real-video-rights-receipts.json").read_text(encoding="utf-8"))
+        oracle = json.loads((ROOT / "benchmarks" / "m1-oracle-annotations.json").read_text(encoding="utf-8"))
+        topologies, measurement = protocol_configs()
+        generated = build_reports(manifest, rights, oracle, topologies, measurement, [])
+        for name, content in generated.items():
+            self.assertEqual(
+                content,
+                (ROOT / "reports" / "m1" / "corpus" / name).read_text(encoding="utf-8"),
+                name,
+            )
+
     def test_report_writer_refuses_overwrite(self) -> None:
         with tempfile.TemporaryDirectory(dir=ROOT / "target") as temporary:
             output = Path(temporary)
@@ -434,6 +448,12 @@ class M1RealVideoProtocolTests(unittest.TestCase):
                 "rejection_reason": {"value": None, "status": "pending", "reason": "Admission evidence is incomplete.", "method": "admission workflow"},
             }
         )
+        pending["permissions"]["commercial"] = {
+            "value": None,
+            "status": "pending",
+            "reason": "Commercial permission review pending.",
+            "method": "rights review",
+        }
         self.assertEqual(validate_manifest(valid_manifest([pending])), [])
         rejected = valid_clip()
         rejected.update(
@@ -445,6 +465,148 @@ class M1RealVideoProtocolTests(unittest.TestCase):
             }
         )
         self.assertTrue(any("rejection_reason" in error for error in validate_manifest(valid_manifest([rejected]))))
+
+    def test_pending_rights_allows_explicit_unavailable_permission(self) -> None:
+        rights = valid_rights()
+        receipt = rights["receipts"][0]
+        receipt["source_class"] = "pending_rights_review"
+        receipt["review_status"] = "pending"
+        receipt["permissions"]["commercial"] = {
+            "value": None,
+            "status": "pending",
+            "reason": "Commercial permission review pending.",
+            "method": "rights review",
+        }
+        self.assertEqual(validate_rights_document(rights), [])
+
+    def test_status_fixtures_match_declared_schema_and_custom_validator(self) -> None:
+        eligible = valid_manifest()
+        invalid_eligible = copy.deepcopy(eligible)
+        invalid_eligible["clips"][0]["permissions"]["commercial"] = False
+
+        pending_clip = valid_clip()
+        pending_clip.update(
+            {
+                "source_class": "pending_rights_review",
+                "rights_status": "pending",
+                "admission_status": "pending",
+                "rights_holder": {"value": None, "status": "pending", "reason": "Rights holder review pending.", "method": "rights review"},
+                "source_authority": {"value": None, "status": "pending", "reason": "Authority review pending.", "method": "rights review"},
+                "license_identifier": {"value": None, "status": "pending", "reason": "License review pending.", "method": "rights review"},
+                "license_terms_digest": {"value": None, "status": "pending", "reason": "Terms review pending.", "method": "rights review"},
+                "derivative_sha256": {"value": None, "status": "pending", "reason": "Derivative pending.", "method": "admission workflow"},
+                "oracle_sha256": {"value": None, "status": "pending", "reason": "Oracle pending.", "method": "admission workflow"},
+                "reviewed_at": {"value": None, "status": "pending", "reason": "Review pending.", "method": "admission workflow"},
+                "rejection_reason": {"value": None, "status": "pending", "reason": "Admission evidence incomplete.", "method": "admission workflow"},
+            }
+        )
+        pending_clip["permissions"]["commercial"] = {
+            "value": None,
+            "status": "pending",
+            "reason": "Commercial permission review pending.",
+            "method": "rights review",
+        }
+        pending = valid_manifest([pending_clip])
+        invalid_pending = copy.deepcopy(pending)
+        invalid_pending["clips"][0]["rejection_reason"]["status"] = "unavailable"
+
+        rejected_clip = valid_clip()
+        rejected_clip.update(
+            {
+                "source_class": "rejected",
+                "rights_status": "rejected",
+                "admission_status": "rejected",
+                "rejection_reason": "Rights evidence could not establish derivative permission.",
+            }
+        )
+        rejected = valid_manifest([rejected_clip])
+        invalid_rejected = copy.deepcopy(rejected)
+        invalid_rejected["clips"][0]["rejection_reason"] = {
+            "value": None,
+            "status": "unavailable",
+            "reason": "No rejection reason recorded.",
+            "method": "admission review",
+        }
+
+        for label, fixture, expected_valid in (
+            ("eligible", eligible, True),
+            ("invalid eligible", invalid_eligible, False),
+            ("pending", pending, True),
+            ("invalid pending", invalid_pending, False),
+            ("rejected", rejected, True),
+            ("invalid rejected", invalid_rejected, False),
+        ):
+            schema_errors = validate_m1_schema(fixture, "m1-real-video-corpus-manifest.schema.json")
+            validator_errors = validate_manifest(fixture)
+            self.assertEqual(not schema_errors, expected_valid, (label, schema_errors))
+            self.assertEqual(not validator_errors, expected_valid, (label, validator_errors))
+
+    def test_optional_draft_2020_12_engine_agrees_with_status_fixtures(self) -> None:
+        try:
+            from jsonschema import Draft202012Validator
+        except ImportError:
+            self.skipTest("optional jsonschema package is not installed")
+        manifest_schema = load_m1_schema("m1-real-video-corpus-manifest.schema.json")
+        rights_schema = load_m1_schema("m1-video-rights-receipt.schema.json")
+        oracle_schema = load_m1_schema("m1-oracle-annotation.schema.json")
+        for schema in (manifest_schema, rights_schema, oracle_schema):
+            Draft202012Validator.check_schema(schema)
+
+        valid_manifest_fixture = valid_manifest()
+        invalid_manifest = copy.deepcopy(valid_manifest_fixture)
+        invalid_manifest["clips"][0]["rights_holder"] = {
+            "value": None,
+            "status": "unavailable",
+            "reason": "Rights holder not established.",
+            "method": "rights review",
+        }
+        valid_rights_fixture = valid_rights()
+        invalid_rights = copy.deepcopy(valid_rights_fixture)
+        invalid_rights["receipts"][0]["unexpected"] = True
+        valid_oracle_fixture = oracle_document()
+        invalid_oracle = copy.deepcopy(valid_oracle_fixture)
+        invalid_oracle["annotations"][0]["unexpected"] = True
+
+        fixture_pairs = (
+            (manifest_schema, valid_manifest_fixture, invalid_manifest, validate_manifest),
+            (rights_schema, valid_rights_fixture, invalid_rights, validate_rights_document),
+            (oracle_schema, valid_oracle_fixture, invalid_oracle, validate_oracle_document),
+        )
+        for schema, valid, invalid, custom_validator in fixture_pairs:
+            self.assertEqual(list(Draft202012Validator(schema).iter_errors(valid)), [])
+            self.assertTrue(list(Draft202012Validator(schema).iter_errors(invalid)))
+            self.assertEqual(custom_validator(valid), [])
+            self.assertTrue(custom_validator(invalid))
+
+    def test_all_three_validators_reject_schema_additional_properties(self) -> None:
+        manifest = valid_manifest()
+        manifest["extra"] = True
+        rights = valid_rights()
+        rights["extra"] = True
+        oracle = oracle_document()
+        oracle["extra"] = True
+        self.assertTrue(any("additional property" in error for error in validate_manifest(manifest)))
+        self.assertTrue(any("additional property" in error for error in validate_rights_document(rights)))
+        self.assertTrue(any("additional property" in error for error in validate_oracle_document(oracle)))
+
+    def test_hard_cut_scene_class_requires_scene_cut_oracle_transition(self) -> None:
+        manifest, rights, oracle = ready_bundle()
+        hard_cut_index = next(
+            index for index, clip in enumerate(manifest["clips"]) if "hard_cut" in clip["scene_classes"]
+        )
+        annotation = oracle["annotations"][hard_cut_index]
+        annotation["transitions"][0]["scene_cut"] = False
+        annotation["transitions"][0]["full_reobserve"] = False
+        annotation["transitions"][0]["regions"] = [
+            region("r-dirty", "dirty", [0, 0, 2, 2]),
+            region("r-stable", "stable", [2, 0, 2, 2]),
+        ]
+        annotation["artifact_digest"] = sha256_json(
+            {key: value for key, value in annotation.items() if key != "artifact_digest"}
+        )
+        manifest["clips"][hard_cut_index]["oracle_sha256"] = annotation["artifact_digest"]
+        errors = cross_document_errors(manifest, rights, oracle)
+        self.assertTrue(any("hard_cut" in error and "scene_cut" in error for error in errors), errors)
 
 
 if __name__ == "__main__":

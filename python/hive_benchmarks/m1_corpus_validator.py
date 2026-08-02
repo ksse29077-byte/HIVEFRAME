@@ -17,6 +17,7 @@ from .m1_protocol import (
     require_keys,
     tracked_binary_errors,
 )
+from .m1_schema_contract import validate_m1_schema
 
 
 REQUIRED_CLIP_KEYS = (
@@ -94,11 +95,12 @@ def validate_clip(clip: Any, path: str = "$.clips[]") -> list[str]:
 
 
 def validate_manifest(manifest: Any) -> list[str]:
-    errors = require_keys(
+    errors = validate_m1_schema(manifest, "m1-real-video-corpus-manifest.schema.json")
+    errors.extend(require_keys(
         manifest,
         ("schema_version", "corpus_version", "minimum_eligible_clips", "required_scene_classes", "derivative_contract", "clips"),
         "$",
-    )
+    ))
     if errors or not isinstance(manifest, dict):
         return errors
     if manifest["schema_version"] != "0.1.0":

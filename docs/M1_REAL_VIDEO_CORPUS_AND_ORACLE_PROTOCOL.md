@@ -162,6 +162,39 @@ empty string:
 - `m1_corpus_summary.py` checks cross-document admission and emits a single
   declared Gate without modifying input metadata.
 
+All three instance validators first run the dependency-free declared-schema
+audit in `m1_schema_contract.py`. The audit implements every validation keyword
+currently used by the three M1-A schemas, including local references, types,
+required and additional-property rules, arrays, patterns, numeric bounds,
+`oneOf`, `allOf`, and `if`/`then`. It is intentionally described as a bounded
+contract audit, not as a general-purpose JSON Schema implementation.
+
+The repository does not add `jsonschema` as a runtime or test dependency. When
+an environment already provides it, tests may cross-check positive and negative
+fixtures with `Draft202012Validator`; an unavailable optional engine is reported
+as skipped rather than silently treated as a pass. Schema parsing, bounded
+contract validation, and optional third-party Draft validation are reported as
+three distinct checks.
+
+The corpus manifest schema and validator share admission-status rules:
+
+- `eligible` requires admitted rights, resolved consent and sensitive-content
+  review, known rights metadata, all permissions, derivative/oracle digests,
+  and a completed review timestamp;
+- `pending` permits explicit `pending`/unavailable metadata and requires the
+  missing admission basis to remain explicit;
+- `rejected` requires rejected source/rights states and a concrete rejection
+  reason.
+
+An admitted count is never a substitute for a valid rights document. A rights,
+manifest, oracle, topology, or measurement validation error prevents
+`M1_CORPUS_AND_ORACLE_READY`. Eligible cross-document records must agree on
+source class, permissions, consent, license and attribution metadata, original
+digest, derivative digest, and oracle artifact digest. Duplicate and orphan
+rights/oracle records are errors; verified oracles cannot promote pending or
+rejected clips. A `hard_cut` scene class requires a matching scene-cut oracle
+transition.
+
 Validators fail explicitly and never accept, repair, relabel, or fill missing
 facts automatically.
 
