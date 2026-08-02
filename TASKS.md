@@ -143,16 +143,18 @@ work is M1-A rights-cleared real-video corpus and oracle admission.
 
 ## M1-A — Rights-cleared Real-video Corpus and Oracle Protocol
 
-Overall status: `in_progress`; no topology performance run is authorized.
+Overall status: `verified`; decision `CORPUS_ACQUISITION_REQUIRED`. No topology
+performance run is authorized.
 
 | Task | Status | Evidence |
 |---|---|---|
 | Preserve M0 and M1-P0 evidence | `done` | PR #45 merged; R3 remains `RUST_CONTROL_PLANE_ADMITTED` |
 | Predeclare corpus, rights, derivative, oracle contracts | `implemented` | schemas, configs, validators, and negative tests |
 | Fix T0-T7 candidate contract and metric/Gate semantics | `implemented` | metadata only; no performance result |
-| Search task-scoped approved assets | `in_progress` | repository metadata scope only; no arbitrary personal-folder scan |
+| Search task-scoped approved assets | `done` | repository metadata and supplied task artifacts only; zero actual video assets found |
 | Admit 12 distinct actual clips | `blocked` | no eligible actual clip is currently recorded in repository metadata |
 | Produce oracle-reviewed complete coverage | `blocked` | depends on eligible clip acquisition and review |
+| Emit M1-A admission reports | `verified` | 0 eligible/pending/rejected; all 12 classes missing; `CORPUS_ACQUISITION_REQUIRED` |
 | Run topology cost/safety measurement | `planned` | separate approval only after `M1_CORPUS_AND_ORACLE_READY` |
 
 The current task stops after the M1-A admission Gate. Do not run model-free

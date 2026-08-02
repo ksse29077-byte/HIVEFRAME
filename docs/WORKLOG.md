@@ -514,6 +514,22 @@ Issue publication remains pending because the available GitHub write
 integration rejected the initial create request; no remote object was changed.
 The dated worklog records the publication and asset-admission state.
 
+Predeclaration commit `d60fd7650d2a0a7d2fedf19d43d4638895f0e682`
+fixed the contract before any admission. The allowed post-commit asset review
+found no actual task-scoped clip. Eligible, pending, rejected, and investigated
+actual-clip counts are all 0; all twelve scene classes are missing. The single
+Gate is **`CORPUS_ACQUISITION_REQUIRED`**. No absent clip was given a synthetic
+status, and no network video was downloaded. M1 topology measurement remains
+blocked pending a separately reviewed acquisition pass.
+
+Python compile and all 156 tests passed. Rust format, locked check, and locked
+tests passed, including 10 runtime tests. Fifty-two repository/generated JSON
+files parsed; the M1 Draft 2020-12 identifiers, validators, public sanitation,
+duplicate checks, tracked-binary check, legacy evidence immutability, and diff
+check passed. The optional `jsonschema` package was unavailable and was not
+installed; dependency-free instance validators and positive/negative tests
+were used.
+
 Model downloads, model loads, CUDA runs, paid external calls, external
 customer/personal-data transfers, backend integrations, and topology
 performance runs: 0 each.

@@ -148,12 +148,14 @@ rights-cleared real-video M1 protocol.
 
 ### M1-A — Rights-cleared corpus and oracle admission
 
-**Status: `in_progress`.** This metadata-only stage predeclares rights,
-consent, deterministic derivative, human-oracle, topology-candidate,
-measurement, validation, coverage, and safety-Gate contracts. It performs no
-topology measurement and cannot close M1. If fewer than twelve distinct actual
-eligible clips or any required scene class is missing, its decision is
-`CORPUS_ACQUISITION_REQUIRED` and later measurement remains blocked.
+**Status: `verified`; decision `CORPUS_ACQUISITION_REQUIRED`.** This metadata-
+only stage predeclares rights, consent, deterministic derivative, human-oracle,
+topology-candidate, measurement, validation, coverage, and safety-Gate
+contracts. The task-scoped repository and supplied-artifact review found zero
+eligible actual clips, so all twelve required scene classes remain missing. It
+performed no topology measurement and cannot close M1. Later measurement stays
+blocked until a newly reviewed corpus passes `M1_CORPUS_AND_ORACLE_READY` under
+the unchanged predeclared contract.
 
 ### Question
 
