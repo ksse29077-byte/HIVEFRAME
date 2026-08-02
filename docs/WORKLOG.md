@@ -456,6 +456,28 @@ runs were all 0. Wan and R1 evidence remained unchanged; LTX stayed inactive.
 
 ---
 
+## 2026-08-02 — M1-P0-R3 in-process shared-buffer predeclaration
+
+PR #43 is merged at `77cd34d3958bef28bfa6e3b8da1b03df2e44c503`
+and Issue #42 is closed. R2 remains immutable with Gate
+`REFINE_RUST_BOUNDARY`; Compound Perception First and the Mono
+comparator/safety-fallback policy are preserved.
+
+R3 Issue [#44](https://github.com/ksse29077-byte/HIVEFRAME/issues/44) and
+branch `agent/m1-p0-r3-inprocess-shared-buffer` predeclare one Python 3.12,
+PyO3 0.29.0 shared-buffer call per Case B T0/T1/T2 candidate. The input is
+borrowed read-only with zero input copies, subprocesses, temporary files, and
+per-Eye FFI calls. Five warm-ups, thirty paired blocks, all timing/copy spans,
+and the four Gate outcomes are frozen before measurement.
+
+Detailed record:
+[`worklogs/2026-08-02-m1-p0-r3-inprocess-shared-buffer.md`](worklogs/2026-08-02-m1-p0-r3-inprocess-shared-buffer.md).
+
+At predeclaration, H3/API-key/paid/customer-data/model/CUDA/Wan/LTX counts are
+all 0. No R3 measurement or model execution has run.
+
+---
+
 ## 2026-08-02 — PR #43 final merge-readiness review
 
 PR #43 remains draft and was not merged or marked ready. The predeclared Case

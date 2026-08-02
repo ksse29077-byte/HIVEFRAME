@@ -106,6 +106,25 @@ Perception First. The next bounded runtime work is an in-process shared-buffer
 boundary using the same Case B and semantic/copy contracts. H3 Issue #39
 remains separate and no backend/model execution was performed.
 
+## M1-P0-R3 — In-process Shared-buffer Boundary
+
+Overall refinement status: `predeclared`; measurement pending.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Preserve v1, R1, and R2 evidence | `verified` | immutable R2 Git objects are checked before plan or execution |
+| Pin Python/Rust boundary | `verified` | Python 3.12, PyO3 0.29.0, `abi3-py312`, Rust MSRV 1.83 |
+| Fix Case B T0/T1/T2 scope | `verified` | 5 warm-ups and 30 same-process paired blocks declared |
+| Borrow one shared input buffer | `implemented` | read-only C-contiguous uint8 buffer; one Rust call per candidate; zero per-Eye calls |
+| Predeclare thresholds and decisions | `verified` | config, contract receipt, tests, and Issue #44 |
+| Execute R3 measurement | `pending` | permitted only from the immutable premeasurement commit and contract hash |
+| Publish Draft PR | `pending` | do not mark ready or merge automatically |
+
+R3 is a model-free control-plane experiment. It cannot close M0 or M1 and
+cannot claim real-video, model, quality, or product speedup. Compound
+Perception First remains the product direction; Mono remains the comparator
+and safety fallback.
+
 ## Backend product target policy
 
 | Task | Status | Evidence or blocker |

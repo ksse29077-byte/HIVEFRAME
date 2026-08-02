@@ -436,6 +436,28 @@ pub struct R2BatchReport {
     pub temporary_input_bytes: u64,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct R3CandidateSummary {
+    pub candidate_id: String,
+    pub topology: String,
+    pub semantic_hash: String,
+    pub input_sha256: String,
+    pub eye_count: usize,
+    pub observation_count: usize,
+    pub fused_region_count: usize,
+    pub compute_unit_count: usize,
+    pub dirty_region_count: usize,
+    pub stable_region_count: usize,
+    pub uncertain_region_count: usize,
+    pub generate_unit_count: usize,
+    pub reuse_cache_unit_count: usize,
+    pub reconcile_unit_count: usize,
+    pub pipeline_total_ns: u128,
+    pub logical_bytes_read: u64,
+    pub bytes_copied: u64,
+    pub temporary_buffer_bytes: u64,
+}
+
 fn sha256_hex(bytes: &[u8]) -> String {
     let mut digest = Sha256::new();
     digest.update(bytes);
@@ -1005,6 +1027,57 @@ fn run_pipeline(
     })
 }
 
+pub fn run_r3_candidate(
+    profile: &InputProfile,
+    candidate_id: &str,
+    sequence: &[u8],
+) -> Result<R3CandidateSummary, String> {
+    let topology = match candidate_id {
+        "T0" => Topology::Mono1x1,
+        "T1" => Topology::Uniform2x2,
+        "T2" => Topology::MotionFocused,
+        _ => return Err(format!("R3 does not admit candidate: {candidate_id}")),
+    };
+    let run = run_pipeline(profile, topology, sequence)?;
+    let digest = semantic_hash(&run.semantic)?;
+    let count_regions = |state: &str| {
+        run.semantic
+            .shared_visual_state
+            .regions
+            .iter()
+            .filter(|region| region.state == state)
+            .count()
+    };
+    let count_units = |action: &str| {
+        run.semantic
+            .compute_plan
+            .units
+            .iter()
+            .filter(|unit| unit.action == action)
+            .count()
+    };
+    Ok(R3CandidateSummary {
+        candidate_id: candidate_id.to_string(),
+        topology: topology.as_str().to_string(),
+        semantic_hash: digest,
+        input_sha256: run.semantic.input.sha256.clone(),
+        eye_count: run.semantic.eyes.len(),
+        observation_count: run.semantic.observations.len(),
+        fused_region_count: run.semantic.shared_visual_state.regions.len(),
+        compute_unit_count: run.semantic.compute_plan.units.len(),
+        dirty_region_count: count_regions("dirty"),
+        stable_region_count: count_regions("stable"),
+        uncertain_region_count: count_regions("uncertain"),
+        generate_unit_count: count_units("generate"),
+        reuse_cache_unit_count: count_units("reuse_cache"),
+        reconcile_unit_count: count_units("reconcile"),
+        pipeline_total_ns: run.durations.total_ns,
+        logical_bytes_read: run.counters.logical_bytes_read,
+        bytes_copied: run.counters.bytes_copied,
+        temporary_buffer_bytes: run.counters.temporary_buffer_bytes,
+    })
+}
+
 fn r2_candidate_order(seed: u64, phase: &str, block_index: usize) -> Vec<(&'static str, Topology)> {
     let mut candidates = vec![
         ("T0", Topology::Mono1x1),
@@ -1461,6 +1534,26 @@ mod tests {
             assert_eq!(
                 hashes.into_iter().next().expect("hash"),
                 semantic_hash(&report.semantic_results[candidate]).expect("semantic hash")
+            );
+        }
+    }
+
+    #[test]
+    fn r3_candidate_summary_preserves_existing_semantics() {
+        let profile = InputProfile::named("high", 101).expect("profile");
+        let sequence = generate_sequence(&profile).expect("sequence");
+        for candidate in ["T0", "T1", "T2"] {
+            let first = run_r3_candidate(&profile, candidate, &sequence).expect("first");
+            let second = run_r3_candidate(&profile, candidate, &sequence).expect("second");
+            assert_eq!(first.semantic_hash, second.semantic_hash);
+            assert_eq!(first.input_sha256, second.input_sha256);
+            assert_eq!(first.bytes_copied, 0);
+            assert!(first.eye_count > 0);
+            assert_eq!(
+                first.compute_unit_count,
+                first.generate_unit_count
+                    + first.reuse_cache_unit_count
+                    + first.reconcile_unit_count
             );
         }
     }
