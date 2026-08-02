@@ -98,7 +98,7 @@ Overall refinement status: `verified`; decision `REFINE_RUST_BOUNDARY`.
 | Add one coarse Rust batch boundary | `verified` | one packed input handoff, no per-Eye round trips |
 | Verify semantic and copy safety | `verified` | R1/Python/Rust hashes equal; deterministic; exactly 2.0x input boundary copies |
 | Decide R2 | `verified` | Rust T1/T2 core lower, but in-process FFI remains `null/not_collected` |
-| Publish R2 branch and Draft PR | `in_progress` | [Issue #42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42); branch validation pending publication |
+| Publish R2 branch and Draft PR | `published` | [Issue #42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42); [Draft PR #43](https://github.com/ksse29077-byte/HIVEFRAME/pull/43) |
 
 Do not interpret the decision as `MONO_FIRST` or as rejection of Compound
 Perception First. The next bounded runtime work is an in-process shared-buffer

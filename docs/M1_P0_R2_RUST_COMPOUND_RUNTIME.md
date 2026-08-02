@@ -4,6 +4,8 @@ Status: model-free evidence complete; decision `REFINE_RUST_BOUNDARY`
 
 Issue: [#42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42)
 
+Review: [Draft PR #43](https://github.com/ksse29077-byte/HIVEFRAME/pull/43)
+
 Base and PR #41 merge commit:
 `e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388`.
 

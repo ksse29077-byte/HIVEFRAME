@@ -1,6 +1,6 @@
 # 2026-08-01 — M1-P0-R2 Python Attribution and Rust Compound Runtime
 
-Status: model-free refinement verified; Draft PR publication pending
+Status: model-free refinement verified; Draft PR published, review pending
 
 ## Repository and GitHub state
 
@@ -17,7 +17,12 @@ Status: model-free refinement verified; Draft PR publication pending
 - exact Case B corrective commit:
   `dc1656ae088377206043444d58ef2d49297c5c99`;
 - rewritten measurement-accounting and public-serialization commit:
-  `bf1b90d6c0b35a5aad3a72d6f9f3534a9792b973`.
+  `bf1b90d6c0b35a5aad3a72d6f9f3534a9792b973`;
+- rewritten final evidence commit:
+  `c1ea677d36b3c9ace09bf8d4bac7d5eea1558932`;
+- review:
+  [Draft PR #43](https://github.com/ksse29077-byte/HIVEFRAME/pull/43), open and
+  not merged.
 
 ## Boundary and preserved evidence
 

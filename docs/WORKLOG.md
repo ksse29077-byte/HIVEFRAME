@@ -423,7 +423,9 @@ runs were all 0. Wan evidence remained unchanged and LTX remained inactive.
 - PR #41 merged at
   `e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388`; Issue #40 closed.
 - R2 Issue [#42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42)
-  and branch `agent/m1-p0-r2-rust-compound-runtime` are the review surfaces.
+  and branch `agent/m1-p0-r2-rust-compound-runtime` are the review surfaces;
+  [Draft PR #43](https://github.com/ksse29077-byte/HIVEFRAME/pull/43) is open
+  and was not merged.
 - Sixteen v1/R1 Git-blob hashes remained unchanged.
 - Exact Case B T0/T1/T2 produced twenty paired Python records and twenty Rust
   samples per candidate without corpus or topology growth.
