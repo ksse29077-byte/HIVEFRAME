@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1.0",
+  "run_kind": "m1_p0_r3_inprocess_shared_buffer",
+  "results_eligible": false,
+  "status": "predeclared_before_measurement",
+  "issue": 44,
+  "base_main_commit": "77cd34d3958bef28bfa6e3b8da1b03df2e44c503",
+  "source_config": "configs/m1-p0-r3.inprocess-shared-buffer.json",
+  "source_config_sha256": "f0d7b85df9bbc7d8381d5b6b493fe6765f2f7b15b95abf1e1c76642987b688e2",
+  "scope": {
+    "case": "case-b-high-resolution-local-change",
+    "candidates": ["T0", "T1", "T2"],
+    "warmups": 5,
+    "paired_measured_blocks": 30,
+    "python": "3.12",
+    "ffi": "PyO3 0.29.0 abi3-py312",
+    "input": "one borrowed read-only C-contiguous uint8 [8,1080,1920] buffer",
+    "rust_calls_per_candidate": 1,
+    "per_eye_round_trips": 0,
+    "input_copy_bytes": 0,
+    "subprocesses": 0,
+    "temporary_files": 0
+  },
+  "measurement_contract": {
+    "pairing": "same process, same sequence object, same measured block",
+    "order": "deterministic candidate and implementation rotation",
+    "independent_median_subtraction": false,
+    "empty_boundary_overhead": "collected separately and never subtracted",
+    "json_in_hot_path": false,
+    "allocation_count": {
+      "value": null,
+      "status": "not_collected",
+      "reason": "The Rust global allocator is not instrumented in R3."
+    }
+  },
+  "gate_thresholds": {
+    "T1_T2_p50_reduction_min": 0.2,
+    "T1_T2_p95_regression_max": 0.0,
+    "T0_p50_regression_max": 0.05,
+    "ffi_buffer_marshal_fraction_max": 0.1,
+    "semantic_parity_required": 1.0,
+    "input_copy_bytes_max": 0
+  },
+  "allowed_decisions": [
+    "RUST_CONTROL_PLANE_ADMITTED",
+    "REFINE_SHARED_BUFFER_BOUNDARY",
+    "OPTIMIZE_OUTPUT_MARSHAL",
+    "PAUSE_CURRENT_INPROCESS_ADAPTER"
+  ],
+  "execution_counts": {
+    "h3_api_calls": 0,
+    "api_key_uses": 0,
+    "paid_api_runs": 0,
+    "customer_data_uses": 0,
+    "model_downloads": 0,
+    "model_loads": 0,
+    "cuda_runs": 0,
+    "wan_runs": 0,
+    "ltx_runs": 0
+  },
+  "claim_boundary": "This is a model-free control-plane probe, not a real-video, model, quality, or product speedup claim."
+}

@@ -456,6 +456,41 @@ runs were all 0. Wan and R1 evidence remained unchanged; LTX stayed inactive.
 
 ---
 
+## 2026-08-02 — M1-P0-R3 in-process shared-buffer admission
+
+PR #43 is merged at `77cd34d3958bef28bfa6e3b8da1b03df2e44c503`
+and Issue #42 is closed. R2 remains immutable with Gate
+`REFINE_RUST_BOUNDARY`; Compound Perception First and the Mono
+comparator/safety-fallback policy are preserved.
+
+R3 Issue [#44](https://github.com/ksse29077-byte/HIVEFRAME/issues/44) and
+branch `agent/m1-p0-r3-inprocess-shared-buffer` use one Python 3.12,
+PyO3 0.29.0 shared-buffer call per Case B T0/T1/T2 candidate. The input is
+borrowed read-only with zero input copies, subprocesses, temporary files, and
+per-Eye FFI calls. Five warm-ups, thirty paired blocks, all timing/copy spans,
+and the four Gate outcomes were frozen at premeasurement commit `3abbbea...`.
+
+The single measurement produced 90 pairs. Rust boundary p50 was 20.80% lower
+for T0, 31.21% lower for T1, and 35.98% lower for T2; all p95 values were
+lower. Semantic parity was 100%, hashes were deterministic, and FFI+buffer+
+marshal p50 remained below 0.2%. A 1,348-assertion independent audit passed.
+Decision: `RUST_CONTROL_PLANE_ADMITTED`. M1-P0 is closable; the next research
+surface is the separately approved, rights-cleared real-video M1 lab.
+
+Python compile and all 140 tests passed. The Python 3.12 extension imported
+and all 14 R3 tests passed. Rust format, locked workspace check, and locked
+tests passed with 10 runtime tests. All 40 JSON files parsed; immutable
+evidence, path/credential/address, semantic deduplication, and diff checks
+passed.
+
+Detailed record:
+[`worklogs/2026-08-02-m1-p0-r3-inprocess-shared-buffer.md`](worklogs/2026-08-02-m1-p0-r3-inprocess-shared-buffer.md).
+
+H3/API-key/paid/customer-data/model/CUDA/Wan/LTX counts were all 0. R3 is not
+an official product or model-speedup claim.
+
+---
+
 ## 2026-08-02 — PR #43 final merge-readiness review
 
 PR #43 remains draft and was not merged or marked ready. The predeclared Case

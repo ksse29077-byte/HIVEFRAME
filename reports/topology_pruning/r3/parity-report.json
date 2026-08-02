@@ -1,0 +1,14 @@
+{
+  "deterministic_hashes": true,
+  "input_hash_stable": true,
+  "pairs": 90,
+  "pairs_per_candidate": {
+    "T0": 30,
+    "T1": 30,
+    "T2": 30
+  },
+  "r1_hash_parity": true,
+  "run_kind": "m1_p0_r3_inprocess_shared_buffer",
+  "schema_version": "0.1.0",
+  "semantic_parity_rate": 1.0
+}

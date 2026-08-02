@@ -1,0 +1,159 @@
+{
+  "schema_version": "0.1.0",
+  "run_kind": "m1_p0_r3_inprocess_shared_buffer",
+  "issue": 44,
+  "base_main_commit": "77cd34d3958bef28bfa6e3b8da1b03df2e44c503",
+  "profile": "case-b-high-resolution-local-change",
+  "case_id": "case-b-high-resolution-local-change",
+  "seed": 101,
+  "shape": [8, 1080, 1920],
+  "dtype": "uint8",
+  "topologies": ["T0", "T1", "T2"],
+  "runtime_topologies": {
+    "T0": "mono_1x1",
+    "T1": "uniform_2x2",
+    "T2": "motion_focused"
+  },
+  "warmups": 5,
+  "repetitions": 30,
+  "pairing": {
+    "members_per_block": ["T0", "T1", "T2"],
+    "implementations_per_candidate": ["python", "rust_inprocess"],
+    "same_process": true,
+    "same_sequence_object": true,
+    "same_repetition_block": true,
+    "deterministic_rotating_order": "sha256(seed,phase,block,candidate) plus sha256(seed,phase,block,candidate,implementation)",
+    "independent_median_subtraction_forbidden": true
+  },
+  "python_runtime": {
+    "required_major_minor": "3.12",
+    "reference_implementation": "CPython",
+    "numpy_required": true
+  },
+  "rust_runtime": {
+    "minimum_rust": "1.83",
+    "toolchain_checked": "1.97.1",
+    "extension_crate": "hive-retina-python",
+    "runtime_crate": "hive-retina-runtime"
+  },
+  "ffi": {
+    "technology": "PyO3",
+    "version": "0.29.0",
+    "python_abi": "abi3-py312",
+    "calls_per_candidate": 1,
+    "per_eye_calls": 0,
+    "gil_policy": "held_for_complete_call",
+    "buffer_protocol": true,
+    "buffer_dtype": "uint8",
+    "buffer_shape": [8, 1080, 1920],
+    "buffer_order": "C",
+    "buffer_readonly_required": true,
+    "buffer_lifetime": "borrowed for one Rust call while exporter and GIL remain held",
+    "mutation_policy": "no mutation by Python or Rust during measurement",
+    "input_copy_bytes_required": 0,
+    "temporary_files_required": 0,
+    "subprocesses_required": 0,
+    "input_json_forbidden": true,
+    "output_contract": "compact semantic hash, state counts, ComputePlan counts, receipt counters, and spans only"
+  },
+  "instrumentation": {
+    "python_clock": "time.perf_counter_ns",
+    "rust_clock": "std::time::Instant",
+    "python_total": "outer duration of existing Python run_pipeline",
+    "rust_wrapper_total": "Python duration surrounding exactly one extension call",
+    "rust_internal_spans": [
+      "buffer_acquisition_ns",
+      "argument_validation_ns",
+      "rust_core_ns",
+      "output_marshal_ns",
+      "rust_function_span_ns"
+    ],
+    "ffi_enter_exit_residual": "rust_wrapper_total minus rust_function_span; never silently subtracted",
+    "empty_span_overhead": "separate empty extension-call calibration; never subtracted",
+    "json_serialization": "post-measurement report writing only; excluded from hot path",
+    "allocation_count": {
+      "value": null,
+      "status": "not_collected",
+      "reason": "The Rust global allocator is not instrumented in R3."
+    }
+  },
+  "copy_accounting": {
+    "input_buffer": "borrowed Python buffer; zero copied input bytes",
+    "handoff": "logical byte length exposed once per call; not a copy",
+    "rust_temporary": "dominant pixel-sized motion buffers reported by the existing runtime",
+    "output": "compact Python mapping; no repeated semantic or pixel payload",
+    "addresses_public": false
+  },
+  "thresholds": {
+    "t1_t2_p50_reduction_min": 0.2,
+    "t1_t2_p95_regression_max": 0.0,
+    "t0_p50_regression_max": 0.05,
+    "ffi_buffer_marshal_fraction_max": 0.1,
+    "input_copy_bytes_max": 0,
+    "subprocess_count_max": 0,
+    "temporary_file_count_max": 0,
+    "semantic_parity_required": 1.0,
+    "deterministic_hash_required": true,
+    "unavailable_values_must_be_null": true
+  },
+  "decision_rules": {
+    "RUST_CONTROL_PLANE_ADMITTED": "T1/T2 p50 each improve by at least 20%, their p95 values do not regress, T0 p50 regresses at most 5%, FFI plus buffer plus marshal is at most 10%, input copies/subprocesses/temp files are zero, and safety parity is exact.",
+    "REFINE_SHARED_BUFFER_BOUNDARY": "Semantic safety holds but the in-process boundary still fails one or more control-plane latency or boundary-fraction thresholds.",
+    "OPTIMIZE_OUTPUT_MARSHAL": "Semantic safety holds and compact output marshaling is the single largest failed boundary component.",
+    "PAUSE_CURRENT_INPROCESS_ADAPTER": "Semantic parity, determinism, copy safety, buffer safety, or unavailable-value semantics fail. This does not reject Compound Perception First."
+  },
+  "dependency_licenses": [
+    {"name": "pyo3", "version": "0.29.0", "license": "MIT OR Apache-2.0"},
+    {"name": "pyo3-build-config", "version": "0.29.0", "license": "MIT OR Apache-2.0"},
+    {"name": "pyo3-ffi", "version": "0.29.0", "license": "MIT OR Apache-2.0"},
+    {"name": "pyo3-macros", "version": "0.29.0", "license": "MIT OR Apache-2.0"},
+    {"name": "pyo3-macros-backend", "version": "0.29.0", "license": "MIT OR Apache-2.0"},
+    {"name": "heck", "version": "0.5.0", "license": "MIT OR Apache-2.0"},
+    {"name": "libc", "version": "0.2.189", "license": "MIT OR Apache-2.0"},
+    {"name": "once_cell", "version": "1.21.4", "license": "MIT OR Apache-2.0"},
+    {"name": "portable-atomic", "version": "1.14.0", "license": "Apache-2.0 OR MIT"},
+    {"name": "proc-macro2", "version": "1.0.107", "license": "MIT OR Apache-2.0"},
+    {"name": "quote", "version": "1.0.47", "license": "MIT OR Apache-2.0"},
+    {"name": "syn", "version": "2.0.119", "license": "MIT OR Apache-2.0"},
+    {"name": "target-lexicon", "version": "0.13.5", "license": "Apache-2.0 WITH LLVM-exception"},
+    {"name": "unicode-ident", "version": "1.0.24", "license": "(MIT OR Apache-2.0) AND Unicode-3.0"}
+  ],
+  "immutable_r2_git_blobs": {
+    "configs/m1-p0-r2.rust-compound-runtime.json": "2c58160fc03225a7c8ce96b8ed463c88447cb282",
+    "docs/M1_P0_R2_RUST_COMPOUND_RUNTIME.md": "2b0a4f0adc3c483734f80b6aaa8dce7aca8820cf",
+    "docs/worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md": "76a59d26bae981689c0be75eb1d815bf4849ca9d",
+    "python/hive_benchmarks/topology_pruning/r2_runner.py": "d2902f13fbe7745b86c6d4eaf20df1f5665606a2",
+    "python/hive_benchmarks/topology_pruning/r2_attribution.py": "e65785967a4308af99d026338ee6a0560b1f718c",
+    "python/hive_benchmarks/topology_pruning/r2_audit.py": "0eaf45e6ac79b356f55f53800d242b2579b5d669",
+    "python/tests/test_topology_pruning_r2.py": "8616fbcbfa4ddb40151a06fec9b220338605757a",
+    "reports/topology_pruning/r2-failures/attempt-001/failure.json": "8bb67565aefe0c155282bd0d11a05d11430e3981",
+    "reports/topology_pruning/r2-failures/attempt-001/predeclared-attribution-model.json": "3c8d8af70241669bf3495a454ad3295009099333",
+    "reports/topology_pruning/r2-failures/attempt-002/decision-report.md": "55f2e2aac57217564d0985d910b616b010d3cab0",
+    "reports/topology_pruning/r2-failures/attempt-002/failure.json": "ffe0969ce3ea626331ce9bd27a14da54f86169eb",
+    "reports/topology_pruning/r2-failures/attempt-002/parity-report.json": "52b78d3eac33467704833dfe20af134e6c653ebf",
+    "reports/topology_pruning/r2-failures/attempt-002/predeclared-attribution-model.json": "59ded62a6ab692f9d09cac0cb17a0980c0b3f9ad",
+    "reports/topology_pruning/r2-failures/attempt-002/python-stage-attribution.json": "5a39baa8a6f87118e570e7e6a1fd61e7e755ae88",
+    "reports/topology_pruning/r2-failures/attempt-002/rust-boundary-results.json": "85206f73067dcd7eb93d9cb8331d4c4aed11ccd0",
+    "reports/topology_pruning/r2/decision-report.md": "d7d190e240afc620e733d0e2f0ebdc62eaed8301",
+    "reports/topology_pruning/r2/evidence-equivalence.json": "b7801c85a7518c18ab0577613695d0a17739cf9b",
+    "reports/topology_pruning/r2/parity-report.json": "21b9f684d22bd0b8106286ba980e3f8467142820",
+    "reports/topology_pruning/r2/predeclared-attribution-model.json": "10c9881ea8d52e35685dcb01cfc1f803f6ce0757",
+    "reports/topology_pruning/r2/python-stage-attribution.json": "e8595b6377cd95fff5748e54721528422062bb73",
+    "reports/topology_pruning/r2/rust-boundary-results.json": "d9e2a71ddb7d4fbb689c34d22591f035e7453c9e"
+  },
+  "evidence_boundaries": {
+    "compound_perception_first": true,
+    "mono_is_comparator_and_safety_fallback": true,
+    "official_speedup_eligible": false,
+    "real_video_m1_eligible": false,
+    "h3_api_calls": 0,
+    "api_key_uses": 0,
+    "paid_api_runs": 0,
+    "customer_data_uses": 0,
+    "model_downloads": 0,
+    "model_loads": 0,
+    "cuda_runs": 0,
+    "wan_runs": 0,
+    "ltx_runs": 0
+  }
+}

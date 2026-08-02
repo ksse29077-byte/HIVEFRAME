@@ -121,6 +121,27 @@ Do not enlarge the corpus. Refine same-run Mono normalization and missing
 stage attribution, then rerun the same five combinations. M1-P0 still cannot
 close M0 or M1.
 
+### M1-P0-R3 bounded runtime refinement
+
+PR #43 merged R2 with decision `REFINE_RUST_BOUNDARY`. R3 tests exactly one
+in-process PyO3 shared-buffer boundary on the existing synthetic Case B and
+T0/T1/T2 only. It uses one Rust call per candidate, no per-Eye round trips,
+no input-buffer copy, no subprocess, and no temporary file. Five warm-ups and
+thirty paired measured blocks compare the unchanged Python reference with the
+Rust in-process control plane.
+
+R3 is not a real-video M1 experiment and does not alter M0. Only
+`RUST_CONTROL_PLANE_ADMITTED` can make M1-P0 closable; any other declared R3
+decision records one bounded implementation blocker and requires separate
+approval before further refinement. H3 admission and every model/CUDA path
+remain separate.
+
+R3 passed as `RUST_CONTROL_PLANE_ADMITTED`: T1/T2 boundary p50 was 31.21% and
+35.98% below the Python reference, p95 did not regress, T0 improved, boundary
+overhead stayed below 0.2%, and semantic/copy safety passed. M1-P0 is now
+closable. Do not create an R4; proceed only through the separately approved,
+rights-cleared real-video M1 protocol.
+
 ## M1 — Eye Topology Ground Truth Lab
 
 ### Question
