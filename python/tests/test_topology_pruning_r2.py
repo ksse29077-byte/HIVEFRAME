@@ -27,7 +27,9 @@ from hive_benchmarks.topology_pruning.r2_evidence import (
     canonical_digest,
     canonical_python_evidence,
     canonical_rust_evidence,
+    evidence_bundle_digests,
 )
+from hive_benchmarks.topology_pruning.r2_audit import audit as audit_r2_evidence
 from hive_benchmarks.topology_pruning.synthetic_cases import CASES, generate_case
 from hive_probes.rust_io_reference import generate_sequence, input_profile, run_pipeline
 
@@ -198,22 +200,23 @@ class TopologyPruningR2Tests(unittest.TestCase):
         )
 
     def test_rust_command_is_a_sanitized_template(self) -> None:
+        private_root = "".join(("C", ":", "/private"))
         private = {
             "command": [
-                "C:/private/bin/runtime.exe",
+                f"{private_root}/bin/runtime.exe",
                 "r2-batch",
                 "--input",
-                "C:/private/temp/input.bin",
+                f"{private_root}/temp/input.bin",
                 "--output",
-                "C:/private/temp/output.json",
+                f"{private_root}/temp/output.json",
             ],
-            "stdout": "read C:/private/temp/input.bin",
+            "stdout": f"read {private_root}/temp/input.bin",
             "stderr": "",
             "measured": 7,
         }
         sanitized = canonical_rust_evidence(private)
         rendered = json.dumps(sanitized, sort_keys=True)
-        self.assertNotIn("C:/private", rendered)
+        self.assertNotIn(private_root, rendered)
         self.assertEqual(sanitized["command_template"][0], "<rust-binary>")
         self.assertIn("<temporary-input>", sanitized["command_template"])
         self.assertIn("<temporary-output>", sanitized["command_template"])
@@ -287,6 +290,88 @@ class TopologyPruningR2Tests(unittest.TestCase):
         self.assertIsNone(re.search(r"[A-Za-z]:[\\/]", public_text))
         self.assertIsNone(re.search(r"/(?:home|Users)/[^/]+/", public_text))
         self.assertIn("Decision: **REFINE_RUST_BOUNDARY**", decision_report)
+
+    def test_equivalence_manifest_matches_current_public_evidence(self) -> None:
+        manifest = json.loads(
+            (
+                ROOT
+                / "reports"
+                / "topology_pruning"
+                / "r2"
+                / "evidence-equivalence.json"
+            ).read_text(encoding="utf-8")
+        )
+        current = evidence_bundle_digests(ROOT)
+        self.assertTrue(manifest["logical_equivalence"]["equivalent"])
+        self.assertEqual(
+            manifest["logical_equivalence"]["logical_evidence_digest_before"],
+            manifest["logical_equivalence"]["logical_evidence_digest_after"],
+        )
+        self.assertEqual(
+            current["logical_evidence_digest"],
+            manifest["logical_equivalence"]["logical_evidence_digest_after"],
+        )
+        self.assertEqual(
+            current["artifact_digests"],
+            manifest["logical_equivalence"]["artifact_digests"],
+        )
+        self.assertEqual(manifest["execution_counts"]["measurement_reruns"], 0)
+        self.assertEqual(manifest["preserved_result"]["final_gate"], "REFINE_RUST_BOUNDARY")
+
+    def test_r2_public_tree_has_no_private_execution_paths(self) -> None:
+        roots = [
+            ROOT / "reports" / "topology_pruning" / "r2",
+            ROOT / "reports" / "topology_pruning" / "r2-failures",
+        ]
+        unc_prefix = re.escape(chr(92) * 2)
+        forbidden = re.compile(
+            r"(?i)(?:[A-Z]:[\\/]|"
+            + unc_prefix
+            + r"[^\\\s]+[\\/]|/(?:home|Users)/[^/\s]+/|AppData[\\/]|OneDrive[\\/])"
+        )
+        violations: list[str] = []
+        for evidence_root in roots:
+            for path in evidence_root.rglob("*"):
+                if not path.is_file():
+                    continue
+                text = path.read_text(encoding="utf-8")
+                if forbidden.search(text):
+                    violations.append(path.relative_to(ROOT).as_posix())
+        self.assertEqual(violations, [])
+
+    def test_success_and_failed_evidence_remain_separate(self) -> None:
+        final_report = (
+            ROOT / "reports" / "topology_pruning" / "r2" / "decision-report.md"
+        ).read_text(encoding="utf-8")
+        attempt_001 = json.loads(
+            (
+                ROOT
+                / "reports"
+                / "topology_pruning"
+                / "r2-failures"
+                / "attempt-001"
+                / "failure.json"
+            ).read_text(encoding="utf-8")
+        )
+        attempt_002 = json.loads(
+            (
+                ROOT
+                / "reports"
+                / "topology_pruning"
+                / "r2-failures"
+                / "attempt-002"
+                / "failure.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertIn("Decision: **REFINE_RUST_BOUNDARY**", final_report)
+        self.assertFalse(attempt_001["results_eligible"])
+        self.assertFalse(attempt_002["results_eligible"])
+
+    def test_r2_arithmetic_audit_retains_350_assertions(self) -> None:
+        result = audit_r2_evidence(ROOT)
+        self.assertEqual(result["assertions"], 350)
+        self.assertEqual(result["failures"], 0)
+        self.assertEqual(result["decision"], "REFINE_RUST_BOUNDARY")
 
 
 if __name__ == "__main__":

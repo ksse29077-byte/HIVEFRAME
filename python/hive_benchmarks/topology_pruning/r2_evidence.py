@@ -36,6 +36,63 @@ def canonical_digest(value: dict[str, Any]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _canonical_provenance(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: "<premeasurement-commit>"
+            if key == "premeasurement_commit"
+            else _canonical_provenance(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_canonical_provenance(item) for item in value]
+    return value
+
+
+def evidence_bundle(root: Path) -> dict[str, Any]:
+    success = root / "reports" / "topology_pruning" / "r2"
+    attempt = root / "reports" / "topology_pruning" / "r2-failures" / "attempt-002"
+
+    def bundle(directory: Path, *, failed: bool) -> dict[str, Any]:
+        value = {
+            "python": canonical_python_evidence(
+                _load(directory / "python-stage-attribution.json")
+            ),
+            "rust": canonical_rust_evidence(
+                _load(directory / "rust-boundary-results.json")
+            ),
+            "predeclared": _canonical_provenance(
+                _load(directory / "predeclared-attribution-model.json")
+            ),
+            "parity": _canonical_provenance(_load(directory / "parity-report.json")),
+            "decision_report": (directory / "decision-report.md")
+            .read_text(encoding="utf-8")
+            .replace("\r\n", "\n"),
+        }
+        if failed:
+            value["failure"] = _canonical_provenance(_load(directory / "failure.json"))
+        return value
+
+    return {
+        "success": bundle(success, failed=False),
+        "attempt_002": bundle(attempt, failed=True),
+    }
+
+
+def evidence_bundle_digests(root: Path) -> dict[str, Any]:
+    bundle = evidence_bundle(root)
+    artifact_digests = {
+        "success_python": canonical_digest(bundle["success"]["python"]),
+        "success_rust": canonical_digest(bundle["success"]["rust"]),
+        "attempt_002_python": canonical_digest(bundle["attempt_002"]["python"]),
+        "attempt_002_rust": canonical_digest(bundle["attempt_002"]["rust"]),
+    }
+    return {
+        "artifact_digests": artifact_digests,
+        "logical_evidence_digest": canonical_digest(bundle),
+    }
+
+
 def rewrite_pair(python_path: Path, rust_path: Path) -> dict[str, Any]:
     python_before = _load(python_path)
     rust_before = _load(rust_path)
@@ -97,6 +154,8 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("after_python", type=Path)
     compare.add_argument("before_rust", type=Path)
     compare.add_argument("after_rust", type=Path)
+    digest = subparsers.add_parser("digest")
+    digest.add_argument("root", type=Path)
     return parser
 
 
@@ -104,13 +163,15 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.operation == "rewrite":
         result = rewrite_pair(args.python_evidence, args.rust_evidence)
-    else:
+    elif args.operation == "compare":
         result = compare_pairs(
             args.before_python,
             args.after_python,
             args.before_rust,
             args.after_rust,
         )
+    else:
+        result = evidence_bundle_digests(args.root)
     print(json.dumps(result, indent=2))
     return 0
 

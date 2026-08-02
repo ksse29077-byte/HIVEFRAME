@@ -262,3 +262,72 @@ demonstrably invariant per-sample duplication.
   samples and both failure eligibility records;
 - record the lossless evidence transform, rerun the full model-free checks,
   and request another merge-readiness review.
+
+## 2026-08-02 public-evidence history rewrite
+
+Status: local evidence rewrite verified; remote publication pending final
+validation.
+
+### Why the rewrite boundary changed
+
+The earlier instruction to retain the original final premeasurement SHA was
+withdrawn after object inspection proved that attempt-002 first introduced the
+private execution-path and repeated semantic-payload blobs in that same
+commit. Keeping that SHA while excluding those blobs from reachable PR/main
+history is impossible because a commit identity includes its tree.
+
+The parent `dc1656ae088377206043444d58ef2d49297c5c99` remains unchanged. The
+original commit and all later PR commits were rebuilt as follows:
+
+| Superseded commit | Logical replacement |
+|---|---|
+| `86db72e7947273ce2cac33a2e898f07184642600` | `bf1b90d6c0b35a5aad3a72d6f9f3534a9792b973` |
+| `f0a7e947c9a767a14485d94856cfb782a918bcfb` | `c1ea677d36b3c9ace09bf8d4bac7d5eea1558932` |
+| `5c2ca5a529dc00cb63d1004c1203ae4ac99ff879` | `b55535af4eaad19825fa6a66b2dd80ac7b077c87` |
+| `140a49b2fb8f7f23d2b98fb6be91d5ebf6dfceb5` | `3d3ba4bb7294272ac5ca451e20ed024f7604e8a9` |
+
+A local-only safety ref retains the superseded branch head for audit and was
+not published. No main branch, other branch, or tag was modified.
+
+### Sanitation and normalization
+
+- Rust executable and handoff paths are serialized only as the declared
+  logical placeholders; stdout and stderr use the same replacement map.
+- The public command is a template, not the private executed command.
+- Python stores exactly one semantic payload per candidate/hash. Sixty samples
+  retain `semantic_ref` and `semantic_hash`; no sample embeds the full payload.
+- Success and attempt-002 use the same structure. Attempt 001 and attempt 002
+  remain separate and `results_eligible=false`; only the final result is
+  eligible evidence.
+- Sanitation runs after timed scopes. Measurement reruns: 0.
+
+### Logical equivalence and size
+
+The before/after canonical digest is
+`3fce04dae5f822a2000eb89b25920ab09df8f7fc968a5bf429fc796af83fc3ec`.
+It covers success and attempt-002 Python/Rust evidence, predeclared and parity
+records, failure metadata, and decision reports while normalizing only the
+approved structural differences. Both sides match.
+
+Git-blob bytes changed as follows:
+
+| Artifact | Before | After | Removed |
+|---|---:|---:|---:|
+| final Python attribution | 914,429 | 493,072 | 421,357 |
+| final Rust boundary | 40,346 | 40,220 | 126 |
+| attempt-002 Python attribution | 914,487 | 493,130 | 421,357 |
+| attempt-002 Rust boundary | 40,294 | 40,168 | 126 |
+
+Total removed: 842,966 Git-blob bytes. T0/T1/T2 hashes, all 60+60 final
+samples, all 60+60 attempt-002 samples, twenty T1 pairs, twenty T2 pairs,
+stage timings, percentiles, signed remainder, attribution, Rust core and
+boundary values, 78-suite amortization, copy/temporary bytes, failure reasons,
+and final `REFINE_RUST_BOUNDARY` Gate are unchanged.
+
+The machine-readable audit is
+`reports/topology_pruning/r2/evidence-equivalence.json`. The rewritten branch
+will be published only with `--force-with-lease`. This record does not claim
+that a hosting provider immediately purges unreachable objects.
+
+H3 API calls: 0. API-key uses: 0. Paid runs: 0. Model downloads: 0. Model
+loads: 0. CUDA runs: 0.

@@ -249,6 +249,26 @@ model integration or a backend/product speedup claim.
 - model loads: 0;
 - CUDA runs: 0.
 
+## Public evidence serialization
+
+Public Rust provenance stores a sanitized command template using
+`<rust-binary>`, `<temporary-input>`, and `<temporary-output>`. Private
+execution paths are used only while the subprocess is active and are removed
+after all timed scopes; sanitation therefore changes no timing or cost value.
+
+Python semantic payloads are invariant within each candidate. The public
+format stores one payload for each T0/T1/T2 candidate and semantic hash. Each
+of the sixty timing samples retains its candidate, block, order, measured
+values, `semantic_hash`, and `semantic_ref`, but does not repeat the payload.
+The final and ineligible attempt-002 evidence use the same format.
+
+The lossless history rewrite is audited in
+`reports/topology_pruning/r2/evidence-equivalence.json`. Its canonical digest
+normalizes only the declared path placeholders, semantic dictionary/reference
+shape, and rewritten premeasurement commit identity. All timing, paired,
+percentile, attribution, Rust, copy, failure, and Gate evidence remains part of
+the digest.
+
 ## Final model-free validation
 
 - Python compile: passed;

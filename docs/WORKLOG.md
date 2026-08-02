@@ -483,6 +483,32 @@ Model loads: 0. CUDA runs: 0. H3 API calls: 0. API-key uses: 0.
 
 ---
 
+## 2026-08-02 — R2 public-evidence history rewrite
+
+The superseded final premeasurement commit first introduced both PR #43
+merge blockers, so retaining that SHA was incompatible with removing the
+problem blobs from reachable history. Its unchanged parent remains the rewrite
+boundary; that commit and its descendants were rebuilt without remeasurement.
+
+Rust provenance now uses public path placeholders and a sanitized command
+template. Python stores each T0/T1/T2 semantic payload once and uses sample
+references. The final and ineligible attempt-002 structures are consistent;
+attempt 001/002 remain `results_eligible=false`.
+
+The full before/after logical evidence digest is
+`3fce04dae5f822a2000eb89b25920ab09df8f7fc968a5bf429fc796af83fc3ec`
+on both sides. The rewrite removes 842,966 Git-blob bytes while preserving all
+measurement values, semantic hashes, failure reasons, and the
+`REFINE_RUST_BOUNDARY` Gate. A local-only safety ref is retained and will not
+be published. Remote update requires `--force-with-lease`; GitHub object
+retention is not interpreted as immediate physical deletion.
+
+Measurement reruns, H3 API calls, API-key uses, paid runs, model downloads,
+model loads, and CUDA runs were all 0. Detailed mapping and verification are in
+[`worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md`](worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md).
+
+---
+
 ## Entry template
 
 ```markdown
