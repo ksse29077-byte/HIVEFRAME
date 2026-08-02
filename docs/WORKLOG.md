@@ -510,9 +510,11 @@ cost metrics, provisional safety thresholds, validators, and negative tests.
 No actual clip is eligible at this checkpoint, no binary is tracked, and no
 topology or backend is executed.
 
-Issue publication remains pending because the available GitHub write
-integration rejected the initial create request; no remote object was changed.
-The dated worklog records the publication and asset-admission state.
+The available GitHub write integration rejected the initial Issue create
+request, so no remote object changed at that attempt. After GitHub CLI
+authentication was restored, [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
+and the dedicated remote branch were published through the normal GitHub and
+Git transport paths.
 
 Predeclaration commit `d60fd7650d2a0a7d2fedf19d43d4638895f0e682`
 fixed the contract before any admission. The allowed post-commit asset review

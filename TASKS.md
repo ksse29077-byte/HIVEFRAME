@@ -149,6 +149,7 @@ performance run is authorized.
 | Task | Status | Evidence |
 |---|---|---|
 | Preserve M0 and M1-P0 evidence | `done` | PR #45 merged; R3 remains `RUST_CONTROL_PLANE_ADMITTED` |
+| Track M1-A admission work | `published` | [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46); branch `agent/m1-a-real-video-corpus-oracle-protocol` |
 | Predeclare corpus, rights, derivative, oracle contracts | `implemented` | schemas, configs, validators, and negative tests |
 | Fix T0-T7 candidate contract and metric/Gate semantics | `implemented` | metadata only; no performance result |
 | Search task-scoped approved assets | `done` | repository metadata and supplied task artifacts only; zero actual video assets found |

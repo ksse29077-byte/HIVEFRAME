@@ -1,6 +1,6 @@
 # 2026-08-02 — M1-A Real-video Corpus and Oracle Protocol
 
-Status: verified locally; decision `CORPUS_ACQUISITION_REQUIRED`; publication pending
+Status: verified; decision `CORPUS_ACQUISITION_REQUIRED`; branch and Issue published; Draft PR pending
 
 ## Verified predecessor state
 
@@ -17,8 +17,9 @@ The dedicated branch is
 `agent/m1-a-real-video-corpus-oracle-protocol`. Repository, Issue, PR, and
 branch searches found no duplicate M1-A implementation. The initial Issue
 publication attempt was rejected by the available GitHub write integration;
-no remote object was changed. Publication remains pending until an authorized
-Git transport is available.
+no remote object was changed. After the user restored GitHub CLI
+authentication, [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
+was created and the normal Git branch push was verified.
 
 ## Predeclared boundary
 
@@ -48,6 +49,9 @@ random public video are outside scope. No video binary may be committed.
 
 Predeclaration commit:
 `d60fd7650d2a0a7d2fedf19d43d4638895f0e682`.
+
+Evidence commit:
+`0a2bbc8779036d983ca22e55927ce2a88f9e1be0`.
 
 After that commit, the allowed asset search was repeated. Repository metadata
 contains admission rules and artifact-store guidance but no actual video

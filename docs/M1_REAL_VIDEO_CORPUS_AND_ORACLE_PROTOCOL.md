@@ -2,6 +2,8 @@
 
 Status: predeclared protocol; no topology performance results
 
+Tracking: [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
+
 ## Purpose and claim boundary
 
 M1-A asks whether HIVEFRAME can assemble a reproducible, rights-cleared set of
