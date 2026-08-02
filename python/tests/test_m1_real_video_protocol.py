@@ -11,6 +11,7 @@ from hive_benchmarks.m1_corpus_summary import (
     ALLOWED_DECISIONS,
     ARTIFACTS,
     build_reports,
+    cross_document_errors,
     validate_measurement_contract,
     validate_topologies,
     write_reports,
@@ -155,6 +156,41 @@ def oracle_document(annotation: dict | None = None) -> dict:
     return {"schema_version": "0.1.0", "annotation_version": "m1-a-v0", "annotations": [annotation or valid_annotation()]}
 
 
+def ready_bundle() -> tuple[dict, dict, dict]:
+    required = valid_manifest([])["required_scene_classes"]
+    clips: list[dict] = []
+    receipts: list[dict] = []
+    annotations: list[dict] = []
+    for index, scene in enumerate(required, 1):
+        clip_id = f"clip-{index:03d}"
+        source_digest = hashlib.sha256(f"source-{index}".encode()).hexdigest()
+        derivative_digest = hashlib.sha256(f"derivative-{index}".encode()).hexdigest()
+        clip = valid_clip(clip_id, source_digest, scene)
+        annotation = valid_annotation(clip_id, source_digest, cut=scene == "hard_cut")
+        annotation["derivative_sha256"] = derivative_digest
+        annotation["artifact_digest"] = sha256_json(
+            {key: value for key, value in annotation.items() if key != "artifact_digest"}
+        )
+        clip["derivative_sha256"] = derivative_digest
+        clip["oracle_sha256"] = annotation["artifact_digest"]
+        receipt = valid_rights(clip_id, source_digest)["receipts"][0]
+        clips.append(clip)
+        receipts.append(receipt)
+        annotations.append(annotation)
+    return (
+        valid_manifest(clips),
+        {"schema_version": "0.1.0", "receipts": receipts},
+        {"schema_version": "0.1.0", "annotation_version": "m1-a-v0", "annotations": annotations},
+    )
+
+
+def protocol_configs() -> tuple[dict, dict]:
+    return (
+        json.loads((ROOT / "configs" / "m1-topology-candidates.json").read_text(encoding="utf-8")),
+        json.loads((ROOT / "configs" / "m1-measurement-contract.json").read_text(encoding="utf-8")),
+    )
+
+
 class M1RealVideoProtocolTests(unittest.TestCase):
     def test_schemas_and_predeclared_configs_parse(self) -> None:
         for path in [
@@ -296,6 +332,119 @@ class M1RealVideoProtocolTests(unittest.TestCase):
             (output / ARTIFACTS[0]).write_text("existing", encoding="utf-8")
             with self.assertRaises(FileExistsError):
                 write_reports(output, {name: "test" for name in ARTIFACTS})
+
+    def test_ready_fixture_has_twelve_clips_and_passes_current_contract(self) -> None:
+        manifest, rights, oracle = ready_bundle()
+        topologies, measurement = protocol_configs()
+        report = json.loads(build_reports(manifest, rights, oracle, topologies, measurement, [])["admission-report.json"])
+        self.assertEqual(report["counts"]["eligible"], 12)
+        self.assertEqual(report["decision"], "M1_CORPUS_AND_ORACLE_READY")
+
+    def test_invalid_rights_document_cannot_pass_on_admitted_count_alone(self) -> None:
+        manifest, rights, oracle = ready_bundle()
+        rights["receipts"][0]["permissions"]["commercial"] = False
+        topologies, measurement = protocol_configs()
+        report = json.loads(build_reports(manifest, rights, oracle, topologies, measurement, [])["admission-report.json"])
+        self.assertTrue(report["rights_errors"])
+        self.assertEqual(report["decision"], "ORACLE_PROTOCOL_REVISE")
+
+    def test_manifest_oracle_source_and_derivative_digest_mismatches_are_blocked(self) -> None:
+        for field, replacement, expected in (
+            ("source_sha256", SHA_D, "source_sha256"),
+            ("derivative_sha256", SHA_D, "derivative_sha256"),
+        ):
+            manifest, rights, oracle = ready_bundle()
+            oracle["annotations"][0][field] = replacement
+            oracle["annotations"][0]["artifact_digest"] = sha256_json(
+                {key: value for key, value in oracle["annotations"][0].items() if key != "artifact_digest"}
+            )
+            manifest["clips"][0]["oracle_sha256"] = oracle["annotations"][0]["artifact_digest"]
+            errors = cross_document_errors(manifest, rights, oracle)
+            self.assertTrue(any(expected in error for error in errors), errors)
+
+    def test_manifest_oracle_artifact_digest_mismatch_is_blocked(self) -> None:
+        manifest, rights, oracle = ready_bundle()
+        manifest["clips"][0]["oracle_sha256"] = SHA_A
+        errors = cross_document_errors(manifest, rights, oracle)
+        self.assertTrue(any("artifact_digest" in error or "oracle" in error for error in errors), errors)
+
+    def test_manifest_rights_permission_and_consent_mismatches_are_blocked(self) -> None:
+        manifest, rights, oracle = ready_bundle()
+        rights["receipts"][0]["permissions"]["redistribution"] = False
+        rights["receipts"][1]["consent_status"] = "verified"
+        errors = cross_document_errors(manifest, rights, oracle)
+        self.assertTrue(any("permissions" in error for error in errors), errors)
+        self.assertTrue(any("consent" in error for error in errors), errors)
+
+    def test_orphan_and_duplicate_cross_document_records_are_blocked(self) -> None:
+        manifest, rights, oracle = ready_bundle()
+        orphan_receipt = copy.deepcopy(rights["receipts"][0])
+        orphan_receipt["clip_id"] = "orphan-rights"
+        rights["receipts"].append(orphan_receipt)
+        rights["receipts"].append(copy.deepcopy(rights["receipts"][0]))
+        orphan_annotation = copy.deepcopy(oracle["annotations"][0])
+        orphan_annotation["clip_id"] = "orphan-oracle"
+        orphan_annotation["artifact_digest"] = sha256_json(
+            {key: value for key, value in orphan_annotation.items() if key != "artifact_digest"}
+        )
+        oracle["annotations"].append(orphan_annotation)
+        oracle["annotations"].append(copy.deepcopy(oracle["annotations"][0]))
+        errors = cross_document_errors(manifest, rights, oracle)
+        self.assertTrue(any("orphan rights" in error for error in errors), errors)
+        self.assertTrue(any("orphan oracle" in error for error in errors), errors)
+        self.assertTrue(any("duplicate rights" in error for error in errors), errors)
+        self.assertTrue(any("duplicate oracle" in error for error in errors), errors)
+
+    def test_verified_oracle_for_noneligible_clip_is_not_eligible_evidence(self) -> None:
+        manifest, rights, oracle = ready_bundle()
+        manifest["clips"][0]["admission_status"] = "pending"
+        manifest["clips"][0]["source_class"] = "pending_rights_review"
+        manifest["clips"][0]["rights_status"] = "pending"
+        errors = cross_document_errors(manifest, rights, oracle)
+        self.assertTrue(any("non-eligible" in error and "verified oracle" in error for error in errors), errors)
+
+    def test_manifest_rejects_unknown_properties_and_eligible_unavailable_rights(self) -> None:
+        manifest = valid_manifest()
+        manifest["unexpected_public_field"] = True
+        self.assertTrue(validate_manifest(manifest))
+        for field in ("rights_holder", "source_authority", "license_identifier"):
+            manifest = valid_manifest()
+            manifest["clips"][0][field] = {
+                "value": None,
+                "status": "unavailable",
+                "reason": "Evidence has not been admitted.",
+                "method": "metadata review",
+            }
+            self.assertTrue(validate_manifest(manifest), field)
+
+    def test_pending_allows_explicit_unavailable_but_rejected_requires_reason(self) -> None:
+        pending = valid_clip()
+        pending.update(
+            {
+                "source_class": "pending_rights_review",
+                "rights_status": "pending",
+                "admission_status": "pending",
+                "rights_holder": {"value": None, "status": "pending", "reason": "Rights holder review pending.", "method": "rights review"},
+                "source_authority": {"value": None, "status": "pending", "reason": "Source authority review pending.", "method": "rights review"},
+                "license_identifier": {"value": None, "status": "pending", "reason": "License review pending.", "method": "rights review"},
+                "license_terms_digest": {"value": None, "status": "pending", "reason": "Terms not admitted.", "method": "rights review"},
+                "derivative_sha256": {"value": None, "status": "pending", "reason": "Derivative not prepared.", "method": "admission workflow"},
+                "oracle_sha256": {"value": None, "status": "pending", "reason": "Oracle not prepared.", "method": "admission workflow"},
+                "reviewed_at": {"value": None, "status": "pending", "reason": "Review not complete.", "method": "admission workflow"},
+                "rejection_reason": {"value": None, "status": "pending", "reason": "Admission evidence is incomplete.", "method": "admission workflow"},
+            }
+        )
+        self.assertEqual(validate_manifest(valid_manifest([pending])), [])
+        rejected = valid_clip()
+        rejected.update(
+            {
+                "source_class": "rejected",
+                "rights_status": "rejected",
+                "admission_status": "rejected",
+                "rejection_reason": {"value": None, "status": "unavailable", "reason": "No reason recorded.", "method": "admission review"},
+            }
+        )
+        self.assertTrue(any("rejection_reason" in error for error in validate_manifest(valid_manifest([rejected]))))
 
 
 if __name__ == "__main__":
