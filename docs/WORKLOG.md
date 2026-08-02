@@ -507,6 +507,11 @@ Measurement reruns, H3 API calls, API-key uses, paid runs, model downloads,
 model loads, and CUDA runs were all 0. Detailed mapping and verification are in
 [`worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md`](worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md).
 
+The PR branch rewrite was published from superseded head `140a49b...` to
+verified head `e72cbe5...` using an explicit `--force-with-lease`. Plain
+`--force` was not used; local and remote heads matched at the publication
+checkpoint.
+
 ---
 
 ## Entry template

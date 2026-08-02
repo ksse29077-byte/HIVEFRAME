@@ -73,5 +73,12 @@
     "model_loads": 0,
     "cuda_runs": 0
   },
+  "publication": {
+    "remote_branch": "agent/m1-p0-r2-rust-compound-runtime",
+    "superseded_remote_head": "140a49b2fb8f7f23d2b98fb6be91d5ebf6dfceb5",
+    "verified_rewrite_head": "e72cbe5c6b69220cb6be4d349d55b43ec2febbe9",
+    "update_method": "force-with-lease",
+    "plain_force_used": false
+  },
   "retention_note": "The rewritten PR branch excludes the superseded evidence blobs from its reachable history. No claim is made that a hosting provider immediately purges unreachable objects."
 }

@@ -265,8 +265,7 @@ demonstrably invariant per-sample duplication.
 
 ## 2026-08-02 public-evidence history rewrite
 
-Status: local evidence rewrite verified; remote publication pending final
-validation.
+Status: evidence rewrite published; final merge-readiness review pending.
 
 ### Why the rewrite boundary changed
 
@@ -331,3 +330,13 @@ that a hosting provider immediately purges unreachable objects.
 
 H3 API calls: 0. API-key uses: 0. Paid runs: 0. Model downloads: 0. Model
 loads: 0. CUDA runs: 0.
+
+### Publication verification
+
+The PR branch was updated from the superseded head
+`140a49b2fb8f7f23d2b98fb6be91d5ebf6dfceb5` to the verified rewrite head
+`e72cbe5c6b69220cb6be4d349d55b43ec2febbe9` using
+`--force-with-lease` with the superseded head as the explicit lease. Plain
+`--force` was not used. Local and remote heads matched at that publication
+checkpoint. This final publication note is a documentation-only descendant;
+its resulting head is verified externally after publication.
