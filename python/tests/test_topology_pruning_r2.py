@@ -246,6 +246,48 @@ class TopologyPruningR2Tests(unittest.TestCase):
         self.assertIsNone(re.search(r"(?i)(?:AppData|OneDrive)[\\/]", public_text))
         self.assertEqual(rust_result["command_template"][0], "<rust-binary>")
 
+    def test_final_evidence_has_complete_paired_accounting(self) -> None:
+        evidence = ROOT / "reports" / "topology_pruning" / "r2"
+        python_result = json.loads(
+            (evidence / "python-stage-attribution.json").read_text(encoding="utf-8")
+        )
+        rust_result = json.loads(
+            (evidence / "rust-boundary-results.json").read_text(encoding="utf-8")
+        )
+        parity = json.loads(
+            (evidence / "parity-report.json").read_text(encoding="utf-8")
+        )
+        decision_report = (evidence / "decision-report.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertEqual(len(python_result["samples"]), 60)
+        self.assertEqual(len(rust_result["samples"]), 60)
+        self.assertEqual(len(python_result["semantic_evidence"]), 3)
+        for sample in python_result["samples"]:
+            self.assertNotIn("semantic_result", sample["attributed"])
+            self.assertNotIn("semantic_hash", sample["attributed"])
+            record = python_result["semantic_evidence"][sample["semantic_ref"]]
+            self.assertEqual(record["semantic_hash"], sample["semantic_hash"])
+            self.assertEqual(record["candidate_id"], sample["candidate_id"])
+        for candidate in ("T1", "T2"):
+            paired = python_result["paired_attribution"][candidate]
+            self.assertEqual(paired["pairs"], 20)
+            self.assertEqual(len(paired["records"]), 20)
+            self.assertTrue(all(record["equation_holds"] for record in paired["records"]))
+        self.assertTrue(parity["semantic_parity"])
+        self.assertTrue(parity["deterministic_hashes"])
+        self.assertIsNone(rust_result["boundary"]["ffi_call_seconds"]["value"])
+        self.assertEqual(
+            rust_result["boundary"]["ffi_call_seconds"]["status"],
+            "not_collected",
+        )
+        self.assertEqual(rust_result["command_template"][0], "<rust-binary>")
+        public_text = json.dumps({"python": python_result, "rust": rust_result})
+        self.assertIsNone(re.search(r"[A-Za-z]:[\\/]", public_text))
+        self.assertIsNone(re.search(r"/(?:home|Users)/[^/]+/", public_text))
+        self.assertIn("Decision: **REFINE_RUST_BOUNDARY**", decision_report)
+
 
 if __name__ == "__main__":
     unittest.main()

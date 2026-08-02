@@ -78,12 +78,32 @@ Overall refinement status: `verified`; decision `REFINE_COST_MODEL`.
 | Run 5 warm-up and 20 measured blocks | `verified` | 100 final measured samples in one process |
 | Validate Case B paired deltas | `verified` | T1 error 61.83%; T2 error 56.60%; ranking matches |
 | Preserve safety and deterministic semantics | `verified` | recall 1.0, false-stable 0.0, hashes match v1 |
-| Publish R1 branch and Draft PR | `published` | [Issue #40](https://github.com/ksse29077-byte/HIVEFRAME/issues/40), [Draft PR #41](https://github.com/ksse29077-byte/HIVEFRAME/pull/41) |
+| Publish and merge R1 | `published` | Issue #40 closed; [PR #41](https://github.com/ksse29077-byte/HIVEFRAME/pull/41) merged at `e5bbaa7...` |
 
 Same-run pairing did not bring the Rust-derived incremental coefficients
 within the unchanged 35% rule. Do not expand to the rights-cleared M1 Cost
 Surface from this result. The next calibration change requires a separately
 predeclared explanation of the missing Python topology-variable stages.
+
+## M1-P0-R2 — Python Attribution and Rust Compound Runtime
+
+Overall refinement status: `verified`; decision `REFINE_RUST_BOUNDARY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Preserve v1 and R1 evidence | `verified` | sixteen merged Git-blob SHA-256 checks pass |
+| Predeclare Python stage attribution | `verified` | inclusive/exclusive taxonomy, signed pairing, overhead calibration, fixed thresholds |
+| Keep exact Case B T0/T1/T2 | `verified` | 20 paired blocks; no topology or corpus growth |
+| Attribute Python Compound overhead | `verified` | T1 100.0606%, T2 99.8828%; every block equation holds |
+| Add one coarse Rust batch boundary | `verified` | one packed input handoff, no per-Eye round trips |
+| Verify semantic and copy safety | `verified` | R1/Python/Rust hashes equal; deterministic; exactly 2.0x input boundary copies |
+| Decide R2 | `verified` | Rust T1/T2 core lower, but in-process FFI remains `null/not_collected` |
+| Publish R2 branch and Draft PR | `in_progress` | [Issue #42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42); branch validation pending publication |
+
+Do not interpret the decision as `MONO_FIRST` or as rejection of Compound
+Perception First. The next bounded runtime work is an in-process shared-buffer
+boundary using the same Case B and semantic/copy contracts. H3 Issue #39
+remains separate and no backend/model execution was performed.
 
 ## Backend product target policy
 

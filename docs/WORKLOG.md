@@ -416,6 +416,44 @@ runs were all 0. Wan evidence remained unchanged and LTX remained inactive.
 
 ---
 
+## 2026-08-01 — M1-P0-R2 Python attribution and Rust compound runtime
+
+### Verified result
+
+- PR #41 merged at
+  `e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388`; Issue #40 closed.
+- R2 Issue [#42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42)
+  and branch `agent/m1-p0-r2-rust-compound-runtime` are the review surfaces.
+- Sixteen v1/R1 Git-blob hashes remained unchanged.
+- Exact Case B T0/T1/T2 produced twenty paired Python records and twenty Rust
+  samples per candidate without corpus or topology growth.
+- Python paired p50 deltas were 8.5101 ms for T1 and 9.6737 ms for T2.
+  Exclusive stage attribution was 100.0606% and 99.8828%; observation was the
+  dominant delta, with an additional 2.1263 ms Eye-setup delta for T2.
+- Rust boundary-inclusive p50 was 32.24% lower for T1 and 36.18% lower for T2
+  under benchmark-suite amortization. This is not single-call product latency.
+- Python, Rust, and R1 semantic hashes matched; deterministic and 2.0x copy
+  gates passed.
+- FFI remained `null/not_collected`; decision: `REFINE_RUST_BOUNDARY`.
+
+Two ineligible attempts are preserved. Attempt 001 stopped before measured
+blocks on a wrong input-profile identity. Attempt 002 was rejected after
+measurement because its aggregate omitted Python wrapper time and failed to
+evaluate one already-declared threshold. Corrective commits changed no stage
+taxonomy, equation, numeric threshold, transport, or decision outcome.
+
+The detailed record is
+[`worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md`](worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md).
+
+Python compile and all 119 tests passed. Rust format, locked check, and locked
+tests passed, including 9 runtime tests. All 34 repository JSON files parsed,
+the sixteen immutable Git-blob checks passed, and `git diff --check` passed.
+
+H3 API calls, API-key uses, paid runs, model downloads, model loads, and CUDA
+runs were all 0. Wan and R1 evidence remained unchanged; LTX stayed inactive.
+
+---
+
 ## Entry template
 
 ```markdown

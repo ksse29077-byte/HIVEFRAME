@@ -1,0 +1,50 @@
+{
+  "copy_limit_passed": true,
+  "deterministic_hashes": true,
+  "evidence_boundaries": {
+    "api_key_uses": 0,
+    "backend_neutral": true,
+    "compound_perception_first": true,
+    "cuda_runs": 0,
+    "h3_api_calls": 0,
+    "m0_completion_eligible": false,
+    "m1_completion_eligible": false,
+    "model_downloads": 0,
+    "model_free": true,
+    "model_loads": 0,
+    "mono_is_comparator_and_fallback": true,
+    "official_speedup_eligible": false,
+    "paid_api_runs": 0
+  },
+  "expected_hashes": {
+    "T0": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+    "T1": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+    "T2": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22"
+  },
+  "premeasurement_commit": "bf1b90d6c0b35a5aad3a72d6f9f3534a9792b973",
+  "python_hashes": {
+    "T0": [
+      "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61"
+    ],
+    "T1": [
+      "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5"
+    ],
+    "T2": [
+      "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22"
+    ]
+  },
+  "run_kind": "m1_p0_r2_rust_compound_runtime",
+  "rust_hashes": {
+    "T0": [
+      "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61"
+    ],
+    "T1": [
+      "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5"
+    ],
+    "T2": [
+      "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22"
+    ]
+  },
+  "schema_version": "0.1.0",
+  "semantic_parity": true
+}
