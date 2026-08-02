@@ -1,6 +1,6 @@
 # 2026-08-02 — M1-A Real-video Corpus and Oracle Protocol
 
-Status: verified; decision `CORPUS_ACQUISITION_REQUIRED`; branch and Issue published; Draft PR pending
+Status: verified and published for review; decision `CORPUS_ACQUISITION_REQUIRED`
 
 ## Verified predecessor state
 
@@ -19,7 +19,9 @@ branch searches found no duplicate M1-A implementation. The initial Issue
 publication attempt was rejected by the available GitHub write integration;
 no remote object was changed. After the user restored GitHub CLI
 authentication, [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
-was created and the normal Git branch push was verified.
+was created and the normal Git branch push was verified. Draft PR
+[#47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47) is the review
+surface. It remains Draft and was not merged or marked ready.
 
 ## Predeclared boundary
 

@@ -2,7 +2,8 @@
 
 Status: predeclared protocol; no topology performance results
 
-Tracking: [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
+Tracking: [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46),
+[Draft PR #47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47)
 
 ## Purpose and claim boundary
 

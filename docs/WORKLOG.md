@@ -514,7 +514,9 @@ The available GitHub write integration rejected the initial Issue create
 request, so no remote object changed at that attempt. After GitHub CLI
 authentication was restored, [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
 and the dedicated remote branch were published through the normal GitHub and
-Git transport paths.
+Git transport paths. Draft PR
+[#47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47) is open for review;
+it was not marked ready or merged.
 
 Predeclaration commit `d60fd7650d2a0a7d2fedf19d43d4638895f0e682`
 fixed the contract before any admission. The allowed post-commit asset review
