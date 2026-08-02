@@ -1,0 +1,166 @@
+{
+  "attribution_equation": "C_paired_delta(T,i)=sum(C_exclusive_stage(T,i)-C_exclusive_stage(T0,paired_i))+C_unattributed(T,i)",
+  "base_main_commit": "e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388",
+  "case_id": "case-b-high-resolution-local-change",
+  "config_path": "configs/m1-p0-r2.rust-compound-runtime.json",
+  "config_sha256": "9808adb12ff0ab85aeca89ea2b6e76a15f6e7d72684a4e45a39553bd86fa8a89",
+  "copy_accounting": {
+    "json": "count encoded output bytes separately",
+    "numpy_views": "zero copied bytes",
+    "python_input_file_write": "count full packed buffer bytes once",
+    "rust_input_file_read": "count full packed buffer bytes once",
+    "temporary": "input handoff file plus dominant motion and serialization buffers"
+  },
+  "decision_rules": {
+    "OPTIMIZE_COMPOUND_RUNTIME": "Python attribution reaches the fixed minimum but the Rust core does not yet remove the attributed bottleneck while semantic safety holds.",
+    "PAUSE_CURRENT_IMPLEMENTATION": "Semantic parity, determinism, copy safety, attribution integrity, or both current orchestration implementations fail structurally. This does not reject Compound Perception First.",
+    "REFINE_RUST_BOUNDARY": "T1 and T2 Rust core p50 are lower but process, FFI, copy, handoff, or serialization evidence is unavailable or offsets the core gain.",
+    "RUST_RUNTIME_VIABLE": "T1 and T2 Rust boundary-inclusive control-plane p50 are lower than Python, Rust core p50 is lower, FFI is collected, semantic parity and deterministic hashes hold, and copied bytes are within the fixed limit."
+  },
+  "evidence_boundaries": {
+    "api_key_uses": 0,
+    "backend_neutral": true,
+    "compound_perception_first": true,
+    "cuda_runs": 0,
+    "h3_api_calls": 0,
+    "m0_completion_eligible": false,
+    "m1_completion_eligible": false,
+    "model_downloads": 0,
+    "model_free": true,
+    "model_loads": 0,
+    "mono_is_comparator_and_fallback": true,
+    "official_speedup_eligible": false,
+    "paid_api_runs": 0
+  },
+  "immutable_git_blob_sha256": {
+    "configs/m1-p0-r1.same-run-mono-normalization.json": "28466e97a38d72d5a13d908668be9b2c8e32b228fac5c13db19122fecee56c1a",
+    "configs/m1-p0.analytical-topology-pruning.json": "f9de0a1ab3bfdbc3643032ae7f19c7e2e1df04fe3b11abeb64d731e2c992de3e",
+    "docs/M1_ANALYTICAL_TOPOLOGY_PRUNING.md": "353c9a8b03dbdfed7d764c20e88f93429fea0302cdb48321a72d93d96333dfd1",
+    "docs/M1_P0_R1_COST_MODEL_REFINEMENT.md": "3dd7d9d2f2200e82c311e73070633ccec00d42596c7b95a590cb3a795cb744c3",
+    "docs/worklogs/2026-07-31-m1-p0-analytical-topology-pruning.md": "4ef210fdd9135afd28807baebd8174637ee078772cac5d392aa1997f9ac77d83",
+    "docs/worklogs/2026-08-01-m1-p0-r1-cost-model-refinement.md": "59fa2437deccd608a34f85c741cd1c31f7d5c4cf87291c408ebab93cfc064987",
+    "reports/topology_pruning/analytical-model.json": "f2f67beab283e16e374107ef1f0f7256266eb90189a0a15117b02a41e4d293e3",
+    "reports/topology_pruning/candidate-pruning-report.json": "18bbfc29cb7cade2bfb992b96fd0ff6794dc1096bf66b59e066c80b13b722c19",
+    "reports/topology_pruning/decision-report.md": "4204ed4e58516320de8baf626d05ee714cd7e4741da1750cf9e3967272fa2f6a",
+    "reports/topology_pruning/minimal-probe-results.json": "a04261471673b404d12da864d8c1038a09b585aa31f37a89cc22eb81613e649f",
+    "reports/topology_pruning/r1-failures/attempt-001/failure.json": "37518e05c94618d33dc20ebe0310df6377ef7aab3c9048b8921e873127c7adb6",
+    "reports/topology_pruning/r1-failures/attempt-001/predeclared-model.json": "49ddcd7edf1a615e2b1872a88f1c892e963f6053e87c7629dece46d0dbce7b3a",
+    "reports/topology_pruning/r1/decision-report.md": "6efa7351d2efa3f7524a1aaac8c337a82a12491139f92cd5abf94f5dd564955d",
+    "reports/topology_pruning/r1/paired-normalization-results.json": "def83d932339aa0d501ff2eb92a11e938ced93a9a155fc540f006cc77cf5e531",
+    "reports/topology_pruning/r1/predeclared-model.json": "fb18c8ba2eeb2aef7f8f365f5d1d96687d66194ca4476c8a52db6d907f6e8ad8",
+    "reports/topology_pruning/r1/prediction-validation.json": "71fb3c8da0d4a521243733999d1363840b3dcfdcdb3722cf2f5180c98c499679"
+  },
+  "instrumentation": {
+    "clock": "time.perf_counter_ns",
+    "exclusive": "inclusive minus union of direct child spans",
+    "execution_order": "for each deterministic candidate: uninstrumented path, then attributed path",
+    "inclusive": "span end minus span start",
+    "negative_unattributed_policy": "reject",
+    "official_comparison": "separate uninstrumented pipeline executions",
+    "overhead": "empty span tree measured separately and never subtracted silently"
+  },
+  "issue": 42,
+  "pairing": {
+    "independent_median_subtraction_forbidden": true,
+    "interleaving": "sha256(seed,phase,block,candidate) ascending",
+    "members_per_block": [
+      "T0",
+      "T1",
+      "T2"
+    ],
+    "same_process": true,
+    "same_repetition_block": true,
+    "same_sequence_object": true
+  },
+  "pr_41_merge_commit": "e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388",
+  "premeasurement_commit": "dc1656ae088377206043444d58ef2d49297c5c99",
+  "profile": "case-b-high-resolution-local-change",
+  "repetitions": 20,
+  "run_kind": "m1_p0_r2_rust_compound_runtime",
+  "rust_boundary": {
+    "calls_per_suite": 1,
+    "ffi_method": "requires a separately admitted in-process shared-buffer implementation",
+    "ffi_reason": "The bounded v0 boundary is one process batch; PyO3 or C ABI is not introduced in R2.",
+    "ffi_status": "not_collected",
+    "input_format": "one packed uint8 Case B buffer file",
+    "input_handoffs_per_suite": 1,
+    "per_eye_round_trips_forbidden": true,
+    "python_scope": [
+      "actual_model_tensor",
+      "vae",
+      "denoising",
+      "attention_scheduler_hooks",
+      "model_evaluation"
+    ],
+    "rust_scope": [
+      "eye_contract_construction",
+      "routing",
+      "coordinate_transform",
+      "mask_view_metadata",
+      "observation_orchestration",
+      "fusion",
+      "shared_visual_state",
+      "compute_plan",
+      "receipt_metadata"
+    ],
+    "transport": "single_subprocess_batch_v0"
+  },
+  "schema_version": "0.1.0",
+  "span_nesting": {
+    "fusion": [
+      "fusion_input_conversion",
+      "overlap_handling",
+      "shared_visual_state_construction"
+    ],
+    "observation": [
+      "crop_view_construction"
+    ],
+    "receipt_construction": [
+      "json_serialization"
+    ],
+    "routing": [
+      "eye_contract_construction",
+      "array_allocation",
+      "mask_construction",
+      "eye_setup",
+      "coordinate_transform"
+    ]
+  },
+  "stage_taxonomy": [
+    "input_validation",
+    "eye_contract_construction",
+    "eye_setup",
+    "routing",
+    "coordinate_transform",
+    "mask_construction",
+    "crop_view_construction",
+    "array_allocation",
+    "explicit_copy",
+    "observation",
+    "overlap_handling",
+    "fusion_input_conversion",
+    "fusion",
+    "shared_visual_state_construction",
+    "compute_plan_construction",
+    "receipt_construction",
+    "json_serialization",
+    "garbage_collection"
+  ],
+  "thresholds": {
+    "copied_input_multiples_max": 2.0,
+    "deterministic_hash_required": true,
+    "ffi_collected_required_for_viable": true,
+    "python_attributed_percentage_min": 0.8,
+    "python_unattributed_percentage_max": 0.2,
+    "rust_boundary_inclusive_reduction_required": 0.0,
+    "rust_core_reduction_required": 0.0,
+    "semantic_parity_required": true,
+    "unavailable_values_must_be_null": true
+  },
+  "topologies": [
+    "T0",
+    "T1",
+    "T2"
+  ],
+  "warmups": 5
+}

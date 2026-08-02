@@ -67,7 +67,7 @@
     "overhead": "empty span tree measured separately and never subtracted silently",
     "official_comparison": "separate uninstrumented pipeline executions",
     "execution_order": "for each deterministic candidate: uninstrumented path, then attributed path",
-    "negative_unattributed_policy": "reject"
+    "negative_unattributed_policy": "reject negative per-run unattributed duration; same-block candidate-minus-Mono remainder may be signed"
   },
   "attribution_equation": "C_paired_delta(T,i)=sum(C_exclusive_stage(T,i)-C_exclusive_stage(T0,paired_i))+C_unattributed(T,i)",
   "pairing": {

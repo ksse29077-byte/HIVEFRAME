@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -17,8 +18,15 @@ from hive_benchmarks.topology_pruning.r2_runner import (
     build_parser,
     decide,
     plan,
+    normalize_python_semantic_evidence,
+    sanitize_rust_public_evidence,
     validate_config,
     validate_immutable_git_blobs,
+)
+from hive_benchmarks.topology_pruning.r2_evidence import (
+    canonical_digest,
+    canonical_python_evidence,
+    canonical_rust_evidence,
 )
 from hive_benchmarks.topology_pruning.synthetic_cases import CASES, generate_case
 from hive_probes.rust_io_reference import generate_sequence, input_profile, run_pipeline
@@ -35,8 +43,8 @@ def gate_inputs() -> tuple[dict, dict]:
             for index, candidate in enumerate(("T0", "T1", "T2"))
         },
         "paired_attribution": {
-            "T1": {"attributed_percentage": 0.9},
-            "T2": {"attributed_percentage": 0.9},
+            "T1": {"attributed_percentage": 0.9, "unattributed_percentage": 0.1},
+            "T2": {"attributed_percentage": 0.9, "unattributed_percentage": 0.1},
         },
     }
     rust_result = {
@@ -125,6 +133,14 @@ class TopologyPruningR2Tests(unittest.TestCase):
         decision = decide(self.config, python_result, rust_result)
         self.assertEqual(decision["decision"], "OPTIMIZE_COMPOUND_RUNTIME")
 
+    def test_gate_enforces_unattributed_threshold(self) -> None:
+        python_result, rust_result = gate_inputs()
+        rust_result["summaries"]["T1"]["core_p50_seconds"] = 1.0
+        rust_result["summaries"]["T2"]["core_p50_seconds"] = 1.0
+        python_result["paired_attribution"]["T2"]["unattributed_percentage"] = 0.3
+        decision = decide(self.config, python_result, rust_result)
+        self.assertEqual(decision["decision"], "PAUSE_CURRENT_IMPLEMENTATION")
+
     def test_gate_pauses_on_semantic_failure(self) -> None:
         python_result, rust_result = gate_inputs()
         rust_result["summaries"]["T2"]["semantic_hashes"] = ["different"]
@@ -150,6 +166,85 @@ class TopologyPruningR2Tests(unittest.TestCase):
             (output / "decision-report.md").write_text("existing", encoding="utf-8")
             with self.assertRaises(FileExistsError):
                 _assert_output_available(output)
+
+    def test_semantic_payloads_are_normalized_without_measurement_changes(self) -> None:
+        legacy = {
+            "samples": [
+                {
+                    "block_index": block,
+                    "candidate_id": candidate,
+                    "semantic_hash": f"hash-{candidate}",
+                    "attributed": {
+                        "semantic_hash": f"hash-{candidate}",
+                        "semantic_result": {"candidate": candidate, "stable": True},
+                        "total_ns": block + 1,
+                    },
+                }
+                for block in range(2)
+                for candidate in ("T0", "T1", "T2")
+            ]
+        }
+        normalized = canonical_python_evidence(legacy)
+        self.assertEqual(len(normalized["semantic_evidence"]), 3)
+        self.assertEqual(len(normalized["samples"]), 6)
+        for sample in normalized["samples"]:
+            self.assertNotIn("semantic_result", sample["attributed"])
+            self.assertNotIn("semantic_hash", sample["attributed"])
+            record = normalized["semantic_evidence"][sample["semantic_ref"]]
+            self.assertEqual(record["semantic_hash"], sample["semantic_hash"])
+        self.assertEqual(
+            canonical_digest(normalized),
+            canonical_digest(normalize_python_semantic_evidence(normalized)),
+        )
+
+    def test_rust_command_is_a_sanitized_template(self) -> None:
+        private = {
+            "command": [
+                "C:/private/bin/runtime.exe",
+                "r2-batch",
+                "--input",
+                "C:/private/temp/input.bin",
+                "--output",
+                "C:/private/temp/output.json",
+            ],
+            "stdout": "read C:/private/temp/input.bin",
+            "stderr": "",
+            "measured": 7,
+        }
+        sanitized = canonical_rust_evidence(private)
+        rendered = json.dumps(sanitized, sort_keys=True)
+        self.assertNotIn("C:/private", rendered)
+        self.assertEqual(sanitized["command_template"][0], "<rust-binary>")
+        self.assertIn("<temporary-input>", sanitized["command_template"])
+        self.assertIn("<temporary-output>", sanitized["command_template"])
+        self.assertEqual(sanitized["measured"], 7)
+
+    def test_attempt_002_public_evidence_is_normalized_and_path_safe(self) -> None:
+        evidence = ROOT / "reports" / "topology_pruning" / "r2-failures" / "attempt-002"
+        python_result = json.loads(
+            (evidence / "python-stage-attribution.json").read_text(encoding="utf-8")
+        )
+        rust_result = json.loads(
+            (evidence / "rust-boundary-results.json").read_text(encoding="utf-8")
+        )
+        failure = json.loads((evidence / "failure.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(python_result["samples"]), 60)
+        self.assertEqual(len(python_result["semantic_evidence"]), 3)
+        counts = {candidate: 0 for candidate in ("T0", "T1", "T2")}
+        for sample in python_result["samples"]:
+            counts[sample["candidate_id"]] += 1
+            self.assertNotIn("semantic_result", sample["attributed"])
+            self.assertNotIn("semantic_hash", sample["attributed"])
+            record = python_result["semantic_evidence"][sample["semantic_ref"]]
+            self.assertEqual(record["semantic_hash"], sample["semantic_hash"])
+            self.assertEqual(record["candidate_id"], sample["candidate_id"])
+        self.assertEqual(counts, {"T0": 20, "T1": 20, "T2": 20})
+        self.assertFalse(failure["results_eligible"])
+        public_text = json.dumps({"python": python_result, "rust": rust_result})
+        self.assertIsNone(re.search(r"[A-Za-z]:[\\/]", public_text))
+        self.assertIsNone(re.search(r"/(?:home|Users)/[^/]+/", public_text))
+        self.assertIsNone(re.search(r"(?i)(?:AppData|OneDrive)[\\/]", public_text))
+        self.assertEqual(rust_result["command_template"][0], "<rust-binary>")
 
 
 if __name__ == "__main__":

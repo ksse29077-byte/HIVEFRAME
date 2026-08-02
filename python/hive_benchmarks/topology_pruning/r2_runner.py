@@ -38,6 +38,10 @@ ARTIFACT_NAMES = (
     "decision-report.md",
 )
 
+PUBLIC_RUST_BINARY = "<rust-binary>"
+PUBLIC_TEMPORARY_INPUT = "<temporary-input>"
+PUBLIC_TEMPORARY_OUTPUT = "<temporary-output>"
+
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -177,6 +181,99 @@ def _summaries(samples: list[dict[str, Any]], total_field: str) -> dict[str, dic
     }
 
 
+def normalize_python_semantic_evidence(result: dict[str, Any]) -> dict[str, Any]:
+    """Deduplicate invariant semantic payloads without changing measured samples."""
+
+    evidence = dict(result.get("semantic_evidence", {}))
+    for sample in result["samples"]:
+        candidate = sample["candidate_id"]
+        semantic_hash = sample["semantic_hash"]
+        semantic_ref = f"{candidate}:{semantic_hash}"
+        attributed = sample["attributed"]
+        attributed_hash = attributed.pop("semantic_hash", semantic_hash)
+        if attributed_hash != semantic_hash:
+            raise ValueError(f"Semantic hash mismatch for {candidate}.")
+        payload = attributed.pop("semantic_result", None)
+        record = evidence.get(semantic_ref)
+        if record is None:
+            if payload is None:
+                raise ValueError(f"Missing semantic payload for {semantic_ref}.")
+            record = {
+                "candidate_id": candidate,
+                "semantic_hash": semantic_hash,
+                "payload": payload,
+            }
+            evidence[semantic_ref] = record
+        else:
+            if record.get("candidate_id") != candidate or record.get("semantic_hash") != semantic_hash:
+                raise ValueError(f"Invalid semantic evidence identity for {semantic_ref}.")
+            if payload is not None and record.get("payload") != payload:
+                raise ValueError(f"Non-deterministic semantic payload for {semantic_ref}.")
+        sample["semantic_ref"] = semantic_ref
+    result["semantic_evidence"] = {
+        semantic_ref: evidence[semantic_ref] for semantic_ref in sorted(evidence)
+    }
+    return result
+
+
+def _public_rust_command(config: dict[str, Any]) -> list[str]:
+    return [
+        PUBLIC_RUST_BINARY,
+        "r2-batch",
+        "--profile",
+        config["profile"],
+        "--input",
+        PUBLIC_TEMPORARY_INPUT,
+        "--output",
+        PUBLIC_TEMPORARY_OUTPUT,
+        "--warmups",
+        str(config["warmups"]),
+        "--repetitions",
+        str(config["repetitions"]),
+        "--seed",
+        str(config["seed"]),
+    ]
+
+
+def _sanitize_public_text(text: str, replacements: dict[str, str]) -> str:
+    sanitized = text
+    for private, public in sorted(replacements.items(), key=lambda item: len(item[0]), reverse=True):
+        if private:
+            sanitized = sanitized.replace(private, public)
+            sanitized = sanitized.replace(private.replace("\\", "/"), public)
+    return sanitized
+
+
+def sanitize_rust_public_evidence(result: dict[str, Any]) -> dict[str, Any]:
+    """Replace private execution paths while preserving all measured values."""
+
+    original = list(result.pop("command", result.get("command_template", ())))
+    if not original:
+        raise ValueError("Rust evidence is missing its command provenance.")
+    template = list(original)
+    replacements: dict[str, str] = {}
+    replacements[template[0]] = PUBLIC_RUST_BINARY
+    template[0] = PUBLIC_RUST_BINARY
+    for option, placeholder in (
+        ("--input", PUBLIC_TEMPORARY_INPUT),
+        ("--output", PUBLIC_TEMPORARY_OUTPUT),
+    ):
+        try:
+            value_index = template.index(option) + 1
+        except ValueError as error:
+            raise ValueError(f"Rust evidence command is missing {option}.") from error
+        replacements[template[value_index]] = placeholder
+        template[value_index] = placeholder
+    result["command_template"] = template
+    result["command_scope"] = (
+        "sanitized public template; private execution paths are not serialized"
+    )
+    for field in ("stdout", "stderr"):
+        if isinstance(result.get(field), str):
+            result[field] = _sanitize_public_text(result[field], replacements)
+    return result
+
+
 def _paired_python_attribution(
     samples: list[dict[str, Any]], config: dict[str, Any]
 ) -> dict[str, Any]:
@@ -311,7 +408,7 @@ def _python_measurement(
     measured_wall_ns = time.perf_counter_ns() - measured_started
     if len(samples) != config["repetitions"] * 3:
         raise RuntimeError("R2 Python measured sample count differs from the declaration.")
-    return {
+    result = {
         "schema_version": config["schema_version"],
         "run_kind": config["run_kind"],
         "implementation": "python_numpy_attributed",
@@ -326,6 +423,7 @@ def _python_measurement(
         "paired_attribution": _paired_python_attribution(samples, config),
         "execution_order": "uninstrumented then attributed for each deterministic candidate",
     }
+    return normalize_python_semantic_evidence(result)
 
 
 def _rust_measurement(
@@ -398,7 +496,10 @@ def _rust_measurement(
     }
     pipeline_executions = 3 + (config["warmups"] + config["repetitions"]) * 3
     internal_ns = int(report["suite_internal_wall_ns"])
-    boundary_overhead_ns = max(0, process_call_ns - internal_ns)
+    python_wrapper_ns = python_input_write_ns + python_parse_ns
+    boundary_overhead_ns = max(
+        0, python_wrapper_ns + process_call_ns - internal_ns
+    )
     amortized_boundary_ns = boundary_overhead_ns / pipeline_executions
     for summary in summaries.values():
         summary["benchmark_amortized_boundary_inclusive_p50_seconds"] = (
@@ -406,7 +507,7 @@ def _rust_measurement(
         )
     input_bytes = int(sequence.nbytes)
     copied_bytes = input_bytes + int(envelope["boundary"]["input_copy_bytes"])
-    return {
+    result = {
         "schema_version": config["schema_version"],
         "run_kind": config["run_kind"],
         "implementation": report["implementation"],
@@ -420,6 +521,7 @@ def _rust_measurement(
             "python_input_write_seconds": python_input_write_ns / 1_000_000_000,
             "rust_input_read_seconds": envelope["boundary"]["input_read_ns"] / 1_000_000_000,
             "python_output_parse_seconds": python_parse_ns / 1_000_000_000,
+            "python_wrapper_seconds": python_wrapper_ns / 1_000_000_000,
             "rust_serialization_probe_seconds": envelope["boundary"]["serialization_probe_ns"] / 1_000_000_000,
             "ffi_call_seconds": envelope["boundary"]["ffi_call_seconds"],
             "pipeline_executions_in_process": pipeline_executions,
@@ -439,6 +541,10 @@ def _rust_measurement(
         "stdout": completed.stdout,
         "stderr": completed.stderr,
     }
+    sanitized = sanitize_rust_public_evidence(result)
+    if sanitized["command_template"] != _public_rust_command(config):
+        raise RuntimeError("Sanitized Rust command differs from the declared public template.")
+    return sanitized
 
 
 def decide(
@@ -485,6 +591,9 @@ def decide(
         python_result["paired_attribution"][candidate]["attributed_percentage"] is not None
         and python_result["paired_attribution"][candidate]["attributed_percentage"]
         >= thresholds["python_attributed_percentage_min"]
+        and python_result["paired_attribution"][candidate]["unattributed_percentage"] is not None
+        and python_result["paired_attribution"][candidate]["unattributed_percentage"]
+        <= thresholds["python_unattributed_percentage_max"]
         for candidate in ("T1", "T2")
     )
     if not (parity and deterministic and copy_ok):

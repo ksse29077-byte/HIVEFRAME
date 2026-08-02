@@ -63,9 +63,12 @@ C_paired_delta(T, i)
   + C_unattributed(T, i)
 ```
 
-Negative unattributed duration is rejected. Independent median subtraction is
-forbidden. Each phase uses five warm-up and twenty measured T0/T1/T2 blocks in
-one Python process with one prepared Case B NumPy object.
+Negative per-run unattributed duration is rejected. The same-block
+candidate-minus-Mono unattributed remainder may be signed, because the
+candidate's instrumentation remainder can be smaller than the paired Mono
+remainder. Independent median subtraction is forbidden. Each phase uses five
+warm-up and twenty measured T0/T1/T2 blocks in one Python process with one
+prepared Case B NumPy object.
 
 ## Copy and allocation accounting
 
@@ -98,7 +101,8 @@ R2.
 
 The process transport measures Rust core, external process call, Python input
 write and output parse, Rust input read and serialization, copied bytes, and
-temporary bytes. PyO3/C-ABI FFI is deliberately not introduced; its time is
+temporary bytes. Boundary-inclusive time contains the full Python input-write
+and output-parse wrapper scope as well as process scope. PyO3/C-ABI FFI is deliberately not introduced; its time is
 `null/not_collected`. Benchmark-suite amortized boundary time is labeled as
 such and is not a single-call product latency claim.
 
