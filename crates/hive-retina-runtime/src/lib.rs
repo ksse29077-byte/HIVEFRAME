@@ -388,6 +388,54 @@ pub struct SuiteReport {
     pub unsupported_metrics: Vec<UnsupportedMetric>,
 }
 
+pub const R2_RUN_KIND: &str = "m1_p0_r2_rust_compound_runtime";
+
+#[derive(Clone, Debug, Serialize)]
+pub struct R2StageDurations {
+    pub total_ns: u128,
+    pub routing_ns: u128,
+    pub coordinate_transform_ns: u128,
+    pub observation_ns: u128,
+    pub fusion_ns: u128,
+    pub compute_plan_ns: u128,
+    pub receipt_metadata_ns: u128,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct R2Counters {
+    pub logical_bytes_read: u64,
+    pub bytes_copied: u64,
+    pub temporary_buffer_bytes: u64,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct R2Sample {
+    pub block_index: usize,
+    pub order_index: usize,
+    pub candidate_id: String,
+    pub topology: String,
+    pub semantic_hash: String,
+    pub durations_ns: R2StageDurations,
+    pub counters: R2Counters,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct R2BatchReport {
+    pub schema_version: String,
+    pub run_kind: String,
+    pub implementation: String,
+    pub profile_id: String,
+    pub seed: u64,
+    pub warmups: usize,
+    pub repetitions: usize,
+    pub input_bytes: usize,
+    pub suite_internal_wall_ns: u128,
+    pub semantic_results: BTreeMap<String, SemanticResult>,
+    pub samples: Vec<R2Sample>,
+    pub copied_bytes: u64,
+    pub temporary_input_bytes: u64,
+}
+
 fn sha256_hex(bytes: &[u8]) -> String {
     let mut digest = Sha256::new();
     digest.update(bytes);
@@ -957,6 +1005,103 @@ fn run_pipeline(
     })
 }
 
+fn r2_candidate_order(seed: u64, phase: &str, block_index: usize) -> Vec<(&'static str, Topology)> {
+    let mut candidates = vec![
+        ("T0", Topology::Mono1x1),
+        ("T1", Topology::Uniform2x2),
+        ("T2", Topology::MotionFocused),
+    ];
+    candidates.sort_by_key(|(candidate, _)| {
+        let mut digest = Sha256::new();
+        digest.update(format!("{seed}:{phase}:{block_index}:{candidate}").as_bytes());
+        digest.finalize().to_vec()
+    });
+    candidates
+}
+
+pub fn benchmark_r2_batch(
+    profile: &InputProfile,
+    sequence: &[u8],
+    warmups: usize,
+    repetitions: usize,
+) -> Result<R2BatchReport, String> {
+    if warmups != 5 || repetitions != 20 {
+        return Err("R2 is fixed at 5 warm-ups and 20 measured blocks.".to_string());
+    }
+    validate_sequence(profile, sequence)?;
+    let suite_started = Instant::now();
+    let mut expected_hashes = BTreeMap::new();
+    let mut semantic_results = BTreeMap::new();
+    for (candidate, topology) in r2_candidate_order(profile.seed, "baseline", 0) {
+        let baseline = run_pipeline(profile, topology, sequence)?;
+        let digest = semantic_hash(&baseline.semantic)?;
+        expected_hashes.insert(candidate.to_string(), digest);
+        semantic_results.insert(candidate.to_string(), baseline.semantic);
+    }
+    for block_index in 0..warmups {
+        for (candidate, topology) in r2_candidate_order(profile.seed, "warmup", block_index) {
+            let run = run_pipeline(profile, topology, sequence)?;
+            if semantic_hash(&run.semantic)? != expected_hashes[candidate] {
+                return Err(format!("R2 warm-up semantic hash changed for {candidate}."));
+            }
+        }
+    }
+    let mut samples = Vec::with_capacity(repetitions * 3);
+    for block_index in 0..repetitions {
+        for (order_index, (candidate, topology)) in
+            r2_candidate_order(profile.seed, "measured", block_index)
+                .into_iter()
+                .enumerate()
+        {
+            let run = run_pipeline(profile, topology, sequence)?;
+            let receipt_started = Instant::now();
+            let digest = semantic_hash(&run.semantic)?;
+            let receipt_metadata_ns = receipt_started.elapsed().as_nanos();
+            if digest != expected_hashes[candidate] {
+                return Err(format!(
+                    "R2 measured semantic hash changed for {candidate}."
+                ));
+            }
+            samples.push(R2Sample {
+                block_index,
+                order_index,
+                candidate_id: candidate.to_string(),
+                topology: topology.as_str().to_string(),
+                semantic_hash: digest,
+                durations_ns: R2StageDurations {
+                    total_ns: run.durations.total_ns + receipt_metadata_ns,
+                    routing_ns: run.durations.routing_ns,
+                    coordinate_transform_ns: run.durations.coordinate_transform_ns,
+                    observation_ns: run.durations.observation_ns,
+                    fusion_ns: run.durations.fusion_ns,
+                    compute_plan_ns: run.durations.compute_plan_ns,
+                    receipt_metadata_ns,
+                },
+                counters: R2Counters {
+                    logical_bytes_read: run.counters.logical_bytes_read,
+                    bytes_copied: run.counters.bytes_copied,
+                    temporary_buffer_bytes: run.counters.temporary_buffer_bytes,
+                },
+            });
+        }
+    }
+    Ok(R2BatchReport {
+        schema_version: SCHEMA_VERSION.to_string(),
+        run_kind: R2_RUN_KIND.to_string(),
+        implementation: "rust_coarse_process_batch_v0".to_string(),
+        profile_id: profile.profile_id.clone(),
+        seed: profile.seed,
+        warmups,
+        repetitions,
+        input_bytes: sequence.len(),
+        suite_internal_wall_ns: suite_started.elapsed().as_nanos(),
+        semantic_results,
+        samples,
+        copied_bytes: 0,
+        temporary_input_bytes: 0,
+    })
+}
+
 fn percentile(values: &mut [u128], quantile: f64) -> u128 {
     values.sort_unstable();
     let rank = (quantile * values.len() as f64).ceil() as usize;
@@ -1293,6 +1438,30 @@ mod tests {
             ));
             assert!(!metric.reason.is_empty());
             assert!(!metric.method.is_empty());
+        }
+    }
+
+    #[test]
+    fn r2_batch_is_coarse_deterministic_and_complete() {
+        let profile = InputProfile::named("low", 101).expect("profile");
+        let sequence = generate_sequence(&profile).expect("sequence");
+        let report = benchmark_r2_batch(&profile, &sequence, 5, 20).expect("r2 batch");
+        assert_eq!(report.run_kind, R2_RUN_KIND);
+        assert_eq!(report.samples.len(), 60);
+        assert_eq!(report.semantic_results.len(), 3);
+        assert_eq!(report.copied_bytes, 0);
+        for candidate in ["T0", "T1", "T2"] {
+            let hashes = report
+                .samples
+                .iter()
+                .filter(|sample| sample.candidate_id == candidate)
+                .map(|sample| sample.semantic_hash.as_str())
+                .collect::<std::collections::BTreeSet<_>>();
+            assert_eq!(hashes.len(), 1);
+            assert_eq!(
+                hashes.into_iter().next().expect("hash"),
+                semantic_hash(&report.semantic_results[candidate]).expect("semantic hash")
+            );
         }
     }
 }

@@ -416,6 +416,104 @@ runs were all 0. Wan evidence remained unchanged and LTX remained inactive.
 
 ---
 
+## 2026-08-01 — M1-P0-R2 Python attribution and Rust compound runtime
+
+### Verified result
+
+- PR #41 merged at
+  `e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388`; Issue #40 closed.
+- R2 Issue [#42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42)
+  and branch `agent/m1-p0-r2-rust-compound-runtime` are the review surfaces;
+  [Draft PR #43](https://github.com/ksse29077-byte/HIVEFRAME/pull/43) is open
+  and was not merged.
+- Sixteen v1/R1 Git-blob hashes remained unchanged.
+- Exact Case B T0/T1/T2 produced twenty paired Python records and twenty Rust
+  samples per candidate without corpus or topology growth.
+- Python paired p50 deltas were 8.5101 ms for T1 and 9.6737 ms for T2.
+  Exclusive stage attribution was 100.0606% and 99.8828%; observation was the
+  dominant delta, with an additional 2.1263 ms Eye-setup delta for T2.
+- Rust boundary-inclusive p50 was 32.24% lower for T1 and 36.18% lower for T2
+  under benchmark-suite amortization. This is not single-call product latency.
+- Python, Rust, and R1 semantic hashes matched; deterministic and 2.0x copy
+  gates passed.
+- FFI remained `null/not_collected`; decision: `REFINE_RUST_BOUNDARY`.
+
+Two ineligible attempts are preserved. Attempt 001 stopped before measured
+blocks on a wrong input-profile identity. Attempt 002 was rejected after
+measurement because its aggregate omitted Python wrapper time and failed to
+evaluate one already-declared threshold. Corrective commits changed no stage
+taxonomy, equation, numeric threshold, transport, or decision outcome.
+
+The detailed record is
+[`worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md`](worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md).
+
+Python compile and all 119 tests passed. Rust format, locked check, and locked
+tests passed, including 9 runtime tests. All 34 repository JSON files parsed,
+the sixteen immutable Git-blob checks passed, and `git diff --check` passed.
+
+H3 API calls, API-key uses, paid runs, model downloads, model loads, and CUDA
+runs were all 0. Wan and R1 evidence remained unchanged; LTX stayed inactive.
+
+---
+
+## 2026-08-02 — PR #43 final merge-readiness review
+
+PR #43 remains draft and was not merged or marked ready. The predeclared Case
+B scope, eighteen-stage taxonomy, attribution equation, Rust boundary,
+thresholds, paired arithmetic, semantic parity, 78-execution amortization,
+copy accounting, Compound Perception First direction, sixteen immutable Git
+blobs, and failed-attempt separation all passed review. The arithmetic audit
+ran 350 assertions with zero failures; 119 Python tests, Rust format/check/test
+including nine runtime tests, 34 JSON parses, and `git diff --check` passed.
+GitHub reported zero unresolved review threads and no merge conflict.
+
+Decision: **`NOT_MERGE_READY`**. Two public-artifact blockers remain:
+
+- the success and attempt-002 Rust result JSON files contain user-specific
+  local executable and temporary absolute paths;
+- each success/attempt-002 Python attribution JSON repeats each of three
+  invariant semantic payloads twenty times, producing at least 433,998 compact
+  bytes of avoidable duplicate semantic data across the two files.
+
+No evidence value was rewritten during this review. Required remediation and
+the full audit are recorded in
+[`worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md`](worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md).
+
+Model loads: 0. CUDA runs: 0. H3 API calls: 0. API-key uses: 0.
+
+---
+
+## 2026-08-02 — R2 public-evidence history rewrite
+
+The superseded final premeasurement commit first introduced both PR #43
+merge blockers, so retaining that SHA was incompatible with removing the
+problem blobs from reachable history. Its unchanged parent remains the rewrite
+boundary; that commit and its descendants were rebuilt without remeasurement.
+
+Rust provenance now uses public path placeholders and a sanitized command
+template. Python stores each T0/T1/T2 semantic payload once and uses sample
+references. The final and ineligible attempt-002 structures are consistent;
+attempt 001/002 remain `results_eligible=false`.
+
+The full before/after logical evidence digest is
+`3fce04dae5f822a2000eb89b25920ab09df8f7fc968a5bf429fc796af83fc3ec`
+on both sides. The rewrite removes 842,966 Git-blob bytes while preserving all
+measurement values, semantic hashes, failure reasons, and the
+`REFINE_RUST_BOUNDARY` Gate. A local-only safety ref is retained and will not
+be published. Remote update requires `--force-with-lease`; GitHub object
+retention is not interpreted as immediate physical deletion.
+
+Measurement reruns, H3 API calls, API-key uses, paid runs, model downloads,
+model loads, and CUDA runs were all 0. Detailed mapping and verification are in
+[`worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md`](worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md).
+
+The PR branch rewrite was published from superseded head `140a49b...` to
+verified head `e72cbe5...` using an explicit `--force-with-lease`. Plain
+`--force` was not used; local and remote heads matched at the publication
+checkpoint.
+
+---
+
 ## Entry template
 
 ```markdown

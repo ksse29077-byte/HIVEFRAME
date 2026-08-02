@@ -1,0 +1,84 @@
+{
+  "schema_version": "0.1.0",
+  "run_kind": "m1_p0_r2_evidence_rewrite_audit",
+  "rewrite_boundary": {
+    "preserved_parent_commit": "dc1656ae088377206043444d58ef2d49297c5c99",
+    "first_rewritten_commit": "86db72e7947273ce2cac33a2e898f07184642600",
+    "local_backup_ref": "retained_local_only_not_pushed"
+  },
+  "old_to_new_commit_mapping": {
+    "86db72e7947273ce2cac33a2e898f07184642600": "bf1b90d6c0b35a5aad3a72d6f9f3534a9792b973",
+    "f0a7e947c9a767a14485d94856cfb782a918bcfb": "c1ea677d36b3c9ace09bf8d4bac7d5eea1558932",
+    "5c2ca5a529dc00cb63d1004c1203ae4ac99ff879": "b55535af4eaad19825fa6a66b2dd80ac7b077c87",
+    "140a49b2fb8f7f23d2b98fb6be91d5ebf6dfceb5": "3d3ba4bb7294272ac5ca451e20ed024f7604e8a9"
+  },
+  "allowed_canonicalization": [
+    "private execution paths to declared public placeholders",
+    "per-sample semantic payloads to candidate/hash references",
+    "rewritten premeasurement commit identity to a stable provenance placeholder"
+  ],
+  "logical_equivalence": {
+    "equivalent": true,
+    "logical_evidence_digest_before": "3fce04dae5f822a2000eb89b25920ab09df8f7fc968a5bf429fc796af83fc3ec",
+    "logical_evidence_digest_after": "3fce04dae5f822a2000eb89b25920ab09df8f7fc968a5bf429fc796af83fc3ec",
+    "artifact_digests": {
+      "success_python": "570b6ada5d69f8e367d762dc873d549e06524029edcf9de5703821e5b882fe2c",
+      "success_rust": "73f92077f8182335bb459729aa7032cd89f5a2dfef6ea1572da33e603814308c",
+      "attempt_002_python": "6817bcf2d36217c4c1bbed5ded94425acaf289f72945d37096fd4531c2799173",
+      "attempt_002_rust": "a30d2ce0473abec7d928416ac866376877be5b01fe6006be2bee2d6a8b6b8ced"
+    }
+  },
+  "git_blob_sizes": {
+    "reports/topology_pruning/r2/python-stage-attribution.json": {
+      "before_bytes": 914429,
+      "after_bytes": 493072,
+      "removed_bytes": 421357
+    },
+    "reports/topology_pruning/r2/rust-boundary-results.json": {
+      "before_bytes": 40346,
+      "after_bytes": 40220,
+      "removed_bytes": 126
+    },
+    "reports/topology_pruning/r2-failures/attempt-002/python-stage-attribution.json": {
+      "before_bytes": 914487,
+      "after_bytes": 493130,
+      "removed_bytes": 421357
+    },
+    "reports/topology_pruning/r2-failures/attempt-002/rust-boundary-results.json": {
+      "before_bytes": 40294,
+      "after_bytes": 40168,
+      "removed_bytes": 126
+    },
+    "total_removed_bytes": 842966
+  },
+  "evidence_eligibility": {
+    "final_success": true,
+    "attempt_001": false,
+    "attempt_002": false
+  },
+  "preserved_result": {
+    "python_samples": 60,
+    "rust_samples": 60,
+    "t1_pairs": 20,
+    "t2_pairs": 20,
+    "rust_suite_executions": 78,
+    "final_gate": "REFINE_RUST_BOUNDARY"
+  },
+  "execution_counts": {
+    "measurement_reruns": 0,
+    "h3_api_calls": 0,
+    "api_key_uses": 0,
+    "paid_api_runs": 0,
+    "model_downloads": 0,
+    "model_loads": 0,
+    "cuda_runs": 0
+  },
+  "publication": {
+    "remote_branch": "agent/m1-p0-r2-rust-compound-runtime",
+    "superseded_remote_head": "140a49b2fb8f7f23d2b98fb6be91d5ebf6dfceb5",
+    "verified_rewrite_head": "e72cbe5c6b69220cb6be4d349d55b43ec2febbe9",
+    "update_method": "force-with-lease",
+    "plain_force_used": false
+  },
+  "retention_note": "The rewritten PR branch excludes the superseded evidence blobs from its reachable history. No claim is made that a hosting provider immediately purges unreachable objects."
+}

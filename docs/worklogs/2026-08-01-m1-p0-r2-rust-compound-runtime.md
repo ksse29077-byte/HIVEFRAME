@@ -1,0 +1,342 @@
+# 2026-08-01 — M1-P0-R2 Python Attribution and Rust Compound Runtime
+
+Status: model-free refinement verified; Draft PR published, review pending
+
+## Repository and GitHub state
+
+- PR #41: merged;
+- PR #41 merge commit and R2 base `main`:
+  `e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388`;
+- Issue #40: closed as completed;
+- R1 report, failed attempt evidence, and worklog: present on `main`;
+- R2 Issue:
+  [#42](https://github.com/ksse29077-byte/HIVEFRAME/issues/42);
+- branch: `agent/m1-p0-r2-rust-compound-runtime`;
+- original predeclaration commit:
+  `f5b333dc716ec3175cc6601c255660c95a25affd`;
+- exact Case B corrective commit:
+  `dc1656ae088377206043444d58ef2d49297c5c99`;
+- rewritten measurement-accounting and public-serialization commit:
+  `bf1b90d6c0b35a5aad3a72d6f9f3534a9792b973`;
+- rewritten final evidence commit:
+  `c1ea677d36b3c9ace09bf8d4bac7d5eea1558932`;
+- review:
+  [Draft PR #43](https://github.com/ksse29077-byte/HIVEFRAME/pull/43), open and
+  not merged.
+
+## Boundary and preserved evidence
+
+Compound Perception First remains the product direction. Mono is the Case B
+control and fallback only. R2 is not a decision to abandon compound input.
+
+Sixteen v1/R1 config, design, worklog, success, failure, and Gate artifacts
+are pinned by normalized Git-blob SHA-256 and validated before and after the
+run. No historical report, receipt, threshold, or Gate was rewritten.
+
+The only measured combinations were B/T0, B/T1, and B/T2. Each path used seed
+101, one prepared Case B input, five warm-up blocks, and twenty measured
+blocks. No new corpus, topology, or previously pruned combination was run.
+
+## Predeclared attribution
+
+The fixed stage taxonomy contains input validation, Eye contract, Eye setup,
+routing, coordinate transform, mask and view work, allocation/copy,
+observation, overlap, Fusion conversion/Fusion, SharedVisualState,
+ComputePlan, receipt, JSON, and garbage collection.
+
+Nested `time.perf_counter_ns` spans report inclusive and exclusive time. The
+empty instrumentation tree is measured separately. No timing is silently
+subtracted. Independent median subtraction is forbidden; every candidate uses
+the Mono sample in the same deterministic block.
+
+The per-block equation is:
+
+```text
+paired delta
+  = sum(exclusive stage candidate-minus-Mono deltas)
+  + signed unattributed candidate-minus-Mono remainder
+```
+
+All twenty records per candidate satisfied the identity. Per-run
+unattributed duration was nonnegative. The paired remainder may be signed.
+
+## Python result
+
+| Candidate | p50 | p95 | paired delta p50 | paired delta p95 |
+|---|---:|---:|---:|---:|
+| T0 | 19.1860 ms | 24.1589 ms | comparator | comparator |
+| T1 | 28.0736 ms | 29.5925 ms | 8.5101 ms | 9.8610 ms |
+| T2 | 29.2718 ms | 36.2261 ms | 9.6737 ms | 16.7763 ms |
+
+Instrumented paired p50 was 8.4180 ms and 9.8115 ms. The exclusive attributed
+component was 8.4231 ms and 9.8000 ms; signed unattributed remainder was
+-0.0028 ms and 0.0052 ms. Attribution ratios were 100.0606% and 99.8828%.
+The component medians need not sum to exactly 100%, although each raw block
+identity is exact.
+
+Dominant p50 stage deltas:
+
+- T1 observation: 8.4582 ms;
+- T2 observation: 7.6614 ms;
+- T2 Eye setup: 2.1263 ms;
+- every other absolute p50 stage delta: below 0.035 ms.
+
+Instrumentation calibration was 21.6 microseconds p50 and 22.2 microseconds
+p95. Each candidate allocated 16,588,800 motion-temporary bytes. Explicit
+pixel-copy call count and bytes were zero. JSON output was 1,847 bytes for T0,
+6,083 for T1, and 3,491 for T2. Receipt construction was called twice; all
+other active stages once.
+
+## Rust coarse-boundary result
+
+| Candidate | Rust core p50 | Rust core p95 | boundary p50 | Python-relative boundary change |
+|---|---:|---:|---:|---:|
+| T0 | 14.7987 ms | 16.3705 ms | 15.1676 ms | 20.94% lower |
+| T1 | 18.6532 ms | 20.2405 ms | 19.0221 ms | 32.24% lower |
+| T2 | 18.3120 ms | 19.9366 ms | 18.6809 ms | 36.18% lower |
+
+One Python wrapper handed one 16,588,800-byte packed buffer to one Rust
+subprocess. Rust internally executed all baseline, warm-up, and measured
+topologies and returned small semantic/plan/receipt JSON. There were no
+per-Eye round trips.
+
+- external process call: 1.3868794 seconds;
+- Rust internal suite: 1.3630698 seconds;
+- Python input write: 0.0043158 seconds;
+- Python output parse: 0.0006484 seconds;
+- Python wrapper total: 0.0049642 seconds;
+- Rust input read: 0.0057260 seconds;
+- Rust serialization probe: 0.0001190 seconds;
+- full wrapper/process amortization: 0.368895 ms per 78 internal executions;
+- FFI: `null/not_collected` with reason and method.
+
+The amortization is benchmark-suite scope, not a single product call.
+
+Boundary copy accounting:
+
+- Python full-buffer write: 16,588,800 bytes;
+- Rust full-buffer read copy: 16,588,800 bytes;
+- total: 33,177,600 bytes, exactly 2.0 input-buffer equivalents;
+- Rust core pixel copies: 0;
+- Rust dominant temporary motion buffer: 2,073,600 bytes per candidate;
+- Rust output file: 61,178 bytes;
+- boundary temporary files: 16,649,978 bytes.
+
+## Parity and decision
+
+T0/T1/T2 Python and Rust semantic hashes exactly matched the immutable R1
+hashes. All candidate hashes were deterministic. Copy accounting passed the
+fixed 2.0x maximum.
+
+Decision: **`REFINE_RUST_BOUNDARY`**.
+
+Rust core and suite-amortized boundary results are favorable for T1 and T2,
+but `RUST_RUNTIME_VIABLE` predeclared collected FFI evidence as mandatory.
+The current subprocess probe cannot supply it. The exact next runtime step is
+a bounded in-process shared-buffer transport under the same Case B, semantic,
+copy, and threshold contract. This is not permission to integrate a model or
+claim backend/product speedup.
+
+## Preserved ineligible attempts
+
+Attempt 001 stopped during Python warm-up before measured blocks because the
+old three-region `high` calibration identity was used. Attempt 002 produced
+60+60 samples but its aggregate omitted Python wrapper time and did not apply
+one declared threshold. Both are preserved and marked `results_eligible=false`.
+The fixes changed no taxonomy, equation, numeric threshold, transport, or
+allowed decision set.
+
+## Verification and execution counts
+
+Final model-free validation:
+
+- Python compile: passed;
+- Python unit tests: 119 passed;
+- Rust formatting check: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 9 runtime tests;
+- all 34 repository JSON files parsed;
+- all sixteen immutable v1/R1 Git-blob checks passed;
+- all forty paired T1/T2 equations and both 60-sample evidence sets passed
+  the committed evidence regression test;
+- `git diff --check`: passed;
+- local-path and credential-pattern scan of the new public artifacts: passed.
+
+The first sandboxed Python validation attempts collected all 119 tests but
+could not write inside dynamically created temporary directories. The same
+unchanged suite passed outside that filesystem sandbox. This was a validation
+environment permission failure, not a repository test failure.
+
+- H3 API calls: 0;
+- API-key uses: 0;
+- paid API runs: 0;
+- model downloads: 0;
+- model loads: 0;
+- CUDA runs: 0;
+- Wan changes: 0;
+- LTX activation: 0.
+
+## Next action
+
+Review this evidence in a Draft PR. Do not advance M0, M1, H3 admission, or
+backend integration from R2. If separately approved, predeclare one in-process
+shared-buffer boundary and replace the missing FFI metric without changing the
+Case B semantic and copy controls.
+
+## 2026-08-02 final merge-readiness review
+
+Status: **`NOT_MERGE_READY`**. Draft PR #43 remains open and draft. It was not
+marked ready and was not merged.
+
+### Verified invariants
+
+- the eligible run is bound to final premeasurement commit
+  `86db72e7947273ce2cac33a2e898f07184642600`;
+- config and executable measurement code did not change after that commit;
+- exact Case B T0/T1/T2, the eighteen-stage taxonomy, attribution equation,
+  coarse single-subprocess Rust boundary, copy policy, numeric thresholds, and
+  decision rules match the final predeclared artifact;
+- Python contains twenty same-block paired records for each of T1 and T2;
+  independent median subtraction is not used;
+- all forty raw paired equations hold, including exclusive-stage sums and the
+  signed candidate-minus-Mono unattributed remainder;
+- empty-tree instrumentation overhead remains separately reported with
+  `subtracted_from_results=false`;
+- Python, Rust, and immutable R1 semantic hashes match for T0/T1/T2;
+- all Rust p50/p95 summaries recompute from twenty samples per candidate;
+- the declared execution count is 78: three baseline executions plus three
+  candidates times five warm-ups and twenty measured blocks;
+- recomputed suite amortization is `0.0003688948717948713` seconds per internal
+  execution, and each boundary-inclusive p50 equals core p50 plus that value;
+- FFI remains `null/not_collected` with reason and method;
+- boundary copies recompute to 33,177,600 bytes, exactly 2.0 input buffers;
+  boundary temporary bytes recompute to 16,649,978 bytes;
+- Compound Perception First remains explicit, Mono remains only comparator and
+  safety fallback, and `REFINE_RUST_BOUNDARY` does not authorize Mono-first or
+  abandonment of compound input;
+- all sixteen v1/R1 Git-blob checks pass;
+- both failed attempts remain in separate directories with
+  `results_eligible=false`; they are not read as successful evidence;
+- no binary PR artifact, credential, API key, model load, or CUDA execution was
+  found or performed;
+- before this review-only worklog commit, local and remote head were both
+  `5c2ca5a529dc00cb63d1004c1203ae4ac99ff879`; `origin/main` remained
+  `e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388`;
+- GitHub reported zero conversation comments, zero reviews, zero review
+  threads, zero unresolved threads, and no merge conflict.
+
+The arithmetic audit executed 350 assertions with zero failures. Python
+compile and all 119 tests passed. Rust format, locked workspace check, and
+locked workspace tests passed, including nine runtime tests. All 34 repository
+JSON files parsed and `git diff --check` passed.
+
+### Merge blockers
+
+1. **Public artifacts contain local absolute paths.** Both
+   `reports/topology_pruning/r2/rust-boundary-results.json` and the attempt-002
+   counterpart persist the local executable path and generated temporary input
+   and output paths. The values expose a user-specific Windows path and a local
+   temporary directory. This violates the public-artifact path policy even
+   though no credential is present.
+2. **Large JSON repeats invariant semantic payloads per timing sample.** Each
+   940-KB Python attribution file embeds the same candidate semantic result
+   twenty times. In each file, compact semantic payload totals 228,420 bytes
+   while the three unique candidate payloads total 11,421 bytes: 216,999 bytes
+   are repeat copies. The success and attempt-002 files together repeat at
+   least 433,998 compact semantic bytes, before counting repeated stage
+   metadata. Raw success and failed evidence remain distinct and must not be
+   mixed, but their invariant payloads should be normalized rather than copied
+   into every timing record.
+
+The complete R2 success/failure evidence tree is 1,994,573 working-tree bytes.
+This size alone is not the blocker; the blockers are the public local paths and
+demonstrably invariant per-sample duplication.
+
+### Required follow-up before another merge-readiness review
+
+- replace local command paths in both tracked Rust result files with stable,
+  documented logical placeholders or repository-relative identities without
+  changing measured values;
+- normalize invariant semantic results and static stage metadata to a
+  top-level candidate dictionary while retaining all twenty timing/counter
+  samples and both failure eligibility records;
+- record the lossless evidence transform, rerun the full model-free checks,
+  and request another merge-readiness review.
+
+## 2026-08-02 public-evidence history rewrite
+
+Status: evidence rewrite published; final merge-readiness review pending.
+
+### Why the rewrite boundary changed
+
+The earlier instruction to retain the original final premeasurement SHA was
+withdrawn after object inspection proved that attempt-002 first introduced the
+private execution-path and repeated semantic-payload blobs in that same
+commit. Keeping that SHA while excluding those blobs from reachable PR/main
+history is impossible because a commit identity includes its tree.
+
+The parent `dc1656ae088377206043444d58ef2d49297c5c99` remains unchanged. The
+original commit and all later PR commits were rebuilt as follows:
+
+| Superseded commit | Logical replacement |
+|---|---|
+| `86db72e7947273ce2cac33a2e898f07184642600` | `bf1b90d6c0b35a5aad3a72d6f9f3534a9792b973` |
+| `f0a7e947c9a767a14485d94856cfb782a918bcfb` | `c1ea677d36b3c9ace09bf8d4bac7d5eea1558932` |
+| `5c2ca5a529dc00cb63d1004c1203ae4ac99ff879` | `b55535af4eaad19825fa6a66b2dd80ac7b077c87` |
+| `140a49b2fb8f7f23d2b98fb6be91d5ebf6dfceb5` | `3d3ba4bb7294272ac5ca451e20ed024f7604e8a9` |
+
+A local-only safety ref retains the superseded branch head for audit and was
+not published. No main branch, other branch, or tag was modified.
+
+### Sanitation and normalization
+
+- Rust executable and handoff paths are serialized only as the declared
+  logical placeholders; stdout and stderr use the same replacement map.
+- The public command is a template, not the private executed command.
+- Python stores exactly one semantic payload per candidate/hash. Sixty samples
+  retain `semantic_ref` and `semantic_hash`; no sample embeds the full payload.
+- Success and attempt-002 use the same structure. Attempt 001 and attempt 002
+  remain separate and `results_eligible=false`; only the final result is
+  eligible evidence.
+- Sanitation runs after timed scopes. Measurement reruns: 0.
+
+### Logical equivalence and size
+
+The before/after canonical digest is
+`3fce04dae5f822a2000eb89b25920ab09df8f7fc968a5bf429fc796af83fc3ec`.
+It covers success and attempt-002 Python/Rust evidence, predeclared and parity
+records, failure metadata, and decision reports while normalizing only the
+approved structural differences. Both sides match.
+
+Git-blob bytes changed as follows:
+
+| Artifact | Before | After | Removed |
+|---|---:|---:|---:|
+| final Python attribution | 914,429 | 493,072 | 421,357 |
+| final Rust boundary | 40,346 | 40,220 | 126 |
+| attempt-002 Python attribution | 914,487 | 493,130 | 421,357 |
+| attempt-002 Rust boundary | 40,294 | 40,168 | 126 |
+
+Total removed: 842,966 Git-blob bytes. T0/T1/T2 hashes, all 60+60 final
+samples, all 60+60 attempt-002 samples, twenty T1 pairs, twenty T2 pairs,
+stage timings, percentiles, signed remainder, attribution, Rust core and
+boundary values, 78-suite amortization, copy/temporary bytes, failure reasons,
+and final `REFINE_RUST_BOUNDARY` Gate are unchanged.
+
+The machine-readable audit is
+`reports/topology_pruning/r2/evidence-equivalence.json`. The rewritten branch
+will be published only with `--force-with-lease`. This record does not claim
+that a hosting provider immediately purges unreachable objects.
+
+H3 API calls: 0. API-key uses: 0. Paid runs: 0. Model downloads: 0. Model
+loads: 0. CUDA runs: 0.
+
+### Publication verification
+
+The PR branch was updated from the superseded head
+`140a49b2fb8f7f23d2b98fb6be91d5ebf6dfceb5` to the verified rewrite head
+`e72cbe5c6b69220cb6be4d349d55b43ec2febbe9` using
+`--force-with-lease` with the superseded head as the explicit lease. Plain
+`--force` was not used. Local and remote heads matched at that publication
+checkpoint. This final publication note is a documentation-only descendant;
+its resulting head is verified externally after publication.

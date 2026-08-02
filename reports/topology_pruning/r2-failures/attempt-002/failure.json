@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0",
+  "run_kind": "m1_p0_r2_rust_compound_runtime",
+  "status": "failed_post_measurement_accounting_validation",
+  "premeasurement_commit": "dc1656ae088377206043444d58ef2d49297c5c99",
+  "python_measured_samples_completed": 60,
+  "rust_measured_samples_completed": 60,
+  "results_eligible": false,
+  "failure_stage": "boundary_and_gate_accounting_review",
+  "provisional_decision": "REFINE_RUST_BOUNDARY",
+  "cause": "The provisional boundary-inclusive aggregate omitted Python input-write and output-parse wrapper time, and the declared maximum unattributed percentage was not evaluated by the decision function.",
+  "correction_scope": "Include the already-measured full Python wrapper in boundary amortization and enforce the already-declared unattributed threshold. Stage taxonomy, instrumentation, attribution equation, Rust transport, copy limit, numeric thresholds, and decision outcomes are unchanged.",
+  "h3_api_calls": 0,
+  "api_key_uses": 0,
+  "paid_api_runs": 0,
+  "model_downloads": 0,
+  "model_loads": 0,
+  "cuda_runs": 0
+}

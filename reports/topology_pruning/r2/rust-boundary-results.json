@@ -1,0 +1,1372 @@
+{
+  "boundary": {
+    "amortized_boundary_seconds_per_execution": 0.0003688948717948718,
+    "ffi_call_seconds": {
+      "method": "requires a separately admitted in-process shared-buffer boundary",
+      "reason": "R2 uses one coarse subprocess batch rather than PyO3 or a C ABI.",
+      "status": "not_collected",
+      "unit": "seconds",
+      "value": null
+    },
+    "pipeline_executions_in_process": 78,
+    "process_call_seconds": 1.3868794,
+    "python_input_write_seconds": 0.0043158,
+    "python_output_parse_seconds": 0.0006484,
+    "python_wrapper_seconds": 0.0049642,
+    "rust_input_read_seconds": 0.005726,
+    "rust_internal_suite_seconds": 1.3630698,
+    "rust_serialization_probe_seconds": 0.000119,
+    "scope_note": "benchmark-suite amortization; not a single-call product latency claim"
+  },
+  "command_scope": "sanitized public template; private execution paths are not serialized",
+  "command_template": [
+    "<rust-binary>",
+    "r2-batch",
+    "--profile",
+    "case-b-high-resolution-local-change",
+    "--input",
+    "<temporary-input>",
+    "--output",
+    "<temporary-output>",
+    "--warmups",
+    "5",
+    "--repetitions",
+    "20",
+    "--seed",
+    "101"
+  ],
+  "copy_accounting": {
+    "copied_input_multiples": 2.0,
+    "input_bytes": 16588800,
+    "python_input_file_write_bytes": 16588800,
+    "rust_input_file_read_copy_bytes": 16588800,
+    "rust_output_file_bytes": 61178,
+    "rust_output_serialization_probe_bytes": 37774,
+    "temporary_boundary_bytes": 16649978,
+    "total_boundary_copied_bytes": 33177600
+  },
+  "implementation": "rust_coarse_process_batch_v0",
+  "run_kind": "m1_p0_r2_rust_compound_runtime",
+  "samples": [
+    {
+      "block_index": 0,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3200,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 12800,
+        "observation_ns": 14199900,
+        "receipt_metadata_ns": 18400,
+        "routing_ns": 4500,
+        "total_ns": 20710300
+      },
+      "order_index": 0,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 0,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2800,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 3200,
+        "observation_ns": 10462000,
+        "receipt_metadata_ns": 10100,
+        "routing_ns": 900,
+        "total_ns": 16932400
+      },
+      "order_index": 1,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 0,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3300,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 5900,
+        "observation_ns": 8232700,
+        "receipt_metadata_ns": 14600,
+        "routing_ns": 5161000,
+        "total_ns": 19936600
+      },
+      "order_index": 2,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 1,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 6300,
+        "observation_ns": 11846600,
+        "receipt_metadata_ns": 14300,
+        "routing_ns": 6600,
+        "total_ns": 18327900
+      },
+      "order_index": 0,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 1,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 3200,
+        "observation_ns": 6301900,
+        "receipt_metadata_ns": 11800,
+        "routing_ns": 4831400,
+        "total_ns": 17592700
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 1,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2100,
+        "observation_ns": 8772100,
+        "receipt_metadata_ns": 9100,
+        "routing_ns": 600,
+        "total_ns": 15209800
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 2,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 3100,
+        "observation_ns": 6304900,
+        "receipt_metadata_ns": 12600,
+        "routing_ns": 4846600,
+        "total_ns": 17594000
+      },
+      "order_index": 0,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 2,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 4900,
+        "observation_ns": 11503700,
+        "receipt_metadata_ns": 14000,
+        "routing_ns": 4600,
+        "total_ns": 17983500
+      },
+      "order_index": 1,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 2,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2200,
+        "observation_ns": 7936400,
+        "receipt_metadata_ns": 9600,
+        "routing_ns": 800,
+        "total_ns": 14456000
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 3,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2600,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 5300,
+        "observation_ns": 11527000,
+        "receipt_metadata_ns": 15600,
+        "routing_ns": 4900,
+        "total_ns": 17962400
+      },
+      "order_index": 0,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 3,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2800,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 5400,
+        "observation_ns": 6859100,
+        "receipt_metadata_ns": 12600,
+        "routing_ns": 5108500,
+        "total_ns": 18430700
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 3,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2400,
+        "observation_ns": 8210600,
+        "receipt_metadata_ns": 9200,
+        "routing_ns": 700,
+        "total_ns": 14687800
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 4,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2300,
+        "coordinate_transform_ns": 400,
+        "fusion_ns": 2800,
+        "observation_ns": 8790100,
+        "receipt_metadata_ns": 8000,
+        "routing_ns": 500,
+        "total_ns": 15301400
+      },
+      "order_index": 0,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 4,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2600,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 4400,
+        "observation_ns": 7373400,
+        "receipt_metadata_ns": 10800,
+        "routing_ns": 5030200,
+        "total_ns": 18931000
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 4,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3500,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 8100,
+        "observation_ns": 12712700,
+        "receipt_metadata_ns": 16600,
+        "routing_ns": 1900,
+        "total_ns": 19215200
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 5,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 7500,
+        "observation_ns": 12770100,
+        "receipt_metadata_ns": 16600,
+        "routing_ns": 6400,
+        "total_ns": 19348400
+      },
+      "order_index": 0,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 5,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2600,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 4800,
+        "observation_ns": 6831600,
+        "receipt_metadata_ns": 13400,
+        "routing_ns": 4894800,
+        "total_ns": 18210400
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 5,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2400,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 3400,
+        "observation_ns": 8668700,
+        "receipt_metadata_ns": 10200,
+        "routing_ns": 500,
+        "total_ns": 15188700
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 6,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3000,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 5300,
+        "observation_ns": 7163100,
+        "receipt_metadata_ns": 14100,
+        "routing_ns": 5178600,
+        "total_ns": 18856000
+      },
+      "order_index": 0,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 6,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3100,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2100,
+        "observation_ns": 8485200,
+        "receipt_metadata_ns": 10800,
+        "routing_ns": 500,
+        "total_ns": 14981800
+      },
+      "order_index": 1,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 6,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 4500,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 10400,
+        "observation_ns": 13184400,
+        "receipt_metadata_ns": 16800,
+        "routing_ns": 1700,
+        "total_ns": 19815100
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 7,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2400,
+        "observation_ns": 9722100,
+        "receipt_metadata_ns": 11200,
+        "routing_ns": 500,
+        "total_ns": 16370500
+      },
+      "order_index": 0,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 7,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 4800,
+        "observation_ns": 7190100,
+        "receipt_metadata_ns": 13400,
+        "routing_ns": 5366400,
+        "total_ns": 19312800
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 7,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3100,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 6800,
+        "observation_ns": 12989800,
+        "receipt_metadata_ns": 15300,
+        "routing_ns": 3400,
+        "total_ns": 19561400
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 8,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 4100,
+        "observation_ns": 7114700,
+        "receipt_metadata_ns": 13100,
+        "routing_ns": 5029600,
+        "total_ns": 19034900
+      },
+      "order_index": 0,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 8,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2400,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 3400,
+        "observation_ns": 8441500,
+        "receipt_metadata_ns": 10200,
+        "routing_ns": 1300,
+        "total_ns": 15355600
+      },
+      "order_index": 1,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 8,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 5200,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 9100,
+        "observation_ns": 12025700,
+        "receipt_metadata_ns": 31300,
+        "routing_ns": 6200,
+        "total_ns": 18605300
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 9,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2800,
+        "coordinate_transform_ns": 200,
+        "fusion_ns": 5000,
+        "observation_ns": 7057300,
+        "receipt_metadata_ns": 12900,
+        "routing_ns": 4736800,
+        "total_ns": 18312000
+      },
+      "order_index": 0,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 9,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3200,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 7300,
+        "observation_ns": 12646700,
+        "receipt_metadata_ns": 15400,
+        "routing_ns": 5100,
+        "total_ns": 19130200
+      },
+      "order_index": 1,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 9,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2800,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2300,
+        "observation_ns": 8321200,
+        "receipt_metadata_ns": 10200,
+        "routing_ns": 1000,
+        "total_ns": 14770500
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 10,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2800,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2400,
+        "observation_ns": 7899400,
+        "receipt_metadata_ns": 10300,
+        "routing_ns": 300,
+        "total_ns": 14331100
+      },
+      "order_index": 0,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 10,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 5800,
+        "observation_ns": 11748300,
+        "receipt_metadata_ns": 16900,
+        "routing_ns": 2100,
+        "total_ns": 18214900
+      },
+      "order_index": 1,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 10,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2400,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 4500,
+        "observation_ns": 6848900,
+        "receipt_metadata_ns": 12500,
+        "routing_ns": 4729800,
+        "total_ns": 18473400
+      },
+      "order_index": 2,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 11,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 4800,
+        "observation_ns": 6672000,
+        "receipt_metadata_ns": 11500,
+        "routing_ns": 4739400,
+        "total_ns": 17909800
+      },
+      "order_index": 0,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 11,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2600,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2500,
+        "observation_ns": 8331200,
+        "receipt_metadata_ns": 10600,
+        "routing_ns": 500,
+        "total_ns": 14798700
+      },
+      "order_index": 1,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 11,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3400,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 8600,
+        "observation_ns": 12731200,
+        "receipt_metadata_ns": 15400,
+        "routing_ns": 2000,
+        "total_ns": 19220900
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 12,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3300,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 6400,
+        "observation_ns": 12140000,
+        "receipt_metadata_ns": 16100,
+        "routing_ns": 1700,
+        "total_ns": 18612200
+      },
+      "order_index": 0,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 12,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 3500,
+        "observation_ns": 6590600,
+        "receipt_metadata_ns": 12600,
+        "routing_ns": 4848900,
+        "total_ns": 18082400
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 12,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2900,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2600,
+        "observation_ns": 7951000,
+        "receipt_metadata_ns": 10200,
+        "routing_ns": 900,
+        "total_ns": 14432800
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 13,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3100,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 6000,
+        "observation_ns": 12179800,
+        "receipt_metadata_ns": 16100,
+        "routing_ns": 3000,
+        "total_ns": 18663800
+      },
+      "order_index": 0,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 13,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2200,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 4500,
+        "observation_ns": 6972600,
+        "receipt_metadata_ns": 12800,
+        "routing_ns": 4760900,
+        "total_ns": 18323800
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 13,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 1700,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 2800,
+        "observation_ns": 8632400,
+        "receipt_metadata_ns": 7000,
+        "routing_ns": 600,
+        "total_ns": 15052800
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 14,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 1600,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 4100,
+        "observation_ns": 12029500,
+        "receipt_metadata_ns": 13000,
+        "routing_ns": 1500,
+        "total_ns": 18431300
+      },
+      "order_index": 0,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 14,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2300,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2700,
+        "observation_ns": 6614500,
+        "receipt_metadata_ns": 10400,
+        "routing_ns": 4860200,
+        "total_ns": 17904900
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 14,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 1600,
+        "observation_ns": 8060800,
+        "receipt_metadata_ns": 8700,
+        "routing_ns": 600,
+        "total_ns": 15081900
+      },
+      "order_index": 2,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 15,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 1700,
+        "observation_ns": 7959500,
+        "receipt_metadata_ns": 9100,
+        "routing_ns": 500,
+        "total_ns": 14397500
+      },
+      "order_index": 0,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 15,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2300,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 2900,
+        "observation_ns": 6548800,
+        "receipt_metadata_ns": 11600,
+        "routing_ns": 4818100,
+        "total_ns": 17825100
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 15,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3000,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 4900,
+        "observation_ns": 11618900,
+        "receipt_metadata_ns": 14800,
+        "routing_ns": 3500,
+        "total_ns": 18232700
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 16,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2100,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 1400,
+        "observation_ns": 7850300,
+        "receipt_metadata_ns": 8400,
+        "routing_ns": 300,
+        "total_ns": 14293600
+      },
+      "order_index": 0,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 16,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3000,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 5600,
+        "observation_ns": 12174600,
+        "receipt_metadata_ns": 18100,
+        "routing_ns": 1700,
+        "total_ns": 18653200
+      },
+      "order_index": 1,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 16,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 3700,
+        "observation_ns": 7040200,
+        "receipt_metadata_ns": 13100,
+        "routing_ns": 5547300,
+        "total_ns": 19024600
+      },
+      "order_index": 2,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 17,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2300,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 2400,
+        "observation_ns": 8061800,
+        "receipt_metadata_ns": 11500,
+        "routing_ns": 800,
+        "total_ns": 14526300
+      },
+      "order_index": 0,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 17,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2500,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 4500,
+        "observation_ns": 11326400,
+        "receipt_metadata_ns": 15200,
+        "routing_ns": 4800,
+        "total_ns": 17829700
+      },
+      "order_index": 1,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 17,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2200,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 3400,
+        "observation_ns": 8889600,
+        "receipt_metadata_ns": 12200,
+        "routing_ns": 4707200,
+        "total_ns": 20043300
+      },
+      "order_index": 2,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 18,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2100,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 4800,
+        "observation_ns": 6840700,
+        "receipt_metadata_ns": 13100,
+        "routing_ns": 4647600,
+        "total_ns": 17919600
+      },
+      "order_index": 0,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 18,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2300,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 2600,
+        "observation_ns": 8207400,
+        "receipt_metadata_ns": 9900,
+        "routing_ns": 400,
+        "total_ns": 14621300
+      },
+      "order_index": 1,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 18,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3400,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 7500,
+        "observation_ns": 12715500,
+        "receipt_metadata_ns": 17400,
+        "routing_ns": 4600,
+        "total_ns": 19202900
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    },
+    {
+      "block_index": 19,
+      "candidate_id": "T0",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 45619200,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 1700,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 1000,
+        "observation_ns": 8326400,
+        "receipt_metadata_ns": 9500,
+        "routing_ns": 700,
+        "total_ns": 14813200
+      },
+      "order_index": 0,
+      "semantic_hash": "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61",
+      "topology": "mono_1x1"
+    },
+    {
+      "block_index": 19,
+      "candidate_id": "T2",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62304512,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 2700,
+        "coordinate_transform_ns": 100,
+        "fusion_ns": 4000,
+        "observation_ns": 6606200,
+        "receipt_metadata_ns": 12700,
+        "routing_ns": 5109800,
+        "total_ns": 18225700
+      },
+      "order_index": 1,
+      "semantic_hash": "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22",
+      "topology": "motion_focused"
+    },
+    {
+      "block_index": 19,
+      "candidate_id": "T1",
+      "counters": {
+        "bytes_copied": 0,
+        "logical_bytes_read": 62208000,
+        "temporary_buffer_bytes": 2073600
+      },
+      "durations_ns": {
+        "compute_plan_ns": 3600,
+        "coordinate_transform_ns": 0,
+        "fusion_ns": 8500,
+        "observation_ns": 13707700,
+        "receipt_metadata_ns": 18800,
+        "routing_ns": 4300,
+        "total_ns": 20240500
+      },
+      "order_index": 2,
+      "semantic_hash": "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5",
+      "topology": "uniform_2x2"
+    }
+  ],
+  "schema_version": "0.1.0",
+  "stderr": "",
+  "stdout": "{\n  \"cuda_used\": false,\n  \"kind\": \"m1_p0_r2_rust_compound_runtime\",\n  \"model_loaded\": false,\n  \"output\": \"rust-r2.json\",\n  \"status\": \"succeeded\",\n  \"transport\": \"single_subprocess_batch_v0\"\n}\n",
+  "summaries": {
+    "T0": {
+      "benchmark_amortized_boundary_inclusive_p50_seconds": 0.015167594871794872,
+      "core_copied_bytes": [
+        0
+      ],
+      "core_p50_seconds": 0.0147987,
+      "core_p95_seconds": 0.0163705,
+      "logical_bytes_read": [
+        45619200
+      ],
+      "samples": 20,
+      "semantic_hashes": [
+        "ceb0895b275e0f9d98ee089791677f928324057826eb0783c3c0199513f2be61"
+      ],
+      "temporary_buffer_bytes": [
+        2073600
+      ]
+    },
+    "T1": {
+      "benchmark_amortized_boundary_inclusive_p50_seconds": 0.019022094871794872,
+      "core_copied_bytes": [
+        0
+      ],
+      "core_p50_seconds": 0.0186532,
+      "core_p95_seconds": 0.0202405,
+      "logical_bytes_read": [
+        62208000
+      ],
+      "samples": 20,
+      "semantic_hashes": [
+        "6fbc184b2a237f926808725a07554f87c4167e2272993fd8e3e3c27a58dbd9c5"
+      ],
+      "temporary_buffer_bytes": [
+        2073600
+      ]
+    },
+    "T2": {
+      "benchmark_amortized_boundary_inclusive_p50_seconds": 0.01868089487179487,
+      "core_copied_bytes": [
+        0
+      ],
+      "core_p50_seconds": 0.018312,
+      "core_p95_seconds": 0.0199366,
+      "logical_bytes_read": [
+        62304512
+      ],
+      "samples": 20,
+      "semantic_hashes": [
+        "aa7d4e285d7a95883e333dcc53d1687022bf907cd3d8e90d4fea1c0ffc748d22"
+      ],
+      "temporary_buffer_bytes": [
+        2073600
+      ]
+    }
+  },
+  "transport": "single_subprocess_batch_v0"
+}

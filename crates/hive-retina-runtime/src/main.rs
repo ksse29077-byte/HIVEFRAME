@@ -1,9 +1,11 @@
 use hive_retina_runtime::{
-    benchmark_case, benchmark_suite, semantic_hash, InputProfile, Topology, TOPOLOGIES,
+    benchmark_case, benchmark_r2_batch, benchmark_suite, semantic_hash, InputProfile, PixelBox,
+    Topology, TOPOLOGIES,
 };
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use std::time::Instant;
 
 fn value_after(args: &[String], name: &str) -> Result<String, String> {
     let index = args
@@ -40,6 +42,9 @@ Usage:
   hive-retina-runtime semantic --profile PROFILE --topology TOPOLOGY [--seed N]
   hive-retina-runtime suite --profiles LIST --topologies LIST \\
     --warmups N --repetitions N --output FILE [--seed N]
+  hive-retina-runtime r2-batch --profile case-b-high-resolution-local-change \\
+    --input FILE --output FILE \\
+    --warmups 5 --repetitions 20 [--seed 101]
 
 Profiles: low, medium, high, extended
 Topologies: {}",
@@ -116,6 +121,89 @@ fn suite_command(args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
+fn r2_batch_command(args: &[String]) -> Result<(), String> {
+    let profile_name = optional_value(args, "--profile", "case-b-high-resolution-local-change")?;
+    if profile_name != "case-b-high-resolution-local-change" {
+        return Err("R2 is restricted to the existing Case B high profile.".to_string());
+    }
+    let seed = optional_value(args, "--seed", "101")?
+        .parse::<u64>()
+        .map_err(|error| format!("Invalid seed: {error}"))?;
+    let warmups = optional_value(args, "--warmups", "5")?
+        .parse::<usize>()
+        .map_err(|error| format!("Invalid warm-up count: {error}"))?;
+    let repetitions = optional_value(args, "--repetitions", "20")?
+        .parse::<usize>()
+        .map_err(|error| format!("Invalid repetition count: {error}"))?;
+    let input = PathBuf::from(value_after(args, "--input")?);
+    let output = PathBuf::from(value_after(args, "--output")?);
+    if output.exists() {
+        return Err(format!(
+            "Output already exists; overwrite is forbidden: {}",
+            output.display()
+        ));
+    }
+    let input_started = Instant::now();
+    let sequence =
+        fs::read(&input).map_err(|error| format!("Cannot read {}: {error}", input.display()))?;
+    let input_read_ns = input_started.elapsed().as_nanos();
+    let profile = InputProfile::new(
+        &profile_name,
+        1920,
+        1080,
+        8,
+        seed,
+        vec![PixelBox::new(968, 238, 72, 84)?],
+    )?;
+    let report = benchmark_r2_batch(&profile, &sequence, warmups, repetitions)?;
+    let serialization_started = Instant::now();
+    let serialization_probe = serde_json::to_vec(&report)
+        .map_err(|error| format!("Cannot serialize R2 probe report: {error}"))?;
+    let serialization_probe_ns = serialization_started.elapsed().as_nanos();
+    let envelope = serde_json::json!({
+        "schema_version": "0.1.0",
+        "run_kind": "m1_p0_r2_rust_compound_runtime",
+        "transport": "single_subprocess_batch_v0",
+        "report": report,
+        "boundary": {
+            "input_handoffs": 1,
+            "input_read_ns": input_read_ns,
+            "input_read_bytes": sequence.len(),
+            "input_copy_bytes": sequence.len(),
+            "serialization_probe_ns": serialization_probe_ns,
+            "serialization_probe_bytes": serialization_probe.len(),
+            "ffi_call_seconds": {
+                "value": null,
+                "unit": "seconds",
+                "status": "not_collected",
+                "reason": "R2 uses one coarse subprocess batch rather than PyO3 or a C ABI.",
+                "method": "requires a separately admitted in-process shared-buffer boundary"
+            }
+        }
+    });
+    let encoded = serde_json::to_string_pretty(&envelope)
+        .map_err(|error| format!("Cannot serialize R2 envelope: {error}"))?;
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent)
+            .map_err(|error| format!("Cannot create output parent: {error}"))?;
+    }
+    fs::write(&output, format!("{encoded}\n"))
+        .map_err(|error| format!("Cannot write {}: {error}", output.display()))?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&serde_json::json!({
+            "status": "succeeded",
+            "kind": "m1_p0_r2_rust_compound_runtime",
+            "transport": "single_subprocess_batch_v0",
+            "model_loaded": false,
+            "cuda_used": false,
+            "output": output.file_name().and_then(|name| name.to_str()),
+        }))
+        .map_err(|error| format!("Cannot serialize R2 status: {error}"))?
+    );
+    Ok(())
+}
+
 fn run() -> Result<(), String> {
     let args = env::args().skip(1).collect::<Vec<_>>();
     let Some(command) = args.first().map(String::as_str) else {
@@ -125,6 +213,7 @@ fn run() -> Result<(), String> {
     match command {
         "semantic" => semantic_command(&args[1..]),
         "suite" => suite_command(&args[1..]),
+        "r2-batch" => r2_batch_command(&args[1..]),
         "--help" | "-h" | "help" => {
             print_help();
             Ok(())
