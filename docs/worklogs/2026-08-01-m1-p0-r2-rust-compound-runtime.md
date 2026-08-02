@@ -182,3 +182,83 @@ Review this evidence in a Draft PR. Do not advance M0, M1, H3 admission, or
 backend integration from R2. If separately approved, predeclare one in-process
 shared-buffer boundary and replace the missing FFI metric without changing the
 Case B semantic and copy controls.
+
+## 2026-08-02 final merge-readiness review
+
+Status: **`NOT_MERGE_READY`**. Draft PR #43 remains open and draft. It was not
+marked ready and was not merged.
+
+### Verified invariants
+
+- the eligible run is bound to final premeasurement commit
+  `86db72e7947273ce2cac33a2e898f07184642600`;
+- config and executable measurement code did not change after that commit;
+- exact Case B T0/T1/T2, the eighteen-stage taxonomy, attribution equation,
+  coarse single-subprocess Rust boundary, copy policy, numeric thresholds, and
+  decision rules match the final predeclared artifact;
+- Python contains twenty same-block paired records for each of T1 and T2;
+  independent median subtraction is not used;
+- all forty raw paired equations hold, including exclusive-stage sums and the
+  signed candidate-minus-Mono unattributed remainder;
+- empty-tree instrumentation overhead remains separately reported with
+  `subtracted_from_results=false`;
+- Python, Rust, and immutable R1 semantic hashes match for T0/T1/T2;
+- all Rust p50/p95 summaries recompute from twenty samples per candidate;
+- the declared execution count is 78: three baseline executions plus three
+  candidates times five warm-ups and twenty measured blocks;
+- recomputed suite amortization is `0.0003688948717948713` seconds per internal
+  execution, and each boundary-inclusive p50 equals core p50 plus that value;
+- FFI remains `null/not_collected` with reason and method;
+- boundary copies recompute to 33,177,600 bytes, exactly 2.0 input buffers;
+  boundary temporary bytes recompute to 16,649,978 bytes;
+- Compound Perception First remains explicit, Mono remains only comparator and
+  safety fallback, and `REFINE_RUST_BOUNDARY` does not authorize Mono-first or
+  abandonment of compound input;
+- all sixteen v1/R1 Git-blob checks pass;
+- both failed attempts remain in separate directories with
+  `results_eligible=false`; they are not read as successful evidence;
+- no binary PR artifact, credential, API key, model load, or CUDA execution was
+  found or performed;
+- before this review-only worklog commit, local and remote head were both
+  `5c2ca5a529dc00cb63d1004c1203ae4ac99ff879`; `origin/main` remained
+  `e5bbaa751d7c449dd0c5a7ad3b7fff18bd661388`;
+- GitHub reported zero conversation comments, zero reviews, zero review
+  threads, zero unresolved threads, and no merge conflict.
+
+The arithmetic audit executed 350 assertions with zero failures. Python
+compile and all 119 tests passed. Rust format, locked workspace check, and
+locked workspace tests passed, including nine runtime tests. All 34 repository
+JSON files parsed and `git diff --check` passed.
+
+### Merge blockers
+
+1. **Public artifacts contain local absolute paths.** Both
+   `reports/topology_pruning/r2/rust-boundary-results.json` and the attempt-002
+   counterpart persist the local executable path and generated temporary input
+   and output paths. The values expose a user-specific Windows path and a local
+   temporary directory. This violates the public-artifact path policy even
+   though no credential is present.
+2. **Large JSON repeats invariant semantic payloads per timing sample.** Each
+   940-KB Python attribution file embeds the same candidate semantic result
+   twenty times. In each file, compact semantic payload totals 228,420 bytes
+   while the three unique candidate payloads total 11,421 bytes: 216,999 bytes
+   are repeat copies. The success and attempt-002 files together repeat at
+   least 433,998 compact semantic bytes, before counting repeated stage
+   metadata. Raw success and failed evidence remain distinct and must not be
+   mixed, but their invariant payloads should be normalized rather than copied
+   into every timing record.
+
+The complete R2 success/failure evidence tree is 1,994,573 working-tree bytes.
+This size alone is not the blocker; the blockers are the public local paths and
+demonstrably invariant per-sample duplication.
+
+### Required follow-up before another merge-readiness review
+
+- replace local command paths in both tracked Rust result files with stable,
+  documented logical placeholders or repository-relative identities without
+  changing measured values;
+- normalize invariant semantic results and static stage metadata to a
+  top-level candidate dictionary while retaining all twenty timing/counter
+  samples and both failure eligibility records;
+- record the lossless evidence transform, rerun the full model-free checks,
+  and request another merge-readiness review.

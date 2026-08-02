@@ -456,6 +456,33 @@ runs were all 0. Wan and R1 evidence remained unchanged; LTX stayed inactive.
 
 ---
 
+## 2026-08-02 — PR #43 final merge-readiness review
+
+PR #43 remains draft and was not merged or marked ready. The predeclared Case
+B scope, eighteen-stage taxonomy, attribution equation, Rust boundary,
+thresholds, paired arithmetic, semantic parity, 78-execution amortization,
+copy accounting, Compound Perception First direction, sixteen immutable Git
+blobs, and failed-attempt separation all passed review. The arithmetic audit
+ran 350 assertions with zero failures; 119 Python tests, Rust format/check/test
+including nine runtime tests, 34 JSON parses, and `git diff --check` passed.
+GitHub reported zero unresolved review threads and no merge conflict.
+
+Decision: **`NOT_MERGE_READY`**. Two public-artifact blockers remain:
+
+- the success and attempt-002 Rust result JSON files contain user-specific
+  local executable and temporary absolute paths;
+- each success/attempt-002 Python attribution JSON repeats each of three
+  invariant semantic payloads twenty times, producing at least 433,998 compact
+  bytes of avoidable duplicate semantic data across the two files.
+
+No evidence value was rewritten during this review. Required remediation and
+the full audit are recorded in
+[`worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md`](worklogs/2026-08-01-m1-p0-r2-rust-compound-runtime.md).
+
+Model loads: 0. CUDA runs: 0. H3 API calls: 0. API-key uses: 0.
+
+---
+
 ## Entry template
 
 ```markdown
