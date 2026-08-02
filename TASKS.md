@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-01
+Status date: 2026-08-02
 
 ## Status legend
 
@@ -52,7 +52,8 @@ scopes remain outstanding.
 
 ## M1-P0 — Analytical Topology Pre-Gate
 
-Overall pre-gate status: `verified`; decision `REFINE_COST_MODEL`.
+Overall pre-gate status: `done`; final bounded decision
+`RUST_CONTROL_PLANE_ADMITTED`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
@@ -120,13 +121,13 @@ Overall refinement status: `verified`; decision `RUST_CONTROL_PLANE_ADMITTED`.
 | Execute R3 measurement | `verified` | 30 paired blocks per candidate; T1/T2 p50 lower by 31.21%/35.98% |
 | Verify shared-buffer safety | `verified` | parity 100%; input copies, subprocesses, temp files, and per-Eye calls are zero |
 | Decide R3 | `verified` | `RUST_CONTROL_PLANE_ADMITTED`; 1,348 independent audit assertions pass |
-| Publish Draft PR | `pending` | do not mark ready or merge automatically |
+| Publish and merge R3 | `published` | Issue #44 closed; [PR #45](https://github.com/ksse29077-byte/HIVEFRAME/pull/45) merged at `156d955...` |
 
 R3 is a model-free control-plane experiment. It cannot close M0 or M1 and
 cannot claim real-video, model, quality, or product speedup. Compound
 Perception First remains the product direction; Mono remains the comparator
-and safety fallback. The admission makes M1-P0 closable; the next research
-work is the rights-cleared real-video M1 Eye Topology Ground Truth Lab.
+and safety fallback. M1-P0 is complete; no R4 is authorized. The next research
+work is M1-A rights-cleared real-video corpus and oracle admission.
 
 ## Backend product target policy
 
@@ -140,26 +141,23 @@ work is the rights-cleared real-video M1 Eye Topology Ground Truth Lab.
 | Remove LTX from active scope | `done` | historical code and Git history retained; no cleanup in this change |
 | Create backend capability matrix | `planned` | no standalone matrix exists; black-box/white-box evidence belongs to Issue #39 |
 
-## M1 — Exact next experiment
+## M1-A — Rights-cleared Real-video Corpus and Oracle Protocol
 
-Supporting evidence:
+Overall status: `in_progress`; no topology performance run is authorized.
 
 | Task | Status | Evidence |
 |---|---|---|
-| Model-free Rust I/O admission | `published` | merged through PR #36 at `a71eea7...` |
-| Rust migration decision | `published` | `CONDITIONAL_ADMIT`; it is not an M0/M1 Gate decision |
+| Preserve M0 and M1-P0 evidence | `done` | PR #45 merged; R3 remains `RUST_CONTROL_PLANE_ADMITTED` |
+| Predeclare corpus, rights, derivative, oracle contracts | `implemented` | schemas, configs, validators, and negative tests |
+| Fix T0-T7 candidate contract and metric/Gate semantics | `implemented` | metadata only; no performance result |
+| Search task-scoped approved assets | `in_progress` | repository metadata scope only; no arbitrary personal-folder scan |
+| Admit 12 distinct actual clips | `blocked` | no eligible actual clip is currently recorded in repository metadata |
+| Produce oracle-reviewed complete coverage | `blocked` | depends on eligible clip acquisition and review |
+| Run topology cost/safety measurement | `planned` | separate approval only after `M1_CORPUS_AND_ORACLE_READY` |
 
-1. Admit 12 small rights-cleared clips and record provenance.
-2. Add oracle dirty masks and scene-cut labels.
-3. Define candidate topologies including 1×1 Mono Eye.
-4. Predeclare false-stable, recall, uncertainty, and cost thresholds.
-5. Run model-free eyes against the oracle suite.
-6. Record observation/fusion bytes, CPU wall time, and process-tree RAM.
-7. Produce one observation receipt per clip and a suite summary.
-8. Decide whether backend feasibility work may start.
-
-Do not train a planner or modify Wan hooks before the M1 cost and safety map is
-accepted.
+The current task stops after the M1-A admission Gate. Do not run model-free
+topologies, train a planner, connect a backend, or modify Wan hooks until the
+corpus and oracle Gate is ready and a separate measurement task is approved.
 
 ## Maintenance checklist
 

@@ -489,6 +489,35 @@ Detailed record:
 H3/API-key/paid/customer-data/model/CUDA/Wan/LTX counts were all 0. R3 is not
 an official product or model-speedup claim.
 
+PR #45 subsequently merged into `main` at
+`156d955fa8edfbcb6157ef6e130454da0b165daf`, and Issue #44 closed. The admitted
+R3 boundary completes M1-P0; no R4 is authorized. M0 remains independently
+`in_progress`. The next separately approved stage is M1-A corpus and oracle
+admission, not topology performance execution.
+
+---
+
+## 2026-08-02 — M1-A corpus and oracle protocol predeclared
+
+The branch `agent/m1-a-real-video-corpus-oracle-protocol` starts from the PR
+#45 merge commit. Duplicate repository, Issue, PR, and branch searches found no
+existing M1-A implementation.
+
+The metadata-only predeclaration fixes rights and consent admission, a
+deterministic derivative, human-reviewed dirty/stable/uncertain/preserve and
+scene-cut semantics, compact annotation references, T0–T7 contracts, complete
+cost metrics, provisional safety thresholds, validators, and negative tests.
+No actual clip is eligible at this checkpoint, no binary is tracked, and no
+topology or backend is executed.
+
+Issue publication remains pending because the available GitHub write
+integration rejected the initial create request; no remote object was changed.
+The dated worklog records the publication and asset-admission state.
+
+Model downloads, model loads, CUDA runs, paid external calls, external
+customer/personal-data transfers, backend integrations, and topology
+performance runs: 0 each.
+
 ---
 
 ## 2026-08-02 — PR #43 final merge-readiness review

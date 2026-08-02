@@ -102,7 +102,8 @@ compound-eye optimization is mixed into the baseline.
 
 ## M1-P0 — Analytical Topology Pre-Gate
 
-**Status: `verified`; decision `REFINE_COST_MODEL`.**
+**Status: `verified` and completed; final bounded decision
+`RUST_CONTROL_PLANE_ADMITTED`.**
 
 This is a bounded preparation step, not M1 entry or an M1 exit gate. It may
 draft analytical cost equations, schemas, synthetic cases, tests,
@@ -138,11 +139,21 @@ remain separate.
 
 R3 passed as `RUST_CONTROL_PLANE_ADMITTED`: T1/T2 boundary p50 was 31.21% and
 35.98% below the Python reference, p95 did not regress, T0 improved, boundary
-overhead stayed below 0.2%, and semantic/copy safety passed. M1-P0 is now
-closable. Do not create an R4; proceed only through the separately approved,
+overhead stayed below 0.2%, and semantic/copy safety passed. PR #45 merged at
+`156d955fa8edfbcb6157ef6e130454da0b165daf` and Issue #44 closed. M1-P0 is
+complete. Do not create an R4; proceed only through the separately approved,
 rights-cleared real-video M1 protocol.
 
 ## M1 — Eye Topology Ground Truth Lab
+
+### M1-A — Rights-cleared corpus and oracle admission
+
+**Status: `in_progress`.** This metadata-only stage predeclares rights,
+consent, deterministic derivative, human-oracle, topology-candidate,
+measurement, validation, coverage, and safety-Gate contracts. It performs no
+topology measurement and cannot close M1. If fewer than twelve distinct actual
+eligible clips or any required scene class is missing, its decision is
+`CORPUS_ACQUISITION_REQUIRED` and later measurement remains blocked.
 
 ### Question
 
