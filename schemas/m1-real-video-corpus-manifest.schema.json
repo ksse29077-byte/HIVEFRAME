@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/m1-real-video-corpus-manifest.schema.json",
+  "title": "HIVEFRAME M1 real-video corpus manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "corpus_version", "minimum_eligible_clips", "required_scene_classes", "derivative_contract", "clips"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "corpus_version": {"type": "string", "minLength": 1},
+    "minimum_eligible_clips": {"const": 12},
+    "required_scene_classes": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "derivative_contract": {"$ref": "#/$defs/derivativeContract"},
+    "clips": {"type": "array", "items": {"$ref": "#/$defs/clip"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "unavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "status", "reason", "method"],
+      "properties": {
+        "value": {"type": "null"},
+        "status": {"enum": ["unavailable", "pending"]},
+        "reason": {"type": "string", "minLength": 1},
+        "method": {"type": "string", "minLength": 1}
+      }
+    },
+    "knownStringOrUnavailable": {"oneOf": [{"type": "string", "minLength": 1}, {"$ref": "#/$defs/unavailable"}]},
+    "knownBooleanOrUnavailable": {"oneOf": [{"type": "boolean"}, {"$ref": "#/$defs/unavailable"}]},
+    "knownNumberOrUnavailable": {"oneOf": [{"type": "number", "exclusiveMinimum": 0}, {"$ref": "#/$defs/unavailable"}]},
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["research", "commercial", "copy", "derivative", "redistribution"],
+      "properties": {
+        "research": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "commercial": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "copy": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "derivative": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "redistribution": {"$ref": "#/$defs/knownBooleanOrUnavailable"}
+      }
+    },
+    "derivativeContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["original_immutable", "decoder", "decoder_version", "orientation_policy", "colorspace", "bit_depth", "alpha_policy", "aspect_policy", "crop_policy", "letterbox_policy", "resize_policy", "target_resolution", "target_fps", "sampling_policy", "vfr_policy", "audio_policy", "output_representation", "command_template", "tool_version", "frame_mapping_policy", "result_tuning_forbidden"],
+      "properties": {
+        "original_immutable": {"const": true},
+        "decoder": {"type": "string", "minLength": 1},
+        "decoder_version": {"type": "string", "minLength": 1},
+        "orientation_policy": {"type": "string", "minLength": 1},
+        "colorspace": {"type": "string", "minLength": 1},
+        "bit_depth": {"type": "integer", "minimum": 8},
+        "alpha_policy": {"type": "string", "minLength": 1},
+        "aspect_policy": {"type": "string", "minLength": 1},
+        "crop_policy": {"type": "string", "minLength": 1},
+        "letterbox_policy": {"type": "string", "minLength": 1},
+        "resize_policy": {"type": "string", "minLength": 1},
+        "target_resolution": {"type": "array", "prefixItems": [{"type": "integer", "minimum": 1}, {"type": "integer", "minimum": 1}], "items": false, "minItems": 2, "maxItems": 2},
+        "target_fps": {"type": "number", "exclusiveMinimum": 0},
+        "sampling_policy": {"type": "string", "minLength": 1},
+        "vfr_policy": {"type": "string", "minLength": 1},
+        "audio_policy": {"type": "string", "minLength": 1},
+        "output_representation": {"type": "string", "minLength": 1},
+        "command_template": {"type": "string", "minLength": 1},
+        "tool_version": {"type": "string", "minLength": 1},
+        "frame_mapping_policy": {"type": "string", "minLength": 1},
+        "result_tuning_forbidden": {"const": true}
+      }
+    },
+    "clip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clip_id", "neutral_description", "scene_classes", "stress_labels", "source_class",
+        "source_provenance", "rights_status", "rights_holder", "source_authority",
+        "license_identifier", "license_terms_digest", "attribution_required", "attribution_text",
+        "permissions", "identifiable_people", "consent_required", "consent_status",
+        "sensitive_content_status", "original_sha256", "original_bytes", "width", "height", "fps",
+        "frame_count", "duration_seconds", "codec", "container", "audio_present", "derivative_sha256",
+        "oracle_sha256", "storage_class", "storage_reference", "admission_status", "rejection_reason",
+        "reviewed_at", "review_method", "evidence_notes"
+      ],
+      "properties": {
+        "clip_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "neutral_description": {"type": "string", "minLength": 1},
+        "scene_classes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "stress_labels": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "source_class": {"enum": ["eligible_self_recorded", "eligible_public_domain", "eligible_cc0", "eligible_explicit_license", "pending_rights_review", "rejected"]},
+        "source_provenance": {"type": "string", "minLength": 1},
+        "rights_status": {"enum": ["admitted", "pending", "rejected"]},
+        "rights_holder": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "source_authority": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "license_identifier": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "license_terms_digest": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"$ref": "#/$defs/unavailable"}]},
+        "attribution_required": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "attribution_text": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "permissions": {"$ref": "#/$defs/permissions"},
+        "identifiable_people": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "consent_required": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "consent_status": {"enum": ["not_required", "verified", "pending", "rejected"]},
+        "sensitive_content_status": {"enum": ["none_observed", "reviewed_allowed", "pending", "rejected"]},
+        "original_sha256": {"$ref": "#/$defs/sha256"},
+        "original_bytes": {"type": "integer", "minimum": 1},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "fps": {"$ref": "#/$defs/knownNumberOrUnavailable"},
+        "frame_count": {"type": "integer", "minimum": 2},
+        "duration_seconds": {"$ref": "#/$defs/knownNumberOrUnavailable"},
+        "codec": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "container": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "audio_present": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "derivative_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"$ref": "#/$defs/unavailable"}]},
+        "oracle_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"$ref": "#/$defs/unavailable"}]},
+        "storage_class": {"enum": ["local_approved_artifact_store", "external_digest_store", "repository_metadata_only", "user_supplied_secure_storage"]},
+        "storage_reference": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:/-]*$"},
+        "admission_status": {"enum": ["eligible", "pending", "rejected"]},
+        "rejection_reason": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "reviewed_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"$ref": "#/$defs/unavailable"}]},
+        "review_method": {"type": "string", "minLength": 1},
+        "evidence_notes": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"admission_status": {"const": "eligible"}}, "required": ["admission_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"enum": ["eligible_self_recorded", "eligible_public_domain", "eligible_cc0", "eligible_explicit_license"]},
+              "rights_status": {"const": "admitted"},
+              "rights_holder": {"type": "string", "minLength": 1},
+              "source_authority": {"type": "string", "minLength": 1},
+              "license_identifier": {"type": "string", "minLength": 1},
+              "license_terms_digest": {"$ref": "#/$defs/sha256"},
+              "attribution_required": {"type": "boolean"},
+              "attribution_text": {"type": "string", "minLength": 1},
+              "permissions": {
+                "properties": {
+                  "research": {"const": true},
+                  "commercial": {"const": true},
+                  "copy": {"const": true},
+                  "derivative": {"const": true},
+                  "redistribution": {"const": true}
+                }
+              },
+              "identifiable_people": {"type": "boolean"},
+              "consent_required": {"type": "boolean"},
+              "consent_status": {"enum": ["verified", "not_required"]},
+              "sensitive_content_status": {"enum": ["none_observed", "reviewed_allowed"]},
+              "derivative_sha256": {"$ref": "#/$defs/sha256"},
+              "oracle_sha256": {"$ref": "#/$defs/sha256"},
+              "reviewed_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"admission_status": {"const": "pending"}}, "required": ["admission_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"const": "pending_rights_review"},
+              "rights_status": {"const": "pending"},
+              "rejection_reason": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["value", "status", "reason", "method"],
+                "properties": {
+                  "value": {"type": "null"},
+                  "status": {"const": "pending"},
+                  "reason": {"type": "string", "minLength": 1},
+                  "method": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"admission_status": {"const": "rejected"}}, "required": ["admission_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"const": "rejected"},
+              "rights_status": {"const": "rejected"},
+              "rejection_reason": {"type": "string", "minLength": 1},
+              "reviewed_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

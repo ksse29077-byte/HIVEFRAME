@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/m1-video-rights-receipt.schema.json",
+  "title": "HIVEFRAME M1 video rights receipts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "receipts"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "receipts": {"type": "array", "items": {"$ref": "#/$defs/receipt"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "unavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "status", "reason", "method"],
+      "properties": {
+        "value": {"type": "null"},
+        "status": {"enum": ["unavailable", "pending"]},
+        "reason": {"type": "string", "minLength": 1},
+        "method": {"type": "string", "minLength": 1}
+      }
+    },
+    "knownStringOrUnavailable": {"oneOf": [{"type": "string", "minLength": 1}, {"$ref": "#/$defs/unavailable"}]},
+    "knownBooleanOrUnavailable": {"oneOf": [{"type": "boolean"}, {"$ref": "#/$defs/unavailable"}]},
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["research", "commercial", "copy", "derivative", "redistribution"],
+      "properties": {
+        "research": {"$ref": "#/$defs/knownBooleanOrUnavailable"}, "commercial": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "copy": {"$ref": "#/$defs/knownBooleanOrUnavailable"}, "derivative": {"$ref": "#/$defs/knownBooleanOrUnavailable"},
+        "redistribution": {"$ref": "#/$defs/knownBooleanOrUnavailable"}
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clip_id", "original_sha256", "source_class", "rights_basis", "rights_holder",
+        "license_identifier", "official_source_reference", "terms_digest", "attribution_obligation",
+        "permissions", "identifiable_people", "consent_basis", "consent_status", "restrictions",
+        "review_status", "reviewed_at", "review_method", "evidence_digest"
+      ],
+      "properties": {
+        "clip_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "original_sha256": {"$ref": "#/$defs/sha256"},
+        "source_class": {"enum": ["eligible_self_recorded", "eligible_public_domain", "eligible_cc0", "eligible_explicit_license", "pending_rights_review", "rejected"]},
+        "rights_basis": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "rights_holder": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "license_identifier": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "official_source_reference": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "terms_digest": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"$ref": "#/$defs/unavailable"}]},
+        "attribution_obligation": {
+          "type": "object", "additionalProperties": false, "required": ["required", "text"],
+          "properties": {"required": {"type": "boolean"}, "text": {"$ref": "#/$defs/knownStringOrUnavailable"}}
+        },
+        "permissions": {"$ref": "#/$defs/permissions"},
+        "identifiable_people": {"oneOf": [{"type": "boolean"}, {"$ref": "#/$defs/unavailable"}]},
+        "consent_basis": {"$ref": "#/$defs/knownStringOrUnavailable"},
+        "consent_status": {"enum": ["not_required", "verified", "pending", "rejected"]},
+        "restrictions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "review_status": {"enum": ["admitted", "pending", "rejected"]},
+        "reviewed_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"$ref": "#/$defs/unavailable"}]},
+        "review_method": {"type": "string", "minLength": 1},
+        "evidence_digest": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"$ref": "#/$defs/unavailable"}]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"review_status": {"const": "admitted"}}, "required": ["review_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"enum": ["eligible_self_recorded", "eligible_public_domain", "eligible_cc0", "eligible_explicit_license"]},
+              "rights_basis": {"type": "string", "minLength": 1},
+              "rights_holder": {"type": "string", "minLength": 1},
+              "license_identifier": {"type": "string", "minLength": 1},
+              "official_source_reference": {"type": "string", "minLength": 1},
+              "terms_digest": {"$ref": "#/$defs/sha256"},
+              "permissions": {
+                "properties": {
+                  "research": {"const": true},
+                  "commercial": {"const": true},
+                  "copy": {"const": true},
+                  "derivative": {"const": true},
+                  "redistribution": {"const": true}
+                }
+              },
+              "identifiable_people": {"type": "boolean"},
+              "consent_basis": {"type": "string", "minLength": 1},
+              "consent_status": {"enum": ["not_required", "verified"]},
+              "reviewed_at": {"type": "string", "format": "date-time"},
+              "evidence_digest": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"review_status": {"const": "pending"}}, "required": ["review_status"]},
+          "then": {"properties": {"source_class": {"const": "pending_rights_review"}}}
+        },
+        {
+          "if": {"properties": {"review_status": {"const": "rejected"}}, "required": ["review_status"]},
+          "then": {
+            "properties": {
+              "source_class": {"const": "rejected"},
+              "rights_basis": {"type": "string", "minLength": 1},
+              "reviewed_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

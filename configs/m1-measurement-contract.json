@@ -1,0 +1,50 @@
+{
+  "schema_version": "0.1.0",
+  "contract_status": "predeclared_before_real_video_measurement",
+  "results_present": false,
+  "metric_semantics": {
+    "unavailable_value": {"value": null, "status": "unavailable", "reason": "The metric is not available in M1-A.", "method": "not measured"},
+    "aggregation": ["per_clip", "per_transition", "p50", "p95"],
+    "cost_unit": "seconds unless a metric declares bytes, count, ratio, or pixels",
+    "scope_rule": "Every result must declare clip, topology, stage, and inclusion scope."
+  },
+  "accuracy_metrics": [
+    "dirty_true_positive_pixels", "dirty_false_positive_pixels", "dirty_false_negative_pixels",
+    "dirty_precision", "dirty_recall", "false_stable_rate", "uncertainty_coverage",
+    "scene_cut_recall", "camera_motion_accuracy", "boundary_recall", "occlusion_recall",
+    "disocclusion_recall", "preserve_violation_rate", "unsafe_reuse_count"
+  ],
+  "cost_metrics": [
+    "decode_seconds", "derivative_prep_seconds", "eye_setup_seconds", "routing_seconds",
+    "coordinate_transform_seconds", "observation_seconds", "fusion_seconds",
+    "shared_visual_state_seconds", "compute_plan_seconds", "ffi_seconds", "buffer_handoff_seconds",
+    "receipt_seconds", "input_bytes", "copied_bytes", "temporary_bytes", "process_tree_peak_ram_bytes",
+    "active_eye_count", "overlap_pixels", "fallback_count"
+  ],
+  "combined_metrics": [
+    "complete_observation_cost_seconds", "safety_eligible", "oracle_best_topology",
+    "fallback_adjusted_cost_seconds", "candidate_dominance", "topology_cost_surface"
+  ],
+  "complete_cost_includes": [
+    "decode", "derivative_prep", "eye_setup", "routing", "coordinate_transform", "observation",
+    "fusion", "shared_visual_state", "compute_plan", "ffi", "buffer_handoff", "receipt",
+    "uncertainty_promotion", "fallback", "failed_attempts"
+  ],
+  "provisional_safety_gate": {
+    "status": "provisional_premeasurement_proposal",
+    "dirty_recall_min": 0.995,
+    "false_stable_rate_max": 0.005,
+    "scene_cut_miss_count_max": 0,
+    "preserve_violation_count_max": 0,
+    "uncertainty_requires_reobserve_or_fallback": true,
+    "complete_cost_required": true,
+    "rationale": "Carries forward the roadmap M3 dirty-recall and false-stable safety targets while making cut and preserve failures terminal for this corpus protocol."
+  },
+  "m1_a_gate_decisions": [
+    "M1_CORPUS_AND_ORACLE_READY",
+    "CORPUS_ACQUISITION_REQUIRED",
+    "RIGHTS_REVIEW_BLOCKED",
+    "ORACLE_PROTOCOL_REVISE"
+  ],
+  "claim_boundary": "M1-A records no topology performance result and cannot pass a later topology, backend, quality, speedup, or product Gate."
+}

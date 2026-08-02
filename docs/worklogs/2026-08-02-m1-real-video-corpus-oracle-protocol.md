@@ -1,0 +1,241 @@
+# 2026-08-02 — M1-A Real-video Corpus and Oracle Protocol
+
+Status: verified and published for review; decision `CORPUS_ACQUISITION_REQUIRED`
+
+## Verified predecessor state
+
+- base `origin/main`: `156d955fa8edfbcb6157ef6e130454da0b165daf`;
+- PR #45: merged with that merge commit;
+- Issue #44: closed;
+- R3 Gate: `RUST_CONTROL_PLANE_ADMITTED`;
+- M1-P0: completed; no R4 is authorized;
+- Compound Perception First remains active;
+- Mono remains comparator and safety fallback only;
+- M0 remains `in_progress` and its evidence is unchanged.
+
+The dedicated branch is
+`agent/m1-a-real-video-corpus-oracle-protocol`. Repository, Issue, PR, and
+branch searches found no duplicate M1-A implementation. The initial Issue
+publication attempt was rejected by the available GitHub write integration;
+no remote object was changed. After the user restored GitHub CLI
+authentication, [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
+was created and the normal Git branch push was verified. Draft PR
+[#47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47) is the review
+surface. It remains Draft and was not merged or marked ready.
+
+## Predeclared boundary
+
+Before any actual clip can become eligible or any final annotation can be
+accepted, this branch fixes:
+
+- a twelve-distinct-clip minimum and twelve required real-video scene classes;
+- conservative rights, commercial-use, derivative, redistribution,
+  attribution, consent, and sensitive-content admission;
+- immutable-original and deterministic analysis-derivative rules;
+- dirty, stable, uncertain, preserve, scene-cut, object, compact-mask, review,
+  disagreement, and versioning semantics;
+- T0 through T7 candidate contracts without executing them;
+- accuracy, complete-cost, unavailable-value, and provisional safety-Gate
+  semantics;
+- explicit validators, positive/negative tests, and four allowed M1-A Gate
+  decisions.
+
+The predeclaration contains no topology result. Thresholds and admission rules
+must not be changed favorably after observing later corpus or topology results.
+
+## Asset scope before admission
+
+Only repository metadata and explicitly task-approved artifacts may be
+inspected. Arbitrary personal folders, media libraries, network sources, and
+random public video are outside scope. No video binary may be committed.
+
+Predeclaration commit:
+`d60fd7650d2a0a7d2fedf19d43d4638895f0e682`.
+
+Evidence commit:
+`0a2bbc8779036d983ca22e55927ce2a88f9e1be0`.
+
+After that commit, the allowed asset search was repeated. Repository metadata
+contains admission rules and artifact-store guidance but no actual video
+reference with a rights and consent receipt. The supplied task attachment is a
+work order, not video. No arbitrary personal folder, media library, network
+source, or unrelated workspace was scanned.
+
+Classification counts:
+
+- eligible: 0;
+- pending rights review: 0;
+- rejected: 0;
+- investigated actual clips: 0.
+
+No status was fabricated for an absent clip. No public video was downloaded.
+
+## Coverage and Gate
+
+All twelve required classes remain missing: speaking person with static
+background, hand motion with static background, local object motion with static
+background, slow pan, zoom, handheld shake, hard cut, multi-object occlusion,
+reflection or mirror, hair/water/smoke boundary, lighting change, and local
+static content combined with global camera motion.
+
+Decision: **`CORPUS_ACQUISITION_REQUIRED`**.
+
+The protocol and validators are ready, but the minimum twelve distinct actual
+eligible clips, rights and consent receipts, deterministic derivatives, oracle
+annotations, review evidence, and coverage are absent. M1 topology measurement
+is not allowed. The recording checklist is in
+`docs/M1_REAL_VIDEO_CORPUS_AND_ORACLE_PROTOCOL.md`.
+
+Generated metadata reports:
+
+- `reports/m1/corpus/admission-report.json`;
+- `reports/m1/corpus/rights-summary.json`;
+- `reports/m1/corpus/coverage-summary.json`;
+- `reports/m1/corpus/oracle-validation.json`;
+- `reports/m1/corpus/decision-report.md`.
+
+No original, derivative, or annotation binary is tracked.
+
+## Execution boundary
+
+- model downloads: 0;
+- model loads: 0;
+- CUDA runs: 0;
+- paid external service calls: 0;
+- customer or personal data external transfers: 0;
+- backend integration runs: 0;
+- topology performance runs: 0.
+
+## Verification
+
+The dedicated M1-A test module passed 16 tests before the predeclaration commit.
+Final model-free validation then passed:
+
+- Python compile: passed;
+- full Python tests: 156 passed;
+- Rust `cargo fmt --check`: passed;
+- Rust `cargo check --workspace --locked`: passed;
+- Rust `cargo test --workspace --locked`: passed, including 10 runtime tests;
+- repository and generated JSON parsing: 52 files passed;
+- M1 schemas identify Draft 2020-12: passed;
+- M1-A validators and cross-document admission: passed;
+- tracked video binaries: 0;
+- M1 public absolute-path and credential hits: 0;
+- duplicate eligible clip IDs and digests: 0;
+- v1/R1/R2/R3 evidence changes: 0;
+- `git diff --check`: passed.
+
+The local Python environment does not include the optional third-party
+`jsonschema` package. Schema files were parsed, their draft identifiers were
+checked, and the repository's dependency-free contract validators and positive
+and negative tests supplied instance validation. No package was installed.
+
+## PR #47 admission-integrity remediation
+
+### Initial merge-readiness finding
+
+The first final review kept PR #47 at **`NOT_MERGE_READY`**. The empty corpus
+did not exercise three future admission paths, so its truthful zero counts hid
+the following defects:
+
+1. `decide()` did not include `rights_summary.valid`, allowing an invalid
+   rights document with a numerically matching admitted count to reach READY;
+2. cross-document checks did not bind oracle source and derivative digests to
+   the manifest and did not reject all permission, consent, orphan, duplicate,
+   non-eligible verified-oracle, or hard-cut mismatches;
+3. the dependency-free validators did not enforce the schemas' complete
+   structural range, including `additionalProperties: false`, and the corpus
+   schema did not declare status-specific eligible, pending, and rejected
+   rules.
+
+The review changed no evidence. It acquired no clip and executed no topology.
+
+### Counterexample-first record
+
+Commit `b7e74ff92c6824bc49c900747b4a5873540c6ed2` added metadata-only
+counterexamples before changing the implementation. At that checkpoint, 25
+M1-A tests ran and seven failed, reproducing the three blocker clusters. The
+failures included the false READY decision, source/derivative digest omissions,
+rights permission and consent omissions, orphan/duplicate omissions,
+non-eligible verified-oracle admission, and status-contract mismatches.
+
+### Correction
+
+Implementation commit `deda6750d41028ff61932bc5c8432cf95c893067`:
+
+- requires valid rights, corpus, and oracle summaries before READY;
+- preserves all validation errors in the public admission report;
+- verifies eligible manifest/rights source class, original digest, license,
+  attribution, permissions, consent, and people-identification state;
+- verifies eligible manifest/oracle source, derivative, and artifact digests,
+  verified review state, annotation references, and hard-cut evidence;
+- rejects orphan and duplicate rights/oracle records and verified oracles for
+  non-eligible clips;
+- adds eligible, pending, and rejected conditional rules to the corpus and
+  rights schemas;
+- permits explicit unavailable permission metadata while pending but requires
+  all admitted/eligible permissions to be true;
+- runs every corpus, rights, and oracle instance through a dependency-free
+  audit of all schema keywords currently declared by M1-A.
+
+No new Gate name, clip count, scene class, oracle meaning, topology contract,
+threshold, metric, report value, or legacy evidence was changed.
+
+### Schema-validation meaning
+
+No package was installed and no Python project dependency was added. The
+isolated HIVEFRAME environment does not include `jsonschema`, so its optional
+Draft test is explicitly skipped there. Ubuntu already provides
+`jsonschema 4.10.3`; a separate test using its `Draft202012Validator` checked
+all three schemas and positive/negative instances successfully. That
+distro-provided package is not a HIVEFRAME runtime dependency or lock claim.
+
+The always-available validator is the bounded independent contract auditor in
+`m1_schema_contract.py`. It is not described as a complete third-party JSON
+Schema engine. JSON parsing, bounded instance validation, and optional Draft
+2020-12 cross-validation remain separate reported facts.
+
+### Gate and evidence preservation
+
+The tracked manifest, rights ledger, and oracle document still contain zero
+records. Re-evaluation produced:
+
+- investigated: 0;
+- eligible: 0;
+- pending: 0;
+- rejected: 0;
+- coverage: 0 / 12;
+- decision: **`CORPUS_ACQUISITION_REQUIRED`**.
+
+All five generated reports were byte-equivalent to the tracked evidence, so
+they were not overwritten. v1/R1/R2/R3 evidence changes remained zero.
+
+### Final model-free verification before publication
+
+- Python compile: passed;
+- full Python tests: 171 run, 170 passed, and one optional external-Schema test
+  explicitly skipped in the isolated environment;
+- external Draft 2020-12 fixture cross-check with preinstalled
+  `jsonschema 4.10.3`: passed separately;
+- focused M1-A tests with the external engine: 31 passed;
+- `cargo fmt --check`: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 10 runtime tests;
+- JSON parsing: 52 files passed;
+- tracked video binaries: 0;
+- public personal-path, credential, and personal-data findings: 0 after
+  excluding the validator's regex definitions and synthetic negative fixtures;
+- v1/R1/R2/R3 evidence changes: 0;
+- `git diff --check`: passed.
+
+At the pre-publication checkpoint, local HEAD was
+`deda6750d41028ff61932bc5c8432cf95c893067`, remote PR head was
+`eff4fe36c712fb85aba2bcdf83efa04275bff915`, and the branch was intentionally
+two commits ahead. The commit containing this worklog is published and its
+local/remote equality is verified after creation; the final PR head is recorded
+in the PR and completion report because a commit cannot contain its own SHA.
+
+Execution counts remained: actual video acquisition 0, model download/load 0,
+CUDA 0, paid external call 0, external personal-data transfer 0, backend
+integration 0, and topology performance 0. PR #47 remains Draft; it was not
+marked ready or merged.

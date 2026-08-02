@@ -1,0 +1,11 @@
+{
+  "counts": {
+    "pending": 0,
+    "rejected": 0,
+    "total": 0,
+    "verified": 0
+  },
+  "errors": [],
+  "schema_version": "0.1.0",
+  "valid": true
+}

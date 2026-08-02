@@ -489,6 +489,55 @@ Detailed record:
 H3/API-key/paid/customer-data/model/CUDA/Wan/LTX counts were all 0. R3 is not
 an official product or model-speedup claim.
 
+PR #45 subsequently merged into `main` at
+`156d955fa8edfbcb6157ef6e130454da0b165daf`, and Issue #44 closed. The admitted
+R3 boundary completes M1-P0; no R4 is authorized. M0 remains independently
+`in_progress`. The next separately approved stage is M1-A corpus and oracle
+admission, not topology performance execution.
+
+---
+
+## 2026-08-02 — M1-A corpus and oracle protocol predeclared
+
+The branch `agent/m1-a-real-video-corpus-oracle-protocol` starts from the PR
+#45 merge commit. Duplicate repository, Issue, PR, and branch searches found no
+existing M1-A implementation.
+
+The metadata-only predeclaration fixes rights and consent admission, a
+deterministic derivative, human-reviewed dirty/stable/uncertain/preserve and
+scene-cut semantics, compact annotation references, T0–T7 contracts, complete
+cost metrics, provisional safety thresholds, validators, and negative tests.
+No actual clip is eligible at this checkpoint, no binary is tracked, and no
+topology or backend is executed.
+
+The available GitHub write integration rejected the initial Issue create
+request, so no remote object changed at that attempt. After GitHub CLI
+authentication was restored, [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46)
+and the dedicated remote branch were published through the normal GitHub and
+Git transport paths. Draft PR
+[#47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47) is open for review;
+it was not marked ready or merged.
+
+Predeclaration commit `d60fd7650d2a0a7d2fedf19d43d4638895f0e682`
+fixed the contract before any admission. The allowed post-commit asset review
+found no actual task-scoped clip. Eligible, pending, rejected, and investigated
+actual-clip counts are all 0; all twelve scene classes are missing. The single
+Gate is **`CORPUS_ACQUISITION_REQUIRED`**. No absent clip was given a synthetic
+status, and no network video was downloaded. M1 topology measurement remains
+blocked pending a separately reviewed acquisition pass.
+
+Python compile and all 156 tests passed. Rust format, locked check, and locked
+tests passed, including 10 runtime tests. Fifty-two repository/generated JSON
+files parsed; the M1 Draft 2020-12 identifiers, validators, public sanitation,
+duplicate checks, tracked-binary check, legacy evidence immutability, and diff
+check passed. The optional `jsonschema` package was unavailable and was not
+installed; dependency-free instance validators and positive/negative tests
+were used.
+
+Model downloads, model loads, CUDA runs, paid external calls, external
+customer/personal-data transfers, backend integrations, and topology
+performance runs: 0 each.
+
 ---
 
 ## 2026-08-02 — PR #43 final merge-readiness review
@@ -546,6 +595,40 @@ The PR branch rewrite was published from superseded head `140a49b...` to
 verified head `e72cbe5...` using an explicit `--force-with-lease`. Plain
 `--force` was not used; local and remote heads matched at the publication
 checkpoint.
+
+---
+
+## 2026-08-02 — PR #47 M1-A admission-integrity remediation
+
+The first PR #47 merge-readiness review returned `NOT_MERGE_READY`. Empty
+corpus evidence did not expose that invalid rights could pass by count, oracle
+source/derivative and related cross-document links were incomplete, and the
+dependency-free validators did not enforce the schemas' whole declared range.
+
+Counterexample commit `b7e74ff92c6824bc49c900747b4a5873540c6ed2`
+reproduced seven failures before implementation. Correction commit
+`deda6750d41028ff61932bc5c8432cf95c893067` connected rights validity to the
+Gate, strengthened digest/permission/consent/orphan/duplicate/cut checks, added
+status-specific schema rules, and introduced a bounded dependency-free schema
+contract audit. No package was installed. A separately available Ubuntu
+`jsonschema 4.10.3` Draft 2020-12 cross-check passed but is not a project
+dependency; the isolated project environment reports that optional test as
+skipped.
+
+The tracked reports remained byte-equivalent: investigated, eligible, pending,
+and rejected counts are all zero, coverage is 0/12, and the decision remains
+`CORPUS_ACQUISITION_REQUIRED`. Python compile passed; 171 tests ran with 170
+passes and one explicit optional skip. A separate 31-test M1-A run with the
+external Draft engine passed. Rust format/check/test passed with 10 runtime tests, 52 JSON
+files parsed, tracked video binaries and public sensitive-data findings were
+zero, v1/R1/R2/R3 evidence changes were zero, and `git diff --check` passed.
+
+Actual video acquisition, model download/load, CUDA, paid external calls,
+external personal-data transfer, backend integration, and topology performance
+runs remained zero. Details are in
+[`worklogs/2026-08-02-m1-real-video-corpus-oracle-protocol.md`](worklogs/2026-08-02-m1-real-video-corpus-oracle-protocol.md).
+
+PR #47 remains Draft and is neither marked ready nor merged.
 
 ---
 

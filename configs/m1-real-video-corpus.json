@@ -1,0 +1,43 @@
+{
+  "schema_version": "0.1.0",
+  "corpus_version": "m1-a-v0",
+  "minimum_eligible_clips": 12,
+  "required_scene_classes": [
+    "static_background_speaking_person",
+    "static_background_hand_motion",
+    "static_background_local_object_motion",
+    "slow_pan",
+    "zoom_in_out",
+    "handheld_shake",
+    "hard_cut",
+    "multiple_objects_occlusion",
+    "reflection_mirror",
+    "complex_boundary_hair_water_smoke",
+    "lighting_change",
+    "local_static_camera_global_combination"
+  ],
+  "derivative_contract": {
+    "original_immutable": true,
+    "decoder": "ffmpeg",
+    "decoder_version": "7.1.1",
+    "orientation_policy": "apply_declared_container_rotation_then_clear_rotation_metadata",
+    "colorspace": "bt709",
+    "bit_depth": 8,
+    "alpha_policy": "discard_after_compositing_against_black_if_present",
+    "aspect_policy": "preserve_display_aspect_ratio",
+    "crop_policy": "no_content_crop",
+    "letterbox_policy": "symmetric_black_letterbox_to_target",
+    "resize_policy": "lanczos_deterministic_single_pass",
+    "target_resolution": [832, 480],
+    "target_fps": 16,
+    "sampling_policy": "constant_frame_rate_from_source_timestamps_nearest_prior",
+    "vfr_policy": "normalize_to_declared_target_fps_with_frame_mapping_receipt",
+    "audio_policy": "omit_from_analysis_derivative_but_record_original_audio_presence",
+    "output_representation": "lossless_ffv1_mkv_analysis_derivative",
+    "command_template": "<decoder> -i <original-input> -map 0:v:0 -an -vf <declared-filter-chain> -c:v ffv1 <analysis-output>",
+    "tool_version": "ffmpeg-7.1.1",
+    "frame_mapping_policy": "record_each_derivative_frame_index_to_source_timestamp_and_source_frame_index",
+    "result_tuning_forbidden": true
+  },
+  "clips": []
+}
