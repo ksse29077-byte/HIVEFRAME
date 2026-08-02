@@ -598,6 +598,40 @@ checkpoint.
 
 ---
 
+## 2026-08-02 — PR #47 M1-A admission-integrity remediation
+
+The first PR #47 merge-readiness review returned `NOT_MERGE_READY`. Empty
+corpus evidence did not expose that invalid rights could pass by count, oracle
+source/derivative and related cross-document links were incomplete, and the
+dependency-free validators did not enforce the schemas' whole declared range.
+
+Counterexample commit `b7e74ff92c6824bc49c900747b4a5873540c6ed2`
+reproduced seven failures before implementation. Correction commit
+`deda6750d41028ff61932bc5c8432cf95c893067` connected rights validity to the
+Gate, strengthened digest/permission/consent/orphan/duplicate/cut checks, added
+status-specific schema rules, and introduced a bounded dependency-free schema
+contract audit. No package was installed. A separately available Ubuntu
+`jsonschema 4.10.3` Draft 2020-12 cross-check passed but is not a project
+dependency; the isolated project environment reports that optional test as
+skipped.
+
+The tracked reports remained byte-equivalent: investigated, eligible, pending,
+and rejected counts are all zero, coverage is 0/12, and the decision remains
+`CORPUS_ACQUISITION_REQUIRED`. Python compile and 171 tests passed with one
+explicit optional skip; a separate 31-test M1-A run with the external Draft
+engine passed. Rust format/check/test passed with 10 runtime tests, 52 JSON
+files parsed, tracked video binaries and public sensitive-data findings were
+zero, v1/R1/R2/R3 evidence changes were zero, and `git diff --check` passed.
+
+Actual video acquisition, model download/load, CUDA, paid external calls,
+external personal-data transfer, backend integration, and topology performance
+runs remained zero. Details are in
+[`worklogs/2026-08-02-m1-real-video-corpus-oracle-protocol.md`](worklogs/2026-08-02-m1-real-video-corpus-oracle-protocol.md).
+
+PR #47 remains Draft and is neither marked ready nor merged.
+
+---
+
 ## Entry template
 
 ```markdown

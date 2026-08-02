@@ -129,3 +129,113 @@ The local Python environment does not include the optional third-party
 `jsonschema` package. Schema files were parsed, their draft identifiers were
 checked, and the repository's dependency-free contract validators and positive
 and negative tests supplied instance validation. No package was installed.
+
+## PR #47 admission-integrity remediation
+
+### Initial merge-readiness finding
+
+The first final review kept PR #47 at **`NOT_MERGE_READY`**. The empty corpus
+did not exercise three future admission paths, so its truthful zero counts hid
+the following defects:
+
+1. `decide()` did not include `rights_summary.valid`, allowing an invalid
+   rights document with a numerically matching admitted count to reach READY;
+2. cross-document checks did not bind oracle source and derivative digests to
+   the manifest and did not reject all permission, consent, orphan, duplicate,
+   non-eligible verified-oracle, or hard-cut mismatches;
+3. the dependency-free validators did not enforce the schemas' complete
+   structural range, including `additionalProperties: false`, and the corpus
+   schema did not declare status-specific eligible, pending, and rejected
+   rules.
+
+The review changed no evidence. It acquired no clip and executed no topology.
+
+### Counterexample-first record
+
+Commit `b7e74ff92c6824bc49c900747b4a5873540c6ed2` added metadata-only
+counterexamples before changing the implementation. At that checkpoint, 25
+M1-A tests ran and seven failed, reproducing the three blocker clusters. The
+failures included the false READY decision, source/derivative digest omissions,
+rights permission and consent omissions, orphan/duplicate omissions,
+non-eligible verified-oracle admission, and status-contract mismatches.
+
+### Correction
+
+Implementation commit `deda6750d41028ff61932bc5c8432cf95c893067`:
+
+- requires valid rights, corpus, and oracle summaries before READY;
+- preserves all validation errors in the public admission report;
+- verifies eligible manifest/rights source class, original digest, license,
+  attribution, permissions, consent, and people-identification state;
+- verifies eligible manifest/oracle source, derivative, and artifact digests,
+  verified review state, annotation references, and hard-cut evidence;
+- rejects orphan and duplicate rights/oracle records and verified oracles for
+  non-eligible clips;
+- adds eligible, pending, and rejected conditional rules to the corpus and
+  rights schemas;
+- permits explicit unavailable permission metadata while pending but requires
+  all admitted/eligible permissions to be true;
+- runs every corpus, rights, and oracle instance through a dependency-free
+  audit of all schema keywords currently declared by M1-A.
+
+No new Gate name, clip count, scene class, oracle meaning, topology contract,
+threshold, metric, report value, or legacy evidence was changed.
+
+### Schema-validation meaning
+
+No package was installed and no Python project dependency was added. The
+isolated HIVEFRAME environment does not include `jsonschema`, so its optional
+Draft test is explicitly skipped there. Ubuntu already provides
+`jsonschema 4.10.3`; a separate test using its `Draft202012Validator` checked
+all three schemas and positive/negative instances successfully. That
+distro-provided package is not a HIVEFRAME runtime dependency or lock claim.
+
+The always-available validator is the bounded independent contract auditor in
+`m1_schema_contract.py`. It is not described as a complete third-party JSON
+Schema engine. JSON parsing, bounded instance validation, and optional Draft
+2020-12 cross-validation remain separate reported facts.
+
+### Gate and evidence preservation
+
+The tracked manifest, rights ledger, and oracle document still contain zero
+records. Re-evaluation produced:
+
+- investigated: 0;
+- eligible: 0;
+- pending: 0;
+- rejected: 0;
+- coverage: 0 / 12;
+- decision: **`CORPUS_ACQUISITION_REQUIRED`**.
+
+All five generated reports were byte-equivalent to the tracked evidence, so
+they were not overwritten. v1/R1/R2/R3 evidence changes remained zero.
+
+### Final model-free verification before publication
+
+- Python compile: passed;
+- full Python tests: 171 passed, one optional external-Schema test explicitly
+  skipped in the isolated environment;
+- external Draft 2020-12 fixture cross-check with preinstalled
+  `jsonschema 4.10.3`: passed separately;
+- focused M1-A tests with the external engine: 31 passed;
+- `cargo fmt --check`: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 10 runtime tests;
+- JSON parsing: 52 files passed;
+- tracked video binaries: 0;
+- public personal-path, credential, and personal-data findings: 0 after
+  excluding the validator's regex definitions and synthetic negative fixtures;
+- v1/R1/R2/R3 evidence changes: 0;
+- `git diff --check`: passed.
+
+At the pre-publication checkpoint, local HEAD was
+`deda6750d41028ff61932bc5c8432cf95c893067`, remote PR head was
+`eff4fe36c712fb85aba2bcdf83efa04275bff915`, and the branch was intentionally
+two commits ahead. The commit containing this worklog is published and its
+local/remote equality is verified after creation; the final PR head is recorded
+in the PR and completion report because a commit cannot contain its own SHA.
+
+Execution counts remained: actual video acquisition 0, model download/load 0,
+CUDA 0, paid external call 0, external personal-data transfer 0, backend
+integration 0, and topology performance 0. PR #47 remains Draft; it was not
+marked ready or merged.
