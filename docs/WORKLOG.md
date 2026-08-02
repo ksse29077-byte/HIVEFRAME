@@ -617,9 +617,9 @@ skipped.
 
 The tracked reports remained byte-equivalent: investigated, eligible, pending,
 and rejected counts are all zero, coverage is 0/12, and the decision remains
-`CORPUS_ACQUISITION_REQUIRED`. Python compile and 171 tests passed with one
-explicit optional skip; a separate 31-test M1-A run with the external Draft
-engine passed. Rust format/check/test passed with 10 runtime tests, 52 JSON
+`CORPUS_ACQUISITION_REQUIRED`. Python compile passed; 171 tests ran with 170
+passes and one explicit optional skip. A separate 31-test M1-A run with the
+external Draft engine passed. Rust format/check/test passed with 10 runtime tests, 52 JSON
 files parsed, tracked video binaries and public sensitive-data findings were
 zero, v1/R1/R2/R3 evidence changes were zero, and `git diff --check` passed.
 

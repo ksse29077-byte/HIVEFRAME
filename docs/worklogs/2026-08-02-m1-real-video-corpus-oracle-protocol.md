@@ -213,8 +213,8 @@ they were not overwritten. v1/R1/R2/R3 evidence changes remained zero.
 ### Final model-free verification before publication
 
 - Python compile: passed;
-- full Python tests: 171 passed, one optional external-Schema test explicitly
-  skipped in the isolated environment;
+- full Python tests: 171 run, 170 passed, and one optional external-Schema test
+  explicitly skipped in the isolated environment;
 - external Draft 2020-12 fixture cross-check with preinstalled
   `jsonschema 4.10.3`: passed separately;
 - focused M1-A tests with the external engine: 31 passed;
