@@ -1,0 +1,24 @@
+{
+  "addresses_serialized": false,
+  "allocation_count": {
+    "method": "requires an instrumented allocator",
+    "reason": "The Rust global allocator is not instrumented in R3.",
+    "status": "not_collected",
+    "value": null
+  },
+  "ffi_calls_per_candidate": 1,
+  "input_bytes": 16588800,
+  "input_copy_bytes": 0,
+  "input_handoff_bytes_per_call": 16588800,
+  "per_eye_ffi_calls": 0,
+  "run_kind": "m1_p0_r3_inprocess_shared_buffer",
+  "schema_version": "0.1.0",
+  "subprocess_count": 0,
+  "temporary_buffer_bytes_by_candidate": {
+    "T0": 2073600,
+    "T1": 2073600,
+    "T2": 2073600
+  },
+  "temporary_file_count": 0,
+  "unavailable_values_are_null": true
+}

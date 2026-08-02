@@ -1,6 +1,6 @@
 # 2026-08-02 — M1-P0-R3 In-process Shared-buffer Boundary
 
-Status: premeasurement implementation and contract prepared
+Status: verified; decision `RUST_CONTROL_PLANE_ADMITTED`
 
 ## Verified predecessor state
 
@@ -36,11 +36,60 @@ and thirty same-process paired blocks. Candidate and implementation order are
 deterministic and rotating. The Gate thresholds and four allowed decisions
 are fixed before results.
 
-## Current boundary
+## Premeasurement boundary
 
-No R3 measurement has run at this entry. The premeasurement commit will bind
-the config, adapter, runner, tests, and predeclared receipt. Results will be
-written only after that commit and exact contract-hash validation.
+Commit `3abbbeafd370bd176472aaf7f506dee1bec4ee79` bound the config,
+adapter, runner, tests, and predeclared receipt before measurement. Its
+contract SHA-256 was
+`f0d7b85df9bbc7d8381d5b6b493fe6765f2f7b15b95abf1e1c76642987b688e2`.
+The model-free plan returned `execution_started=false` before the exact hash
+was supplied.
+
+## Measured result
+
+The measurement command ran once. It produced 90 pairs: 30 each for Case B
+T0/T1/T2 after five warm-up blocks. All executions stayed in one CPython
+3.12.9 process and shared the same read-only NumPy 2.4.4 sequence object.
+
+| Candidate | Python p50/p95 | Rust boundary p50/p95 | p50 reduction | boundary fraction |
+|---|---:|---:|---:|---:|
+| T0 | 18.8026 / 23.6652 ms | 14.8912 / 17.2905 ms | 20.80% | 0.189% |
+| T1 | 27.2803 / 37.6603 ms | 18.7658 / 21.7417 ms | 31.21% | 0.165% |
+| T2 | 28.7248 / 32.9490 ms | 18.3897 / 21.4844 ms | 35.98% | 0.164% |
+
+Semantic parity and deterministic R1 hashes passed for every pair. Input-copy
+bytes, subprocesses, temporary files, and per-Eye FFI calls were zero; there
+was exactly one FFI call per candidate. Dominant Rust motion-temporary storage
+was 2,073,600 bytes per candidate. Allocation count is explicitly
+`null/not_collected` with reason and method.
+
+The empty boundary calibration measured 0 seconds p50 and 0.4 microseconds
+p95 at clock resolution and was never subtracted. JSON was absent from the hot
+path. The independent audit recomputed 1,348 assertions with zero failures.
+
+Gate: **`RUST_CONTROL_PLANE_ADMITTED`**. This closes the bounded runtime
+question and makes M1-P0 closable. It is not a real-video or product speedup
+claim; the next separately approved research step is M1 Eye Topology Ground
+Truth Lab, not R4.
+
+## Final validation
+
+- CPython 3.12 extension release build and import: passed;
+- PyO3 version/ABI: `0.29.0` / `abi3-py312`;
+- Python compile: passed;
+- full Python tests: 140 passed;
+- Python 3.12 R3 tests: 14 passed;
+- Rust formatting: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 10 runtime tests;
+- all 40 repository JSON files parsed;
+- independent R3 arithmetic/evidence audit: 1,348 assertions, 0 failures;
+- v1/R1/R2 immutable evidence tests: passed;
+- public absolute-path, credential-pattern, address, and repeated semantic
+  payload scans: passed;
+- `git diff --check`: passed.
+
+## Execution boundary
 
 - H3 API calls: 0;
 - API-key uses: 0;

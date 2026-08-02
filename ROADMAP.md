@@ -136,6 +136,12 @@ decision records one bounded implementation blocker and requires separate
 approval before further refinement. H3 admission and every model/CUDA path
 remain separate.
 
+R3 passed as `RUST_CONTROL_PLANE_ADMITTED`: T1/T2 boundary p50 was 31.21% and
+35.98% below the Python reference, p95 did not regress, T0 improved, boundary
+overhead stayed below 0.2%, and semantic/copy safety passed. M1-P0 is now
+closable. Do not create an R4; proceed only through the separately approved,
+rights-cleared real-video M1 protocol.
+
 ## M1 — Eye Topology Ground Truth Lab
 
 ### Question

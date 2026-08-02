@@ -1,6 +1,6 @@
 # M1-P0-R3 In-process Shared-buffer Boundary
 
-Status: predeclared; measurement pending
+Status: verified; decision `RUST_CONTROL_PLANE_ADMITTED`
 
 ## Purpose
 
@@ -100,8 +100,36 @@ Other allowed decisions are `REFINE_SHARED_BUFFER_BOUNDARY`,
 abandoning Compound Perception First or selecting Mono first. No R4 follows
 without separate approval.
 
+## Result
+
+The runner executed once from premeasurement commit
+`3abbbeafd370bd176472aaf7f506dee1bec4ee79` with contract SHA-256
+`f0d7b85df9bbc7d8381d5b6b493fe6765f2f7b15b95abf1e1c76642987b688e2`.
+
+| Candidate | Python p50 | Rust boundary p50 | p50 reduction | Python p95 | Rust p95 | FFI+buffer+marshal p50 fraction |
+|---|---:|---:|---:|---:|---:|---:|
+| T0 | 18.8026 ms | 14.8912 ms | 20.80% | 23.6652 ms | 17.2905 ms | 0.189% |
+| T1 | 27.2803 ms | 18.7658 ms | 31.21% | 37.6603 ms | 21.7417 ms | 0.165% |
+| T2 | 28.7248 ms | 18.3897 ms | 35.98% | 32.9490 ms | 21.4844 ms | 0.164% |
+
+All candidates preserved their immutable R1 semantic hashes. The 90 measured
+pairs contain 30 blocks per candidate. Semantic parity was 100%, the input
+hash stayed stable, and every candidate used one FFI call with zero per-Eye
+calls, input-copy bytes, subprocesses, and temporary files. Each runtime path
+reported 2,073,600 dominant motion-temporary bytes. Allocation count remains
+`null/not_collected` with its reason.
+
+The empty extension calibration was 0 seconds p50 and 0.4 microseconds p95 at
+the Windows performance-counter resolution; it was not subtracted. An
+independent audit recomputed 1,348 assertions over pairing, spans, summaries,
+semantic references, copy accounting, public path safety, and the Gate with
+zero failures.
+
+Decision: **`RUST_CONTROL_PLANE_ADMITTED`**. M1-P0 is closable and the next
+approved research surface is the rights-cleared real-video M1 Eye Topology
+Ground Truth Lab. R3 still cannot claim official product or model speedup.
+
 ## Evidence boundary
 
-The measurement has not yet run. H3 API calls, API-key uses, paid runs,
-customer data uses, model downloads, model loads, CUDA runs, Wan runs, and LTX
-runs are zero. R3 cannot claim official product or model speedup.
+H3 API calls, API-key uses, paid runs, customer data uses, model downloads,
+model loads, CUDA runs, Wan runs, and LTX runs were all zero.

@@ -17,6 +17,7 @@ from hive_benchmarks.topology_pruning.r3_runner import (
     validate_config,
     validate_immutable_r2,
 )
+from hive_benchmarks.topology_pruning.r3_audit import audit as audit_r3_evidence
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -169,6 +170,14 @@ class TopologyPruningR3Tests(unittest.TestCase):
         self.assertNotIn("Command::new", source)
         self.assertNotIn("File::", source)
         self.assertNotIn("serde_json", source)
+
+    def test_final_r3_evidence_recomputes_without_failures(self) -> None:
+        result = audit_r3_evidence(ROOT)
+        self.assertEqual(result["failures"], 0)
+        self.assertEqual(result["decision"], "RUST_CONTROL_PLANE_ADMITTED")
+        self.assertEqual(result["samples"], 90)
+        self.assertEqual(result["pairs_per_candidate"], {"T0": 30, "T1": 30, "T2": 30})
+        self.assertGreater(result["assertions"], 1300)
 
 
 if __name__ == "__main__":

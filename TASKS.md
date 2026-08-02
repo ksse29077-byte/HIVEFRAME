@@ -108,7 +108,7 @@ remains separate and no backend/model execution was performed.
 
 ## M1-P0-R3 — In-process Shared-buffer Boundary
 
-Overall refinement status: `predeclared`; measurement pending.
+Overall refinement status: `verified`; decision `RUST_CONTROL_PLANE_ADMITTED`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
@@ -117,13 +117,16 @@ Overall refinement status: `predeclared`; measurement pending.
 | Fix Case B T0/T1/T2 scope | `verified` | 5 warm-ups and 30 same-process paired blocks declared |
 | Borrow one shared input buffer | `implemented` | read-only C-contiguous uint8 buffer; one Rust call per candidate; zero per-Eye calls |
 | Predeclare thresholds and decisions | `verified` | config, contract receipt, tests, and Issue #44 |
-| Execute R3 measurement | `pending` | permitted only from the immutable premeasurement commit and contract hash |
+| Execute R3 measurement | `verified` | 30 paired blocks per candidate; T1/T2 p50 lower by 31.21%/35.98% |
+| Verify shared-buffer safety | `verified` | parity 100%; input copies, subprocesses, temp files, and per-Eye calls are zero |
+| Decide R3 | `verified` | `RUST_CONTROL_PLANE_ADMITTED`; 1,348 independent audit assertions pass |
 | Publish Draft PR | `pending` | do not mark ready or merge automatically |
 
 R3 is a model-free control-plane experiment. It cannot close M0 or M1 and
 cannot claim real-video, model, quality, or product speedup. Compound
 Perception First remains the product direction; Mono remains the comparator
-and safety fallback.
+and safety fallback. The admission makes M1-P0 closable; the next research
+work is the rights-cleared real-video M1 Eye Topology Ground Truth Lab.
 
 ## Backend product target policy
 
