@@ -1,0 +1,146 @@
+{
+  "schema_version": "0.1.0",
+  "run_id": "m1-a2-2026-08-03",
+  "tooling": {
+    "distribution": "Gyan FFmpeg essentials build linked by the FFmpeg project Windows download page",
+    "official_download_page": "https://ffmpeg.org/download.html",
+    "distribution_page": "https://www.gyan.dev/ffmpeg/builds/",
+    "source_url": "https://github.com/GyanD/codexffmpeg/releases/download/7.1.1/ffmpeg-7.1.1-essentials_build.zip",
+    "archive_bytes": 92234348,
+    "archive_sha256": "04861d3339c5ebe38b56c19a15cf2c0cc97f5de4fa8910e4d47e5e6404e4a2d4",
+    "ffmpeg_sha256": "b90225987bdd042cca09a1efb5e34e9848f2d1dbf5fbcd388753a44145522997",
+    "ffprobe_sha256": "05e8fa639450f8191635192871ae37a3ec3e4638fa12f3b7d49c6522ba16a8ed",
+    "license_sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "license": "GPL-3.0-or-later",
+    "version": "7.1.1",
+    "ffmpeg_version_line": "ffmpeg version 7.1.1-essentials_build-www.gyan.dev Copyright (c) 2000-2025 the FFmpeg developers",
+    "ffprobe_version_line": "ffprobe version 7.1.1-essentials_build-www.gyan.dev Copyright (c) 2007-2025 the FFmpeg developers"
+  },
+  "rights_evidence": {
+    "capture_log_sha256": "6ccb5dd7725633d0cc12aba03f7f89b34574e34995b4ec601c25268a2d8a5062",
+    "rights_declaration_sha256": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+    "c01_consent_sha256": "f1187f598036db3b23af869bab64e19712dce6459667721b375dbf3be72963d2"
+  },
+  "clips": [
+    {
+      "clip_id": "c01",
+      "file_name": "C01_speaking_person.mp4",
+      "original_sha256": "3c8b13aa93d538fb2b696044ce9b8c8bcd59fe7c67459d1dd074eddf9ca454a5",
+      "scene_class": "static_background_speaking_person",
+      "neutral_description": "A person speaks while the background is intended to remain static.",
+      "stress_labels": ["face", "mouth_motion", "identity"],
+      "identifiable_people_declared": true,
+      "consent_required_declared": true
+    },
+    {
+      "clip_id": "c02",
+      "file_name": "C02_hand_motion.mp4",
+      "original_sha256": "d301388c434c577512c468cdcb422029b797ae879e279d5fd887333ccead5314",
+      "scene_class": "static_background_hand_motion",
+      "neutral_description": "A hand moves against an intended static background.",
+      "stress_labels": ["hand", "local_motion"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c03",
+      "file_name": "C03_local_object.mp4",
+      "original_sha256": "403c88559517073feb29fe84efd63c8e517b013eee35301053037eb9c5dd59f4",
+      "scene_class": "static_background_local_object_motion",
+      "neutral_description": "A local object moves against an intended static background.",
+      "stress_labels": ["object_motion", "static_background"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c04",
+      "file_name": "C04_slow_pan.mp4",
+      "original_sha256": "2fc6c8db3a892c9d5fb989833327afaf9108dad7800a32ea3a260f223d37a381",
+      "scene_class": "slow_pan",
+      "neutral_description": "The camera performs an intended slow pan.",
+      "stress_labels": ["camera_motion", "pan"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c05",
+      "file_name": "C05_zoom.mp4",
+      "original_sha256": "696bc94e5bfe8f6f2ed24fa739a7d423438db2c40d90bb5a67f6eb5e44f860da",
+      "scene_class": "zoom_in_out",
+      "neutral_description": "The camera performs an intended zoom.",
+      "stress_labels": ["camera_motion", "zoom"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c06",
+      "file_name": "C06_handheld_shake.mp4",
+      "original_sha256": "af5dbca13af67bf23d2a490db9af323e7a7efdccc271ec0e9979a4b6ba9dd485",
+      "scene_class": "handheld_shake",
+      "neutral_description": "The camera exhibits intended handheld shake.",
+      "stress_labels": ["camera_motion", "shake"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c07",
+      "file_name": "C07_hard_cut.mp4",
+      "original_sha256": "09132b7068114123bea36464852725e73e4965b1caeb9d42df1e393b704c2c52",
+      "scene_class": "hard_cut",
+      "neutral_description": "Two intended scenes are separated by a hard cut.",
+      "stress_labels": ["scene_cut", "full_reobserve"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c08",
+      "file_name": "C08_occlusion.mp4",
+      "original_sha256": "fb4730b22abcbdf2cd82015bdcb322098065be478ae03122d2d21f459788328b",
+      "scene_class": "multiple_objects_occlusion",
+      "neutral_description": "Multiple objects create intended occlusion and disocclusion.",
+      "stress_labels": ["occlusion", "disocclusion", "multiple_objects"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c09",
+      "file_name": "C09_reflection.mp4",
+      "original_sha256": "b6ff70452db152569be441567edbb71c9fe7954bcfcdbc5c6077d832134a1358",
+      "scene_class": "reflection_mirror",
+      "neutral_description": "A mirror or reflection changes within the scene.",
+      "stress_labels": ["reflection", "mirror"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c10",
+      "file_name": "C10_complex_boundary.mp4",
+      "original_sha256": "eb8546148275554007265935f403a9d97c6476fcf0f0156acc21237b4a8e2954",
+      "scene_class": "complex_boundary_hair_water_smoke",
+      "neutral_description": "A fine or deforming boundary stresses regional observation.",
+      "stress_labels": ["complex_boundary"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c11",
+      "file_name": "C11_lighting_change.mp4",
+      "original_sha256": "fb8a4a0212351c66e8de064f906381c3dea54533664587f7f1760360887ef293",
+      "scene_class": "lighting_change",
+      "neutral_description": "The scene contains an intended lighting change.",
+      "stress_labels": ["lighting", "shadow"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    },
+    {
+      "clip_id": "c12",
+      "file_name": "C12_local_global_motion.mp4",
+      "original_sha256": "ae3e23333afeaa87aed0dc1078384d6cc826e940f9d8dd6cd356666f0e5ef8d3",
+      "scene_class": "local_static_camera_global_combination",
+      "neutral_description": "Local static content is combined with intended global camera motion.",
+      "stress_labels": ["local_static", "camera_motion", "mixed_motion"],
+      "identifiable_people_declared": false,
+      "consent_required_declared": false
+    }
+  ]
+}

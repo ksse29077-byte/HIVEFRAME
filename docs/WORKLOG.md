@@ -632,6 +632,56 @@ PR #47 remains Draft and is neither marked ready nor merged.
 
 ---
 
+## 2026-08-03 — M1-A2 derivative and human review gate
+
+PR #47 is merged at `b50051b57de819e1481bd0ff71634fa631cca345`
+and Issue #46 is closed. M1-A2 Issue
+[#48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48) tracks a bounded
+approved-asset pass on branch `agent/m1-a2-corpus-derivative-review`.
+
+Only the approved M1-A2 bundle was inspected. Twelve distinct immutable
+C01-C12 originals, the capture record, rights declaration, and designated C01
+consent were inventoried. The designated consent SHA-256 is
+`f1187f598036db3b23af869bab64e19712dce6459667721b375dbf3be72963d2`;
+the legacy similarly named file was not used.
+
+FFmpeg/FFprobe 7.1.1 was installed only in the approved asset bundle from the
+recorded Gyan archive linked by the FFmpeg Windows download page. Archive,
+binary, and license hashes are stored in
+`data_ledger/m1-a2/ffmpeg-install-record.json`; PATH and administrator state
+were unchanged.
+
+Twelve 832x480, 16 FPS, audio-free FFV1 derivatives were created. Every
+independent repeat matched the final binary SHA-256 and every derivative fully
+decoded. Originals were rehashed unchanged. Three ineligible attempts record
+bitexact option placement, declared rotation admission, and timestamp parsing
+failures; they are not mixed with final evidence.
+
+The oracle scaffold contains twelve `pending_review` records and zero verified
+records. Corpus, rights, oracle, and cross-document structures validate, but
+human rights, scene, privacy, derivative, transition, C07 hard-cut, blind
+re-review, disagreement, and adjudication checks remain open. Decision:
+**`RIGHTS_REVIEW_BLOCKED`**. Eligible clips and eligible scene coverage are
+0/12; topology results remain ineligible.
+
+Detailed evidence and review steps are in
+[`M1_A2_REAL_VIDEO_DERIVATIVE_REVIEW.md`](M1_A2_REAL_VIDEO_DERIVATIVE_REVIEW.md)
+and
+[`worklogs/2026-08-03-m1-a2-real-video-derivative-review.md`](worklogs/2026-08-03-m1-a2-real-video-derivative-review.md).
+
+Model downloads, model loads, CUDA runs, paid external calls, external
+personal-data transfers, backend integrations, and topology performance runs:
+0 each. No media or tool binary is tracked.
+
+Python compile and all 179 tests passed with one optional external-Schema skip
+in the recorded HIVEFRAME environment. Eight focused M1-A2 tests passed. Rust
+format, locked check, and locked tests passed with 10 runtime tests. Sixty-two
+JSON files parsed; public path, credential, binary, legacy-evidence, and diff
+checks passed. The task-specific worklog records the non-installing recovery
+from a missing-NumPy system interpreter and a Windows CRLF checkout mismatch.
+
+---
+
 ## Entry template
 
 ```markdown

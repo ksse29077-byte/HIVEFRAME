@@ -1,0 +1,18 @@
+{
+  "administrator_privileges_used": false,
+  "archive_bytes": 92234348,
+  "archive_sha256": "04861d3339c5ebe38b56c19a15cf2c0cc97f5de4fa8910e4d47e5e6404e4a2d4",
+  "distribution": "Gyan FFmpeg essentials build linked by the FFmpeg project Windows download page",
+  "distribution_page": "https://www.gyan.dev/ffmpeg/builds/",
+  "ffmpeg_sha256": "b90225987bdd042cca09a1efb5e34e9848f2d1dbf5fbcd388753a44145522997",
+  "ffmpeg_version_line": "ffmpeg version 7.1.1-essentials_build-www.gyan.dev Copyright (c) 2000-2025 the FFmpeg developers",
+  "ffprobe_sha256": "05e8fa639450f8191635192871ae37a3ec3e4638fa12f3b7d49c6522ba16a8ed",
+  "ffprobe_version_line": "ffprobe version 7.1.1-essentials_build-www.gyan.dev Copyright (c) 2007-2025 the FFmpeg developers",
+  "install_reference": "approved-asset:m1-a2/tools/ffmpeg-7.1.1",
+  "license": "GPL-3.0-or-later",
+  "license_sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+  "official_download_page": "https://ffmpeg.org/download.html",
+  "schema_version": "0.1.0",
+  "source_url": "https://github.com/GyanD/codexffmpeg/releases/download/7.1.1/ffmpeg-7.1.1-essentials_build.zip",
+  "system_path_modified": false
+}

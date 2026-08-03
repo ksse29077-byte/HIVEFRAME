@@ -1,0 +1,449 @@
+{
+  "receipts": [
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c01",
+      "consent_basis": "Explicit C01 self-consent evidence is present; final visual review remains pending.",
+      "consent_status": "verified",
+      "evidence_digest": "b295ac0b9f7d8652c21a39d56a2831352f3dfeca62cd87b1d8fc2f3cbfdce1c2",
+      "identifiable_people": true,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c01",
+      "original_sha256": "3c8b13aa93d538fb2b696044ce9b8c8bcd59fe7c67459d1dd074eddf9ca454a5",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c02",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c02",
+      "original_sha256": "d301388c434c577512c468cdcb422029b797ae879e279d5fd887333ccead5314",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c03",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c03",
+      "original_sha256": "403c88559517073feb29fe84efd63c8e517b013eee35301053037eb9c5dd59f4",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c04",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c04",
+      "original_sha256": "2fc6c8db3a892c9d5fb989833327afaf9108dad7800a32ea3a260f223d37a381",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c05",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c05",
+      "original_sha256": "696bc94e5bfe8f6f2ed24fa739a7d423438db2c40d90bb5a67f6eb5e44f860da",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c06",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c06",
+      "original_sha256": "af5dbca13af67bf23d2a490db9af323e7a7efdccc271ec0e9979a4b6ba9dd485",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c07",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c07",
+      "original_sha256": "09132b7068114123bea36464852725e73e4965b1caeb9d42df1e393b704c2c52",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c08",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c08",
+      "original_sha256": "fb4730b22abcbdf2cd82015bdcb322098065be478ae03122d2d21f459788328b",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c09",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c09",
+      "original_sha256": "b6ff70452db152569be441567edbb71c9fe7954bcfcdbc5c6077d832134a1358",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c10",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c10",
+      "original_sha256": "eb8546148275554007265935f403a9d97c6476fcf0f0156acc21237b4a8e2954",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c11",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c11",
+      "original_sha256": "fb8a4a0212351c66e8de064f906381c3dea54533664587f7f1760360887ef293",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    },
+    {
+      "attribution_obligation": {
+        "required": false,
+        "text": "No attribution required by the recorded declaration."
+      },
+      "clip_id": "c12",
+      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_status": "not_required",
+      "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "official_source_reference": "approved-asset:m1-a2/c12",
+      "original_sha256": "ae3e23333afeaa87aed0dc1078384d6cc826e940f9d8dd6cd356666f0e5ef8d3",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "restrictions": [
+        "No external analysis-service transfer.",
+        "Public distribution of original video requires separate approval."
+      ],
+      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_status": "pending",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_holder": "declared self-recording rights holder",
+      "source_class": "pending_rights_review",
+      "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
+    }
+  ],
+  "schema_version": "0.1.0"
+}

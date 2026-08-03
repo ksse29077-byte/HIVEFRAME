@@ -1,0 +1,817 @@
+{
+  "clips": [
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c01",
+      "codec": "h264",
+      "consent_required": true,
+      "consent_status": "verified",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "f8620de20a277266daab1c4fccd2eb2616b3a29036f1e4987506911f62f23e5b",
+      "duration_seconds": 12.864922,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 30.004067909034298,
+      "frame_count": 386,
+      "height": 1080,
+      "identifiable_people": true,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "A person speaks while the background is intended to remain static.",
+      "oracle_sha256": "119b29b22342276ef58a43c8c72f82086b1d96887b8fcba4ca91721cd0889f52",
+      "original_bytes": 27807832,
+      "original_sha256": "3c8b13aa93d538fb2b696044ce9b8c8bcd59fe7c67459d1dd074eddf9ca454a5",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "static_background_speaking_person"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c01",
+      "stress_labels": [
+        "face",
+        "mouth_motion",
+        "identity"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c02",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "84e7f15872e831e55ca3b19fd7c62fd230d85c1c74c7ac52b878c5b79e901aa3",
+      "duration_seconds": 9.433056,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 21.414032905523833,
+      "frame_count": 202,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "A hand moves against an intended static background.",
+      "oracle_sha256": "d3ee4a4530c49215619feeea4c70f6972c00692bc8eccc557e4a95ad9a616edb",
+      "original_bytes": 19227136,
+      "original_sha256": "d301388c434c577512c468cdcb422029b797ae879e279d5fd887333ccead5314",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "static_background_hand_motion"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c02",
+      "stress_labels": [
+        "hand",
+        "local_motion"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c03",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "00b0dc0ce0198a1b9971f3561fdb1ab58bcc0e0c93d962d919c7c21a8c3e0563",
+      "duration_seconds": 5.651322,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 22.295667287301498,
+      "frame_count": 126,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "A local object moves against an intended static background.",
+      "oracle_sha256": "7bf0ee84e4629907905b479d9eb8f63c099a0a8434ce0b499c79e10b8e0b00b2",
+      "original_bytes": 11587715,
+      "original_sha256": "403c88559517073feb29fe84efd63c8e517b013eee35301053037eb9c5dd59f4",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "static_background_local_object_motion"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c03",
+      "stress_labels": [
+        "object_motion",
+        "static_background"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c04",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "24af9b252d8b079f06acfa15a549e704cc3707b36b39fd395f708d5b5a1ca941",
+      "duration_seconds": 7.6095,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 27.597042297942924,
+      "frame_count": 210,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "The camera performs an intended slow pan.",
+      "oracle_sha256": "9c247dda1718b1d81c907217f26fb14e57477caaa3be35cbb0dc2bd491b5dcce",
+      "original_bytes": 16362284,
+      "original_sha256": "2fc6c8db3a892c9d5fb989833327afaf9108dad7800a32ea3a260f223d37a381",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "slow_pan"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c04",
+      "stress_labels": [
+        "camera_motion",
+        "pan"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c05",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "9710fad8a499876dd1f9223a9b56fb4d38148e9bdccd2eeae7cac71e4d14d916",
+      "duration_seconds": 9.648056,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 25.60101344542654,
+      "frame_count": 247,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "The camera performs an intended zoom.",
+      "oracle_sha256": "da56d141a62e43b845571719f5b0450ce071f7338941a39786b637fb18fbef16",
+      "original_bytes": 20327282,
+      "original_sha256": "696bc94e5bfe8f6f2ed24fa739a7d423438db2c40d90bb5a67f6eb5e44f860da",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "zoom_in_out"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c05",
+      "stress_labels": [
+        "camera_motion",
+        "zoom"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c06",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "d633d37179c0d8b8d4bacc008c49e52cd4feca4fffee6fc4aaa49c066ef702cb",
+      "duration_seconds": 9.499733,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 23.474343139456547,
+      "frame_count": 223,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "The camera exhibits intended handheld shake.",
+      "oracle_sha256": "4690be5415467c18073eca58bc6afcb3e4eb87038307074be1c5c1517ec45b65",
+      "original_bytes": 19953006,
+      "original_sha256": "af5dbca13af67bf23d2a490db9af323e7a7efdccc271ec0e9979a4b6ba9dd485",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "handheld_shake"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c06",
+      "stress_labels": [
+        "camera_motion",
+        "shake"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c07",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "2ab83e6405cd0740fe164f7ab846685ee57938ae4ac320cdde8b277e1d3c6f9f",
+      "duration_seconds": 7.9964,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 18.133159921964886,
+      "frame_count": 145,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "Two intended scenes are separated by a hard cut.",
+      "oracle_sha256": "9c17069492ff8351e3a64f1767fbb77a375b7ca6a897ccf5136d82fa037899e3",
+      "original_bytes": 16032734,
+      "original_sha256": "09132b7068114123bea36464852725e73e4965b1caeb9d42df1e393b704c2c52",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "hard_cut"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c07",
+      "stress_labels": [
+        "scene_cut",
+        "full_reobserve"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c08",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "6a5ecab734ff79c116efb149ff93ca14610577dcad0cee4290d9cd166fdefb2d",
+      "duration_seconds": 8.949089,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 27.935804762247678,
+      "frame_count": 250,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "Multiple objects create intended occlusion and disocclusion.",
+      "oracle_sha256": "3c112efd82f5117eb399d3b49ec6e94dcfda1cf058546ba3b708061a7207cf1d",
+      "original_bytes": 19340354,
+      "original_sha256": "fb4730b22abcbdf2cd82015bdcb322098065be478ae03122d2d21f459788328b",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "multiple_objects_occlusion"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c08",
+      "stress_labels": [
+        "occlusion",
+        "disocclusion",
+        "multiple_objects"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c09",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "14473ebcff24d7fc86a34aee88ae095147bb37e94a129e4d3b0cdf9f4ac356c2",
+      "duration_seconds": 8.304778,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 29.98274085867573,
+      "frame_count": 249,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "A mirror or reflection changes within the scene.",
+      "oracle_sha256": "edfbecf168459484a64e401bb9d09b55d92be08f50cae4da9d7d8fc31a7fcda4",
+      "original_bytes": 17933369,
+      "original_sha256": "b6ff70452db152569be441567edbb71c9fe7954bcfcdbc5c6077d832134a1358",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "reflection_mirror"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c09",
+      "stress_labels": [
+        "reflection",
+        "mirror"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c10",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "7237b5950d9869040e61a43fa89b27b62e06e8bd13ba001f559d4f1518525040",
+      "duration_seconds": 6.306078,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 29.9710860950723,
+      "frame_count": 189,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "A fine or deforming boundary stresses regional observation.",
+      "oracle_sha256": "8805b77071ae2ea0acda820242154ca95595ad8a56d4d602411fc06078e1d841",
+      "original_bytes": 13683502,
+      "original_sha256": "eb8546148275554007265935f403a9d97c6476fcf0f0156acc21237b4a8e2954",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "complex_boundary_hair_water_smoke"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c10",
+      "stress_labels": [
+        "complex_boundary"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c11",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "a483ff7cb2f88b6d102c92015d37ebab22647ccd66db5f471bc860d8a168934d",
+      "duration_seconds": 8.745644,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 29.957731394254164,
+      "frame_count": 262,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "The scene contains an intended lighting change.",
+      "oracle_sha256": "0d0999c0c7783a9116e775c6439847681494b8e0d75a6a556c3eaabad541f8c3",
+      "original_bytes": 18854755,
+      "original_sha256": "fb8a4a0212351c66e8de064f906381c3dea54533664587f7f1760360887ef293",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "lighting_change"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c11",
+      "stress_labels": [
+        "lighting",
+        "shadow"
+      ],
+      "width": 1920
+    },
+    {
+      "admission_status": "pending",
+      "attribution_required": false,
+      "attribution_text": "No attribution required by the recorded declaration.",
+      "audio_present": true,
+      "clip_id": "c12",
+      "codec": "h264",
+      "consent_required": false,
+      "consent_status": "not_required",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "derivative_sha256": "c2415a3d5d0d70660c9dca21e01cb1915992feef3bbf1931bba582f5104d80e2",
+      "duration_seconds": 10.322378,
+      "evidence_notes": [
+        "Original and derivative binaries remain outside Git.",
+        "Scene class is a recording intent until human review confirms coverage.",
+        "Automatic oracle promotion was not used."
+      ],
+      "fps": 29.934963305181622,
+      "frame_count": 309,
+      "height": 1080,
+      "identifiable_people": false,
+      "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
+      "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
+      "neutral_description": "Local static content is combined with intended global camera motion.",
+      "oracle_sha256": "b6ef90de84afdb9b542c6f28bf11b879fef72543dff389abfaf63b5fe39eeacb",
+      "original_bytes": 22277214,
+      "original_sha256": "ae3e23333afeaa87aed0dc1078384d6cc826e940f9d8dd6cd356666f0e5ef8d3",
+      "permissions": {
+        "commercial": true,
+        "copy": true,
+        "derivative": true,
+        "redistribution": true,
+        "research": true
+      },
+      "rejection_reason": {
+        "method": "M1-A2 review package",
+        "reason": "Human visual rights and oracle review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "reviewed_at": {
+        "method": "M1-A2 review package",
+        "reason": "Human review has not completed.",
+        "status": "pending",
+        "value": null
+      },
+      "rights_holder": "declared self-recording rights holder",
+      "rights_status": "pending",
+      "scene_classes": [
+        "local_static_camera_global_combination"
+      ],
+      "sensitive_content_status": "pending",
+      "source_authority": "declared self-recording owner",
+      "source_class": "pending_rights_review",
+      "source_provenance": "Direct self-recording declared in the approved M1-A2 evidence bundle.",
+      "storage_class": "local_approved_artifact_store",
+      "storage_reference": "approved-asset:m1-a2/originals/c12",
+      "stress_labels": [
+        "local_static",
+        "camera_motion",
+        "mixed_motion"
+      ],
+      "width": 1920
+    }
+  ],
+  "corpus_version": "m1-a2-pending-review-v0",
+  "derivative_contract": {
+    "alpha_policy": "discard_after_compositing_against_black_if_present",
+    "aspect_policy": "preserve_display_aspect_ratio",
+    "audio_policy": "omit_from_analysis_derivative_but_record_original_audio_presence",
+    "bit_depth": 8,
+    "colorspace": "bt709",
+    "command_template": "<decoder> -i <original-input> -map 0:v:0 -an -vf <declared-filter-chain> -c:v ffv1 <analysis-output>",
+    "crop_policy": "no_content_crop",
+    "decoder": "ffmpeg",
+    "decoder_version": "7.1.1",
+    "frame_mapping_policy": "record_each_derivative_frame_index_to_source_timestamp_and_source_frame_index",
+    "letterbox_policy": "symmetric_black_letterbox_to_target",
+    "orientation_policy": "apply_declared_container_rotation_then_clear_rotation_metadata",
+    "original_immutable": true,
+    "output_representation": "lossless_ffv1_mkv_analysis_derivative",
+    "resize_policy": "lanczos_deterministic_single_pass",
+    "result_tuning_forbidden": true,
+    "sampling_policy": "constant_frame_rate_from_source_timestamps_nearest_prior",
+    "target_fps": 16,
+    "target_resolution": [
+      832,
+      480
+    ],
+    "tool_version": "ffmpeg-7.1.1",
+    "vfr_policy": "normalize_to_declared_target_fps_with_frame_mapping_receipt"
+  },
+  "minimum_eligible_clips": 12,
+  "required_scene_classes": [
+    "static_background_speaking_person",
+    "static_background_hand_motion",
+    "static_background_local_object_motion",
+    "slow_pan",
+    "zoom_in_out",
+    "handheld_shake",
+    "hard_cut",
+    "multiple_objects_occlusion",
+    "reflection_mirror",
+    "complex_boundary_hair_water_smoke",
+    "lighting_change",
+    "local_static_camera_global_combination"
+  ],
+  "schema_version": "0.1.0"
+}
