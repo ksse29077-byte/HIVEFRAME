@@ -1,8 +1,15 @@
 # 2026-08-03 — M1-A2 Real-video Derivative Review Preparation
 
-Status: evidence preserved; phase-one human rights, scene, and privacy review
-complete; Guided Oracle classified as auxiliary observed-change evidence;
-current Gate `ORACLE_PROTOCOL_REVISE`
+Initial status: `CORPUS_ACQUISITION_REQUIRED`
+
+Superseded intermediate status: `RIGHTS_REVIEW_BLOCKED`
+
+Final M1-A2 decision: `ORACLE_PROTOCOL_REVISE`
+
+Publication state: PR #49 merged into `main`; Issue #48 closed as `COMPLETED`
+
+Evidence state: phase-one human rights, scene, and privacy review complete;
+Guided Oracle classified as auxiliary observed-change evidence
 
 ## Predecessor and tracking state
 
@@ -638,3 +645,131 @@ No unresolved content blocker remained after the audit. PR #49 was deliberately
 left Draft/Open and unmerged because Ready transition and merge require a
 separate explicit approval. Issue #48 was deliberately left Open. M1-B0 was not
 started and requires a new Issue, branch, Draft PR, and user approval.
+
+## Publication and Issue closure
+
+### Chronological decision and publication history
+
+The complete sequence is preserved without rewriting any earlier receipt or
+decision:
+
+1. `CORPUS_ACQUISITION_REQUIRED` — the initial M1-A corpus was empty;
+2. `RIGHTS_REVIEW_BLOCKED` — originals, derivatives, and phase-one review were
+   available while the earlier Oracle path remained incomplete;
+3. `ORACLE_PROTOCOL_REVISE` — visible movement was separated from compute
+   relevance, safe-skip truth, and backend authority;
+4. PR #49 merged the bounded M1-A2 protocol correction and evidence
+   preservation into `main`;
+5. Issue #48 closed as `COMPLETED` for that bounded scope.
+
+The final M1-A2 decision remains `ORACLE_PROTOCOL_REVISE`. Publication did not
+change the Gate and did not issue `M1_CORPUS_AND_ORACLE_READY`.
+
+### Ready transition and merge verification
+
+The approved PR head was
+`028bfdffb302d12074429e876b77425fa644934c`. Immediately before Ready
+transition it was Open/Draft, based on `main`, `MERGEABLE`, and `CLEAN`, with
+zero conflicts, review submissions, conversation comments, and unresolved
+review threads. GitHub exposed no registered CI/status checks. The recorded
+218-test Python and locked Rust verification therefore remained the manual
+pre-merge evidence; absence of CI was not represented as a passing CI run.
+
+After Ready transition, the exact head and `MERGEABLE/CLEAN` state were
+reconfirmed. PR #49 was then merged using the repository's established normal
+merge-commit strategy:
+
+- merge commit: `e00145ae2e0e9c2dbc85b432bee121bd12dca103`;
+- merged at: `2026-08-03T13:38:13Z`;
+- approved PR head is an ancestor of the merge commit and `origin/main`;
+- the merge commit became the verified `origin/main` head at the publication
+  checkpoint;
+- local `main` was fast-forwarded to the same SHA;
+- Issue #48 received a completion comment and closed as `COMPLETED`;
+- local and remote `agent/m1-a2-corpus-derivative-review` branches were
+  preserved;
+- force-push, rebase, history rewrite, and branch deletion: 0.
+
+### Published evidence versus unproven performance
+
+The protocol contracts, direction correction, C01-C12 metadata evidence,
+Guided export classification, validators, tests, and audit history are now
+**published** on `main`. That verified publication fact is distinct from a
+verified runtime result:
+
+- Guided Oracle: auxiliary observed-change evidence;
+- safe-skip truth: 0;
+- verified compute-relevance Oracles: 0;
+- eligible backend selective-compute results: 0;
+- actual selective-compute runs: 0;
+- M1-A2 actual speedup, GPU-work reduction, and VRAM-reduction results: 0.
+
+M1-A2 protocol correction and evidence preservation were merged. Actual
+locality, backend capability, selective compute, VRAM, and end-to-end speed
+remain unmeasured. Model, CUDA, backend-integration, topology-performance,
+paid-service, and external-personal-data-transfer executions during the merge
+and publication sync were all 0.
+
+### Why this docs-only follow-up is separate
+
+The final audit correctly recorded the state that existed before Ready
+transition: Draft/Open, unmerged PR and Open Issue. Repository rules require a
+new verified state to be appended to the worklog, not retroactively substituted
+into the older audit. This publication-sync branch therefore changes only
+documentation and creates a separate Draft PR. It does not reopen M1-A2
+implementation or modify Schema, validator, config, receipt, media, or research
+evidence.
+
+M1-B0 remains planned and needs a separately approved Issue, branch, and Draft
+PR. A HIVEFRAME 2.0 RFC remains planned/protocol-only, also needs its own
+approval and review surface, and cannot bypass M1-B0 or backend evidence.
+
+### Rollback and historical lookup
+
+History is retrieved through PR #49, Issue #48, the approved PR head, and merge
+commit `e00145ae2e0e9c2dbc85b432bee121bd12dca103`. `git log --first-parent
+main` shows the publication boundary, while `git show` of the PR head and merge
+commit separates reviewed content from the merge record. The preserved source
+branch provides another immutable lookup surface.
+
+If the publication ever requires rollback, use a separately reviewed normal
+revert of the merge commit so the correction remains auditable. Do not reset,
+rewrite, or delete the historical evidence. No rollback was performed here.
+
+### Publication-sync verification
+
+The docs-only branch `agent/m1-a2-merge-publication-sync` started from the
+verified merge commit with a clean worktree and matching local/remote `main`.
+Duplicate searches found no same-purpose local or remote branch, Issue, or PR,
+so the repository's optional tracking-Issue rule did not require a new Issue.
+
+Only four Markdown files changed. `TASKS.md`, `docs/WORKLOG.md`, and this
+detailed record are the required sync targets. The master work order received
+one additional minimal edit because its “current M1-A2 merge-readiness scope”
+sentence directly contradicted the completed merge; no other document was
+expanded.
+
+Final model-free verification for this publication sync:
+
+- Python compile: passed;
+- full Python suite: 218 run, 216 passed, two explicit optional-dependency
+  skips;
+- `cargo fmt --all -- --check`: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 10 Rust tests;
+- changed Markdown relative-link failures: 0;
+- public absolute-path findings: 0;
+- credential/private-key findings: 0;
+- changed binary findings: 0;
+- protected code, config, Schema, report, ledger, and receipt changes: 0;
+- current Gate occurrences remained consistent with
+  `ORACLE_PROTOCOL_REVISE`;
+- PR #49 remained `MERGED` at the declared head, merge commit, and timestamp;
+- Issue #48 remained `CLOSED/COMPLETED`;
+- `git diff --check`: passed.
+
+The test-only LF normalization of the frozen R3 fixture was restored
+byte-for-byte after the suite. Optional dependency absence remained an explicit
+skip rather than a pass. Model downloads, model loads, CUDA runs, backend
+integrations, topology/performance runs, M1-B0 executions, HIVEFRAME 2.0 RFC
+executions, paid calls, and external personal-data transfers were all 0.
