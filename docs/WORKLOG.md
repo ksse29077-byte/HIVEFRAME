@@ -751,6 +751,45 @@ counts remain zero.
 
 ---
 
+## 2026-08-03 — M1-A2 selective-recompute protocol correction
+
+HIVEFRAME's official product objective was narrowed to lower accepted-result
+cost for pretrained video generation and editing through safe state reuse and
+selective recomputation. Compound observation remains an evidence mechanism,
+not the objective. Pixel change and human movement boxes have no backend skip
+authority.
+
+The returned Guided Oracle JSON/CSV cover C01-C12 and 110 intervals, but are
+classified only as auxiliary observed-change evidence. The JSON contains the
+exact C07 hard-cut override while the CSV records its containing proposal, so
+full cross-format semantic equivalence is not claimed. No coordinate or
+decision payload was copied into Git. Safe-skip truth, verified
+compute-relevance Oracles, and eligible backend selective-compute results all
+remain zero.
+
+Counterexample-first commit `2f7d534` reproduced the unsafe reference path as
+five failures and five errors before implementation. The corrected contract
+separates observation candidates, backend capability admission, execution
+topology, and complete selective-compute receipts. Uncertainty and global
+invalidation promote to full compute. The roadmap now uses M0 Full Compute
+Cost Truth, M1-A observation corpus, M1-B0/B1/B2/B3 opportunity/admission/probe/
+scaling, and M2-M5 planner/freeze/compiler/net-gain gates while preserving the
+earlier roadmap as history.
+
+The prior `RIGHTS_REVIEW_BLOCKED` report remains unchanged chronological
+evidence. The current Gate is **`ORACLE_PROTOCOL_REVISE`**. Blind re-review,
+adjudication, and final verified-Oracle promotion under the superseded
+pixel-change protocol are stopped. Model downloads, model loads, CUDA,
+backend, topology-performance, paid-service, and external personal-data
+transfer counts are all zero.
+
+Detailed evidence is in
+[`worklogs/2026-08-03-m1-a2-real-video-derivative-review.md`](worklogs/2026-08-03-m1-a2-real-video-derivative-review.md)
+and
+[`HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md`](HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md).
+
+---
+
 ## Entry template
 
 ```markdown

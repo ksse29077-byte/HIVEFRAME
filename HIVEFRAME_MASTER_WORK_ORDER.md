@@ -2,9 +2,11 @@
 
 ## Objective
 
-Develop HIVEFRAME into a commercial compound visual runtime that reduces the
-total cost of an accepted video generation or edit by observing and computing
-only what is necessary.
+Develop HIVEFRAME into a commercial selective-recompute runtime that makes
+pretrained video generation and editing inference lighter and faster than the
+same accepted-result full-compute path. The runtime may use compound visual
+observation to identify candidate reuse and active closures, but multiple Eyes
+are an evidence mechanism rather than the product objective.
 
 The objective is:
 
@@ -24,6 +26,14 @@ minimize(
 
 subject to declared quality, identity, geometry, constraint, memory, license,
 and silent-failure limits.
+
+No observation, pixel-delta mask, or human movement box may directly authorize
+backend skip. Freeze/reuse requires a supported BackendCapabilityMatrix entry,
+dependency and boundary closure, invalidation handling, full-compute fallback,
+and a SelectiveComputeReceipt that includes every added cost. Editing is the
+first backend validation track; generation follows only after selector
+admission. The current protocol is documented in
+`docs/HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md`.
 
 ## Architecture program
 

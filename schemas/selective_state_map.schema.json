@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/selective-state-map/v0.schema.json",
+  "title": "HIVEFRAME FreezeMap and ActiveMap protocol v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "coordinate_space",
+    "temporal_scope",
+    "compute_unit_type",
+    "frozen_regions",
+    "active_regions",
+    "uncertain_regions",
+    "global_invalidation",
+    "confidence",
+    "evidence_source",
+    "boundary_closure",
+    "promotion_policy",
+    "fallback_policy"
+  ],
+  "properties": {
+    "coordinate_space": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "unit"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "unit": { "const": "pixel" }
+      }
+    },
+    "temporal_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_frame", "end_frame_exclusive"],
+      "properties": {
+        "start_frame": { "type": "integer", "minimum": 0 },
+        "end_frame_exclusive": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "compute_unit_type": {
+      "enum": ["unresolved", "pixel", "latent", "feature", "token", "block", "cache"]
+    },
+    "frozen_regions": { "$ref": "#/$defs/regions" },
+    "active_regions": { "$ref": "#/$defs/regions" },
+    "uncertain_regions": { "$ref": "#/$defs/regions" },
+    "global_invalidation": { "type": "boolean" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_source": { "type": "string", "minLength": 1 },
+    "boundary_closure": { "type": "string", "minLength": 1 },
+    "promotion_policy": { "type": "string", "minLength": 1 },
+    "fallback_policy": { "const": "full_compute" }
+  },
+  "$defs": {
+    "regions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/box" }
+    },
+    "box": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "integer", "minimum": 0 },
+        { "type": "integer", "minimum": 1 },
+        { "type": "integer", "minimum": 1 }
+      ],
+      "items": false
+    }
+  }
+}

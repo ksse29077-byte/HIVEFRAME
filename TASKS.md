@@ -10,6 +10,7 @@ Status date: 2026-08-03
 | `in_progress` | implementation exists but the task is not fully closed |
 | `planned` | not started |
 | `blocked` | external approval or state is required |
+| `stopped` | explicitly discontinued without erasing prior evidence |
 | `unsupported` | current environment/backend lacks the capability |
 
 ## R0 — Compound-eye architecture RFC
@@ -143,10 +144,11 @@ work is M1-A rights-cleared real-video corpus and oracle admission.
 
 ## M1-A — Rights-cleared Real-video Corpus and Oracle Protocol
 
-Overall status: `in_progress`. The initial metadata-only admission decision was
-`CORPUS_ACQUISITION_REQUIRED`; M1-A2 subsequently prepared twelve deterministic
-derivatives but remains `RIGHTS_REVIEW_BLOCKED`. No topology performance run is
-authorized.
+Overall status: `in_progress`. The initial metadata-only admission decision
+`CORPUS_ACQUISITION_REQUIRED` and the later M1-A2 decision
+`RIGHTS_REVIEW_BLOCKED` remain chronological evidence. The current M1-A2 Gate
+is `ORACLE_PROTOCOL_REVISE`: visible-change review is not compute-relevance or
+safe-skip truth. No topology or backend performance run is authorized.
 
 | Task | Status | Evidence |
 |---|---|---|
@@ -165,10 +167,13 @@ by M1-A2.
 
 ## M1-A2 — Deterministic Derivatives and Human Review Gate
 
-Overall status: `blocked`; decision `RIGHTS_REVIEW_BLOCKED`. Phase-one human
-rights, scene-content, and privacy review is complete for all twelve clips.
-Oracle initial pass, blind re-review, adjudication, and final review remain
-required before any clip can become eligible or any Oracle can become verified.
+Overall status: `blocked`; current decision `ORACLE_PROTOCOL_REVISE`.
+`RIGHTS_REVIEW_BLOCKED` remains preserved as the previous chronological Gate.
+Phase-one human rights, scene-content, and privacy review is complete for all
+twelve clips. The exported Guided Oracle is auxiliary observed-change evidence
+only; it is not compute-relevance truth, safe-skip truth, or backend execution
+evidence. Blind re-review, adjudication, and verified-Oracle promotion under
+the superseded protocol are stopped.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
@@ -180,14 +185,17 @@ required before any clip can become eligible or any Oracle can become verified.
 | Preserve superseded manual-entry package | `done` | v1 retained as usability evidence; reviewer stopped before adding rows or exporting results |
 | Prepare guided Oracle review package | `verified` | model-free adjacent-frame proposals: 110 intervals, 106 dirty boxes, 17 uncertain boxes, eight C07 cut candidates; all remain `pending_review` and are not truth |
 | Complete human rights/privacy/scene review | `done` | exact C01-C12 checklist validated; 12/12 rows have all three phase-one fields `yes`; checklist SHA-256 `1ca230...f216` |
-| Complete initial Oracle review | `blocked` | 0/12 complete; reviewer must confirm/correct guided proposals and select the exact C07 hard cut |
-| Complete time-separated blind Oracle review and adjudication | `blocked` | 0/12 blind reviews, adjudications, and final statuses complete |
-| Admit corpus and oracle | `blocked` | eligible 0, verified oracle 0, eligible coverage 0/12 |
-| Run topology cost/safety measurement | `planned` | separate approval only after `M1_CORPUS_AND_ORACLE_READY` |
+| Preserve Guided Oracle export | `done` | JSON/CSV names, hashes, structure, and 12-clip coverage recorded without promoting coordinates or decisions to compute truth |
+| Classify observed-change evidence | `verified` | auxiliary/human-reviewed-or-partially-reviewed; not compute relevance, safe skip, or backend-claim eligible |
+| Complete compute-relevance Oracle | `blocked` | 0 verified; replacement protocol requires separate approval |
+| Complete blind review and adjudication | `stopped` | superseded pixel-change Oracle path will not be promoted |
+| Admit backend selective compute | `blocked` | eligible 0; BackendCapabilityMatrix contains no admitted selector |
+| Run topology/backend cost measurement | `planned` | separate approval after M1-B0/M1-B1 protocol gates |
 
-The current task stops at the review package. Do not run model-free topologies,
-train a planner, connect a backend, or modify Wan hooks until the corpus and
-oracle Gate is ready and a separate measurement task is approved.
+The current task stops at protocol correction. Do not run model-free
+topologies, train a planner, connect a backend, or modify Wan hooks. The next
+work requires a separate approval under the corrected selective-recompute
+roadmap.
 
 ## Maintenance checklist
 

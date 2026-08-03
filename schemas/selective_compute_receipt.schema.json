@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/selective-compute-receipt/v0.schema.json",
+  "title": "HIVEFRAME SelectiveComputeReceipt protocol v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "receipt_id", "run_status", "results_present", "costs",
+    "resources", "fractions", "actual_backend_work_reduction", "quality_delta",
+    "temporal_delta", "accepted_result", "claims"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "receipt_id": { "type": "string", "minLength": 1 },
+    "run_status": { "const": "protocol_only" },
+    "results_present": { "const": false },
+    "costs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scout", "change_detection", "eye_observation", "map_compile",
+        "scheduling", "active_compute", "frozen_reuse", "transfer",
+        "synchronization", "merge", "boundary", "audit",
+        "repair", "fallback", "output", "total_wall"
+      ],
+      "properties": {
+        "scout": { "$ref": "#/$defs/measurement" },
+        "change_detection": { "$ref": "#/$defs/measurement" },
+        "eye_observation": { "$ref": "#/$defs/measurement" },
+        "map_compile": { "$ref": "#/$defs/measurement" },
+        "scheduling": { "$ref": "#/$defs/measurement" },
+        "active_compute": { "$ref": "#/$defs/measurement" },
+        "frozen_reuse": { "$ref": "#/$defs/measurement" },
+        "transfer": { "$ref": "#/$defs/measurement" },
+        "synchronization": { "$ref": "#/$defs/measurement" },
+        "merge": { "$ref": "#/$defs/measurement" },
+        "boundary": { "$ref": "#/$defs/measurement" },
+        "audit": { "$ref": "#/$defs/measurement" },
+        "repair": { "$ref": "#/$defs/measurement" },
+        "fallback": { "$ref": "#/$defs/measurement" },
+        "output": { "$ref": "#/$defs/measurement" },
+        "total_wall": { "$ref": "#/$defs/measurement" }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ram", "vram", "copied_bytes", "transferred_bytes"],
+      "properties": {
+        "ram": { "$ref": "#/$defs/measurement" },
+        "vram": { "$ref": "#/$defs/measurement" },
+        "copied_bytes": { "$ref": "#/$defs/measurement" },
+        "transferred_bytes": { "$ref": "#/$defs/measurement" }
+      }
+    },
+    "fractions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "frozen", "uncertain"],
+      "properties": {
+        "active": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "frozen": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "uncertain": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+      }
+    },
+    "actual_backend_work_reduction": { "$ref": "#/$defs/measurement" },
+    "quality_delta": { "$ref": "#/$defs/measurement" },
+    "temporal_delta": { "$ref": "#/$defs/measurement" },
+    "accepted_result": { "const": false },
+    "claims": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/measurement" }
+    }
+  },
+  "$defs": {
+    "measurement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "status", "reason", "method"],
+          "properties": {
+            "value": { "type": "null" },
+            "status": { "const": "unavailable" },
+            "reason": { "type": "string", "minLength": 1 },
+            "method": { "const": "not measured" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "status", "reason", "method"],
+          "properties": {
+            "value": { "type": "number" },
+            "status": { "const": "measured" },
+            "reason": { "type": "string" },
+            "method": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    }
+  }
+}

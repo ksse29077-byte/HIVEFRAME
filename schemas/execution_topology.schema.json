@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/execution-topology/v0.schema.json",
+  "title": "HIVEFRAME ExecutionTopology v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "physical_cpu_cores", "logical_cpu_cores", "workers", "affinity",
+    "ram_bytes", "gpu_devices", "vram_bytes", "worker_assignment",
+    "compute_granularity", "spatial_parallelism", "temporal_parallelism",
+    "batch_size", "streams", "queue_policy", "synchronization_policy",
+    "merge_policy", "oversubscription_policy"
+  ],
+  "properties": {
+    "physical_cpu_cores": { "type": "integer", "minimum": 0 },
+    "logical_cpu_cores": { "type": "integer", "minimum": 0 },
+    "workers": { "type": "integer", "minimum": 0 },
+    "affinity": { "type": "string", "minLength": 1 },
+    "ram_bytes": { "$ref": "#/$defs/unavailableOrNonnegative" },
+    "gpu_devices": { "type": "array", "items": { "type": "string" } },
+    "vram_bytes": { "$ref": "#/$defs/unavailableOrNonnegative" },
+    "worker_assignment": { "type": "string", "minLength": 1 },
+    "compute_granularity": { "type": "string", "minLength": 1 },
+    "spatial_parallelism": { "type": "string", "minLength": 1 },
+    "temporal_parallelism": { "type": "string", "minLength": 1 },
+    "batch_size": { "type": "integer", "minimum": 0 },
+    "streams": { "type": "integer", "minimum": 0 },
+    "queue_policy": { "type": "string", "minLength": 1 },
+    "synchronization_policy": { "type": "string", "minLength": 1 },
+    "merge_policy": { "type": "string", "minLength": 1 },
+    "oversubscription_policy": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "unavailableOrNonnegative": {
+      "oneOf": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "null" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": "0.1.0",
+  "protocol_status": "predeclared",
+  "results_present": false,
+  "model_runs": 0,
+  "cuda_runs": 0,
+  "protected_evidence_changes": [],
+  "product_track": "editing_first_then_generation",
+  "state_map_example": {
+    "coordinate_space": { "width": 16, "height": 16, "unit": "pixel" },
+    "temporal_scope": { "start_frame": 0, "end_frame_exclusive": 1 },
+    "compute_unit_type": "unresolved",
+    "frozen_regions": [[0, 0, 16, 8]],
+    "active_regions": [[0, 8, 8, 8]],
+    "uncertain_regions": [[8, 8, 8, 8]],
+    "global_invalidation": false,
+    "confidence": 0.5,
+    "evidence_source": "auxiliary_observed_change_evidence",
+    "boundary_closure": "full_compute_until_admitted",
+    "promotion_policy": "backend_capability_required",
+    "fallback_policy": "full_compute"
+  },
+  "backend_capability_matrix": {
+    "schema_version": "0.1.0",
+    "backend_id": "unselected-protocol-only",
+    "capabilities": [
+      {
+        "compute_unit_type": "latent",
+        "support_status": "not_checked",
+        "evidence": "No backend integration or run is authorized in M1-A2.",
+        "skip_authority": false
+      },
+      {
+        "compute_unit_type": "cache",
+        "support_status": "not_checked",
+        "evidence": "No safe-reuse dependency proof exists.",
+        "skip_authority": false
+      }
+    ],
+    "fallback_policy": "full_compute"
+  },
+  "execution_topology": {
+    "physical_cpu_cores": 0,
+    "logical_cpu_cores": 0,
+    "workers": 0,
+    "affinity": "not_assigned",
+    "ram_bytes": null,
+    "gpu_devices": [],
+    "vram_bytes": null,
+    "worker_assignment": "not_assigned",
+    "compute_granularity": "unresolved",
+    "spatial_parallelism": "not_assigned",
+    "temporal_parallelism": "not_assigned",
+    "batch_size": 0,
+    "streams": 0,
+    "queue_policy": "not_assigned",
+    "synchronization_policy": "not_assigned",
+    "merge_policy": "not_assigned",
+    "oversubscription_policy": "prohibited_until_measured"
+  }
+}

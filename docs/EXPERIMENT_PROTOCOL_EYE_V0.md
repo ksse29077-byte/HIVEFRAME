@@ -54,8 +54,10 @@ The output directory must be new or empty. The probe emits:
 - fused regions preserve observation IDs, reported states, and confidence;
 - dirty, stable, and uncertain states are all represented by the synthetic
   boundary-crossing input;
-- compute decisions map dirty→generate, stable→reuse candidate, and
-  uncertain→reconcile;
+- compute decisions map dirty to an active candidate requiring backend
+  admission, stable to a frozen candidate requiring safe-reuse evidence, and
+  uncertain to full-compute fallback;
+- no observation-only candidate carries backend selector or skip authority;
 - unmeasured speedup and GPU metrics remain `null` with reason and method.
 
 ## Model-free receipt

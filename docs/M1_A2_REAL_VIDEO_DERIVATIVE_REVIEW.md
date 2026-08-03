@@ -1,7 +1,8 @@
 # M1-A2 Real-video Derivative and Human Review Gate
 
 Status: derivatives prepared; phase-one human rights, scene, and privacy
-review complete; Oracle review pending
+review complete; guided observed-change export retained as auxiliary evidence;
+current Gate `ORACLE_PROTOCOL_REVISE`
 
 Tracking: [Issue #48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48),
 branch `agent/m1-a2-corpus-derivative-review`
@@ -116,7 +117,7 @@ placement error, an overly strict declared-rotation check, and an FFprobe CSV
 side-data parsing error. All are `results_eligible=false`; none is mixed with
 the final derivative evidence.
 
-## Pending Oracle and Gate
+## Oracle and Gate chronology
 
 No automated signal was promoted to truth. Every adjacent-frame transition is
 initially a full-canvas `uncertain` region with confidence 0.0 and review state
@@ -135,6 +136,15 @@ Oracle initial pass, blind re-review, adjudication, and final status are
 complete for 0/12. Eligible coverage therefore remains 0/12. Therefore
 `results_eligible_for_topology_performance=false` and
 `M1_CORPUS_AND_ORACLE_READY` is not issued.
+
+After the Guided Oracle export was returned, the claim boundary was corrected.
+Visible frame change is not backend compute relevance or safe-skip truth. The
+current Gate is `ORACLE_PROTOCOL_REVISE`. The old `RIGHTS_REVIEW_BLOCKED`
+report is retained unchanged as chronological evidence. Current safe-skip
+truth, verified compute-relevance Oracle, and eligible backend
+selective-compute result counts are all zero. The Guided Oracle export is
+auxiliary observed-change evidence only. Blind re-review, adjudication, and
+verified promotion under the superseded protocol are stopped.
 
 ## Guided Oracle initial-review package
 
@@ -183,7 +193,11 @@ eligible and verified counts at zero. Media, per-frame proposals, local form
 state, and reviewer exports remain outside Git. The public-safe method receipt
 is `data_ledger/m1-a2/guided-oracle-proposal-method.json`.
 
-## Remaining human review
+## Superseded human-review instructions
+
+The steps below are retained only to explain the previous package. Do not
+continue them. A replacement compute-relevance and backend-capability protocol
+requires separate approval.
 
 For each C01-C12 clip, the reviewer must:
 
@@ -197,7 +211,7 @@ For each C01-C12 clip, the reviewer must:
 4. click the per-clip completion button after the partition and coverage
    checks pass, then export the completed initial-pass CSV and JSON without
    changing their `pending_review` status;
-5. in a later separately authorized step, perform a time-separated blind
+5. historically, a later step would have performed a time-separated blind
    re-review, record disagreements, and record
    adjudication rather than silently overwriting the initial pass;
 6. leave unresolved or questionable clips `pending` or mark them `rejected`.
@@ -205,6 +219,7 @@ For each C01-C12 clip, the reviewer must:
 The guided package contains first-screen Korean instructions, the browser form,
 the existing review proxies by relative reference, proposals, and its package
 receipt. It remains outside Git. A later, explicitly
-approved review-finalization task may convert only confirmed clips to
-eligible/verified and rerun the admission Gate. It may not start topology
-performance measurement automatically.
+approved protocol-revision task must first define compute-relevance and
+backend capability truth. The existing observed-change export cannot be
+converted to eligible/verified backend evidence and must not start topology or
+backend performance measurement automatically.

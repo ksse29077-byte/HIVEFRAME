@@ -396,3 +396,86 @@ record disagreements, and adjudicate them explicitly. Until those human steps
 are received and validated, all Oracle and final statuses stay
 `pending_review`; no clip becomes eligible or verified. No later M1 topology
 work may start without a separate approval after a fresh Gate result.
+
+## Selective-recompute objective and Oracle protocol correction
+
+### Why the protocol stopped
+
+The Guided Oracle workflow was designed around visible frame change. That is
+useful auxiliary evidence, but it cannot answer whether a pretrained video
+backend may safely reuse a latent, feature, token, block, timestep, resolution,
+or cache state. A pixel movement box also cannot identify the actual backend
+dependency closure. Continuing blind re-review and adjudication would improve
+agreement on the wrong target and risk promoting observed change into false
+safe-skip authority. The workflow therefore stops before verified-Oracle
+promotion.
+
+The project objective is now explicit: reduce complete accepted-result cost
+for pretrained video generation and editing by reusing valid state and
+selectively recomputing only an admitted active dependency closure. Compound
+observation remains a possible evidence source, not the product objective.
+The first backend validation track will be controlled editing; generation
+follows only after backend capability admission. Neither is authorized here.
+
+### Returned export state
+
+Two reviewer exports were observed and recorded by filename, digest, byte
+size, structure, and clip count only:
+
+- `m1-a2-guided-oracle-initial.pending.json`, SHA-256
+  `c1306acab8e8a34a89d2d13d3c25b8def0031e9f8ac113dc867ff9eb090e534d`,
+  222,461 bytes;
+- `m1-a2-guided-oracle-initial.pending.csv`, SHA-256
+  `9c0efafc343db8e907aef233900a39153dc1869ad21b29691f9f7d3623826746`,
+  63,545 bytes.
+
+Both cover C01-C12 and 110 proposal intervals. The JSON has 329 ordinary
+spatial-partition rows corresponding to the CSV. It also preserves an exact
+C07 human-selected hard-cut override that the CSV represents only through its
+containing proposal; full JSON/CSV semantic equivalence is therefore false.
+No coordinate or decision payload was copied into Git and no automatic repair
+was made. This limitation is retained as evidence rather than hidden.
+
+The exports are classified only as
+`auxiliary_observed_change_evidence`,
+`human_reviewed_or_partially_reviewed`,
+`not_compute_relevance_truth`,
+`not_safe_skip_truth`, and
+`not_eligible_for_backend_skip_claim`.
+
+### Counterexample-first correction
+
+Preimplementation commit `2f7d534` added ten counterexamples. Against the old
+reference contract they produced five failures and five errors: dirty regions
+were issued `generate`, stable regions `reuse_cache`, uncertain regions
+`reconcile`, unsupported selectors and scene cuts did not close authority, and
+the new map/receipt validators did not exist. No model or GPU path was involved.
+
+The corrected ComputePlan emits observation-only active/frozen candidates and
+full-compute fallback for uncertainty. New protocol contracts cover a combined
+FreezeMap/ActiveMap, BackendCapabilityMatrix, ExecutionTopology, and
+SelectiveComputeReceipt. The map must completely partition its declared
+spatial/temporal scope; global invalidation forbids frozen reuse; unsupported
+selectors cannot skip; and every receipt carries the complete selective cost
+formula. Missing measurements are null with explicit unavailable reason and
+method `not measured`, never invented zero.
+
+### Gate chronology and official state
+
+The old decisions remain chronological evidence:
+
+1. `CORPUS_ACQUISITION_REQUIRED` — initial empty corpus;
+2. `RIGHTS_REVIEW_BLOCKED` — derivatives and phase-one review existed, but the
+   old Oracle path was incomplete;
+3. `ORACLE_PROTOCOL_REVISE` — current decision after separating visible change
+   from compute relevance and safe-skip truth.
+
+Current official state: investigated clips 12; phase-one rights/scene/privacy
+review 12/12; derivatives 12; safe-skip truth 0; verified compute-relevance
+Oracles 0; eligible backend selective-compute results 0. Topology and backend
+performance eligibility remain false.
+
+Model downloads 0, model loads 0, CUDA runs 0, backend integration runs 0,
+topology performance runs 0, paid external service calls 0, and external
+customer/personal-data transfers 0. M0 and M1-P0 evidence and all original and
+derivative media remain unchanged.

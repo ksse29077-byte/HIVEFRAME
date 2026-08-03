@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/backend-capability-matrix/v0.schema.json",
+  "title": "HIVEFRAME BackendCapabilityMatrix v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "backend_id", "capabilities", "fallback_policy"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "backend_id": { "type": "string", "minLength": 1 },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["compute_unit_type", "support_status", "evidence", "skip_authority"],
+        "properties": {
+          "compute_unit_type": {
+            "enum": ["pixel", "latent", "feature", "token", "block", "timestep", "resolution", "cache"]
+          },
+          "support_status": {
+            "enum": ["supported", "experimental", "unsupported", "not_checked"]
+          },
+          "evidence": { "type": "string", "minLength": 1 },
+          "skip_authority": { "type": "boolean" }
+        }
+      }
+    },
+    "fallback_policy": { "const": "full_compute" }
+  }
+}

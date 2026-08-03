@@ -9,6 +9,7 @@
     "plan_id",
     "source_state_id",
     "policy",
+    "global_invalidation",
     "execution_units",
     "claims"
   ],
@@ -16,7 +17,16 @@
     "schema_version": { "const": "0.1.0" },
     "plan_id": { "type": "string", "minLength": 1 },
     "source_state_id": { "type": "string", "minLength": 1 },
-    "policy": { "const": "selective_generation_reference_v0" },
+    "policy": { "const": "observation_candidate_map_v1" },
+    "global_invalidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "reason"],
+      "properties": {
+        "active": { "type": "boolean" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
     "execution_units": {
       "type": "array",
       "minItems": 1,
@@ -48,25 +58,29 @@
             "items": false
           },
           "observed_state": { "enum": ["dirty", "stable", "uncertain"] },
-          "decision": { "enum": ["generate", "reuse_cache", "reconcile"] },
+          "decision": {
+            "enum": [
+              "candidate_active_requires_backend_admission",
+              "candidate_frozen_requires_safe_reuse_evidence",
+              "full_compute_fallback"
+            ]
+          },
           "selectors": {
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "patch",
-              "token",
-              "block",
-              "timestep",
-              "resolution",
-              "cache"
+              "authority",
+              "requested_compute_unit",
+              "backend_support",
+              "action"
             ],
             "properties": {
-              "patch": { "type": "boolean" },
-              "token": { "enum": ["all", "region_only", "none", "backend_decides"] },
-              "block": { "enum": ["all", "candidate", "none", "backend_decides"] },
-              "timestep": { "enum": ["all", "candidate", "none", "backend_decides"] },
-              "resolution": { "enum": ["full", "reduced", "none", "backend_decides"] },
-              "cache": { "enum": ["bypass", "reuse", "refresh", "backend_decides"] }
+              "authority": {
+                "enum": ["none_observation_only", "full_compute_only"]
+              },
+              "requested_compute_unit": { "type": "string", "minLength": 1 },
+              "backend_support": { "type": "string", "minLength": 1 },
+              "action": { "type": "string", "minLength": 1 }
             }
           },
           "confidence": { "type": "number", "minimum": 0, "maximum": 1 },

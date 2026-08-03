@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from pathlib import Path
 import sys
@@ -11,6 +12,13 @@ sys.path.insert(0, str(ROOT / "python"))
 
 from hive_probes.compound_eye_v0 import make_synthetic_sequence, run_reference_simulation
 from hive_visual_state.contracts import build_compute_plan, validate_compute_plan
+from hive_visual_state.selective_protocol import (
+    validate_backend_capability_matrix,
+    validate_execution_topology,
+    validate_protocol_config,
+    validate_selective_compute_receipt,
+    validate_selective_state_map,
+)
 
 
 class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
@@ -85,8 +93,6 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
         self.assertEqual(uncertain["selectors"]["authority"], "full_compute_only")
 
     def test_receipt_cannot_omit_total_cost_components(self) -> None:
-        from hive_visual_state.selective_protocol import validate_selective_compute_receipt
-
         incomplete = {
             "schema_version": "0.1.0",
             "receipt_id": "counterexample",
@@ -96,8 +102,6 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
             validate_selective_compute_receipt(incomplete)
 
     def test_active_fraction_alone_cannot_claim_speedup(self) -> None:
-        from hive_visual_state.selective_protocol import validate_selective_compute_receipt
-
         receipt = self._minimal_receipt()
         receipt["fractions"]["active"] = 0.1
         receipt["claims"]["speedup"] = {
@@ -110,8 +114,6 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
             validate_selective_compute_receipt(receipt)
 
     def test_gpu_savings_require_actual_backend_work_reduction(self) -> None:
-        from hive_visual_state.selective_protocol import validate_selective_compute_receipt
-
         receipt = self._minimal_receipt()
         receipt["claims"]["gpu_savings"] = {
             "value": 0.5,
@@ -123,8 +125,6 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
             validate_selective_compute_receipt(receipt)
 
     def test_frozen_active_uncertain_regions_cover_the_full_scope(self) -> None:
-        from hive_visual_state.selective_protocol import validate_selective_state_map
-
         incomplete = {
             "coordinate_space": {"width": 16, "height": 16, "unit": "pixel"},
             "temporal_scope": {"start_frame": 0, "end_frame_exclusive": 1},
@@ -143,8 +143,6 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
             validate_selective_state_map(incomplete)
 
     def test_protocol_config_cannot_change_protected_evidence(self) -> None:
-        from hive_visual_state.selective_protocol import validate_protocol_config
-
         config = {
             "protocol_status": "predeclared",
             "results_present": False,
@@ -154,6 +152,79 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, "protected evidence"):
             validate_protocol_config(config)
+
+    def test_predeclared_config_and_protocol_schemas_are_valid(self) -> None:
+        config = json.loads(
+            (ROOT / "configs" / "selective-recompute-protocol.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        validate_protocol_config(config)
+        validate_selective_state_map(config["state_map_example"])
+        validate_backend_capability_matrix(config["backend_capability_matrix"])
+        validate_execution_topology(config["execution_topology"])
+        for name in (
+            "selective_state_map.schema.json",
+            "backend_capability_matrix.schema.json",
+            "execution_topology.schema.json",
+            "selective_compute_receipt.schema.json",
+        ):
+            schema = json.loads((ROOT / "schemas" / name).read_text(encoding="utf-8"))
+            self.assertEqual(
+                schema["$schema"],
+                "https://json-schema.org/draft/2020-12/schema",
+            )
+            self.assertFalse(schema["additionalProperties"])
+
+    def test_unavailable_measurements_are_null_and_never_fake_zero(self) -> None:
+        receipt = self._minimal_receipt()
+        validate_selective_compute_receipt(receipt)
+        receipt["costs"]["scout"] = {
+            "value": 0,
+            "status": "unavailable",
+            "reason": "not run",
+            "method": "not measured",
+        }
+        with self.assertRaisesRegex(ValueError, "unavailable values require null"):
+            validate_selective_compute_receipt(receipt)
+
+    def test_protocol_schema_positive_and_negative_fixtures(self) -> None:
+        try:
+            from jsonschema import Draft202012Validator
+        except ImportError:
+            self.skipTest("optional jsonschema package is not installed")
+        config = json.loads(
+            (ROOT / "configs" / "selective-recompute-protocol.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        fixtures = {
+            "selective_state_map.schema.json": config["state_map_example"],
+            "backend_capability_matrix.schema.json": config[
+                "backend_capability_matrix"
+            ],
+            "execution_topology.schema.json": config["execution_topology"],
+            "selective_compute_receipt.schema.json": self._minimal_receipt(),
+        }
+        for name, valid in fixtures.items():
+            schema = json.loads((ROOT / "schemas" / name).read_text(encoding="utf-8"))
+            Draft202012Validator.check_schema(schema)
+            validator = Draft202012Validator(schema)
+            self.assertEqual(list(validator.iter_errors(valid)), [], name)
+            invalid = deepcopy(valid)
+            invalid["unexpected"] = True
+            self.assertTrue(list(validator.iter_errors(invalid)), name)
+
+    def test_capability_matrix_rejects_unverified_skip_authority(self) -> None:
+        config = json.loads(
+            (ROOT / "configs" / "selective-recompute-protocol.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        matrix = config["backend_capability_matrix"]
+        matrix["capabilities"][0]["skip_authority"] = True
+        with self.assertRaisesRegex(ValueError, "cannot schedule skip"):
+            validate_backend_capability_matrix(matrix)
 
     @staticmethod
     def _minimal_receipt() -> dict:
@@ -176,7 +247,8 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
             "merge",
             "boundary",
             "audit",
-            "expected_repair_fallback",
+            "repair",
+            "fallback",
             "output",
             "total_wall",
         )

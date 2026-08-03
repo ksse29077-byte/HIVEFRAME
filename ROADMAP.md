@@ -2,7 +2,8 @@
 
 Status: research roadmap
 
-Architecture: compound-eye input observation and selective generation
+Architecture: compound observation feeding a backend-admitted selective
+recompute runtime for pretrained video generation and editing
 
 Evidence policy: no speedup claim before same-condition end-to-end proof
 
@@ -23,6 +24,27 @@ M0 is not retroactively converted into an H3 baseline. A future H3 admission
 baseline must be a separate approved stage or profile after admission.
 
 ## Product objective
+
+HIVEFRAME's primary product objective is a lighter and faster accepted-result
+inference path for pretrained video generation and editing. It freezes or
+reuses valid backend state and selectively recomputes only an admitted active
+dependency closure. Compound observation is one candidate evidence mechanism;
+it is not the product objective and eye count is not a success metric.
+
+The complete accepted-result cost is:
+
+```text
+C_scout + C_change_detection + C_eye_observation + C_map_compile
++ C_scheduling + C_active_compute + C_frozen_reuse + C_transfer
++ C_synchronization + C_merge + C_boundary + C_audit
++ E[C_repair_and_fallback] + C_output
+```
+
+It must be lower than the same-condition full-compute accepted-result cost
+without violating quality, temporal, safety, rights, or license limits. Pixel
+change and active-area fraction are not backend work-reduction measurements.
+
+### Preserved topology-cost formulation
 
 HIVEFRAME does not optimize for the largest number of eyes. It chooses the
 safest Eye Topology with the lowest accepted-result cost, including a valid
@@ -49,6 +71,38 @@ identity, geometry, constraint, memory, false-stable, license, and failure
 safety limits. The initial false-stable target remains at or below 0.5% and
 relative quality loss at or below 2%; later changes require recorded evidence.
 
+## Current official milestone line (2026-08-03 correction)
+
+This line governs future work. The detailed Compound I/O expansion later in
+this file remains historical research context and cannot bypass these gates.
+
+- **M0 — Full Compute Cost Truth:** finish the immutable accepted-result full
+  compute comparator and all input/output cost scopes.
+- **M1-A — Real-video Observation Corpus:** preserve rights-cleared real-video
+  observation evidence while separating visible change from compute relevance
+  and safe-skip truth.
+- **M1-B0 — Model-free Locality Opportunity:** estimate locality opportunity
+  without claiming backend work reduction.
+- **M1-B1 — Backend Capability Admission:** prove which backend units and
+  invalidation/fallback semantics are actually supported.
+- **M1-B2 — Controlled Selective Recompute Probe:** editing-first, then
+  generation; compare admitted selective work with full compute.
+- **M1-B3 — Parallel Scaling Surface:** measure CPU/GPU worker assignment,
+  transfers, synchronization, merge, memory, and oversubscription.
+- **M2 — Change/Reuse Planner:** compile evidence and capability truth into a
+  conservative FreezeMap, ActiveMap, and ExecutionTopology.
+- **M3 — Dynamic Freeze and Fusion:** update reusable state across time with
+  boundary closure, global invalidation, audit, repair, and fallback.
+- **M4 — Backend Compiler:** translate only admitted selectors to supported
+  backends while preserving full-compute parity.
+- **M5 — End-to-End Net Gain:** claim success only when complete accepted-result
+  wall/GPU cost is below the same-condition full-compute path.
+
+The current M1-A2 Gate is `ORACLE_PROTOCOL_REVISE`: the guided pixel-change
+export is auxiliary observed-change evidence, not compute-relevance or
+safe-skip truth. Verified compute-relevance Oracles and eligible backend
+selective-compute results remain zero.
+
 ## Non-negotiable principles
 
 - **Mono is valid.** Do not split when 1×1 is safer or cheaper.
@@ -61,6 +115,8 @@ relative quality loss at or below 2%; later changes require recorded evidence.
 - **Reversible topology.** Every choice can escalate to a safer topology or
   full computation.
 - **Backend truthfulness.** Unsupported selectors remain `unsupported`.
+- **Observation is not authority.** No pixel, Eye, or human movement box can
+  authorize backend skip before capability admission.
 - **M0 is immutable evidence.** Compound-eye work cannot weaken or reinterpret
   the pinned baseline.
 - **Every decision has provenance.** Record why work was observed, selected,
@@ -68,6 +124,11 @@ relative quality loss at or below 2%; later changes require recorded evidence.
 
 Detailed execution rules are normative in
 [`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
+
+The corrected product contract is normative in
+[`docs/HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md`](docs/HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md).
+
+## Historical detailed Compound I/O expansion (preserved)
 
 ## M0 — Single-Eye Cost Truth
 

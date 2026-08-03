@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1.0",
+  "report_kind": "m1_a2_oracle_protocol_revision",
+  "current_decision": "ORACLE_PROTOCOL_REVISE",
+  "decision_history": [
+    "CORPUS_ACQUISITION_REQUIRED",
+    "RIGHTS_REVIEW_BLOCKED",
+    "ORACLE_PROTOCOL_REVISE"
+  ],
+  "official_counts": {
+    "investigated_clips": 12,
+    "rights_scene_privacy_review_complete": 12,
+    "deterministic_derivatives": 12,
+    "safe_skip_truth": 0,
+    "verified_compute_relevance_oracles": 0,
+    "eligible_backend_selective_compute_results": 0
+  },
+  "guided_oracle_export": {
+    "files_present": 2,
+    "clip_count": 12,
+    "proposal_interval_count": 110,
+    "ordinary_partition_row_count": 329,
+    "json_csv_full_semantic_equivalence": false,
+    "equivalence_limitation": "The CSV records the containing C07 proposal while the JSON additionally preserves the exact human-selected hard-cut override.",
+    "classification": [
+      "auxiliary_observed_change_evidence",
+      "human_reviewed_or_partially_reviewed",
+      "not_compute_relevance_truth",
+      "not_safe_skip_truth",
+      "not_eligible_for_backend_skip_claim"
+    ]
+  },
+  "eligibility": {
+    "topology_performance": false,
+    "backend_performance": false,
+    "quality_claim": false,
+    "speedup_claim": false,
+    "gpu_savings_claim": false
+  },
+  "protocol_state": {
+    "blind_re_review": "stopped_superseded_protocol",
+    "adjudication": "stopped_superseded_protocol",
+    "final_verified_oracle": "stopped_superseded_protocol",
+    "next_work_requires_separate_approval": true
+  },
+  "execution_counts": {
+    "model_downloads": 0,
+    "model_loads": 0,
+    "cuda_runs": 0,
+    "backend_integration_runs": 0,
+    "topology_performance_runs": 0,
+    "paid_external_service_calls": 0,
+    "external_customer_or_personal_data_transfers": 0
+  }
+}

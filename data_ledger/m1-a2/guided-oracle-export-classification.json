@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1.0",
+  "ledger_kind": "guided_oracle_export_classification",
+  "exports": [
+    {
+      "filename": "m1-a2-guided-oracle-initial.pending.json",
+      "sha256": "c1306acab8e8a34a89d2d13d3c25b8def0031e9f8ac113dc867ff9eb090e534d",
+      "bytes": 222461,
+      "clip_count": 12,
+      "proposal_interval_count": 110
+    },
+    {
+      "filename": "m1-a2-guided-oracle-initial.pending.csv",
+      "sha256": "9c0efafc343db8e907aef233900a39153dc1869ad21b29691f9f7d3623826746",
+      "bytes": 63545,
+      "clip_count": 12,
+      "ordinary_partition_row_count": 329
+    }
+  ],
+  "classification": [
+    "auxiliary_observed_change_evidence",
+    "human_reviewed_or_partially_reviewed",
+    "not_compute_relevance_truth",
+    "not_safe_skip_truth",
+    "not_eligible_for_backend_skip_claim"
+  ],
+  "promotion_status": "prohibited_under_superseded_protocol",
+  "results_present": true,
+  "backend_results_present": false,
+  "safe_skip_results_present": false,
+  "verified_compute_relevance_oracle_present": false,
+  "public_payload_contains_coordinates_or_decisions": false,
+  "cross_format_note": "JSON contains an exact C07 hard-cut override that is not represented as an equivalent standalone CSV record; neither export is promoted to compute truth."
+}
