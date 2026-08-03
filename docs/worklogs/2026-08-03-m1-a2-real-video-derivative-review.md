@@ -1,6 +1,7 @@
 # 2026-08-03 — M1-A2 Real-video Derivative Review Preparation
 
-Status: evidence prepared; human review pending; Gate `RIGHTS_REVIEW_BLOCKED`
+Status: evidence prepared; phase-one human rights, scene, and privacy review
+complete; Oracle review pending; Gate `RIGHTS_REVIEW_BLOCKED`
 
 ## Predecessor and tracking state
 
@@ -101,7 +102,79 @@ and capture-record coverage of twelve required scene classes is not counted as
 eligible coverage before human review. `M1_CORPUS_AND_ORACLE_READY` was not
 issued.
 
-## Verification
+## Human review phase-one reconciliation
+
+The reviewer returned the original controlled checklist after directly
+inspecting C01-C12 originals and derivatives. The file was read only from the
+approved asset bundle. It is 1,347 bytes and has SHA-256
+`1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216`.
+Validation required the exact nine-column header, one row for every clip in
+C01-C12 order, and the expected scene-class mapping from the frozen corpus
+config. There were no missing, duplicate, extra, or scene-class-mismatched
+rows.
+
+All twelve rows contain:
+
+- `rights_review=yes`;
+- `scene_content_review=yes`;
+- `privacy_review=yes`;
+- `oracle_initial_pass=pending_review`;
+- `blind_re_review=pending_review`;
+- `adjudication=pending_review`;
+- `final_status=pending_review`.
+
+The result is recorded as **human phase-one rights, scene, and privacy review
+complete**, not as corpus admission. Optional `human_review_progress` records
+were added consistently to the pending corpus manifest and rights receipt.
+The aggregate clip `review_status`, source-rights admission, eligibility,
+sensitive-content disposition, and Oracle fields remain pending. This avoids
+misrepresenting three completed checklist columns as a verified Oracle or a
+final rights-admission decision. Older evidence remains Schema-compatible
+because the progress object is optional.
+
+`data_ledger/m1-a2/human-review-phase-1.json` is the normalized, public-safe
+receipt. It records the checklist digest and abstract storage reference but no
+host path or media. The regenerated admission report records 12/12 phase-one
+reviews, 0/12 initial Oracle passes, 0/12 blind re-reviews, 0/12 adjudications,
+and 0/12 final statuses. The protected outcome remains pending clips 12,
+eligible clips 0, verified Oracles 0, rejected clips 0, eligible coverage 0/12,
+and Gate `RIGHTS_REVIEW_BLOCKED`.
+
+## Local visual Oracle initial-review package
+
+A separate offline package was generated below the approved review bundle. It
+contains a self-contained HTML form, Korean instructions, a blank CSV export
+template, a package receipt, and twelve H.264 browser-review proxies. The
+proxies were CPU-transcoded from the immutable FFV1 derivatives at 832x480,
+16 FPS, yuv420p, with audio and metadata removed. Each proxy was fully decoded
+after creation. They exist only for local visual convenience, are explicitly
+ineligible evidence, and are not tracked by Git.
+
+The form provides:
+
+- C01-C12 selection, playback, pause, and one-frame stepping;
+- A/B comparison captures and frame-range start/end controls;
+- mouse-drawn or full-frame regions classified as dirty, stable, or uncertain;
+- camera motion, occlusion, disocclusion, lighting change, scene cut, and
+  full-reobserve fields;
+- row addition/deletion, reviewer notes, browser-local draft storage, and CSV
+  plus JSON export;
+- a C07-specific warning requiring the exact hard-cut transition, full-frame
+  dirty region, and full re-observation.
+
+The reviewer does not edit JSON or coordinates directly. All exported rows
+retain `pending_review`. No frame difference, optical flow, or automatic label
+was produced in this task; the receipt stores `value=null`,
+`status=not_collected`, the method, and the reason. This is stricter than
+silently treating an unavailable suggestion as zero or truth.
+
+Static tests covered the UI contract and export semantics, and all twelve
+proxies passed full decode. The in-app browser refused the local `file://`
+URL under its navigation security policy; no local server or policy workaround
+was introduced. The package is intended to be opened directly in a local Edge
+or Chrome window.
+
+## Derivative-preparation verification
 
 Final repository-wide model-free verification passed:
 
@@ -135,11 +208,45 @@ Model downloads, model loads, CUDA runs, paid external calls, external
 personal-data transfers, backend integration runs, and topology performance
 runs are all 0.
 
-## Human review blocker
+## Phase-one and Oracle-package verification
 
-The reviewer must inspect all twelve originals and derivatives, confirm rights,
-consent, privacy, expected scene content and derivative presentation, complete
-the transition oracle, identify the exact C07 hard cut, then perform a
-time-separated blind re-review with explicit disagreement and adjudication.
-Unresolved evidence remains pending or rejected. No later M1 topology work may
-start without a separate approval after this review and a fresh Gate result.
+After applying the reviewer checklist and adding the visual tool, the complete
+model-free verification was repeated:
+
+- focused phase-one and Oracle-package tests: 11 passed;
+- Python compile: passed;
+- full Python tests: 190 run, 189 passed, one optional external-Schema test
+  explicitly skipped;
+- `cargo fmt --all -- --check`: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 10 runtime tests;
+- repository JSON parsing: 65 files passed;
+- public absolute-path and personal-identifier findings: 0;
+- credential/private-key findings: 0;
+- tracked media, archive, or tool binaries: 0;
+- M1-P0 v1/R1/R2/R3 report changes: 0;
+- `git diff --check`: passed;
+- local Oracle package: 16 files, 21,346,627 bytes, 12/12 proxies fully
+  decoded at creation.
+
+The first full Python attempt in this update passed all new M1-A2 tests but
+reproduced the two known R3 raw-byte assertions against the Windows CRLF
+checkout of the frozen config. The file was restored immediately. The suite
+was then run with the exact LF bytes from the unchanged Git blob and passed all
+190 tests; the Windows checkout was restored afterward. This was a test-only
+normalization, not an R3 evidence edit.
+
+Model downloads, model loads, CUDA runs, paid external calls, external
+personal-data transfers, backend integration runs, and topology performance
+runs remained 0 throughout this update.
+
+## Remaining human review blocker
+
+Phase-one rights, scene-content, and privacy inspection is complete. The
+reviewer must now use the local visual form to complete the initial transition
+Oracle for C01-C12 and identify the exact C07 hard cut. A later, separately
+authorized, time-separated blind re-review must preserve the initial pass,
+record disagreements, and adjudicate them explicitly. Until those human steps
+are received and validated, all Oracle and final statuses stay
+`pending_review`; no clip becomes eligible or verified. No later M1 topology
+work may start without a separate approval after a fresh Gate result.

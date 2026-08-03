@@ -6,9 +6,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c01",
-      "consent_basis": "Explicit C01 self-consent evidence is present; final visual review remains pending.",
+      "consent_basis": "Designated C01 consent and the human phase-one visual review were confirmed; Oracle review and final corpus admission remain pending.",
       "consent_status": "verified",
       "evidence_digest": "b295ac0b9f7d8652c21a39d56a2831352f3dfeca62cd87b1d8fc2f3cbfdce1c2",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": true,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c01",
@@ -24,15 +37,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -43,9 +56,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c02",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c02",
@@ -61,15 +87,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -80,9 +106,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c03",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c03",
@@ -98,15 +137,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -117,9 +156,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c04",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c04",
@@ -135,15 +187,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -154,9 +206,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c05",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c05",
@@ -172,15 +237,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -191,9 +256,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c06",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c06",
@@ -209,15 +287,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -228,9 +306,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c07",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c07",
@@ -246,15 +337,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -265,9 +356,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c08",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c08",
@@ -283,15 +387,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -302,9 +406,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c09",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c09",
@@ -320,15 +437,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -339,9 +456,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c10",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c10",
@@ -357,15 +487,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -376,9 +506,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c11",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c11",
@@ -394,15 +537,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"
@@ -413,9 +556,22 @@
         "text": "No attribution required by the recorded declaration."
       },
       "clip_id": "c12",
-      "consent_basis": "Capture declaration reports no third-party identifiable person; final visual review remains pending.",
+      "consent_basis": "The capture declaration reports no third-party identifiable person, and human phase-one privacy review is complete; final corpus admission remains pending.",
       "consent_status": "not_required",
       "evidence_digest": "8159535f98cfd6ecee6126b81c4f447c437bd2972b68407374b48d45283aabe0",
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "official_source_reference": "approved-asset:m1-a2/c12",
@@ -431,15 +587,15 @@
         "No external analysis-service transfer.",
         "Public distribution of original video requires separate approval."
       ],
-      "review_method": "Evidence structure check plus pending human visual and oracle review.",
+      "review_method": "Direct human original/derivative review for rights, expected scene content, and privacy; aggregate receipt remains pending until the Oracle workflow completes.",
       "review_status": "pending",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed on the recorded date; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "rights_basis": "Self-recorded rights declaration and capture log pending final human visual review.",
+      "rights_basis": "Self-recorded rights declaration and capture log; human phase-one rights, scene, and privacy review completed; final Oracle admission pending.",
       "rights_holder": "declared self-recording rights holder",
       "source_class": "pending_rights_review",
       "terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9"

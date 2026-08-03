@@ -14,12 +14,28 @@
       "duration_seconds": 12.864922,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 30.004067909034298,
       "frame_count": 386,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": true,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -35,15 +51,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -79,12 +95,28 @@
       "duration_seconds": 9.433056,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 21.414032905523833,
       "frame_count": 202,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -100,15 +132,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -143,12 +175,28 @@
       "duration_seconds": 5.651322,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 22.295667287301498,
       "frame_count": 126,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -164,15 +212,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -207,12 +255,28 @@
       "duration_seconds": 7.6095,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 27.597042297942924,
       "frame_count": 210,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -228,15 +292,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -271,12 +335,28 @@
       "duration_seconds": 9.648056,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 25.60101344542654,
       "frame_count": 247,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -292,15 +372,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -335,12 +415,28 @@
       "duration_seconds": 9.499733,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 23.474343139456547,
       "frame_count": 223,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -356,15 +452,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -399,12 +495,28 @@
       "duration_seconds": 7.9964,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 18.133159921964886,
       "frame_count": 145,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -420,15 +532,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -463,12 +575,28 @@
       "duration_seconds": 8.949089,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 27.935804762247678,
       "frame_count": 250,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -484,15 +612,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -528,12 +656,28 @@
       "duration_seconds": 8.304778,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 29.98274085867573,
       "frame_count": 249,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -549,15 +693,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -592,12 +736,28 @@
       "duration_seconds": 6.306078,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 29.9710860950723,
       "frame_count": 189,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -613,15 +773,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -655,12 +815,28 @@
       "duration_seconds": 8.745644,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 29.957731394254164,
       "frame_count": 262,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -676,15 +852,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },
@@ -719,12 +895,28 @@
       "duration_seconds": 10.322378,
       "evidence_notes": [
         "Original and derivative binaries remain outside Git.",
-        "Scene class is a recording intent until human review confirms coverage.",
-        "Automatic oracle promotion was not used."
+        "Automatic oracle promotion was not used.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete.",
+        "Human phase-one review confirmed the expected scene content, rights, and privacy checklist items.",
+        "Admission remains pending because Oracle initial review and later review stages are incomplete."
       ],
       "fps": 29.934963305181622,
       "frame_count": 309,
       "height": 1080,
+      "human_review_progress": {
+        "adjudication": "pending_review",
+        "blind_re_review": "pending_review",
+        "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+        "final_status": "pending_review",
+        "oracle_initial_pass": "pending_review",
+        "phase": "phase_1_rights_scene_privacy",
+        "phase_one_status": "completed",
+        "privacy_review": "yes",
+        "recorded_date": "2026-08-03",
+        "rights_review": "yes",
+        "scene_content_review": "yes"
+      },
       "identifiable_people": false,
       "license_identifier": "hiveframe-m1-a2-self-recorded-declaration-2026-08-03",
       "license_terms_digest": "9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9",
@@ -740,15 +932,15 @@
         "research": true
       },
       "rejection_reason": {
-        "method": "M1-A2 review package",
-        "reason": "Human visual rights and oracle review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Human phase-one rights, scene, and privacy review completed; Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
         "status": "pending",
         "value": null
       },
-      "review_method": "Deterministic derivative prepared; human rights, scene, privacy, and oracle review pending.",
+      "review_method": "Direct human original/derivative rights, scene-content, and privacy review completed; Oracle stages remain pending.",
       "reviewed_at": {
-        "method": "M1-A2 review package",
-        "reason": "Human review has not completed.",
+        "method": "M1-A2 human review checklist",
+        "reason": "Phase-one human review is complete but final corpus review is not complete.",
         "status": "pending",
         "value": null
       },

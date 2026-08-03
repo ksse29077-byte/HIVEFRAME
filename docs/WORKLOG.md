@@ -680,6 +680,39 @@ JSON files parsed; public path, credential, binary, legacy-evidence, and diff
 checks passed. The task-specific worklog records the non-installing recovery
 from a missing-NumPy system interpreter and a Windows CRLF checkout mismatch.
 
+### Phase-one human review and Oracle UI update
+
+The returned checklist was validated as exactly C01-C12 with the frozen scene
+classes. Its SHA-256 is
+`1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216`.
+All twelve `rights_review`, `scene_content_review`, and `privacy_review` fields
+are `yes`. All twelve `oracle_initial_pass`, `blind_re_review`, `adjudication`,
+and `final_status` fields remain `pending_review`. The corpus manifest, rights
+receipt, admission report, and the new public-safe phase-one receipt record
+this bounded progress without promoting aggregate eligibility.
+
+A local-only browser review package now provides twelve fully decoded H.264
+review proxies, frame stepping and A/B capture, frame-range and drawn-region
+input, dirty/stable/uncertain classification, camera/occlusion/lighting/cut
+fields, explicit C07 hard-cut guidance, browser-local drafts, and CSV/JSON
+export. It requires no direct JSON or coordinate editing. Automated annotation
+was not collected, and every export remains `pending_review`.
+
+The Gate remains **`RIGHTS_REVIEW_BLOCKED`**: pending 12, eligible 0, verified
+Oracle 0, rejected 0, and eligible scene coverage 0/12. Initial Oracle review,
+time-separated blind re-review, adjudication, and final status are still human
+work. Model downloads, model loads, CUDA runs, backend integrations, paid
+external calls, personal-data transfers, and topology performance runs remain
+0 each.
+
+The update passed 11 focused tests and the complete 190-test Python suite with
+one optional external-Schema skip. Rust formatting, locked workspace check,
+and locked tests passed, including 10 runtime tests. All 65 repository JSON
+files parsed; public path/personal-identifier, credential, tracked-binary,
+legacy-evidence, and diff checks passed. The detailed worklog records the
+test-only handling of the known Windows CRLF checkout difference for the
+unchanged R3 raw-byte assertion.
+
 ---
 
 ## Entry template

@@ -165,8 +165,10 @@ by M1-A2.
 
 ## M1-A2 — Deterministic Derivatives and Human Review Gate
 
-Overall status: `blocked`; decision `RIGHTS_REVIEW_BLOCKED`. Human review is
-required before any clip can become eligible or any oracle can become verified.
+Overall status: `blocked`; decision `RIGHTS_REVIEW_BLOCKED`. Phase-one human
+rights, scene-content, and privacy review is complete for all twelve clips.
+Oracle initial pass, blind re-review, adjudication, and final review remain
+required before any clip can become eligible or any Oracle can become verified.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
@@ -175,9 +177,10 @@ required before any clip can become eligible or any oracle can become verified.
 | Inventory approved C01-C12 originals | `verified` | 12 distinct immutable H.264/MP4-family originals; no duplicate digest |
 | Admit local FFmpeg/FFprobe 7.1.1 tools | `verified` | exact archive/binary/license hashes recorded; no PATH/admin change |
 | Create deterministic analysis derivatives | `verified` | 12 FFV1 derivatives; independent encode hashes match; full decode passes |
-| Prepare oracle review package | `verified` | 12 full-canvas uncertain drafts; all remain `pending_review` |
-| Complete human rights/privacy/scene review | `blocked` | reviewer checklist, original/derivative comparison, and consent/privacy confirmation required |
-| Complete initial and time-separated blind oracle review | `blocked` | every transition plus C07 hard cut and adjudication remain human work |
+| Prepare Oracle review package | `verified` | 12 full-canvas uncertain drafts plus local browser form and decoded review proxies; all remain `pending_review` |
+| Complete human rights/privacy/scene review | `done` | exact C01-C12 checklist validated; 12/12 rows have all three phase-one fields `yes`; checklist SHA-256 `1ca230...f216` |
+| Complete initial Oracle review | `blocked` | 0/12 complete; reviewer must label frame intervals/regions and the exact C07 hard cut in the local visual tool |
+| Complete time-separated blind Oracle review and adjudication | `blocked` | 0/12 blind reviews, adjudications, and final statuses complete |
 | Admit corpus and oracle | `blocked` | eligible 0, verified oracle 0, eligible coverage 0/12 |
 | Run topology cost/safety measurement | `planned` | separate approval only after `M1_CORPUS_AND_ORACLE_READY` |
 

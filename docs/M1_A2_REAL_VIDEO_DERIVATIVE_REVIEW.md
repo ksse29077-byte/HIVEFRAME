@@ -1,6 +1,7 @@
 # M1-A2 Real-video Derivative and Human Review Gate
 
-Status: derivatives prepared; human rights, scene, privacy, and oracle review pending
+Status: derivatives prepared; phase-one human rights, scene, and privacy
+review complete; Oracle review pending
 
 Tracking: [Issue #48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48),
 branch `agent/m1-a2-corpus-derivative-review`
@@ -36,6 +37,25 @@ The capture log and rights declaration hashes are respectively:
 - `9f19d937ba8f2faba0eb1210ca9208d500f7c4a4667408a108f21195804a54e9`.
 
 These structure checks do not replace the required human visual review.
+
+## Human review phase one
+
+The reviewer-completed checklist was parsed as a controlled input rather than
+accepted as a free-form assertion. Its SHA-256 is
+`1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216`.
+It contains exactly C01-C12 in the declared scene-class order. Every row has
+`rights_review=yes`, `scene_content_review=yes`, and `privacy_review=yes`.
+Every row also retains `oracle_initial_pass=pending_review`,
+`blind_re_review=pending_review`, `adjudication=pending_review`, and
+`final_status=pending_review`.
+
+The rights receipt and corpus manifest record this bounded progress in the
+optional `human_review_progress` object. Their aggregate admission fields
+remain pending because phase-one review alone does not establish a verified
+Oracle or final corpus eligibility. The public-safe source reference and a
+normalized summary are stored in
+`data_ledger/m1-a2/human-review-phase-1.json`; the original checklist remains
+outside Git with the media review package.
 
 ## Tool admission
 
@@ -96,7 +116,7 @@ placement error, an overly strict declared-rotation check, and an FFprobe CSV
 side-data parsing error. All are `results_eligible=false`; none is mixed with
 the final derivative evidence.
 
-## Pending oracle and Gate
+## Pending Oracle and Gate
 
 No automated signal was promoted to truth. Every adjacent-frame transition is
 initially a full-canvas `uncertain` region with confidence 0.0 and review state
@@ -109,33 +129,52 @@ structural error. Admission nevertheless remains:
 RIGHTS_REVIEW_BLOCKED
 ```
 
-Counts are investigated 12, pending 12, eligible 0, rejected 0. The twelve
-intended scene classes are represented by filenames and capture records, but
-eligible coverage remains 0/12 until a human confirms the actual content,
-rights, privacy, derivative presentation, and oracle labels. Therefore
+Counts are investigated 12, pending 12, eligible 0, rejected 0. Phase-one
+human rights, scene-content, and privacy review is complete for 12/12 clips;
+Oracle initial pass, blind re-review, adjudication, and final status are
+complete for 0/12. Eligible coverage therefore remains 0/12. Therefore
 `results_eligible_for_topology_performance=false` and
 `M1_CORPUS_AND_ORACLE_READY` is not issued.
 
-## Required human review
+## Oracle initial-review package
+
+A local-only, browser-based review tool was generated beside the media. It
+uses H.264 review proxies derived from the existing FFV1 analysis derivatives;
+all twelve proxies passed complete decode. The tool does not edit JSON or
+coordinates directly. It lets the reviewer play a clip, capture A/B frames,
+select a frame range, draw a region, classify it as dirty/stable/uncertain,
+and record camera motion, occlusion/disocclusion, lighting change, scene cut,
+full re-observation, and notes. It explicitly warns that C07 requires the
+exact hard-cut transition.
+
+The tool stores work in browser local storage and exports a CSV plus JSON.
+Every export remains `pending_review`. No frame-difference, optical-flow, or
+other automated annotation was generated in this pass; the package receipt
+records automated suggestion status as `not_collected` with a reason rather
+than inventing a value. Media proxies, local form state, and reviewer exports
+remain outside Git.
+
+## Remaining human review
 
 For each C01-C12 clip, the reviewer must:
 
-1. compare the original and derivative and confirm orientation, aspect ratio,
-   crop/letterbox, color, duration, and expected scene class;
-2. confirm rights-holder facts, consent where required, privacy, sensitive
-   content, visible third-party property, logos, screens, artwork, and music;
-3. label every adjacent derivative-frame transition as a complete,
+1. open the local Oracle review tool and label every relevant derivative-frame
+   interval as a complete,
    non-overlapping dirty/stable/uncertain partition and record preserve,
    object, camera, occlusion, reflection, fine-boundary, lighting, and decoder
    semantics where applicable;
-4. for C07, mark the exact hard-cut transition, full-canvas dirty coverage,
+2. for C07, mark the exact hard-cut transition, full-canvas dirty coverage,
    `full_reobserve=true`, and invalidated identities;
-5. perform a time-separated blind re-review, record disagreements, and record
+3. export the completed initial-pass CSV and JSON without changing their
+   `pending_review` status;
+4. in a later separately authorized step, perform a time-separated blind
+   re-review, record disagreements, and record
    adjudication rather than silently overwriting the initial pass;
-6. leave unresolved or questionable clips `pending` or mark them `rejected`.
+5. leave unresolved or questionable clips `pending` or mark them `rejected`.
 
-The local review package contains instructions, contact sheets, a checklist,
-frame maps, and the complete pending oracle. It remains outside Git. A later,
-explicitly approved review-finalization task may convert only confirmed clips
-to eligible/verified and rerun the admission Gate. It may not start topology
+The local review package contains Korean instructions, a browser form, review
+proxies, a blank CSV template, the package receipt, contact sheets, frame maps,
+and the complete pending Oracle. It remains outside Git. A later, explicitly
+approved review-finalization task may convert only confirmed clips to
+eligible/verified and rerun the admission Gate. It may not start topology
 performance measurement automatically.

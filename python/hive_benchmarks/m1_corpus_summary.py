@@ -113,6 +113,11 @@ def cross_document_errors(manifest: dict[str, Any], rights: dict[str, Any], orac
         annotation = annotation_group[0] if len(annotation_group) == 1 else None
         admission_status = clip.get("admission_status")
 
+        clip_progress = clip.get("human_review_progress")
+        receipt_progress = receipt.get("human_review_progress") if receipt is not None else None
+        if clip_progress != receipt_progress:
+            errors.append(f"clip {clip_id} human review progress does not match rights receipt")
+
         if admission_status != "eligible":
             if annotation is not None and annotation.get("review_status") == "verified":
                 errors.append(f"non-eligible clip {clip_id} has a verified oracle annotation")
@@ -171,6 +176,62 @@ def cross_document_errors(manifest: dict[str, Any], rights: dict[str, Any], orac
     return errors
 
 
+def summarize_human_review_phase_one(
+    manifest: dict[str, Any], rights: dict[str, Any]
+) -> dict[str, Any] | None:
+    clips = [item for item in manifest.get("clips", []) if isinstance(item, dict)]
+    receipts = [item for item in rights.get("receipts", []) if isinstance(item, dict)]
+    progress_by_clip = {
+        item.get("clip_id"): item.get("human_review_progress") for item in receipts
+    }
+    rows: list[dict[str, Any]] = []
+    for clip in clips:
+        progress = clip.get("human_review_progress")
+        if progress is None:
+            continue
+        clip_id = clip.get("clip_id")
+        rows.append(
+            {
+                "clip_id": clip_id,
+                "phase_one_complete": all(
+                    progress.get(field) == "yes"
+                    for field in ("rights_review", "scene_content_review", "privacy_review")
+                ),
+                "oracle_initial_pass": progress.get("oracle_initial_pass"),
+                "blind_re_review": progress.get("blind_re_review"),
+                "adjudication": progress.get("adjudication"),
+                "final_status": progress.get("final_status"),
+                "cross_document_match": progress == progress_by_clip.get(clip_id),
+            }
+        )
+    if not rows:
+        return None
+    hashes = {
+        clip["human_review_progress"]["checklist_sha256"]
+        for clip in clips
+        if isinstance(clip.get("human_review_progress"), dict)
+    }
+    return {
+        "phase": "phase_1_rights_scene_privacy",
+        "checklist_sha256": next(iter(hashes)) if len(hashes) == 1 else None,
+        "reviewed_clips": len(rows),
+        "phase_one_complete": sum(item["phase_one_complete"] for item in rows),
+        "oracle_initial_pass_complete": sum(
+            item["oracle_initial_pass"] != "pending_review" for item in rows
+        ),
+        "blind_re_review_complete": sum(
+            item["blind_re_review"] != "pending_review" for item in rows
+        ),
+        "adjudication_complete": sum(
+            item["adjudication"] != "pending_review" for item in rows
+        ),
+        "final_status_complete": sum(
+            item["final_status"] != "pending_review" for item in rows
+        ),
+        "all_cross_document_matches": all(item["cross_document_match"] for item in rows),
+    }
+
+
 def decide(
     manifest_summary: dict[str, Any],
     rights_summary: dict[str, Any],
@@ -213,6 +274,7 @@ def build_reports(
     protocol_errors = validate_topologies(topologies) + validate_measurement_contract(measurement)
     cross_errors = cross_document_errors(manifest, rights, oracle)
     decision = decide(manifest_summary, rights_summary, oracle_summary, protocol_errors, cross_errors)
+    human_review_phase_one = summarize_human_review_phase_one(manifest, rights)
     coverage = {
         "schema_version": "0.1.0",
         "minimum_eligible_clips": manifest_summary["minimum_eligible_clips"],
@@ -243,6 +305,8 @@ def build_reports(
         },
         "claim_boundary": "Admission metadata only; no topology, generation, quality, cost, GPU, or product conclusion.",
     }
+    if human_review_phase_one is not None:
+        admission["human_review_phase_one"] = human_review_phase_one
     decision_markdown = "\n".join(
         [
             "# M1-A Real-video Corpus and Oracle Admission Decision",
@@ -252,6 +316,15 @@ def build_reports(
             f"Eligible actual clips: {manifest_summary['counts']['eligible']} / {manifest_summary['minimum_eligible_clips']}.",
             f"Missing required scene classes: {len(manifest_summary['missing_scene_classes'])}.",
             "",
+            *(
+                [
+                    f"Human phase-one rights/scene/privacy review: {human_review_phase_one['phase_one_complete']} / {human_review_phase_one['reviewed_clips']} complete.",
+                    "Oracle initial pass, blind re-review, adjudication, and final status remain pending.",
+                    "",
+                ]
+                if human_review_phase_one is not None
+                else []
+            ),
             "This is a metadata/protocol Gate only. It is not topology performance, generation quality, speedup, GPU savings, product evidence, or M1 completion.",
             "",
             "No model was downloaded or loaded; CUDA, paid services, backend integration, and external personal-data transfer were not used.",

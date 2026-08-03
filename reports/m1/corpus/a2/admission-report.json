@@ -17,6 +17,17 @@
     "model_loads": 0,
     "paid_external_service_calls": 0
   },
+  "human_review_phase_one": {
+    "adjudication_complete": 0,
+    "all_cross_document_matches": true,
+    "blind_re_review_complete": 0,
+    "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+    "final_status_complete": 0,
+    "oracle_initial_pass_complete": 0,
+    "phase": "phase_1_rights_scene_privacy",
+    "phase_one_complete": 12,
+    "reviewed_clips": 12
+  },
   "m1_complete": false,
   "manifest_errors": [],
   "oracle_counts": {
