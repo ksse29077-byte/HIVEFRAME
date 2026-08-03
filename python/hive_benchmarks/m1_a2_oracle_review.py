@@ -1,8 +1,13 @@
-"""Build an offline, human-controlled M1-A2 Oracle initial-review package.
+"""Build the superseded v1 manual M1-A2 Oracle initial-review package.
 
 The package creates browser-compatible local proxies from the already-pinned
 analysis derivatives.  It makes no automatic Oracle decision: all saved rows
 remain pending human initial review and are exported for later validation.
+
+This implementation is preserved as usability-history evidence.  Reviewers
+were required to author every interval and region from scratch, so new review
+must use :mod:`m1_a2_guided_oracle_review` instead.  No v1 human Oracle rows or
+exports were accepted before it was superseded.
 """
 
 from __future__ import annotations

@@ -136,45 +136,75 @@ complete for 0/12. Eligible coverage therefore remains 0/12. Therefore
 `results_eligible_for_topology_performance=false` and
 `M1_CORPUS_AND_ORACLE_READY` is not issued.
 
-## Oracle initial-review package
+## Guided Oracle initial-review package
 
-A local-only, browser-based review tool was generated beside the media. It
-uses H.264 review proxies derived from the existing FFV1 analysis derivatives;
-all twelve proxies passed complete decode. The tool does not edit JSON or
-coordinates directly. It lets the reviewer play a clip, capture A/B frames,
-select a frame range, draw a region, classify it as dirty/stable/uncertain,
-and record camera motion, occlusion/disocclusion, lighting change, scene cut,
-full re-observation, and notes. It explicitly warns that C07 requires the
-exact hard-cut transition.
+The first local browser form is preserved as superseded usability-history
+evidence. It required a general reviewer to discover every frame interval and
+draw every dirty, stable, or uncertain region from scratch. The reviewer
+stopped before adding a row or exporting a result. Therefore no v1 input was
+accepted, and the completed 12/12 phase-one rights, scene, and privacy review
+remains unchanged.
 
-The tool stores work in browser local storage and exports a CSV plus JSON.
-Every export remains `pending_review`. No frame-difference, optical-flow, or
-other automated annotation was generated in this pass; the package receipt
-records automated suggestion status as `not_collected` with a reason rather
-than inventing a value. Media proxies, local form state, and reviewer exports
-remain outside Git.
+The replacement package is a model-free, guided human-review tool. It reuses
+the twelve already decoded H.264 review proxies and produces proposals with:
+
+- CPU-decoded 208x120 grayscale frames;
+- adjacent-frame absolute differences with fixed pixel and tile thresholds;
+- four-connected changed-tile components, padded bounding boxes, and overlap
+  merging;
+- fixed windows of 16 adjacent transitions, preserving full temporal
+  coverage while bounding the review queue;
+- the largest adjacent-frame differences as eight C07 hard-cut candidates;
+- semantic review suggestions for C04/C05/C06/C12 camera motion, C08
+  occlusion/disocclusion, C11 lighting change, and C07 scene cut.
+
+Across C01-C12, the generated package contains 110 proposal intervals, 106
+dirty boxes, 17 uncertain boxes, and eight C07 cut candidates. These numbers
+are proposals only. Compression noise, shadows, reflections, texture,
+low-contrast motion, and coarse low-resolution boxes can cause false positives
+or misses. Nothing from this method is a model inference, verified Oracle, or
+eligible performance evidence.
+
+The screen displays previous and later frames, the suggested overlay, frame
+range, flags, and progress. The primary actions are `제안이 맞음`, `수정 필요`,
+and `판단 어려움`. A reviewer can move, resize, delete, or add dirty/uncertain
+boxes without typing coordinates. The stable region is the computed
+full-canvas complement. Completion rejects invalid ranges, temporal gaps,
+overlapping boxes, incomplete spatial partitions, unreviewed suggestions, or
+an invalid C07 hard cut. A confirmed C07 cut creates exactly one full-canvas
+dirty, `scene_cut=true`, `full_reobserve=true` override, but still retains
+`pending_review`.
+
+The package stores work in browser local storage and exports CSV plus JSON only
+after all twelve clips pass initial-input validation. Every export explicitly
+records `automatic_proposals_are_truth=false`, `oracle_initial_pass`,
+`blind_re_review`, `adjudication`, and `final_status` as `pending_review`, with
+eligible and verified counts at zero. Media, per-frame proposals, local form
+state, and reviewer exports remain outside Git. The public-safe method receipt
+is `data_ledger/m1-a2/guided-oracle-proposal-method.json`.
 
 ## Remaining human review
 
 For each C01-C12 clip, the reviewer must:
 
-1. open the local Oracle review tool and label every relevant derivative-frame
-   interval as a complete,
-   non-overlapping dirty/stable/uncertain partition and record preserve,
-   object, camera, occlusion, reflection, fine-boundary, lighting, and decoder
-   semantics where applicable;
-2. for C07, mark the exact hard-cut transition, full-canvas dirty coverage,
-   `full_reobserve=true`, and invalidated identities;
-3. export the completed initial-pass CSV and JSON without changing their
-   `pending_review` status;
-4. in a later separately authorized step, perform a time-separated blind
+1. open the guided local tool, select the clip, replay the proposed interval,
+   and compare its A/B frames and overlay;
+2. click `제안이 맞음`, `수정 필요`, or `판단 어려움`; when needed, move,
+   resize, delete, or add only the affected dirty/uncertain boxes and confirm
+   the suggested semantic flags;
+3. for C07, choose the exact hard-cut transition from the ranked candidates or
+   the current playback transition;
+4. click the per-clip completion button after the partition and coverage
+   checks pass, then export the completed initial-pass CSV and JSON without
+   changing their `pending_review` status;
+5. in a later separately authorized step, perform a time-separated blind
    re-review, record disagreements, and record
    adjudication rather than silently overwriting the initial pass;
-5. leave unresolved or questionable clips `pending` or mark them `rejected`.
+6. leave unresolved or questionable clips `pending` or mark them `rejected`.
 
-The local review package contains Korean instructions, a browser form, review
-proxies, a blank CSV template, the package receipt, contact sheets, frame maps,
-and the complete pending Oracle. It remains outside Git. A later, explicitly
+The guided package contains first-screen Korean instructions, the browser form,
+the existing review proxies by relative reference, proposals, and its package
+receipt. It remains outside Git. A later, explicitly
 approved review-finalization task may convert only confirmed clips to
 eligible/verified and rerun the admission Gate. It may not start topology
 performance measurement automatically.

@@ -713,6 +713,42 @@ legacy-evidence, and diff checks passed. The detailed worklog records the
 test-only handling of the known Windows CRLF checkout difference for the
 unchanged R3 raw-byte assertion.
 
+### Guided Oracle review usability replacement
+
+Actual Oracle entry with the first browser form was stopped before any row or
+export because it still required a general reviewer to discover every frame
+range and draw every region from scratch. The v1 package remains preserved and
+marked superseded as usability-history evidence. The reviewer-completed
+phase-one checklist remains unchanged: all twelve rights, scene-content, and
+privacy fields are `yes`, while all Oracle stages remain `pending_review`.
+
+The guided v2 package uses model-free adjacent-frame grayscale differences,
+thresholded tiles, connected components, and merged boxes to propose 110
+gap-free intervals with 106 dirty and 17 uncertain boxes. Stable coverage is
+the validated full-canvas complement rather than a hand-drawn label. C04-C06
+and C12 receive camera-motion prompts, C08 occlusion/disocclusion prompts, C11
+a lighting prompt, and C07 eight ranked cut candidates. All are suggestions:
+the public receipt states `automatic_proposals_are_truth=false`, eligible 0,
+verified Oracle 0, and Gate `RIGHTS_REVIEW_BLOCKED`.
+
+The Korean UI centers on `제안이 맞음`, `수정 필요`, and `판단 어려움`; supports
+move/resize/delete/add box editing without coordinate entry; tracks each clip;
+derives stable partitions; and blocks completion on gaps, overlaps, incomplete
+coverage, unresolved candidates, or an invalid C07 hard cut. Browser checks
+confirmed C01 accept-and-advance plus reset, C07 candidate presentation, and
+zero console errors. The package and proposal payload remain outside Git; the
+method receipt and deterministic tests are public. Model download/load, CUDA,
+backend, topology, paid external call, and personal-data transfer counts remain
+0 each.
+
+Final verification passed 9 focused guided-review tests and the full 199-test
+Python suite with one optional external-Schema skip. Python compile, Rust
+format, locked workspace check, locked tests (10 runtime tests), 66 JSON parses,
+110 temporal-coverage checks, 110 stable-complement checks, protected-evidence,
+public-path/credential, tracked-binary, and diff checks passed. The package
+still contains 110/110 `unreviewed` human decisions; eligible and verified
+counts remain zero.
+
 ---
 
 ## Entry template
