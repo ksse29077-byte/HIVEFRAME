@@ -482,8 +482,8 @@ derivative media remain unchanged.
 
 ### Final model-free verification
 
-Python compile passed. The final full Python run passed 213 tests with two
-optional-dependency skips. The protocol counterexamples, positive/negative
+Python compile passed. The final full Python run executed 213 tests: 211
+passed and two optional-dependency tests skipped. The protocol counterexamples, positive/negative
 custom validators, reference simulation, receipt behavior, M0, and immutable
 M1-P0 audits all passed. The optional external JSON Schema engine was not
 installed, so its redundant Draft 2020-12 execution remained one of the
@@ -505,7 +505,7 @@ scanning, and protected-evidence comparison passed. Changed binaries were
 zero, public absolute-path or credential findings were zero, protected M0 and
 M1-P0 changes were zero, and original/derivative ledger changes were zero.
 
-The intentional commit sequence is counterexample predeclaration `2f7d534`,
-implementation/contracts/documentation `ebcd3b2`, followed by this final
-verification-log-only commit. The existing Issue #48 and Draft PR #49 remain
+The intentional commit sequence starts with counterexample predeclaration
+`2f7d534` and implementation/contracts/documentation `ebcd3b2`, followed by
+verification-log-only corrections. The existing Issue #48 and Draft PR #49 remain
 the sole review surfaces; no Ready transition or merge occurred.

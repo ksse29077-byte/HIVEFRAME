@@ -783,8 +783,8 @@ pixel-change protocol are stopped. Model downloads, model loads, CUDA,
 backend, topology-performance, paid-service, and external personal-data
 transfer counts are all zero.
 
-Final model-free verification passed Python compile and all 213 Python tests
-with two explicit optional-dependency skips, Cargo formatting/check/tests with
+Final model-free verification passed Python compile and ran 213 Python tests:
+211 passed and two explicit optional-dependency tests skipped. Cargo formatting/check/tests ran
 ten Rust tests, 73 JSON parses, custom schema positive/negative checks,
 protected-evidence comparison, binary/path/secret scans, and diff checking.
 Three earlier Python suite launches were retained as ineligible environment
