@@ -479,3 +479,33 @@ Model downloads 0, model loads 0, CUDA runs 0, backend integration runs 0,
 topology performance runs 0, paid external service calls 0, and external
 customer/personal-data transfers 0. M0 and M1-P0 evidence and all original and
 derivative media remain unchanged.
+
+### Final model-free verification
+
+Python compile passed. The final full Python run passed 213 tests with two
+optional-dependency skips. The protocol counterexamples, positive/negative
+custom validators, reference simulation, receipt behavior, M0, and immutable
+M1-P0 audits all passed. The optional external JSON Schema engine was not
+installed, so its redundant Draft 2020-12 execution remained one of the
+explicit skips; all 73 repository JSON files parsed.
+
+Three preliminary full-suite invocations were ineligible environment attempts,
+not product or protocol failures. The first encountered sixteen test-temp
+permission errors plus two known Windows CRLF-versus-LF R3 raw-byte assertions.
+The next two normalized the unchanged R3 fixture only for the test process but
+still hit the filesystem sandbox's temporary-directory ACL. The final
+model-free run used a permitted temporary-file execution context, restored the
+original checkout bytes, and passed. No benchmark, model, backend, or CUDA path
+was entered during any attempt.
+
+`cargo fmt --all -- --check`, `cargo check --workspace --locked`, and
+`cargo test --workspace --locked` passed; the Rust workspace ran ten tests.
+`git diff --check`, public path/secret scanning, media/model/tool-binary
+scanning, and protected-evidence comparison passed. Changed binaries were
+zero, public absolute-path or credential findings were zero, protected M0 and
+M1-P0 changes were zero, and original/derivative ledger changes were zero.
+
+The intentional commit sequence is counterexample predeclaration `2f7d534`,
+implementation/contracts/documentation `ebcd3b2`, followed by this final
+verification-log-only commit. The existing Issue #48 and Draft PR #49 remain
+the sole review surfaces; no Ready transition or merge occurred.
