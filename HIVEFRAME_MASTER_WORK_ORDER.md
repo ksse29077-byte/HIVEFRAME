@@ -126,9 +126,9 @@ and a creator or B2B product only after earlier gates pass.
 
 ## Current authorized scope
 
-The current M1-A2 merge-readiness scope includes preserved evidence, documents,
-protocol schemas and validators, model-free tests, worklogs, and Git publication
-when explicitly approved.
+The current post-merge publication-sync scope is docs-only: update task and
+worklog records with verified PR #49 and Issue #48 state. It does not reopen
+M1-A2 implementation or authorize a new runtime experiment.
 
 It excludes model training, LoRA, Wan attention changes, CUDA/Triton kernels,
 multi-GPU, GUI, canonical benchmark execution, and actual sparse speedup claims.

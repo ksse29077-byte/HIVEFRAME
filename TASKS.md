@@ -168,7 +168,8 @@ by M1-A2.
 
 ## M1-A2 — Deterministic Derivatives and Human Review Gate
 
-Overall status: `blocked`; current decision `ORACLE_PROTOCOL_REVISE`.
+Bounded M1-A2 implementation status: `done`. Validation status: `done`.
+Publication status: `merged`. Final decision: `ORACLE_PROTOCOL_REVISE`.
 `RIGHTS_REVIEW_BLOCKED` remains preserved as the previous chronological Gate.
 Phase-one human rights, scene-content, and privacy review is complete for all
 twelve clips. The exported Guided Oracle is auxiliary observed-change evidence
@@ -178,7 +179,7 @@ the superseded protocol are stopped.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track M1-A2 preparation | `published` | [Issue #48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48); branch `agent/m1-a2-corpus-derivative-review` |
+| Track M1-A2 publication | `published` | [Issue #48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48) completed; [PR #49](https://github.com/ksse29077-byte/HIVEFRAME/pull/49) merged at `e00145a...`; source branch preserved |
 | Verify designated C01 consent evidence | `verified` | required structure present; SHA-256 `f1187f...63d2`; legacy similarly named file excluded |
 | Inventory approved C01-C12 originals | `verified` | 12 distinct immutable H.264/MP4-family originals; no duplicate digest |
 | Admit local FFmpeg/FFprobe 7.1.1 tools | `verified` | exact archive/binary/license hashes recorded; no PATH/admin change |
@@ -197,6 +198,23 @@ The current task stops at protocol correction. Do not run model-free
 topologies, train a planner, connect a backend, or modify Wan hooks. The next
 work requires a separate approval under the corrected selective-recompute
 roadmap.
+
+Published and verified here mean that the M1-A2 protocol correction, evidence
+preservation, and validation record are on `main`. They do not mean
+`M1_CORPUS_AND_ORACLE_READY`, safe-skip truth, backend capability admission,
+actual selective compute, GPU-work reduction, speedup, or VRAM reduction.
+
+## M1-B0 — Model-free Locality Opportunity
+
+Overall status: `planned`. A separate user approval, Issue, branch, and Draft
+PR are required. M1-B0 must not reinterpret Guided Oracle movement evidence as
+safe-skip truth or bypass backend capability admission.
+
+## HIVEFRAME 2.0 RFC
+
+Overall status: `planned`; protocol-only. It requires separate user approval
+and a separate Issue, branch, and Draft PR. It cannot bypass M1-B0 or backend
+evidence and is not started by the M1-A2 publication.
 
 ## Maintenance checklist
 

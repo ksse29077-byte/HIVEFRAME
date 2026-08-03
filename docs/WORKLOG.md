@@ -859,6 +859,90 @@ explicit user approval.
 
 ---
 
+## 2026-08-03 — M1-A2 protocol correction published and closed
+
+### Verified publication state
+
+- [PR #49](https://github.com/ksse29077-byte/HIVEFRAME/pull/49) was marked
+  Ready after its final manual audit and merged with the repository's normal
+  merge-commit strategy.
+- PR head:
+  `028bfdffb302d12074429e876b77425fa644934c`.
+- Merge commit:
+  `e00145ae2e0e9c2dbc85b432bee121bd12dca103`.
+- Merged at: `2026-08-03T13:38:13Z`.
+- [Issue #48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48) received
+  a merge-completion record and closed as `COMPLETED`.
+- The source branch `agent/m1-a2-corpus-derivative-review` remains available;
+  it was not deleted.
+- The merge commit is the verified `origin/main` head at this publication
+  checkpoint, contains the approved PR head, and the local `main` was
+  fast-forwarded to the same SHA.
+
+The M1-A2 contracts, selective-recompute direction correction, protected
+evidence, and audit record are now **published** on `main`. `Published` means
+the reviewed Git objects are remotely available. It does not mean selective
+recompute performance is **verified**. The final decision remains
+**`ORACLE_PROTOCOL_REVISE`**.
+
+### Claim boundary
+
+- Guided Oracle classification: auxiliary observed-change evidence;
+- safe-skip truth: 0;
+- verified compute-relevance Oracles: 0;
+- eligible backend selective-compute results: 0;
+- M1-A2 actual speedup results: 0;
+- M1-A2 actual GPU-work reduction results: 0;
+- M1-A2 actual VRAM-reduction results: 0;
+- model, CUDA, backend-integration, and topology-performance runs during this
+  publication sync: 0.
+
+In exact scope terms: **M1-A2 protocol correction and evidence preservation
+were merged. Actual locality, backend capability, selective compute, VRAM, and
+end-to-end speed remain unmeasured.**
+
+M1-B0 remains planned and requires a separately approved Issue, branch, and
+Draft PR. A HIVEFRAME 2.0 RFC is also planned/protocol-only and requires its
+own approval and review surface; it cannot bypass M1-B0 or backend evidence.
+
+### Merge controls and follow-up
+
+Before merge, PR #49 had zero conflicts and zero unresolved review threads.
+GitHub exposed no registered CI/status checks, so the merge relied on the
+recorded manual model-free verification rather than an absent CI signal. No
+force-push, rebase, history rewrite, or branch deletion was performed.
+
+This docs-only follow-up exists because the preceding audit entry was
+historically correct when it said the PR was Draft and unmerged. Repository
+rules require the later verified publication state to be appended rather than
+rewriting that chronological evidence.
+
+### Docs-only sync verification
+
+Branch `agent/m1-a2-merge-publication-sync` started from merge commit
+`e00145ae2e0e9c2dbc85b432bee121bd12dca103`. No duplicate branch, Issue, or PR
+for this publication sync existed, so no tracking Issue was created. The diff
+contains four Markdown files: the three required logs/task files plus one
+directly conflicting “current merge-readiness scope” sentence in the master
+work order.
+
+- Python compile: passed;
+- full Python suite: 218 run, 216 passed, two optional-dependency checks
+  explicitly skipped;
+- `cargo fmt --all -- --check`: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 10 Rust tests;
+- changed Markdown relative links: valid, zero broken;
+- public absolute-path and credential/private-key findings: 0;
+- changed binary findings: 0;
+- M0, M1-P0, and M1-A2 code/config/schema/report/ledger evidence changes: 0;
+- `git diff --check`: passed.
+
+Model loads, CUDA runs, backend integrations, topology or performance runs,
+M1-B0 executions, and HIVEFRAME 2.0 RFC executions were all 0.
+
+---
+
 ## Entry template
 
 ```markdown
