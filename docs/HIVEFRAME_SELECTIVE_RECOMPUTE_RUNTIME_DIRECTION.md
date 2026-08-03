@@ -124,9 +124,12 @@ Oracle promotion under the superseded pixel-change protocol are stopped.
 - `selective-recompute-protocol.json`: predeclared, result-free example.
 
 Every protocol config records `results_present=false`,
-`protocol_status=predeclared`, `model_runs=0`, and `cuda_runs=0`. Unavailable
-measurements use exactly a null value, explicit unavailable status and reason,
-and method `not measured`; a zero is never invented.
+`protocol_status=predeclared`, and zero model, CUDA, backend-integration,
+topology-performance, paid-service, and external-personal-data-transfer runs.
+Unavailable measurements use exactly a null value, explicit unavailable status
+and reason, and method `not measured`; a zero is never invented. A protocol-only
+SelectiveComputeReceipt cannot publish measured costs, resource results,
+fractions, quality, temporal, work-reduction, speedup, or GPU-saving values.
 
 ## Evidence needed before a selective-compute claim
 

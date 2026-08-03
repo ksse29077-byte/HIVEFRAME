@@ -126,9 +126,10 @@ Overall refinement status: `verified`; decision `RUST_CONTROL_PLANE_ADMITTED`.
 
 R3 is a model-free control-plane experiment. It cannot close M0 or M1 and
 cannot claim real-video, model, quality, or product speedup. Compound
-Perception First remains the product direction; Mono remains the comparator
-and safety fallback. M1-P0 is complete; no R4 is authorized. The next research
-work is M1-A rights-cleared real-video corpus and oracle admission.
+observation remains a candidate evidence mechanism rather than the product
+direction; Mono remains the comparator and safety fallback. M1-P0 is complete;
+no R4 is authorized. The next chronological work was M1-A rights-cleared
+real-video corpus and oracle admission.
 
 ## Backend product target policy
 
@@ -140,7 +141,7 @@ work is M1-A rights-cleared real-video corpus and oracle admission.
 | Admit future H3 open weights | `blocked` | official repository, checkpoint, source, license, digest, and runtime not jointly verified |
 | Preserve Wan M0 comparator | `done` | frozen code, pins, receipts, fingerprints, and reports; no new feature development |
 | Remove LTX from active scope | `done` | historical code and Git history retained; no cleanup in this change |
-| Create backend capability matrix | `planned` | no standalone matrix exists; black-box/white-box evidence belongs to Issue #39 |
+| Create backend capability matrix | `implemented` | protocol-only matrix exists with no admitted selector or skip authority; runtime evidence remains Issue #39 work |
 
 ## M1-A — Rights-cleared Real-video Corpus and Oracle Protocol
 
@@ -160,7 +161,7 @@ safe-skip truth. No topology or backend performance run is authorized.
 | Admit 12 distinct actual clips | `blocked` | no eligible actual clip is currently recorded in repository metadata |
 | Produce oracle-reviewed complete coverage | `blocked` | depends on eligible clip acquisition and review |
 | Emit M1-A admission reports | `verified` | 0 eligible/pending/rejected; all 12 classes missing; `CORPUS_ACQUISITION_REQUIRED` |
-| Run topology cost/safety measurement | `planned` | separate approval only after `M1_CORPUS_AND_ORACLE_READY` |
+| Run topology cost/safety measurement | `stopped` | original admission path superseded; corrected M1-B0/M1-B1 work requires separate approval |
 
 The initial empty-corpus result remains immutable evidence. It is not replaced
 by M1-A2.

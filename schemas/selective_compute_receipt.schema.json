@@ -58,9 +58,9 @@
       "additionalProperties": false,
       "required": ["active", "frozen", "uncertain"],
       "properties": {
-        "active": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-        "frozen": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-        "uncertain": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+        "active": { "type": "null" },
+        "frozen": { "type": "null" },
+        "uncertain": { "type": "null" }
       }
     },
     "actual_backend_work_reduction": { "$ref": "#/$defs/measurement" },
@@ -74,30 +74,15 @@
   },
   "$defs": {
     "measurement": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["value", "status", "reason", "method"],
-          "properties": {
-            "value": { "type": "null" },
-            "status": { "const": "unavailable" },
-            "reason": { "type": "string", "minLength": 1 },
-            "method": { "const": "not measured" }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["value", "status", "reason", "method"],
-          "properties": {
-            "value": { "type": "number" },
-            "status": { "const": "measured" },
-            "reason": { "type": "string" },
-            "method": { "type": "string", "minLength": 1 }
-          }
-        }
-      ]
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "status", "reason", "method"],
+      "properties": {
+        "value": { "type": "null" },
+        "status": { "const": "unavailable" },
+        "reason": { "type": "string", "minLength": 1 },
+        "method": { "const": "not measured" }
+      }
     }
   }
 }

@@ -1,14 +1,16 @@
 # 2026-08-03 — M1-A2 Real-video Derivative Review Preparation
 
-Status: evidence prepared; phase-one human rights, scene, and privacy review
-complete; Oracle review pending; Gate `RIGHTS_REVIEW_BLOCKED`
+Status: evidence preserved; phase-one human rights, scene, and privacy review
+complete; Guided Oracle classified as auxiliary observed-change evidence;
+current Gate `ORACLE_PROTOCOL_REVISE`
 
 ## Predecessor and tracking state
 
 - PR #47 is merged into `main` at
   `b50051b57de819e1481bd0ff71634fa631cca345`;
 - Issue #46 is closed;
-- M1-A protocol remains unchanged;
+- the initial M1-A protocol remains preserved as historical evidence; M1-A2
+  now records the selective-recompute protocol correction;
 - Issue [#48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48)
   tracks this bounded derivative and review-package pass;
 - dedicated branch: `agent/m1-a2-corpus-derivative-review`.
@@ -385,7 +387,10 @@ external personal-data transfers 0, backend integration runs 0, and topology
 performance runs 0. No Oracle proposal was promoted to verified truth or
 eligible evidence.
 
-## Remaining human review blocker
+## Historical human-review blocker (superseded)
+
+The following was the blocker under the earlier pixel-change Oracle protocol.
+It is retained chronologically and is not the current next action.
 
 Phase-one rights, scene-content, and privacy inspection is complete. The
 reviewer must now use the guided v2 local visual form to confirm or correct the
@@ -509,3 +514,127 @@ The intentional commit sequence starts with counterexample predeclaration
 `2f7d534` and implementation/contracts/documentation `ebcd3b2`, followed by
 verification-log-only corrections. The existing Issue #48 and Draft PR #49 remain
 the sole review surfaces; no Ready transition or merge occurred.
+
+## PR #49 final consistency and merge-readiness audit
+
+### Starting repository and review state
+
+The final audit started from branch head
+`8115c660055749321da637be708a30a546a396af`, exactly matching the remote branch,
+with a clean worktree and `origin/main` at
+`b50051b57de819e1481bd0ff71634fa631cca345`. There was no local/remote
+divergence. PR #49 was Draft/Open, based on `main`, mergeable, conflict-free,
+and unmerged. GitHub exposed no CI status checks, review submissions, discussion
+comments, or unresolved review threads. Issue #48 remained Open. Searches found
+no duplicate Issue, branch, or PR for this bounded purpose.
+
+### GitHub metadata correction
+
+The PR title was corrected in place to **“M1-A2: Preserve real-video evidence
+and revise selective-recompute protocol”**. The existing PR body already states
+the accepted-result objective, safe reuse, backend admission, auxiliary Guided
+evidence, zero safe-skip/compute-relevance/backend results, no speedup or GPU
+saving claim, zero prohibited executions, and separate approval for the next
+experiment, so it was not rewritten.
+
+One top-level continuation comment was added to Issue #48 after confirming that
+no equivalent comment existed. It preserves the original Issue body and records
+rights/scene/privacy review 12/12, twelve deterministic FFV1 derivatives, the
+Guided export's auxiliary classification, zero verified compute-relevance
+Oracles, zero eligible backend selective-compute results, stopped blind review
+and adjudication, current Gate `ORACLE_PROTOCOL_REVISE`, Compound observation
+as a means rather than the objective, and a separate M1-B0 review surface.
+PR #49 remains Draft and unmerged, and Issue #48 remains Open.
+
+### Claim-scope reconciliation
+
+The audit found stale current-state text in `README_FIRST.md`, the master work
+order, project charter, architecture, task list, README, and the preserved M1-A
+protocol. Those passages still presented an R1-era topology refinement or
+Compound Eye topology as the current product direction. They now consistently
+state that HIVEFRAME targets lower complete accepted-result inference cost for
+pretrained generation and editing through safe reuse and backend-admitted
+selective recomputation. Compound observation remains a candidate evidence
+mechanism. The official next step is a separately approved M1-B0 task; the old
+pixel-change Oracle promotion path is stopped.
+
+Historical evidence was not erased. `CORPUS_ACQUISITION_REQUIRED` and
+`RIGHTS_REVIEW_BLOCKED` remain chronological decisions, while the current Gate
+is `ORACLE_PROTOCOL_REVISE`. Investigated clips 12, phase-one review 12/12,
+deterministic derivatives 12, safe-skip truth 0, verified compute-relevance
+Oracles 0, eligible backend selective-compute results 0, and topology/backend
+performance eligibility false remain consistent across the active documents,
+reports, ledgers, and PR body.
+
+### Contract consistency correction
+
+The audit found two narrow protocol inconsistencies:
+
+1. unmeasured ExecutionTopology core, worker, memory, batch, and stream fields
+   used numeric zero or bare null rather than measurement metadata;
+2. the protocol-only SelectiveComputeReceipt schema permitted measured values
+   even though `results_present` was fixed to false.
+
+ExecutionTopology numeric fields now require a non-negative measured-integer
+object or an explicit unavailable object. The current result-free config uses
+`value=null`, `status=unavailable`, a non-empty reason, and method
+`not measured` for every unassigned numeric field. The protocol-only receipt
+now forbids measured cost, resource, fraction, work-reduction, quality,
+temporal, speedup, and GPU-saving results. The config and validator also
+require zero model, CUDA, backend-integration, topology-performance,
+paid-service, and external-personal-data-transfer executions. Five new tests
+cover measured-result rejection, fraction rejection, explicit unavailable
+topology fields, fake-zero rejection, and the complete zero-execution contract.
+
+### Evidence and export integrity
+
+M0 and M1-P0 v1/R1/R2/R3 protected paths have zero changes. Nine approved
+M1-A2 original, derivative, FFmpeg, failed-attempt, proposal, human-review,
+manifest, rights, and historical admission-report blobs match their preserved
+commit exactly. No automatic restoration was required.
+
+The approved external exports were checked read-only:
+
+- `m1-a2-guided-oracle-initial.pending.json`: 222,461 bytes, SHA-256
+  `c1306acab8e8a34a89d2d13d3c25b8def0031e9f8ac113dc867ff9eb090e534d`;
+- `m1-a2-guided-oracle-initial.pending.csv`: 63,545 bytes, SHA-256
+  `9c0efafc343db8e907aef233900a39153dc1869ad21b29691f9f7d3623826746`.
+
+Both remain readable and retain C01-C12. The JSON contains 110 proposal
+intervals; the CSV contains 329 records. The JSON preserves the exact C07
+62-to-63 full-canvas hard-cut override with scene cut and full re-observation,
+whereas the CSV represents it through the containing 48-to-64 proposal. This
+known representation difference is preserved; complete JSON/CSV semantic
+equivalence is not claimed. No coordinates or reviewer decisions were added to
+Git.
+
+### Final model-free verification
+
+- focused selective-protocol tests: 19 run, 18 passed, one optional external
+  `jsonschema` dependency skipped;
+- Python compile: passed;
+- full Python suite: 218 run, 216 passed, two explicit optional-dependency
+  skips;
+- `cargo fmt --all -- --check`: passed;
+- `cargo check --workspace --locked`: passed;
+- `cargo test --workspace --locked`: passed, including 10 Rust tests;
+- tracked repository JSON parsing: 73/73 passed;
+- custom protocol positive/negative validation: passed;
+- public absolute-path findings: 0;
+- credential/private-key findings: 0;
+- changed media/model/tool-binary findings: 0;
+- protected M0/M1-P0 findings: 0;
+- protected M1-A2 evidence findings: 0;
+- `git diff --check`: passed.
+
+The two Python skips are unavailable optional validation dependencies, not
+product or protocol failures. The unchanged R3 raw-byte fixture was normalized
+to LF only inside the test execution and restored byte-for-byte afterward.
+Model downloads 0, model loads 0, CUDA runs 0, backend integrations 0, topology
+performance runs 0, paid external calls 0, and external personal-data transfers
+0.
+
+No unresolved content blocker remained after the audit. PR #49 was deliberately
+left Draft/Open and unmerged because Ready transition and merge require a
+separate explicit approval. Issue #48 was deliberately left Open. M1-B0 was not
+started and requires a new Issue, branch, Draft PR, and user approval.

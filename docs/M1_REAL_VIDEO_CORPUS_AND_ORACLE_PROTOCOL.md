@@ -5,15 +5,29 @@ Status: predeclared protocol; no topology performance results
 Tracking: [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46),
 [Draft PR #47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47)
 
+## Current protocol amendment
+
+This document preserves the original M1-A predeclaration and its historical
+decision vocabulary. M1-A2 subsequently demonstrated that a human-reviewed
+visible-change box is not compute-relevance truth, safe-skip truth, or backend
+execution evidence. Its current Gate is `ORACLE_PROTOCOL_REVISE`.
+
+The Guided Oracle export remains auxiliary observed-change evidence. Blind
+re-review, adjudication, and final promotion under that superseded pixel-change
+path are stopped. Any locality-opportunity work and backend capability
+admission must proceed as separately approved M1-B0 and M1-B1 tasks under
+`docs/HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md`.
+
 ## Purpose and claim boundary
 
 M1-A asks whether HIVEFRAME can assemble a reproducible, rights-cleared set of
 actual videos and a human-verified oracle framework for a later topology safety
 and cost experiment. It does not run that experiment.
 
-M1-P0 is complete with `RUST_CONTROL_PLANE_ADMITTED`. Compound Perception First
-remains the project direction. T0 Mono remains a comparator and safety fallback,
-not the default product direction. M0 remains independently `in_progress`.
+M1-P0 is complete with `RUST_CONTROL_PLANE_ADMITTED`. That model-free result
+preserves compound observation as a candidate mechanism; it does not make
+Compound Eye topology the product objective. T0 Mono remains a comparator and
+safety fallback. M0 remains independently `in_progress`.
 
 M1-A cannot establish a topology advantage, generation quality, total accepted-
 result cost, GPU savings, user-time savings, product speedup, or M1 completion.
@@ -242,5 +256,9 @@ Exactly one result is allowed:
 - `RIGHTS_REVIEW_BLOCKED`;
 - `ORACLE_PROTOCOL_REVISE`.
 
-Only the first permits a separately approved later topology measurement. None
-closes M1, changes M0, authorizes backend integration, or proves speedup.
+Under the original predeclaration, only the first permitted a separately
+approved later topology measurement. The current amendment supersedes that
+admission path: `M1_CORPUS_AND_ORACLE_READY` is not issued from the Guided
+Oracle, and later M1-B0/M1-B1 work requires its own corrected protocol and
+approval. None of these decisions closes M1, changes M0, authorizes backend
+integration, or proves speedup.

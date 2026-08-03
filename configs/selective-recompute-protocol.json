@@ -4,6 +4,10 @@
   "results_present": false,
   "model_runs": 0,
   "cuda_runs": 0,
+  "backend_integration_runs": 0,
+  "topology_performance_runs": 0,
+  "paid_external_service_calls": 0,
+  "external_personal_data_transfers": 0,
   "protected_evidence_changes": [],
   "product_track": "editing_first_then_generation",
   "state_map_example": {
@@ -40,19 +44,54 @@
     "fallback_policy": "full_compute"
   },
   "execution_topology": {
-    "physical_cpu_cores": 0,
-    "logical_cpu_cores": 0,
-    "workers": 0,
+    "physical_cpu_cores": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Protocol-only execution topology has not been assigned or measured.",
+      "method": "not measured"
+    },
+    "logical_cpu_cores": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Protocol-only execution topology has not been assigned or measured.",
+      "method": "not measured"
+    },
+    "workers": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Protocol-only execution topology has not been assigned or measured.",
+      "method": "not measured"
+    },
     "affinity": "not_assigned",
-    "ram_bytes": null,
+    "ram_bytes": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Protocol-only execution topology has not been assigned or measured.",
+      "method": "not measured"
+    },
     "gpu_devices": [],
-    "vram_bytes": null,
+    "vram_bytes": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Protocol-only execution topology has not been assigned or measured.",
+      "method": "not measured"
+    },
     "worker_assignment": "not_assigned",
     "compute_granularity": "unresolved",
     "spatial_parallelism": "not_assigned",
     "temporal_parallelism": "not_assigned",
-    "batch_size": 0,
-    "streams": 0,
+    "batch_size": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Protocol-only execution topology has not been assigned or measured.",
+      "method": "not measured"
+    },
+    "streams": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Protocol-only execution topology has not been assigned or measured.",
+      "method": "not measured"
+    },
     "queue_policy": "not_assigned",
     "synchronization_policy": "not_assigned",
     "merge_policy": "not_assigned",

@@ -2,9 +2,11 @@
 
 ## Current architecture hypothesis
 
-HIVEFRAME is an input-observation and selective-generation runtime. It does not
-first treat every frame as one equally rich input and only later split output
-into patches.
+HIVEFRAME is a selective-recompute runtime for pretrained video generation and
+editing. It seeks safe reuse and backend-admitted selective execution under a
+complete accepted-result cost contract. Compound input observation is one
+candidate way to collect evidence; it is not the product objective and cannot
+authorize skip by itself.
 
 ```text
 input sequence + intent

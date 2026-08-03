@@ -4,11 +4,11 @@ New contributors and Codex sessions should begin with
 [`README_FIRST.md`](README_FIRST.md), then check [`TASKS.md`](TASKS.md) and
 [`docs/WORKLOG.md`](docs/WORKLOG.md) before changing the repository.
 
-HIVEFRAME is a research-first compound-eye visual runtime for video generation
-and editing. It explores whether small, purpose-specific logical eyes can
-observe change before generation, fuse that evidence into a shared visual
-state, and selectively schedule backend work without sacrificing global
-quality, constraints, or failure safety.
+HIVEFRAME is a research-first selective-recompute runtime for pretrained video
+generation and editing. Its product objective is to reduce complete
+accepted-result inference cost through safe state reuse and backend-admitted
+selective recomputation. Compound observation is one candidate evidence
+mechanism, not the product objective or backend execution authority.
 
 > Status: pre-alpha research scaffold. The first implementation priority is **M0 — Reproducible Baseline**. Training and GUI work are intentionally deferred.
 
@@ -31,7 +31,8 @@ This is an architecture hypothesis, not a speedup claim. See
 [`docs/COMPOUND_EYE_HYPOTHESIS.md`](docs/COMPOUND_EYE_HYPOTHESIS.md) and the
 preserved
 [`docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md`](docs/legacy/PATCH_CENTRIC_ARCHITECTURE_V0.md).
-The official milestone sequence is the Compound I/O M0–M8 plan in
+The official selective-recompute sequence and preserved historical Compound
+I/O expansion are both recorded in
 [`ROADMAP.md`](ROADMAP.md); its evidence and advancement rules are normative in
 [`docs/ROADMAP_EXECUTION_RULES.md`](docs/ROADMAP_EXECUTION_RULES.md).
 
@@ -177,11 +178,12 @@ environment, pinned Wan code, and verified checkpoint to another PC is
 
 ## Milestones
 
-M0 Single-Eye Cost Truth → M1 Eye Topology Ground Truth Lab → M2 Scout Eye and
-Adaptive Topology Planner → M3 Sensory Fusion and Dynamic Eye Activation → M4
-Perception-to-Compute Compiler → M5 Compound I/O Net Gain → M6 Closed-Loop
-Adaptive Retina → M7 Temporal Eye Swarm and Backend Independence → M8
-Commercial Compound Visual Engine.
+M0 Full Compute Cost Truth → M1-A Real-video Observation Corpus → M1-B0
+Model-free Locality Opportunity → M1-B1 Backend Capability Admission → M1-B2
+Controlled Selective Recompute Probe → M1-B3 Parallel Scaling Surface → M2–M4
+planning, reuse, and compiler integration → M5 End-to-End Net Gain. The earlier
+Compound I/O M0–M8 expansion remains preserved in the roadmap as historical
+architecture context.
 
 See [ROADMAP.md](ROADMAP.md) for milestone questions and exit gates, and
 [Roadmap execution rules](docs/ROADMAP_EXECUTION_RULES.md) for the

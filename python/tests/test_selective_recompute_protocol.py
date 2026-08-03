@@ -148,6 +148,10 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
             "results_present": False,
             "model_runs": 0,
             "cuda_runs": 0,
+            "backend_integration_runs": 0,
+            "topology_performance_runs": 0,
+            "paid_external_service_calls": 0,
+            "external_personal_data_transfers": 0,
             "protected_evidence_changes": ["M0", "M1-P0", "C01-C12"],
         }
         with self.assertRaisesRegex(ValueError, "protected evidence"):
@@ -187,6 +191,72 @@ class SelectiveRecomputeCounterexampleTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, "unavailable values require null"):
             validate_selective_compute_receipt(receipt)
+
+    def test_protocol_only_receipt_rejects_measured_results(self) -> None:
+        receipt = self._minimal_receipt()
+        receipt["costs"]["scout"] = {
+            "value": 0.25,
+            "status": "measured",
+            "reason": "counterexample",
+            "method": "wall clock",
+        }
+        with self.assertRaisesRegex(ValueError, "results_present=false"):
+            validate_selective_compute_receipt(receipt)
+
+    def test_protocol_only_receipt_rejects_non_null_fractions(self) -> None:
+        receipt = self._minimal_receipt()
+        receipt["fractions"]["active"] = 0.1
+        with self.assertRaisesRegex(ValueError, "null result fractions"):
+            validate_selective_compute_receipt(receipt)
+
+    def test_execution_topology_uses_explicit_unavailable_measurements(self) -> None:
+        config = json.loads(
+            (ROOT / "configs" / "selective-recompute-protocol.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        topology = config["execution_topology"]
+        for name in (
+            "physical_cpu_cores",
+            "logical_cpu_cores",
+            "workers",
+            "ram_bytes",
+            "vram_bytes",
+            "batch_size",
+            "streams",
+        ):
+            self.assertEqual(topology[name]["value"], None)
+            self.assertEqual(topology[name]["status"], "unavailable")
+            self.assertTrue(topology[name]["reason"])
+            self.assertEqual(topology[name]["method"], "not measured")
+        validate_execution_topology(topology)
+
+    def test_execution_topology_rejects_fake_zero_for_unmeasured_workers(self) -> None:
+        config = json.loads(
+            (ROOT / "configs" / "selective-recompute-protocol.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        config["execution_topology"]["workers"] = 0
+        with self.assertRaisesRegex(ValueError, "measurement object"):
+            validate_execution_topology(config["execution_topology"])
+
+    def test_protocol_config_records_all_prohibited_execution_counts_as_zero(self) -> None:
+        config = json.loads(
+            (ROOT / "configs" / "selective-recompute-protocol.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        for name in (
+            "model_runs",
+            "cuda_runs",
+            "backend_integration_runs",
+            "topology_performance_runs",
+            "paid_external_service_calls",
+            "external_personal_data_transfers",
+        ):
+            self.assertEqual(config[name], 0)
+        validate_protocol_config(config)
 
     def test_protocol_schema_positive_and_negative_fixtures(self) -> None:
         try:

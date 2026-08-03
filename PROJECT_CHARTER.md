@@ -2,9 +2,10 @@
 
 ## Mission
 
-Build a commercial visual runtime that reduces real end-to-end video
-processing time and GPU cost by observing change with small, purpose-specific
-logical eyes and selectively generating only the work that remains necessary.
+Build a commercial selective-recompute runtime that reduces accepted-result
+video-generation and editing time and GPU cost through safe state reuse and
+backend-admitted selective recomputation. Purpose-specific logical eyes are one
+candidate evidence mechanism, not the product objective.
 
 All economics include observation, fusion, planning, backend execution,
 boundary handling, evaluation, and repair. HIVEFRAME succeeds only when that
@@ -123,11 +124,12 @@ Existing executions, receipts, smoke gates, and environment fingerprints remain
 valid. M0 is not rerun or weakened merely because the architecture hypothesis
 changed.
 
-The next research milestone is **M1 — Eye Topology Ground Truth Lab**. It
-compares the valid 1×1 Mono Eye and declared multi-eye topologies against oracle
-change masks and complete observation costs before any admitted backend
-integration or selective-generation change. Wan attention hooks remain frozen
-unless separately authorized.
+The current M1-A2 Gate is **`ORACLE_PROTOCOL_REVISE`**. The Guided Oracle is
+auxiliary observed-change evidence and cannot authorize backend skip, reuse, or
+must-compute decisions. The next bounded milestone is a separately approved
+**M1-B0 — Model-free Locality Opportunity** task, followed by separate backend
+capability admission. Wan attention hooks remain frozen unless separately
+authorized.
 
 ## Decision record
 

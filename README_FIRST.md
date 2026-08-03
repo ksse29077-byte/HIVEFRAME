@@ -2,7 +2,7 @@
 
 ## Current repository state
 
-As of 2026-08-01:
+As of 2026-08-03:
 
 - official Compound I/O architecture and roadmap are merged into `main`;
 - architecture RFC commit before this worklog addition:
@@ -22,10 +22,16 @@ As of 2026-08-01:
 - the model-free Rust I/O admission result is `CONDITIONAL_ADMIT`, not a model
   or product speedup claim;
 - Rust I/O PR #36 is merged at `a71eea7...`;
-- M1-P0 is `REFINE_COST_MODEL`, not M1 entry or completion;
-- M1-P0-R1 same-run Mono normalization also returned
+- M1-P0 v1 and M1-P0-R1 returned `REFINE_COST_MODEL`; the R1 same-run Mono
+  normalization result was
   `REFINE_COST_MODEL`: Case B T1/T2 paired errors were 61.83% and 56.60%
   against the unchanged 35% rule;
+- M1-P0-R2 isolated the Python control-plane overhead and M1-P0-R3 admitted
+  the bounded in-process Rust control plane; neither result is a model,
+  quality, GPU, or product-speedup claim;
+- M1-A2 preserves twelve rights/scene/privacy-reviewed clips and twelve
+  deterministic derivatives, but the Guided Oracle remains auxiliary
+  observed-change evidence; the current Gate is `ORACLE_PROTOCOL_REVISE`;
 - MiniMax H3 is the primary product backend target, with API and future
   open-weight admission still gated separately; Wan remains the frozen M0
   comparator and LTX is inactive.
@@ -35,10 +41,14 @@ snapshot.
 
 ## What HIVEFRAME is
 
-HIVEFRAME is researching a compound-eye input and selective-generation runtime.
-Logical eyes create small purpose-specific observations, Sensory Fusion builds
-a provenance-preserving shared state, and a compiler proposes backend-neutral
-compute selectors.
+HIVEFRAME is researching a selective-recompute runtime for pretrained video
+generation and editing. Its product objective is to reduce complete
+accepted-result inference cost through safe state reuse and backend-admitted
+selective recomputation.
+
+Compound observation can create purpose-specific evidence for that decision,
+but it is a means rather than the product objective. A movement box, pixel
+delta, or model-free ComputePlan has no backend skip authority by itself.
 
 This is not yet evidence of sparse speedup. The product goal is to reduce
 accepted-result wall time and GPU cost after including every new overhead.
@@ -67,12 +77,11 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Do not expand to the rights-cleared M1 Topology Cost Surface yet. R1 disproved
-same-run Mono normalization as a sufficient correction for the current
-incremental coefficients. Any next refinement must predeclare and isolate the
-missing Python topology-variable stages without changing v1 or R1 evidence.
-Treat the Rust I/O result as supporting evidence only; a separate approved
-shared-buffer or PyO3 probe must measure process/FFI cost before production
-migration.
+Do not continue the superseded pixel-change Oracle promotion path or start a
+topology/backend performance run. The next bounded research step is a
+separately approved **M1-B0 — Model-free Locality Opportunity** task, followed
+by separate backend capability admission. It must use a new Issue, branch, and
+Draft PR and cannot reinterpret M1-A2 observed-change evidence as safe skip.
 
-Do not modify Wan hooks or claim backend speedup from the model-free plan.
+Do not modify Wan hooks, connect a backend, or claim speedup from the current
+model-free evidence.

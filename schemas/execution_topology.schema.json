@@ -12,29 +12,49 @@
     "merge_policy", "oversubscription_policy"
   ],
   "properties": {
-    "physical_cpu_cores": { "type": "integer", "minimum": 0 },
-    "logical_cpu_cores": { "type": "integer", "minimum": 0 },
-    "workers": { "type": "integer", "minimum": 0 },
+    "physical_cpu_cores": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "logical_cpu_cores": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "workers": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
     "affinity": { "type": "string", "minLength": 1 },
-    "ram_bytes": { "$ref": "#/$defs/unavailableOrNonnegative" },
+    "ram_bytes": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
     "gpu_devices": { "type": "array", "items": { "type": "string" } },
-    "vram_bytes": { "$ref": "#/$defs/unavailableOrNonnegative" },
+    "vram_bytes": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
     "worker_assignment": { "type": "string", "minLength": 1 },
     "compute_granularity": { "type": "string", "minLength": 1 },
     "spatial_parallelism": { "type": "string", "minLength": 1 },
     "temporal_parallelism": { "type": "string", "minLength": 1 },
-    "batch_size": { "type": "integer", "minimum": 0 },
-    "streams": { "type": "integer", "minimum": 0 },
+    "batch_size": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "streams": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
     "queue_policy": { "type": "string", "minLength": 1 },
     "synchronization_policy": { "type": "string", "minLength": 1 },
     "merge_policy": { "type": "string", "minLength": 1 },
     "oversubscription_policy": { "type": "string", "minLength": 1 }
   },
   "$defs": {
-    "unavailableOrNonnegative": {
+    "nonnegativeIntegerMeasurement": {
       "oneOf": [
-        { "type": "integer", "minimum": 0 },
-        { "type": "null" }
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "status", "reason", "method"],
+          "properties": {
+            "value": { "type": "null" },
+            "status": { "const": "unavailable" },
+            "reason": { "type": "string", "minLength": 1 },
+            "method": { "const": "not measured" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "status", "reason", "method"],
+          "properties": {
+            "value": { "type": "integer", "minimum": 0 },
+            "status": { "const": "measured" },
+            "reason": { "type": "string" },
+            "method": { "type": "string", "minLength": 1 }
+          }
+        }
       ]
     }
   }

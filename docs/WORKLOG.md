@@ -800,6 +800,65 @@ and
 
 ---
 
+## 2026-08-03 — PR #49 final consistency and merge-readiness audit
+
+The audit began from clean branch head
+`8115c660055749321da637be708a30a546a396af`, matching the remote branch, with
+`origin/main` at `b50051b57de819e1481bd0ff71634fa631cca345` and no divergence.
+PR #49 remained Draft/Open, based on `main`, mergeable, conflict-free, and
+unmerged. No CI status checks or unresolved review threads existed. Issue #48
+remained Open.
+
+The PR title was corrected to **“M1-A2: Preserve real-video evidence and revise
+selective-recompute protocol”**. One non-duplicated top-level Issue #48 comment
+records the continuation correction: phase-one review 12/12, twelve
+deterministic FFV1 derivatives, the Guided export's auxiliary classification,
+zero compute-relevance/safe-skip/backend-result evidence, current Gate
+`ORACLE_PROTOCOL_REVISE`, and separate-approval requirements for M1-B0. The
+historical Issue body was not rewritten.
+
+The claim audit corrected stale R1-era/current-direction wording in contributor,
+charter, architecture, work-order, task, README, and M1-A protocol documents.
+The product objective is complete accepted-result cost reduction through safe
+state reuse and backend-admitted selective recomputation. Compound observation
+is an evidence mechanism, not the product objective. Historical Gates remain
+chronological evidence; the current Gate is `ORACLE_PROTOCOL_REVISE`.
+
+Two contract gaps were closed without adding a backend feature. Unmeasured
+ExecutionTopology numeric fields now use `value=null`, `status=unavailable`, a
+reason, and method `not measured` instead of fake zero. A protocol-only
+SelectiveComputeReceipt with `results_present=false` now rejects measured
+cost, resource, fraction, quality, temporal, work-reduction, speedup, and GPU
+saving values. The protocol config also fixes model, CUDA, backend integration,
+topology performance, paid-service, and external-personal-data-transfer counts
+at zero. Five additional counterexample tests preserve these rules.
+
+The approved external Guided export was rechecked read-only. The JSON is
+222,461 bytes with SHA-256
+`c1306acab8e8a34a89d2d13d3c25b8def0031e9f8ac113dc867ff9eb090e534d`;
+the CSV is 63,545 bytes with SHA-256
+`9c0efafc343db8e907aef233900a39153dc1869ad21b29691f9f7d3623826746`.
+Both retain C01-C12 and 110 intervals. The JSON retains the exact C07 hard-cut
+override; the CSV retains its containing proposal, so complete semantic
+equivalence is not claimed. No reviewer coordinate or decision payload was
+copied into Git.
+
+Verification passed Python compile and 218 Python tests: 216 passed and two
+optional-dependency checks were explicitly skipped. The focused protocol suite
+ran 19 tests, with 18 passed and the optional external-`jsonschema` check
+skipped. Cargo format, locked workspace check, and locked tests passed with ten
+Rust tests. All 73 tracked JSON files parsed. `git diff --check`, public-path,
+credential, changed-binary, protected M0/M1-P0, and protected M1-A2 evidence
+checks passed with zero findings.
+
+Model downloads 0, model loads 0, CUDA runs 0, backend integrations 0, topology
+performance runs 0, paid external calls 0, and external personal-data transfers
+0. The audit did not transition PR #49 to Ready, merge it, close Issue #48, or
+start M1-B0. M1-B0 remains a separate Issue/branch/Draft PR task requiring
+explicit user approval.
+
+---
+
 ## Entry template
 
 ```markdown

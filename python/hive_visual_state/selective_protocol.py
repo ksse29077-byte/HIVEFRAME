@@ -162,11 +162,20 @@ def validate_execution_topology(document: dict[str, Any]) -> None:
         "oversubscription_policy",
     }
     _require_keys(document, required, "ExecutionTopology")
-    for key in ("physical_cpu_cores", "logical_cpu_cores", "workers", "batch_size", "streams"):
-        value = document[key]
-        if not isinstance(value, int) or value < 0:
-            raise ValueError(f"ExecutionTopology {key} must be a non-negative integer.")
-    if document["physical_cpu_cores"] > document["logical_cpu_cores"]:
+    numeric_fields = (
+        "physical_cpu_cores",
+        "logical_cpu_cores",
+        "workers",
+        "ram_bytes",
+        "vram_bytes",
+        "batch_size",
+        "streams",
+    )
+    for key in numeric_fields:
+        _validate_nonnegative_integer_measurement(document[key], f"ExecutionTopology {key}")
+    physical = document["physical_cpu_cores"]["value"]
+    logical = document["logical_cpu_cores"]["value"]
+    if physical is not None and logical is not None and physical > logical:
         raise ValueError("Physical CPU cores cannot exceed logical CPU cores.")
 
 
@@ -193,6 +202,15 @@ def _validate_measurement(measurement: Any, label: str) -> None:
             raise ValueError(f"{label} measurement method cannot be empty.")
     else:
         raise ValueError(f"{label} has an invalid measurement status.")
+
+
+def _validate_nonnegative_integer_measurement(measurement: Any, label: str) -> None:
+    _validate_measurement(measurement, label)
+    value = measurement["value"]
+    if value is not None and (
+        isinstance(value, bool) or not isinstance(value, int) or value < 0
+    ):
+        raise ValueError(f"{label} measured value must be a non-negative integer.")
 
 
 def validate_selective_compute_receipt(document: dict[str, Any]) -> None:
@@ -236,6 +254,25 @@ def validate_selective_compute_receipt(document: dict[str, Any]) -> None:
                     f"{claim_name} requires measured actual backend work reduction "
                     "and an accepted result."
                 )
+    if document["run_status"] != "protocol_only" or document["results_present"] is not False:
+        raise ValueError("This receipt contract is protocol-only with results_present=false.")
+    result_measurements = [
+        *(document["costs"][name] for name in COST_COMPONENTS),
+        *document["resources"].values(),
+        document["actual_backend_work_reduction"],
+        document["quality_delta"],
+        document["temporal_delta"],
+        *document["claims"].values(),
+    ]
+    if any(
+        measurement["value"] is not None or measurement["status"] != "unavailable"
+        for measurement in result_measurements
+    ):
+        raise ValueError(
+            "results_present=false forbids publishing measured performance results."
+        )
+    if any(value is not None for value in document["fractions"].values()):
+        raise ValueError("results_present=false requires null result fractions.")
     if not document["results_present"] and document["accepted_result"]:
         raise ValueError("A protocol-only receipt cannot declare an accepted result.")
 
@@ -248,6 +285,10 @@ def validate_protocol_config(document: dict[str, Any]) -> None:
             "results_present",
             "model_runs",
             "cuda_runs",
+            "backend_integration_runs",
+            "topology_performance_runs",
+            "paid_external_service_calls",
+            "external_personal_data_transfers",
             "protected_evidence_changes",
         },
         "Selective recompute protocol config",
@@ -256,7 +297,21 @@ def validate_protocol_config(document: dict[str, Any]) -> None:
         raise ValueError("The protocol config must remain predeclared.")
     if document["results_present"] is not False:
         raise ValueError("Protocol-only configuration cannot contain results.")
-    if document["model_runs"] != 0 or document["cuda_runs"] != 0:
-        raise ValueError("Protocol-only configuration cannot record model or CUDA runs.")
+    execution_counts = {
+        name: document[name]
+        for name in (
+            "model_runs",
+            "cuda_runs",
+            "backend_integration_runs",
+            "topology_performance_runs",
+            "paid_external_service_calls",
+            "external_personal_data_transfers",
+        )
+    }
+    if any(value != 0 for value in execution_counts.values()):
+        raise ValueError(
+            "Protocol-only configuration cannot record model, CUDA, backend, "
+            "topology, paid-service, or external-data execution."
+        )
     if document["protected_evidence_changes"]:
         raise ValueError("The protocol cannot modify protected evidence.")
