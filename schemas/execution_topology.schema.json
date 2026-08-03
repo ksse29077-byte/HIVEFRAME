@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hiveframe.dev/schemas/execution-topology/v0.schema.json",
+  "title": "HIVEFRAME ExecutionTopology v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "physical_cpu_cores", "logical_cpu_cores", "workers", "affinity",
+    "ram_bytes", "gpu_devices", "vram_bytes", "worker_assignment",
+    "compute_granularity", "spatial_parallelism", "temporal_parallelism",
+    "batch_size", "streams", "queue_policy", "synchronization_policy",
+    "merge_policy", "oversubscription_policy"
+  ],
+  "properties": {
+    "physical_cpu_cores": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "logical_cpu_cores": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "workers": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "affinity": { "type": "string", "minLength": 1 },
+    "ram_bytes": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "gpu_devices": { "type": "array", "items": { "type": "string" } },
+    "vram_bytes": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "worker_assignment": { "type": "string", "minLength": 1 },
+    "compute_granularity": { "type": "string", "minLength": 1 },
+    "spatial_parallelism": { "type": "string", "minLength": 1 },
+    "temporal_parallelism": { "type": "string", "minLength": 1 },
+    "batch_size": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "streams": { "$ref": "#/$defs/nonnegativeIntegerMeasurement" },
+    "queue_policy": { "type": "string", "minLength": 1 },
+    "synchronization_policy": { "type": "string", "minLength": 1 },
+    "merge_policy": { "type": "string", "minLength": 1 },
+    "oversubscription_policy": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "nonnegativeIntegerMeasurement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "status", "reason", "method"],
+          "properties": {
+            "value": { "type": "null" },
+            "status": { "const": "unavailable" },
+            "reason": { "type": "string", "minLength": 1 },
+            "method": { "const": "not measured" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "status", "reason", "method"],
+          "properties": {
+            "value": { "type": "integer", "minimum": 0 },
+            "status": { "const": "measured" },
+            "reason": { "type": "string" },
+            "method": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    }
+  }
+}

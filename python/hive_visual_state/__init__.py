@@ -10,6 +10,14 @@ from .contracts import (
     validate_eye_observation,
     validate_shared_visual_state,
 )
+from .selective_protocol import (
+    COST_COMPONENTS,
+    validate_backend_capability_matrix,
+    validate_execution_topology,
+    validate_protocol_config,
+    validate_selective_compute_receipt,
+    validate_selective_state_map,
+)
 
 __all__ = [
     "PixelBox",
@@ -20,4 +28,10 @@ __all__ = [
     "validate_eye_contract",
     "validate_eye_observation",
     "validate_shared_visual_state",
+    "COST_COMPONENTS",
+    "validate_backend_capability_matrix",
+    "validate_execution_topology",
+    "validate_protocol_config",
+    "validate_selective_compute_receipt",
+    "validate_selective_state_map",
 ]

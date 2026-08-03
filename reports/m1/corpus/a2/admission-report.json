@@ -1,0 +1,50 @@
+{
+  "binary_media_tracked": false,
+  "claim_boundary": "Admission metadata only; no topology, generation, quality, cost, GPU, or product conclusion.",
+  "counts": {
+    "eligible": 0,
+    "investigated": 12,
+    "pending": 12,
+    "rejected": 0
+  },
+  "cross_document_errors": [],
+  "decision": "RIGHTS_REVIEW_BLOCKED",
+  "execution_counts": {
+    "backend_integration_runs": 0,
+    "cuda_runs": 0,
+    "external_customer_or_personal_data_transfers": 0,
+    "model_downloads": 0,
+    "model_loads": 0,
+    "paid_external_service_calls": 0
+  },
+  "human_review_phase_one": {
+    "adjudication_complete": 0,
+    "all_cross_document_matches": true,
+    "blind_re_review_complete": 0,
+    "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+    "final_status_complete": 0,
+    "oracle_initial_pass_complete": 0,
+    "phase": "phase_1_rights_scene_privacy",
+    "phase_one_complete": 12,
+    "reviewed_clips": 12
+  },
+  "m1_complete": false,
+  "manifest_errors": [],
+  "oracle_counts": {
+    "pending": 12,
+    "rejected": 0,
+    "total": 12,
+    "verified": 0
+  },
+  "oracle_errors": [],
+  "protocol_errors": [],
+  "results_eligible_for_topology_performance": false,
+  "rights_counts": {
+    "admitted": 0,
+    "pending": 12,
+    "rejected": 0
+  },
+  "rights_errors": [],
+  "run_kind": "m1_a_corpus_oracle_admission",
+  "schema_version": "0.1.0"
+}

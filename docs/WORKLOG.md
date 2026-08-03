@@ -632,6 +632,233 @@ PR #47 remains Draft and is neither marked ready nor merged.
 
 ---
 
+## 2026-08-03 — M1-A2 derivative and human review gate
+
+PR #47 is merged at `b50051b57de819e1481bd0ff71634fa631cca345`
+and Issue #46 is closed. M1-A2 Issue
+[#48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48) tracks a bounded
+approved-asset pass on branch `agent/m1-a2-corpus-derivative-review`.
+
+Only the approved M1-A2 bundle was inspected. Twelve distinct immutable
+C01-C12 originals, the capture record, rights declaration, and designated C01
+consent were inventoried. The designated consent SHA-256 is
+`f1187f598036db3b23af869bab64e19712dce6459667721b375dbf3be72963d2`;
+the legacy similarly named file was not used.
+
+FFmpeg/FFprobe 7.1.1 was installed only in the approved asset bundle from the
+recorded Gyan archive linked by the FFmpeg Windows download page. Archive,
+binary, and license hashes are stored in
+`data_ledger/m1-a2/ffmpeg-install-record.json`; PATH and administrator state
+were unchanged.
+
+Twelve 832x480, 16 FPS, audio-free FFV1 derivatives were created. Every
+independent repeat matched the final binary SHA-256 and every derivative fully
+decoded. Originals were rehashed unchanged. Three ineligible attempts record
+bitexact option placement, declared rotation admission, and timestamp parsing
+failures; they are not mixed with final evidence.
+
+The oracle scaffold contains twelve `pending_review` records and zero verified
+records. Corpus, rights, oracle, and cross-document structures validate, but
+human rights, scene, privacy, derivative, transition, C07 hard-cut, blind
+re-review, disagreement, and adjudication checks remain open. Decision:
+**`RIGHTS_REVIEW_BLOCKED`**. Eligible clips and eligible scene coverage are
+0/12; topology results remain ineligible.
+
+Detailed evidence and review steps are in
+[`M1_A2_REAL_VIDEO_DERIVATIVE_REVIEW.md`](M1_A2_REAL_VIDEO_DERIVATIVE_REVIEW.md)
+and
+[`worklogs/2026-08-03-m1-a2-real-video-derivative-review.md`](worklogs/2026-08-03-m1-a2-real-video-derivative-review.md).
+
+Model downloads, model loads, CUDA runs, paid external calls, external
+personal-data transfers, backend integrations, and topology performance runs:
+0 each. No media or tool binary is tracked.
+
+Python compile and all 179 tests passed with one optional external-Schema skip
+in the recorded HIVEFRAME environment. Eight focused M1-A2 tests passed. Rust
+format, locked check, and locked tests passed with 10 runtime tests. Sixty-two
+JSON files parsed; public path, credential, binary, legacy-evidence, and diff
+checks passed. The task-specific worklog records the non-installing recovery
+from a missing-NumPy system interpreter and a Windows CRLF checkout mismatch.
+
+### Phase-one human review and Oracle UI update
+
+The returned checklist was validated as exactly C01-C12 with the frozen scene
+classes. Its SHA-256 is
+`1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216`.
+All twelve `rights_review`, `scene_content_review`, and `privacy_review` fields
+are `yes`. All twelve `oracle_initial_pass`, `blind_re_review`, `adjudication`,
+and `final_status` fields remain `pending_review`. The corpus manifest, rights
+receipt, admission report, and the new public-safe phase-one receipt record
+this bounded progress without promoting aggregate eligibility.
+
+A local-only browser review package now provides twelve fully decoded H.264
+review proxies, frame stepping and A/B capture, frame-range and drawn-region
+input, dirty/stable/uncertain classification, camera/occlusion/lighting/cut
+fields, explicit C07 hard-cut guidance, browser-local drafts, and CSV/JSON
+export. It requires no direct JSON or coordinate editing. Automated annotation
+was not collected, and every export remains `pending_review`.
+
+The Gate remains **`RIGHTS_REVIEW_BLOCKED`**: pending 12, eligible 0, verified
+Oracle 0, rejected 0, and eligible scene coverage 0/12. Initial Oracle review,
+time-separated blind re-review, adjudication, and final status are still human
+work. Model downloads, model loads, CUDA runs, backend integrations, paid
+external calls, personal-data transfers, and topology performance runs remain
+0 each.
+
+The update passed 11 focused tests and the complete 190-test Python suite with
+one optional external-Schema skip. Rust formatting, locked workspace check,
+and locked tests passed, including 10 runtime tests. All 65 repository JSON
+files parsed; public path/personal-identifier, credential, tracked-binary,
+legacy-evidence, and diff checks passed. The detailed worklog records the
+test-only handling of the known Windows CRLF checkout difference for the
+unchanged R3 raw-byte assertion.
+
+### Guided Oracle review usability replacement
+
+Actual Oracle entry with the first browser form was stopped before any row or
+export because it still required a general reviewer to discover every frame
+range and draw every region from scratch. The v1 package remains preserved and
+marked superseded as usability-history evidence. The reviewer-completed
+phase-one checklist remains unchanged: all twelve rights, scene-content, and
+privacy fields are `yes`, while all Oracle stages remain `pending_review`.
+
+The guided v2 package uses model-free adjacent-frame grayscale differences,
+thresholded tiles, connected components, and merged boxes to propose 110
+gap-free intervals with 106 dirty and 17 uncertain boxes. Stable coverage is
+the validated full-canvas complement rather than a hand-drawn label. C04-C06
+and C12 receive camera-motion prompts, C08 occlusion/disocclusion prompts, C11
+a lighting prompt, and C07 eight ranked cut candidates. All are suggestions:
+the public receipt states `automatic_proposals_are_truth=false`, eligible 0,
+verified Oracle 0, and Gate `RIGHTS_REVIEW_BLOCKED`.
+
+The Korean UI centers on `제안이 맞음`, `수정 필요`, and `판단 어려움`; supports
+move/resize/delete/add box editing without coordinate entry; tracks each clip;
+derives stable partitions; and blocks completion on gaps, overlaps, incomplete
+coverage, unresolved candidates, or an invalid C07 hard cut. Browser checks
+confirmed C01 accept-and-advance plus reset, C07 candidate presentation, and
+zero console errors. The package and proposal payload remain outside Git; the
+method receipt and deterministic tests are public. Model download/load, CUDA,
+backend, topology, paid external call, and personal-data transfer counts remain
+0 each.
+
+Final verification passed 9 focused guided-review tests and the full 199-test
+Python suite with one optional external-Schema skip. Python compile, Rust
+format, locked workspace check, locked tests (10 runtime tests), 66 JSON parses,
+110 temporal-coverage checks, 110 stable-complement checks, protected-evidence,
+public-path/credential, tracked-binary, and diff checks passed. The package
+still contains 110/110 `unreviewed` human decisions; eligible and verified
+counts remain zero.
+
+---
+
+## 2026-08-03 — M1-A2 selective-recompute protocol correction
+
+HIVEFRAME's official product objective was narrowed to lower accepted-result
+cost for pretrained video generation and editing through safe state reuse and
+selective recomputation. Compound observation remains an evidence mechanism,
+not the objective. Pixel change and human movement boxes have no backend skip
+authority.
+
+The returned Guided Oracle JSON/CSV cover C01-C12 and 110 intervals, but are
+classified only as auxiliary observed-change evidence. The JSON contains the
+exact C07 hard-cut override while the CSV records its containing proposal, so
+full cross-format semantic equivalence is not claimed. No coordinate or
+decision payload was copied into Git. Safe-skip truth, verified
+compute-relevance Oracles, and eligible backend selective-compute results all
+remain zero.
+
+Counterexample-first commit `2f7d534` reproduced the unsafe reference path as
+five failures and five errors before implementation. The corrected contract
+separates observation candidates, backend capability admission, execution
+topology, and complete selective-compute receipts. Uncertainty and global
+invalidation promote to full compute. The roadmap now uses M0 Full Compute
+Cost Truth, M1-A observation corpus, M1-B0/B1/B2/B3 opportunity/admission/probe/
+scaling, and M2-M5 planner/freeze/compiler/net-gain gates while preserving the
+earlier roadmap as history.
+
+The prior `RIGHTS_REVIEW_BLOCKED` report remains unchanged chronological
+evidence. The current Gate is **`ORACLE_PROTOCOL_REVISE`**. Blind re-review,
+adjudication, and final verified-Oracle promotion under the superseded
+pixel-change protocol are stopped. Model downloads, model loads, CUDA,
+backend, topology-performance, paid-service, and external personal-data
+transfer counts are all zero.
+
+Final model-free verification passed Python compile and ran 213 Python tests:
+211 passed and two explicit optional-dependency tests skipped. Cargo formatting/check/tests ran
+ten Rust tests, 73 JSON parses, custom schema positive/negative checks,
+protected-evidence comparison, binary/path/secret scans, and diff checking.
+Three earlier Python suite launches were retained as ineligible environment
+attempts: temporary-directory ACL denial and the already documented Windows
+CRLF-versus-LF R3 raw-byte fixture difference. The final run used the existing
+test-only LF normalization with byte restoration and a permitted temporary
+execution context. No product, model, backend, topology, or CUDA path ran.
+
+Detailed evidence is in
+[`worklogs/2026-08-03-m1-a2-real-video-derivative-review.md`](worklogs/2026-08-03-m1-a2-real-video-derivative-review.md)
+and
+[`HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md`](HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md).
+
+---
+
+## 2026-08-03 — PR #49 final consistency and merge-readiness audit
+
+The audit began from clean branch head
+`8115c660055749321da637be708a30a546a396af`, matching the remote branch, with
+`origin/main` at `b50051b57de819e1481bd0ff71634fa631cca345` and no divergence.
+PR #49 remained Draft/Open, based on `main`, mergeable, conflict-free, and
+unmerged. No CI status checks or unresolved review threads existed. Issue #48
+remained Open.
+
+The PR title was corrected to **“M1-A2: Preserve real-video evidence and revise
+selective-recompute protocol”**. One non-duplicated top-level Issue #48 comment
+records the continuation correction: phase-one review 12/12, twelve
+deterministic FFV1 derivatives, the Guided export's auxiliary classification,
+zero compute-relevance/safe-skip/backend-result evidence, current Gate
+`ORACLE_PROTOCOL_REVISE`, and separate-approval requirements for M1-B0. The
+historical Issue body was not rewritten.
+
+The claim audit corrected stale R1-era/current-direction wording in contributor,
+charter, architecture, work-order, task, README, and M1-A protocol documents.
+The product objective is complete accepted-result cost reduction through safe
+state reuse and backend-admitted selective recomputation. Compound observation
+is an evidence mechanism, not the product objective. Historical Gates remain
+chronological evidence; the current Gate is `ORACLE_PROTOCOL_REVISE`.
+
+Two contract gaps were closed without adding a backend feature. Unmeasured
+ExecutionTopology numeric fields now use `value=null`, `status=unavailable`, a
+reason, and method `not measured` instead of fake zero. A protocol-only
+SelectiveComputeReceipt with `results_present=false` now rejects measured
+cost, resource, fraction, quality, temporal, work-reduction, speedup, and GPU
+saving values. The protocol config also fixes model, CUDA, backend integration,
+topology performance, paid-service, and external-personal-data-transfer counts
+at zero. Five additional counterexample tests preserve these rules.
+
+The approved external Guided export was rechecked read-only. The JSON is
+222,461 bytes with SHA-256
+`c1306acab8e8a34a89d2d13d3c25b8def0031e9f8ac113dc867ff9eb090e534d`;
+the CSV is 63,545 bytes with SHA-256
+`9c0efafc343db8e907aef233900a39153dc1869ad21b29691f9f7d3623826746`.
+Both retain C01-C12 and 110 intervals. The JSON retains the exact C07 hard-cut
+override; the CSV retains its containing proposal, so complete semantic
+equivalence is not claimed. No reviewer coordinate or decision payload was
+copied into Git.
+
+Verification passed Python compile and 218 Python tests: 216 passed and two
+optional-dependency checks were explicitly skipped. The focused protocol suite
+ran 19 tests, with 18 passed and the optional external-`jsonschema` check
+skipped. Cargo format, locked workspace check, and locked tests passed with ten
+Rust tests. All 73 tracked JSON files parsed. `git diff --check`, public-path,
+credential, changed-binary, protected M0/M1-P0, and protected M1-A2 evidence
+checks passed with zero findings.
+
+Model downloads 0, model loads 0, CUDA runs 0, backend integrations 0, topology
+performance runs 0, paid external calls 0, and external personal-data transfers
+0. The audit did not transition PR #49 to Ready, merge it, close Issue #48, or
+start M1-B0. M1-B0 remains a separate Issue/branch/Draft PR task requiring
+explicit user approval.
+
+---
+
 ## Entry template
 
 ```markdown

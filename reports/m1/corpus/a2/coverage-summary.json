@@ -1,0 +1,21 @@
+{
+  "coverage_complete": false,
+  "covered_scene_classes": [],
+  "eligible_clips": 0,
+  "minimum_eligible_clips": 12,
+  "missing_scene_classes": [
+    "static_background_speaking_person",
+    "static_background_hand_motion",
+    "static_background_local_object_motion",
+    "slow_pan",
+    "zoom_in_out",
+    "handheld_shake",
+    "hard_cut",
+    "multiple_objects_occlusion",
+    "reflection_mirror",
+    "complex_boundary_hair_water_smoke",
+    "lighting_change",
+    "local_static_camera_global_combination"
+  ],
+  "schema_version": "0.1.0"
+}

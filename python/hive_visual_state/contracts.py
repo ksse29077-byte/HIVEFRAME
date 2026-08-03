@@ -328,40 +328,40 @@ def validate_shared_visual_state(state: dict[str, Any]) -> None:
 def build_compute_plan(state: dict[str, Any]) -> dict[str, Any]:
     validate_shared_visual_state(state)
     decision_by_state = {
-        "dirty": "generate",
-        "stable": "reuse_cache",
-        "uncertain": "reconcile",
+        "dirty": "candidate_active_requires_backend_admission",
+        "stable": "candidate_frozen_requires_safe_reuse_evidence",
+        "uncertain": "full_compute_fallback",
     }
     selectors_by_state = {
         "dirty": {
-            "patch": True,
-            "token": "region_only",
-            "block": "backend_decides",
-            "timestep": "backend_decides",
-            "resolution": "full",
-            "cache": "bypass",
+            "authority": "none_observation_only",
+            "requested_compute_unit": "unresolved",
+            "backend_support": "not_checked",
+            "action": "backend_admission_required",
         },
         "stable": {
-            "patch": False,
-            "token": "none",
-            "block": "none",
-            "timestep": "none",
-            "resolution": "none",
-            "cache": "reuse",
+            "authority": "none_observation_only",
+            "requested_compute_unit": "unresolved",
+            "backend_support": "not_checked",
+            "action": "safe_reuse_evidence_required",
         },
         "uncertain": {
-            "patch": True,
-            "token": "backend_decides",
-            "block": "backend_decides",
-            "timestep": "candidate",
-            "resolution": "backend_decides",
-            "cache": "refresh",
+            "authority": "full_compute_only",
+            "requested_compute_unit": "full_scope",
+            "backend_support": "not_required_for_fallback",
+            "action": "full_compute_fallback",
         },
     }
     reason_by_state = {
-        "dirty": "Observed change requires selective generation.",
-        "stable": "No observed change; cache reuse is a candidate, not a speedup claim.",
-        "uncertain": "Conflicting or boundary evidence requires reconciliation.",
+        "dirty": (
+            "Observed change is auxiliary evidence only; a backend capability "
+            "admission must choose the real compute unit."
+        ),
+        "stable": (
+            "Observed stability is not safe-skip truth; reuse remains prohibited "
+            "until backend-specific dependency evidence exists."
+        ),
+        "uncertain": "Uncertain evidence promotes to full computation.",
     }
     execution_units = []
     for index, region in enumerate(state["regions"]):
@@ -385,7 +385,11 @@ def build_compute_plan(state: dict[str, Any]) -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "plan_id": f"{state['state_id']}:compute-plan-v0",
         "source_state_id": state["state_id"],
-        "policy": "selective_generation_reference_v0",
+        "policy": "observation_candidate_map_v1",
+        "global_invalidation": {
+            "active": False,
+            "reason": "none",
+        },
         "execution_units": execution_units,
         "claims": {
             "actual_sparse_speedup": unsupported_measurement(
@@ -416,6 +420,7 @@ def validate_compute_plan(plan: dict[str, Any]) -> None:
             "plan_id",
             "source_state_id",
             "policy",
+            "global_invalidation",
             "execution_units",
             "claims",
         },
@@ -423,16 +428,47 @@ def validate_compute_plan(plan: dict[str, Any]) -> None:
     )
     if plan["schema_version"] != SCHEMA_VERSION:
         raise ValueError("Unsupported ComputePlan schema version.")
-    if plan["policy"] != "selective_generation_reference_v0":
+    if plan["policy"] != "observation_candidate_map_v1":
         raise ValueError("Unknown compute-plan policy.")
+    invalidation = plan["global_invalidation"]
+    if not isinstance(invalidation, dict) or set(invalidation) != {"active", "reason"}:
+        raise ValueError("ComputePlan global invalidation is malformed.")
+    if not isinstance(invalidation["active"], bool) or not invalidation["reason"]:
+        raise ValueError("ComputePlan global invalidation is malformed.")
     for unit in plan["execution_units"]:
         expected = {
-            "dirty": "generate",
-            "stable": "reuse_cache",
-            "uncertain": "reconcile",
+            "dirty": "candidate_active_requires_backend_admission",
+            "stable": "candidate_frozen_requires_safe_reuse_evidence",
+            "uncertain": "full_compute_fallback",
         }[unit["observed_state"]]
         if unit["decision"] != expected:
-            raise ValueError("Compute decision contradicts observed region state.")
+            if invalidation["active"]:
+                raise ValueError(
+                    "A global invalidation or scene cut forbids prior freeze/cache reuse."
+                )
+            capability = unit.get("backend_capability", {})
+            if capability.get("support_status") == "unsupported":
+                raise ValueError(
+                    "An unsupported backend selector has no skip or compute authority."
+                )
+            raise ValueError(
+                "Compute decision lacks backend admission or contradicts observed state."
+            )
+        selectors = unit["selectors"]
+        expected_authority = (
+            "full_compute_only"
+            if unit["observed_state"] == "uncertain"
+            else "none_observation_only"
+        )
+        if selectors.get("authority") != expected_authority:
+            raise ValueError("Observation evidence cannot issue backend authority.")
+    if invalidation["active"] and any(
+        unit["decision"] != "full_compute_fallback"
+        for unit in plan["execution_units"]
+    ):
+        raise ValueError(
+            "A global invalidation or scene cut requires full-compute fallback."
+        )
     for claim in plan["claims"].values():
         if claim["value"] is not None:
             raise ValueError("Unmeasured compute claims must be null.")

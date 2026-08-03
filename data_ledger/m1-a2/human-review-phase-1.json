@@ -1,0 +1,160 @@
+{
+  "adjudication_complete": 0,
+  "blind_re_review_complete": 0,
+  "checklist_sha256": "1ca2309aa6996416c662387f62e967a15f66c969743c8157e55af3ea3a23f216",
+  "checklist_storage_reference": "approved-asset:m1-a2/review-package/review-checklist.csv",
+  "eligible_clips": 0,
+  "execution_counts": {
+    "backend_integration_runs": 0,
+    "cuda_runs": 0,
+    "external_customer_or_personal_data_transfers": 0,
+    "model_downloads": 0,
+    "model_loads": 0,
+    "paid_external_service_calls": 0,
+    "topology_performance_runs": 0
+  },
+  "final_status_complete": 0,
+  "gate": "RIGHTS_REVIEW_BLOCKED",
+  "oracle_initial_pass_complete": 0,
+  "phase_one_complete": 12,
+  "recorded_date": "2026-08-03",
+  "records": [
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c01",
+      "expected_scene_class": "static_background_speaking_person",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c02",
+      "expected_scene_class": "static_background_hand_motion",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c03",
+      "expected_scene_class": "static_background_local_object_motion",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c04",
+      "expected_scene_class": "slow_pan",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c05",
+      "expected_scene_class": "zoom_in_out",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c06",
+      "expected_scene_class": "handheld_shake",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c07",
+      "expected_scene_class": "hard_cut",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c08",
+      "expected_scene_class": "multiple_objects_occlusion",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c09",
+      "expected_scene_class": "reflection_mirror",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c10",
+      "expected_scene_class": "complex_boundary_hair_water_smoke",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c11",
+      "expected_scene_class": "lighting_change",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    },
+    {
+      "adjudication": "pending_review",
+      "blind_re_review": "pending_review",
+      "clip_id": "c12",
+      "expected_scene_class": "local_static_camera_global_combination",
+      "final_status": "pending_review",
+      "oracle_initial_pass": "pending_review",
+      "privacy_review": "yes",
+      "rights_review": "yes",
+      "scene_content_review": "yes"
+    }
+  ],
+  "results_eligible_for_topology_performance": false,
+  "review_phase": "phase_1_rights_scene_privacy",
+  "reviewed_clips": 12,
+  "schema_version": "0.1.0",
+  "verified_oracles": 0
+}

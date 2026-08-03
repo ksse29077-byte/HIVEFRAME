@@ -147,7 +147,21 @@ class CompoundEyeReferenceTests(unittest.TestCase):
         plan = self.result["compute_plan"]
         validate_compute_plan(plan)
         decisions = {unit["decision"] for unit in plan["execution_units"]}
-        self.assertEqual(decisions, {"generate", "reuse_cache", "reconcile"})
+        self.assertEqual(
+            decisions,
+            {
+                "candidate_active_requires_backend_admission",
+                "candidate_frozen_requires_safe_reuse_evidence",
+                "full_compute_fallback",
+            },
+        )
+        self.assertTrue(
+            all(
+                unit["selectors"]["authority"]
+                in {"none_observation_only", "full_compute_only"}
+                for unit in plan["execution_units"]
+            )
+        )
         self.assertIsNone(plan["claims"]["actual_sparse_speedup"]["value"])
         self.assertEqual(
             plan["claims"]["actual_sparse_speedup"]["support_status"],

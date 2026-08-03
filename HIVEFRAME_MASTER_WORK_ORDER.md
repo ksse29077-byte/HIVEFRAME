@@ -2,9 +2,11 @@
 
 ## Objective
 
-Develop HIVEFRAME into a commercial compound visual runtime that reduces the
-total cost of an accepted video generation or edit by observing and computing
-only what is necessary.
+Develop HIVEFRAME into a commercial selective-recompute runtime that makes
+pretrained video generation and editing inference lighter and faster than the
+same accepted-result full-compute path. The runtime may use compound visual
+observation to identify candidate reuse and active closures, but multiple Eyes
+are an evidence mechanism rather than the product objective.
 
 The objective is:
 
@@ -24,6 +26,14 @@ minimize(
 
 subject to declared quality, identity, geometry, constraint, memory, license,
 and silent-failure limits.
+
+No observation, pixel-delta mask, or human movement box may directly authorize
+backend skip. Freeze/reuse requires a supported BackendCapabilityMatrix entry,
+dependency and boundary closure, invalidation handling, full-compute fallback,
+and a SelectiveComputeReceipt that includes every added cost. Editing is the
+first backend validation track; generation follows only after selector
+admission. The current protocol is documented in
+`docs/HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md`.
 
 ## Architecture program
 
@@ -64,31 +74,40 @@ Eye count is a decision variable, not a success metric.
 Preserve and complete the pinned Wan same-condition baseline. M0 is the cost
 truth and must not include compound-eye optimization.
 
-### M1 — Eye Topology Ground Truth
+### M1-A — Real-video observation corpus
 
-Build a rights-cleared small clip suite and oracle dirty masks. Compare 1×1,
-fixed regional, overlap, motion, and adaptive candidates without model
-optimization. Measure detection safety and observation economics.
+Preserve a rights-cleared clip suite and auxiliary observation evidence without
+promoting visible movement to compute relevance or safe-skip truth.
 
-### M2 — Scout and topology planning
+### M1-B0 — Model-free locality opportunity
 
-Use measured M1 cost surfaces to select topology. Begin with deterministic
-rules; train a small predictor only after sufficient receipts exist.
+Estimate locality opportunity and full-recompute pressure without a backend or
+product-speed claim. This requires a separate approval and review surface.
 
-### M3 — Fusion and dynamic observation
+### M1-B1 — Backend capability admission
 
-Calibrate confidence, preserve provenance, reconcile coordinates, invalidate on
-scene cuts, and adapt observation frequency safely.
+Prove which backend units and reuse operations can actually be selected. An
+unsupported selector falls back to full compute.
 
-### M4 — Perception-to-compute integration
+### M1-B2 — Controlled selective-recompute probe
 
-Query backend capabilities and translate only supported selectors. Preserve a
-full-compute parity and fallback path.
+Validate editing first, then generation, while holding the accepted-result
+contract fixed and preserving full-compute parity and fallback.
 
-### M5 — Net selective gain
+### M1-B3 — Parallel scaling surface
 
-Claim a gain only when same-condition wall time and actual GPU/backend work
-decrease after every added cost and repair is included.
+Measure worker assignment, scheduling, transfer, synchronization, merge, and
+repair economics only after a selector is admitted.
+
+### M2–M4 — Planning, freeze/reuse, and compiler integration
+
+Select observation topology, validate reusable state, preserve provenance and
+uncertainty, and compile only backend-admitted work.
+
+### M5 — End-to-end net gain
+
+Claim a gain only when same-condition complete accepted-result wall time and
+actual GPU/backend work decrease after every added cost and repair is included.
 
 ### M6–M8
 
@@ -107,9 +126,9 @@ and a creator or B2B product only after earlier gates pass.
 
 ## Current authorized scope
 
-The current architecture RFC scope includes documents, schemas, deterministic
-NumPy reference code, tests, worklog, and Git publication when explicitly
-approved.
+The current M1-A2 merge-readiness scope includes preserved evidence, documents,
+protocol schemas and validators, model-free tests, worklogs, and Git publication
+when explicitly approved.
 
 It excludes model training, LoRA, Wan attention changes, CUDA/Triton kernels,
 multi-GPU, GUI, canonical benchmark execution, and actual sparse speedup claims.

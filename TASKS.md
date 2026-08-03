@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-02
+Status date: 2026-08-03
 
 ## Status legend
 
@@ -10,6 +10,7 @@ Status date: 2026-08-02
 | `in_progress` | implementation exists but the task is not fully closed |
 | `planned` | not started |
 | `blocked` | external approval or state is required |
+| `stopped` | explicitly discontinued without erasing prior evidence |
 | `unsupported` | current environment/backend lacks the capability |
 
 ## R0 — Compound-eye architecture RFC
@@ -125,9 +126,10 @@ Overall refinement status: `verified`; decision `RUST_CONTROL_PLANE_ADMITTED`.
 
 R3 is a model-free control-plane experiment. It cannot close M0 or M1 and
 cannot claim real-video, model, quality, or product speedup. Compound
-Perception First remains the product direction; Mono remains the comparator
-and safety fallback. M1-P0 is complete; no R4 is authorized. The next research
-work is M1-A rights-cleared real-video corpus and oracle admission.
+observation remains a candidate evidence mechanism rather than the product
+direction; Mono remains the comparator and safety fallback. M1-P0 is complete;
+no R4 is authorized. The next chronological work was M1-A rights-cleared
+real-video corpus and oracle admission.
 
 ## Backend product target policy
 
@@ -139,28 +141,62 @@ work is M1-A rights-cleared real-video corpus and oracle admission.
 | Admit future H3 open weights | `blocked` | official repository, checkpoint, source, license, digest, and runtime not jointly verified |
 | Preserve Wan M0 comparator | `done` | frozen code, pins, receipts, fingerprints, and reports; no new feature development |
 | Remove LTX from active scope | `done` | historical code and Git history retained; no cleanup in this change |
-| Create backend capability matrix | `planned` | no standalone matrix exists; black-box/white-box evidence belongs to Issue #39 |
+| Create backend capability matrix | `implemented` | protocol-only matrix exists with no admitted selector or skip authority; runtime evidence remains Issue #39 work |
 
 ## M1-A — Rights-cleared Real-video Corpus and Oracle Protocol
 
-Overall status: `verified`; decision `CORPUS_ACQUISITION_REQUIRED`. No topology
-performance run is authorized.
+Overall status: `in_progress`. The initial metadata-only admission decision
+`CORPUS_ACQUISITION_REQUIRED` and the later M1-A2 decision
+`RIGHTS_REVIEW_BLOCKED` remain chronological evidence. The current M1-A2 Gate
+is `ORACLE_PROTOCOL_REVISE`: visible-change review is not compute-relevance or
+safe-skip truth. No topology or backend performance run is authorized.
 
 | Task | Status | Evidence |
 |---|---|---|
 | Preserve M0 and M1-P0 evidence | `done` | PR #45 merged; R3 remains `RUST_CONTROL_PLANE_ADMITTED` |
-| Track M1-A admission work | `published` | [Issue #46](https://github.com/ksse29077-byte/HIVEFRAME/issues/46); [Draft PR #47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47); branch `agent/m1-a-real-video-corpus-oracle-protocol` |
+| Track M1-A admission work | `published` | Issue #46 closed; [PR #47](https://github.com/ksse29077-byte/HIVEFRAME/pull/47) merged at `b50051b...` |
 | Predeclare corpus, rights, derivative, oracle contracts | `implemented` | schemas, configs, validators, and negative tests |
 | Fix T0-T7 candidate contract and metric/Gate semantics | `implemented` | metadata only; no performance result |
 | Search task-scoped approved assets | `done` | repository metadata and supplied task artifacts only; zero actual video assets found |
 | Admit 12 distinct actual clips | `blocked` | no eligible actual clip is currently recorded in repository metadata |
 | Produce oracle-reviewed complete coverage | `blocked` | depends on eligible clip acquisition and review |
 | Emit M1-A admission reports | `verified` | 0 eligible/pending/rejected; all 12 classes missing; `CORPUS_ACQUISITION_REQUIRED` |
-| Run topology cost/safety measurement | `planned` | separate approval only after `M1_CORPUS_AND_ORACLE_READY` |
+| Run topology cost/safety measurement | `stopped` | original admission path superseded; corrected M1-B0/M1-B1 work requires separate approval |
 
-The current task stops after the M1-A admission Gate. Do not run model-free
-topologies, train a planner, connect a backend, or modify Wan hooks until the
-corpus and oracle Gate is ready and a separate measurement task is approved.
+The initial empty-corpus result remains immutable evidence. It is not replaced
+by M1-A2.
+
+## M1-A2 — Deterministic Derivatives and Human Review Gate
+
+Overall status: `blocked`; current decision `ORACLE_PROTOCOL_REVISE`.
+`RIGHTS_REVIEW_BLOCKED` remains preserved as the previous chronological Gate.
+Phase-one human rights, scene-content, and privacy review is complete for all
+twelve clips. The exported Guided Oracle is auxiliary observed-change evidence
+only; it is not compute-relevance truth, safe-skip truth, or backend execution
+evidence. Blind re-review, adjudication, and verified-Oracle promotion under
+the superseded protocol are stopped.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track M1-A2 preparation | `published` | [Issue #48](https://github.com/ksse29077-byte/HIVEFRAME/issues/48); branch `agent/m1-a2-corpus-derivative-review` |
+| Verify designated C01 consent evidence | `verified` | required structure present; SHA-256 `f1187f...63d2`; legacy similarly named file excluded |
+| Inventory approved C01-C12 originals | `verified` | 12 distinct immutable H.264/MP4-family originals; no duplicate digest |
+| Admit local FFmpeg/FFprobe 7.1.1 tools | `verified` | exact archive/binary/license hashes recorded; no PATH/admin change |
+| Create deterministic analysis derivatives | `verified` | 12 FFV1 derivatives; independent encode hashes match; full decode passes |
+| Preserve superseded manual-entry package | `done` | v1 retained as usability evidence; reviewer stopped before adding rows or exporting results |
+| Prepare guided Oracle review package | `verified` | model-free adjacent-frame proposals: 110 intervals, 106 dirty boxes, 17 uncertain boxes, eight C07 cut candidates; all remain `pending_review` and are not truth |
+| Complete human rights/privacy/scene review | `done` | exact C01-C12 checklist validated; 12/12 rows have all three phase-one fields `yes`; checklist SHA-256 `1ca230...f216` |
+| Preserve Guided Oracle export | `done` | JSON/CSV names, hashes, structure, and 12-clip coverage recorded without promoting coordinates or decisions to compute truth |
+| Classify observed-change evidence | `verified` | auxiliary/human-reviewed-or-partially-reviewed; not compute relevance, safe skip, or backend-claim eligible |
+| Complete compute-relevance Oracle | `blocked` | 0 verified; replacement protocol requires separate approval |
+| Complete blind review and adjudication | `stopped` | superseded pixel-change Oracle path will not be promoted |
+| Admit backend selective compute | `blocked` | eligible 0; BackendCapabilityMatrix contains no admitted selector |
+| Run topology/backend cost measurement | `planned` | separate approval after M1-B0/M1-B1 protocol gates |
+
+The current task stops at protocol correction. Do not run model-free
+topologies, train a planner, connect a backend, or modify Wan hooks. The next
+work requires a separate approval under the corrected selective-recompute
+roadmap.
 
 ## Maintenance checklist
 

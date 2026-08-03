@@ -86,15 +86,17 @@ missing, conflicting, or ownership-boundary evidence yields `uncertain`.
 
 Each unit references one fused region and proposes:
 
-- `generate` for dirty regions;
-- `reuse_cache` for stable regions;
-- `reconcile` for uncertain regions;
-- backend-neutral selectors for patch, token, block, timestep, resolution, and
-  cache.
+- `candidate_active_requires_backend_admission` for dirty regions;
+- `candidate_frozen_requires_safe_reuse_evidence` for stable regions;
+- `full_compute_fallback` for uncertain regions;
+- no backend selector authority for observation-only active/frozen candidates.
 
-Selectors are candidates. The backend capability adapter must accept,
-translate, promote, or reject them explicitly. `reuse_cache` is not proof that
-compute was saved.
+Observation states are candidates, not selectors. A BackendCapabilityMatrix
+and dependency/boundary closure must accept, translate, promote, or reject
+them before an adapter can select a patch, latent, feature, token, block,
+timestep, resolution, or cache action. Pixel stability is not safe-reuse truth.
+The current normative claim boundary is documented in
+`HIVEFRAME_SELECTIVE_RECOMPUTE_RUNTIME_DIRECTION.md`.
 
 ## Reference implementation
 

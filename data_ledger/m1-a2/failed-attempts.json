@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1.0",
+  "attempts": [
+    {
+      "attempt_id": "attempt-001-container-format-flag",
+      "results_eligible": false,
+      "completed_clips": 0,
+      "failed_clip": "c01",
+      "failure_stage": "deterministic container hash comparison",
+      "failure_reason": "The Matroska output format bitexact flag was applied on the input side rather than the output side.",
+      "primary_sha256": "e4fb90cf44a22df783d14001a4404aed09004fd443876eb075e77508a1284b08",
+      "repeat_sha256": "2a8746580ba9b2642f29f5478da8d115964e0f60482d4f36f2a75f42543d03b8",
+      "decoded_frame_sha256": "3dd07afad30192875f367c8b98d4568f12b51139722d737b653d4bf759f7cbc9",
+      "decoded_frames_equal": true,
+      "resolution": "Move AVFMT_FLAG_BITEXACT to the output option group; a two-run diagnostic then produced identical binary SHA-256."
+    },
+    {
+      "attempt_id": "attempt-002-orientation-admission",
+      "results_eligible": false,
+      "completed_clips": 10,
+      "failed_clip": "c11",
+      "failure_stage": "source metadata admission",
+      "failure_reason": "The runner rejected a valid declared container rotation of -90 degrees before C11 generation.",
+      "resolution": "Accept declared quarter-turn and half-turn rotation, apply FFmpeg autorotation, and clear output rotation metadata."
+    },
+    {
+      "attempt_id": "attempt-003-frame-map-csv",
+      "results_eligible": false,
+      "completed_clips": 10,
+      "failed_clip": "c11",
+      "failure_stage": "source frame-map parsing after C11 derivative and decode validation",
+      "failure_reason": "Rotation display-matrix side data produced non-timestamp lines in FFprobe CSV output.",
+      "resolution": "Parse FFprobe JSON and consume only best_effort_timestamp_time."
+    }
+  ],
+  "execution_counts": {
+    "model_downloads": 0,
+    "model_loads": 0,
+    "cuda_runs": 0,
+    "paid_external_service_calls": 0,
+    "external_customer_or_personal_data_transfers": 0,
+    "backend_integration_runs": 0,
+    "topology_performance_runs": 0
+  }
+}
