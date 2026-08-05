@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HIVEFRAME P0 Local H3 Ready</title>
+  <title>HIVEFRAME P0 Local H3 — ComfyUI</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <main class="shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">HIVEFRAME · LOCAL MODEL READY P0</p>
-        <h1>모델 파일이 준비되면 바로 연결되는 로컬 영상 생성 흐름</h1>
-        <p class="lede">현재 Mock H3는 제품 흐름을 오프라인으로 검증합니다. Local H3는 공식 모델 파일이 배포·승인될 때까지 안전하게 대기합니다.</p>
+        <p class="eyebrow">HIVEFRAME · LOCAL H3 COMFYUI P0</p>
+        <h1>로컬 H3 워크플로로 실제 영상을 만드는 한 화면</h1>
+        <p class="lede">Mock H3와 실제 Local H3 — ComfyUI 결과를 명확히 구분하고, 생성 상태·결과·피드백을 한 흐름으로 연결합니다.</p>
       </div>
       <span id="backendBadge" class="badge">상태 확인 중</span>
     </header>
@@ -24,7 +24,7 @@
         <label for="backend">Backend</label>
         <select id="backend">
           <option value="mock_h3">Mock H3</option>
-          <option value="local_h3">Local H3</option>
+          <option value="minimax_h3_comfyui_local">Local H3 — ComfyUI</option>
         </select>
         <p id="backendMessage" class="message" aria-live="polite"></p>
 
@@ -35,8 +35,8 @@
         <input id="reference" type="file" accept="image/png,image/jpeg,image/webp">
 
         <div class="fixed-settings" aria-label="고정 생성 설정">
-          <span>해상도 <strong>768P</strong></span>
-          <span>길이 <strong>4초</strong></span>
+          <span>요청 해상도 <strong>768P</strong></span>
+          <span>요청 길이 <strong>4초</strong></span>
           <span>화면비 <strong>16:9</strong></span>
         </div>
 
@@ -67,7 +67,8 @@
 
       <section class="panel result-panel">
         <div class="panel-title"><span class="step">03</span><div><h2>결과 저장</h2><p>외부 artifact root에만 저장</p></div></div>
-        <div class="result-placeholder"><div class="mock-frame"><span>HIVEFRAME</span><strong>LOCAL-READY</strong></div><p>Mock 결과는 실제 영상이 아님을 파일 안에도 기록합니다.</p></div>
+        <div id="resultPlaceholder" class="result-placeholder"><div class="mock-frame"><span>HIVEFRAME</span><strong>MOCK / LOCAL</strong></div><p>Mock JSON과 실제 Local H3 영상을 구분해 표시합니다.</p></div>
+        <video id="resultVideo" class="hidden" controls preload="metadata"></video>
         <a id="downloadLink" class="secondary hidden" href="#" download>결과 다운로드</a>
       </section>
 
@@ -85,6 +86,7 @@
           <button id="acceptButton" type="button" disabled>수락</button>
           <button id="rejectButton" type="button" disabled>거절</button>
           <button id="retryButton" type="button" disabled>수동 재시도</button>
+          <button id="cancelButton" type="button" disabled>생성 취소</button>
         </div>
         <p id="feedbackMessage" class="message" aria-live="polite"></p>
       </section>

@@ -22,7 +22,7 @@ MAX_REFERENCE_BYTES = 10 * 1024 * 1024
 MAX_RETRY = 1
 
 JOB_STATUSES = {"queued", "running", "succeeded", "failed", "cancelled"}
-BACKENDS = {"mock_h3", "local_h3"}
+BACKENDS = {"mock_h3", "local_h3", "minimax_h3_comfyui_local"}
 RESOLUTIONS = {"768P", "2K"}
 ASPECT_RATIOS = {"adaptive", "21:9", "16:9", "4:3", "1:1", "3:4", "9:16"}
 CONTENT_TYPES = {"text", "image", "video", "audio"}

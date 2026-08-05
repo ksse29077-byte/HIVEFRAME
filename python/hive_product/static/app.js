@@ -23,10 +23,10 @@ function renderBackend() {
   if (!state.config) return;
   const selected = byId("backend").value;
   const backend = state.config.backends[selected];
-  const localWaiting = selected === "local_h3" && !backend.can_generate;
+  const localWaiting = selected === "minimax_h3_comfyui_local" && !backend.can_generate;
   byId("backendBadge").textContent = backend.message || `${backend.display_name} · ${backend.state}`;
   byId("backendMessage").textContent = localWaiting
-    ? "Local H3: Waiting for official model files. Mock H3를 직접 선택하면 제품 흐름을 계속 시험할 수 있습니다."
+    ? `Local H3 — ComfyUI를 사용할 수 없습니다 (${backend.reason || "runtime_unavailable"}). Mock H3는 직접 선택할 수 있습니다.`
     : `${backend.display_name} 준비됨. 자동 fallback은 사용하지 않습니다.`;
   byId("generateButton").disabled = localWaiting;
   byId("generateButton").textContent = localWaiting ? "공식 모델 파일 대기 중" : `${backend.display_name} 요청 만들기`;
@@ -44,10 +44,17 @@ function renderJob(job) {
   byId("errorMessage").textContent = failed ? job.error_message || "안전하게 실패했습니다." : "";
   const succeeded = job.status === "succeeded";
   byId("downloadLink").classList.toggle("hidden", !succeeded);
-  if (succeeded) byId("downloadLink").href = job.result_url;
+  const isRealVideo = succeeded && job.backend === "minimax_h3_comfyui_local";
+  byId("resultVideo").classList.toggle("hidden", !isRealVideo);
+  byId("resultPlaceholder").classList.toggle("hidden", isRealVideo);
+  if (succeeded) {
+    byId("downloadLink").href = job.result_url;
+    if (isRealVideo) byId("resultVideo").src = job.result_url;
+  }
   byId("acceptButton").disabled = !succeeded;
   byId("rejectButton").disabled = !succeeded;
   byId("retryButton").disabled = !(failed && job.retry_count < job.max_retry);
+  byId("cancelButton").disabled = !["queued", "running"].includes(job.status);
 }
 
 async function pollJob() {
@@ -114,6 +121,13 @@ async function saveFeedback(decision) {
 byId("acceptButton").addEventListener("click", () => saveFeedback("accepted"));
 byId("rejectButton").addEventListener("click", () => saveFeedback("rejected"));
 byId("retryButton").addEventListener("click", () => saveFeedback("retry_requested"));
+byId("cancelButton").addEventListener("click", async () => {
+  if (!state.job) return;
+  try {
+    const job = await request(`/api/jobs/${state.job.job_id}/cancel`, { method: "POST", body: "{}" });
+    renderJob(job);
+  } catch (error) { byId("feedbackMessage").textContent = error.message; }
+});
 
 request("/api/config").then((config) => { state.config = config; renderBackend(); })
   .catch(() => { byId("backendBadge").textContent = "Configuration unavailable"; });

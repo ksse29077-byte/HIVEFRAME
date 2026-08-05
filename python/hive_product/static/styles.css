@@ -56,6 +56,13 @@ code { overflow-wrap: anywhere; }
 .mock-frame strong { color: var(--ink); font-size: 22px; }
 .button-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
 .hidden { display: none !important; }
+
+#resultVideo {
+  width: 100%;
+  max-height: 32rem;
+  border-radius: 0.8rem;
+  background: #05070b;
+}
 @media (max-width: 780px) {
   .hero { display: block; }
   .badge { display: inline-block; margin-top: 8px; }

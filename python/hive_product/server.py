@@ -83,6 +83,10 @@ class ProductRequestHandler(BaseHTTPRequestHandler):
                 self.server.service.execute_job_async(job["job_id"])
                 self._json(HTTPStatus.ACCEPTED, job)
                 return
+            if len(parts) == 4 and parts[:2] == ["api", "jobs"] and parts[3] == "cancel":
+                job = self.server.service.cancel_job(parts[2])
+                self._json(HTTPStatus.OK, job)
+                return
             self._json(HTTPStatus.NOT_FOUND, {"error": "not_found"})
         except ValueError as error:
             self._json(HTTPStatus.BAD_REQUEST, {"error": "bad_input", "message": str(error)})

@@ -8,9 +8,11 @@ from typing import Any
 import binascii
 import json
 import threading
+import time
 import uuid
 
 from .backends import H3Backend, MiniMaxH3LocalBackend, MockH3Backend
+from .comfyui_backend import BACKEND_KEY as COMFYUI_BACKEND_KEY, MiniMaxH3ComfyUIBackend
 from .contracts import (
     BACKENDS,
     BackendFailure,
@@ -42,6 +44,7 @@ class ProductService:
         artifact_root: Path | None = None,
         backend: H3Backend | None = None,
         local_backend: MiniMaxH3LocalBackend | None = None,
+        comfyui_backend: MiniMaxH3ComfyUIBackend | H3Backend | None = None,
         fail_artifact_writes: bool = False,
     ) -> None:
         self.store = ProductStore(artifact_root or default_artifact_root())
@@ -49,6 +52,7 @@ class ProductService:
         self.backends: dict[str, H3Backend] = {
             mock.name: mock,
             "local_h3": local_backend or MiniMaxH3LocalBackend(),
+            COMFYUI_BACKEND_KEY: comfyui_backend or MiniMaxH3ComfyUIBackend(),
         }
         self.fail_artifact_writes = fail_artifact_writes
 
@@ -56,7 +60,7 @@ class ProductService:
         prompt = validate_prompt(request.get("prompt"))
         backend_name = request.get("backend", "mock_h3")
         if backend_name not in BACKENDS or backend_name not in self.backends:
-            raise ValueError("backend must be mock_h3 or local_h3")
+            raise ValueError("backend must be mock_h3, local_h3, or minimax_h3_comfyui_local")
         if request.get("generation_consent") is not True:
             raise ValueError("generation_consent must be accepted before creating a job")
         prepared_reference = self._prepare_reference(request.get("reference"))
@@ -140,7 +144,7 @@ class ProductService:
         if job["status"] != "queued":
             raise ValueError("only queued jobs can run")
         backend = self.backends[job["backend"]]
-        self.store.update_job(job_id, updated_at=utc_now(), status="running", backend_state="running", error_code=None, error_message=None)
+        self.store.update_job(job_id, updated_at=utc_now(), backend_state="queued", error_code=None, error_message=None)
         reference_sha = None
         if job["reference_asset_id"]:
             metadata, _ = self.store.get_asset(job["reference_asset_id"])
@@ -150,10 +154,31 @@ class ProductService:
             "reference_sha256": reference_sha,
             "fixture": fixture,
         }
+        backend_job_id = None
         try:
             backend_job_id = backend.create_job(request)
             self.store.update_job(job_id, updated_at=utc_now(), backend_job_id=backend_job_id)
+            deadline = time.monotonic() + float(getattr(backend, "poll_timeout_seconds", 30.0))
             status = backend.get_job_status(backend_job_id)
+            while status in {"queued", "running"}:
+                self.store.update_job(
+                    job_id,
+                    updated_at=utc_now(),
+                    status=status,
+                    backend_state=status,
+                )
+                if time.monotonic() >= deadline:
+                    raise BackendFailure("timeout", "The backend job exceeded its bounded timeout.", True)
+                time.sleep(float(getattr(backend, "poll_interval_seconds", 0.05)))
+                status = backend.get_job_status(backend_job_id)
+            if status == "cancelled":
+                cancelled = self.store.update_job(
+                    job_id,
+                    updated_at=utc_now(),
+                    status="cancelled",
+                    backend_state="cancelled",
+                )
+                return self.public_job(cancelled)
             if status != "succeeded":
                 raise BackendFailure("generation_failed", "The backend did not reach succeeded state.")
             result = backend.get_result(backend_job_id)
@@ -173,6 +198,7 @@ class ProductService:
                 job_id=job_id,
                 profile=job["profile"],
                 status="succeeded",
+                backend_job_id=backend_job_id,
                 request_contract=request["generation_request"],
                 output_sha256=output["sha256"],
                 output_classification=result.metadata.get("output_classification", "mock_fixture"),
@@ -200,6 +226,7 @@ class ProductService:
                 job_id=job_id,
                 profile=job["profile"],
                 status="failed",
+                backend_job_id=backend_job_id,
                 request_contract=request["generation_request"],
                 error_code=failure.code,
                 error_message=failure.message,
@@ -229,6 +256,21 @@ class ProductService:
             backend_job_id=None, backend_state="queued", error_code=None, error_message=None,
         )
         return self.public_job(queued)
+
+    def cancel_job(self, job_id: str) -> dict[str, Any]:
+        job = self.store.get_job(job_id)
+        if job["status"] not in {"queued", "running"} or not job["backend_job_id"]:
+            return {**self.public_job(job), "cancel_status": "unsupported"}
+        backend = self.backends[job["backend"]]
+        result = backend.cancel_job(job["backend_job_id"])
+        if result.get("status") == "cancelled":
+            job = self.store.update_job(
+                job_id,
+                updated_at=utc_now(),
+                status="cancelled",
+                backend_state="cancelled",
+            )
+        return {**self.public_job(job), "cancel_status": result.get("status", "unsupported")}
 
     def save_feedback(self, job_id: str, request: dict[str, Any]) -> dict[str, Any]:
         job = self.store.get_job(job_id)
@@ -268,8 +310,7 @@ class ProductService:
             raise KeyError("result is not available")
         return self.store.get_asset(job["output_asset_id"])
 
-    @staticmethod
-    def public_job(job: dict[str, Any]) -> dict[str, Any]:
+    def public_job(self, job: dict[str, Any]) -> dict[str, Any]:
         public = {key: job[key] for key in (
             "job_id", "created_at", "updated_at", "backend", "model", "reference_asset_id",
             "status", "backend_job_id", "backend_state", "error_code", "error_message",
@@ -277,15 +318,29 @@ class ProductService:
             "resolution", "aspect_ratio", "generation_consent",
         )}
         public["result_url"] = f"/api/jobs/{job['job_id']}/result" if job["output_asset_id"] else None
+        public["result_media_type"] = None
+        public["result_filename"] = None
+        if job["output_asset_id"]:
+            try:
+                metadata, _ = self.store.get_asset(job["output_asset_id"])
+                public["result_media_type"] = metadata["media_type"]
+                public["result_filename"] = metadata["filename"]
+            except (KeyError, FileNotFoundError):
+                pass
         public["max_retry"] = MAX_RETRY
         return public
 
     def public_config(self) -> dict[str, Any]:
+        public_backends = {
+            name: backend.public_status()
+            for name, backend in self.backends.items()
+            if name in {"mock_h3", "local_h3", COMFYUI_BACKEND_KEY}
+        }
         return {
             "profile": PROFILE,
             "model_contract": MODEL,
             "default_backend": "mock_h3",
-            "backends": {name: backend.public_status() for name, backend in self.backends.items()},
+            "backends": public_backends,
             "resolution": DEFAULT_RESOLUTION,
             "duration_seconds": DEFAULT_DURATION_SECONDS,
             "ratio": DEFAULT_ASPECT_RATIO,
