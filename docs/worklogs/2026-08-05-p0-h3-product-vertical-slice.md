@@ -1,4 +1,4 @@
-# P0 — MiniMax H3 Product Vertical Slice
+# P0-LR — MiniMax H3 local-model-ready product vertical slice
 
 Date: 2026-08-05
 
@@ -6,164 +6,211 @@ Issue: [#53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53)
 
 Branch: `product/p0-h3-vertical-slice`
 
+Draft PR: [#54](https://github.com/ksse29077-byte/HIVEFRAME/pull/54)
+
 Source main: `4ddb6a5c7e47b776c9904d32e33c85a63b4ad526`
 
-Decision: `P0_VERTICAL_SLICE_READY` for Draft review
+Starting branch head: `8f9ec538b94bcf09ec39b6ea8f4bcc4d017327f9`
 
-## Product question and bounded scope
+Decision: `P0_LOCAL_READY_WAITING_FOR_ARTIFACT`
 
-Can a user create one 3–8 second, one-person generation request on one local
-screen, see backend job state, save/download a result, and record
-accept/reject/retry feedback?
+## Product question
 
-The maximum scope was one `standard` profile, one offline Mock H3 path, one
-manual retry, SQLite metadata, external local artifacts, and one web screen.
-The maximum correction budget was one bounded implementation correction. The
-exit condition was one passing focused test invocation covering the core flow,
-fallback, and release-blocking safety boundaries. Failure fallback was an
-explicit failed job plus at most one manual retry; a live H3 failure cannot
-silently fall through because live mode is disabled.
+Can HIVEFRAME remain useful while the official MiniMax H3 local artifact is
+unpublished, then connect that artifact after an explicitly approved source,
+revision, download, and execution contract are supplied?
 
-## Implemented
+P0-LR answers only the product-structure part. It provides one screen, a
+functional H3-shaped request, persisted jobs and feedback, an offline Mock H3
+path, and a local backend boundary whose default state is `artifact_pending`.
+It does not download, load, infer with, benchmark, or claim support for an H3
+model artifact.
 
-- a Python standard-library HTTP server bound to loopback only;
-- plain local HTML/CSS/JavaScript with no remote assets or build step;
-- prompt, optional PNG/JPEG/WebP reference image, duration, generation
-  consent, and separated backend-transfer consent;
-- persisted job states `queued`, `running`, `succeeded`, and `failed`;
-- required job identifiers, timestamps, backend/model contract, provider job
-  ID, errors, output asset, receipt, profile, and retry count in SQLite;
-- deterministic `MockH3Backend` success, timeout, rate-limit, provider-failure,
-  and no-result fixtures without network access;
-- `MiniMaxH3Backend` interface with `create_job`, `get_job_status`,
-  `get_result`, unsupported cancellation, normalized errors, and receipts;
-- result and receipt files created exclusively under a configurable external
-  artifact root; the Mock result explicitly states that no video or network
-  call occurred;
-- feedback decisions `accepted`, `rejected`, and `retry_requested`, including
-  the seven bounded rejection reasons;
-- distinct generation consent, training opt-in, training eligibility,
-  deletion request, and retention status;
-- maximum one manual retry and no automatic retry loop;
-- P0 placeholder structures for terms, AUP, privacy, backend transfer,
-  training opt-in, retention, and deletion. They are explicitly not legal
-  text.
+## Preserved evidence and constitution check
 
-The MiniMax policy state is recorded exactly as:
+The existing P0 UI/SQLite/feedback work and all merged M0/M1 evidence were
+preserved. The correction stayed on Issue #53, the existing product branch,
+and Draft PR #54. No new issue, branch, PR, RFC, R2, or R3 was created. The
+Product-First Constitution was not duplicated or changed. The product question
+was narrowed from an API-shaped future integration to the smallest safe local-
+model-ready path; no constitution conflict was found.
+
+## Functional contract represented
+
+The public MiniMax product documentation is treated as a functional request
+contract, not as proof of a local Diffusers implementation. P0-LR records:
+
+- model contract `MiniMax-H3`;
+- content types `text`, `image`, `video`, and `audio`;
+- roles `first_frame`, `last_frame`, `reference_image`, `reference_video`, and
+  `reference_audio`;
+- at least one non-empty text item;
+- mutual exclusion between the frame group and multimodal-reference group;
+- rejection of reference audio without an image or video reference;
+- resolutions `768P` and `2K`, integer durations 4–15 seconds, and the declared
+  adaptive/concrete ratio set;
+- concrete ratio for text-to-video and adaptive normalization for first/last-
+  frame modes;
+- asset IDs, never API URLs, for media content;
+- an internal `aigc_watermark` field.
+
+Only prompt, optional first-frame image, 768P, 4 seconds, 16:9, and the explicit
+Mock/Local selector appear in P0 UI. Other contract fields remain internal.
+The local pipeline class, loader arguments, dependencies, tensor format,
+scheduler, output object, offload behavior, encoding path, and audio-module
+layout remain unverified implementation details.
+
+## Product implementation
+
+- `H3ContentItem` and `H3GenerationRequest` validate and serialize the bounded
+  functional contract; `schemas/h3_generation_request.schema.json` mirrors the
+  JSON shape.
+- SQLite stores the backend-neutral request JSON, backend job ID, backend state,
+  and asset IDs. It does not require provider IDs, provider polling, API costs,
+  API keys, or backend-transfer consent.
+- `MockH3Backend` remains deterministic and explicitly emits a JSON Mock
+  artifact saying that no real video or network call occurred.
+- `MiniMaxH3LocalBackend` implements runtime/source inspection, prepare/load/
+  unload, job creation/status, generation/cancellation, output normalization,
+  errors, and receipts.
+- `LocalPipelineFactory` is the single coarse future loader boundary. Torch and
+  Diffusers are lazy imports; a missing source triggers no imports. A fake
+  factory can be injected for tests. Pipeline objects are never stored in
+  SQLite.
+- local-files-only mode resolves only an existing local directory or an
+  existing revision-pinned Hugging Face cache snapshot. It has no network
+  fallback and no automatic download.
+- unload drops the pipeline reference, runs garbage collection, and invokes an
+  optional CUDA cache hook only if torch is already imported and CUDA is
+  available. Unload does not import torch.
+- the artifact root remains outside Git, reference filenames reject traversal,
+  and assets are created exclusively without overwrite.
+- UI shows `Local H3: Waiting for official model files` in the default state,
+  disables Local generation, and leaves Mock H3 explicitly selectable. It never
+  automatically converts a Local request into a Mock success.
+
+## State and error semantics
+
+Product jobs retain `queued`, `running`, `succeeded`, `failed`, and `cancelled`.
+Local readiness is separate: `artifact_pending`, `artifact_configured`,
+`artifact_ready`, runtime unavailable/incompatible, model loading/ready, and
+generation running/succeeded/failed.
+
+With no source configured:
+
+- `prepare_model()` returns `artifact_pending`, zero downloads, and zero network
+  calls;
+- `load_model()` raises `model_source_not_configured`;
+- a Local generation job fails as `local_backend_unavailable` and is never
+  recorded as success.
+
+Other declared local failures include artifact not found, runtime unavailable
+or incompatible, unsupported dtype/device map, model-load failure, generation
+failure/cancellation, missing output, unsupported output contract, and artifact
+save failure. Rate-limit/provider fixtures remain Mock-only test semantics.
+Maximum retry remains one and is manual.
+
+## Environment contract and privacy
+
+The future integration reads these environment variables without model-source
+or revision defaults:
 
 ```text
-excluded_territory_authorization = verified_private_evidence
-commercial_product_use = authorized_with_conditions
-safeguards_required = true
-end_user_flow_down_required = true
-output_training_rights = unknown_pending_written_confirmation
+HIVEFRAME_H3_MODEL_SOURCE
+HIVEFRAME_H3_MODEL_REVISION
+HIVEFRAME_H3_LOCAL_ENABLED=false
+HIVEFRAME_H3_LOCAL_FILES_ONLY=true
+HIVEFRAME_H3_DTYPE=bfloat16
+HIVEFRAME_H3_DEVICE_MAP=auto
+HIVEFRAME_H3_TRUST_REMOTE_CODE=false
+HIVEFRAME_H3_MODEL_ROOT
 ```
 
-Training eligibility defaults to `evaluation_only`. An opt-in remains
-`preference_only` while output training rights are unknown. A deletion request
-becomes `quarantined` with `pending_deletion`. `training_allowed` requires both
-explicit user opt-in and separately confirmed written output rights; P0 never
-asserts those rights.
+Model source, revision, model-root path, URL, token, and user path values are
+never emitted to public config, SQLite, receipts, logs, Git, or PR text. Only
+`configured`, `not_configured`, `valid`, or `invalid` status is exposed for
+those values. A model root or resolved model source inside the repository is
+invalid.
 
-## Run locally
+The separately created H3 environment remains evidence only: Python 3.12.3,
+pip 26.2.1, diffusers 0.39.0, transformers 5.14.1, accelerate 1.14.0, torch
+2.13.0+cu130, CUDA build 13.0, and previously observed CUDA availability true.
+No package, environment, requirement, or lock file was changed here. These
+versions are not asserted as compatible with an unpublished H3 artifact.
 
-Use Python 3.10 or newer. No package installation is required.
+## Output normalization boundary
 
-```bash
-PYTHONPATH=python python hiveframe_product.py \
-  --host 127.0.0.1 \
-  --port 8765 \
-  --artifact-root <external-artifact-root>
-```
+The provisional normalizer recognizes `frames`, `videos`, `video`, `images`,
+direct frame lists, and local video paths. It classifies them as
+`provisional_video_frames`, `provisional_video_output`,
+`provisional_image_output`, `unsupported_output_contract`, or
+`output_missing`. A single image is not a video-generation success. These
+names are compatibility placeholders to be replaced only after official local
+execution code defines the real output object.
 
-Open `http://127.0.0.1:8765`. Enter a prompt, optionally select a supported
-reference image, choose 3, 5, or 8 seconds, accept local generation/storage,
-and create the Mock request. The result panel exposes a download after success.
-Use the final panel to accept, reject with a reason, request one retry, opt in
-to future training separately, or request deletion.
+## Focused verification
 
-If `--artifact-root` is omitted, the service uses the operating system's local
-application-data directory outside the repository. `HIVEFRAME_ARTIFACT_ROOT`
-may set another external path. A path inside the Git repository is rejected.
-
-## Focused validation
-
-The same focused command was used at two distinct code checkpoints:
+Command:
 
 ```bash
 PYTHONPATH=python python3 -m unittest python/tests/test_product_vertical_slice.py
 ```
 
-The initial development checkpoint passed 5 tests in 1.743 seconds. Product
-code then changed to enforce feedback/job-state compatibility and to extend
-missing-key and artifact-save fallback coverage. The final invocation passed
-5 tests in 1.960 seconds. This was the single bounded correction, not a repeat
-against unchanged code.
+The first changed-code checkpoint passed 13 tests in 1.205 seconds. A contract
+audit then corrected field/state/classification names, the factory signature,
+offline cache resolution, and unload behavior; that changed-code checkpoint
+passed 13 tests in 1.612 seconds. A final focused run after exact error and
+output-candidate semantics changed passed 13 tests in 1.574 seconds. A final
+state-preservation fix prevented source inspection from overwriting
+`model_ready`/generation state; its changed-code checkpoint passed 13 tests in
+1.458 seconds. The release-blocking review then made `local_files_only=false`
+fail closed instead of leaving a future network fallback; that final changed-
+code checkpoint passed 13 tests in 1.447 seconds. These were bounded changed-
+code checkpoints, not repeated verification against unchanged code.
 
-| Check | Result |
-|---|---|
-| focused job/feedback/training/error contracts | passed |
-| server start, UI access, Mock job create smoke | passed |
-| prompt → Mock success → saved/downloaded result → feedback E2E | passed |
-| provider failure → partial receipt → one manual retry only | passed |
-| API-key persistence, traversal upload, external artifact boundary | passed |
+The focused tests cover request/schema parsing, empty text and incompatible
+roles, ratio rules, missing-source state, local-files-only zero-network
+behavior, injected factory success/failure, provisional output handling, UI
+wait state, one Mock end-to-end flow per changed-code checkpoint, sanitized
+receipts/database, asset IDs, traversal defense, and repository-external
+storage. `git diff --check` and separate secret/binary/path scans complete the
+release-blocking surface before publication.
 
-The test created only temporary external artifacts. It performed no network,
-model, GPU, provider, or paid operation.
+The Mock end-to-end test therefore ran once at each of five materially changed
+product-code checkpoints. It was not rerun after documentation-only changes.
 
-## Skipped validation and evidence reuse
+Full Python, Rust, M0, M1-A/A2/B0, model, CUDA, GPU, VRAM, and benchmark suites
+were intentionally not run because those unchanged surfaces are outside this
+bounded correction.
 
-```text
-status: skipped
-reason: not release-blocking
-evidence: the existing Python/Rust research and M0/M1 surfaces were unchanged
-```
+## Claim boundary and operation count
 
-The full Python suite, full Rust suite, M0/model checks, B0 measurements,
-benchmarks, and repeated input/hash validation were not rerun. PR #52 merge
-commit `4ddb6a5...` and the existing M0/M1 reports remain immutable evidence.
-The first documentation commit for this task is `c430daf`; the product evidence
-commit is the commit introducing this worklog and is identified by branch/PR
-Git history after publication.
+Actual H3 model downloads: 0. Automatic downloads: 0. `snapshot_download`
+calls: 0. Actual `from_pretrained` calls: 0. Model loads: 0. GPU generations:
+0. CUDA runs: 0. API calls: 0. API keys used: 0. Paid calls: 0. External
+personal-data transfers: 0. Selective-compute runs: 0. M1-B1/B2 runs: 0.
 
-## Security, rights, and failure boundaries
+No fake model binary or fake MP4 was created. The only generated product output
+in focused tests was the pre-existing, explicit Mock JSON contract stored under
+temporary external artifact roots. No model/media/tool binary is tracked.
 
-- live H3 mode defaults to false and P0 contains no HTTP provider transport;
-- `MINIMAX_API_KEY` is read only as an environment-presence check by the
-  disabled contract shell and is never written to source, configuration, log,
-  SQLite, artifact, or receipt;
-- the local server binds only to loopback and sends a restrictive CSP;
-- prompt and request size are bounded, database statements are parameterized,
-  and reference filenames reject traversal and unsupported suffixes;
-- artifact creation is exclusive and cannot overwrite an existing user file;
-- user content and product artifacts remain outside Git;
-- no external user-content transfer occurs in Mock mode;
-- no infinite retry exists; `max_retry=1` and retry is manual;
-- provider timeout, rate limit, provider failure, missing result, disabled live
-  mode, missing key, bad input, and artifact-save failure have explicit error
-  semantics.
+## Known limitations and next approved input
 
-## Known limitations
+- No official MiniMax H3 local checkpoint or immutable revision is known here.
+- The provisional `DiffusionPipeline` call site is centralized but unexecuted;
+  its exact class and arguments may change after official code is published.
+- No real MP4, audio, quality, latency, memory, or product result exists.
+- Policy UI copy remains structural placeholder text, not legal advice.
+- SQLite remains a single-user local product store.
 
-- The result is a deterministic JSON Mock artifact, not a generated MP4.
-- The MiniMax H3 adapter is a contract shell; official endpoint names,
-  request/response fields, cancellation, pricing, and policy must be rechecked
-  in P1 before a live call.
-- There is no authentication, payment, cloud deployment, admin surface, or
-  multi-user isolation.
-- Deletion requests are recorded but not executed automatically in P0.
-- Terms, AUP, privacy, and consent copy are UI structure placeholders, not
-  legal documents.
-- SQLite is suitable only for the local single-user vertical slice.
-- No selective-compute, speed, GPU-work, or VRAM benefit is claimed.
+P1-L requires all of the following before any download or load:
 
-## Operation counts and next product work
+1. `HIVEFRAME_H3_MODEL_SOURCE`;
+2. `HIVEFRAME_H3_MODEL_REVISION`;
+3. the official model card and execution documentation;
+4. explicit download approval after size, location, and cache reporting;
+5. required artifact size and a selected low-memory profile, if supported.
 
-Live H3 API calls: 0. API keys used by the product: 0. Paid calls: 0. Model
-downloads: 0. Model loads: 0. CUDA runs: 0. Backend research runs: 0. M1-B1/B2
-runs: 0. External personal-data transfers: 0.
-
-Next is separately approved **P1 — Live MiniMax H3 Integration**: recheck the
-official API and terms, require an environment-only key, establish an explicit
-cost cap and live-call count, require backend-transfer consent, and perform one
-bounded live admission. Do not start it automatically.
+The next bounded action is one approved official artifact download, load, and
+local generation—not an API prerequisite and not automatic. Until those inputs
+exist, the correct decision is `P0_LOCAL_READY_WAITING_FOR_ARTIFACT`.

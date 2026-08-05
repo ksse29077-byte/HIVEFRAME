@@ -21,11 +21,11 @@ expansion does not block the launch track.
 
 | Track | Status | Evidence or blocker |
 |---|---|---|
-| P0 — Product Vertical Slice | `in_progress` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53); local implementation and five focused checks pass; Draft publication pending |
-| P1 — Live MiniMax H3 Integration | `planned` | explicit API/key/cost/data-transfer approval required |
-| P2 — Internal Alpha | `planned` | depends on P0/P1 core flow, not M1-B1/B2 completion |
-| P3 — Limited Commercial Beta | `planned` | operational, retention, terms, and billing safeguards |
-| P4 — 1.0 Release | `planned` | bounded release Gate after product feedback |
+| P0 — Local-model-ready vertical slice | `in_progress` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53); official H3-shaped request, Local H3 `artifact_pending`, Mock flow, focused verification; Draft PR #54 publication pending |
+| P1-L — Official artifact + one local generation | `planned` | requires official source/revision, model card/execution docs, approved download size/location, and one bounded run |
+| P2 — Real local H3 product flow | `planned` | replace provisional pipeline/output details only after official artifact code exists |
+| P3 — Selective runtime integration | `planned` | requires backend-admitted partial-compute evidence and complete accepted-result costs |
+| P4 — Internal alpha/commercial preparation | `planned` | operational, rights, retention/deletion, terms, packaging, and release safeguards |
 | M1-B1/B2 — Engine Beta Track | `planned` | separately approved, one backend/selector-cache maximum; integrate benefit or use `FALLBACK_ONLY`/`DROP` |
 
 ## R0 — Compound-eye architecture RFC
@@ -152,7 +152,7 @@ real-video corpus and oracle admission.
 |---|---|---|
 | Designate MiniMax H3 as primary product target | `verified` | policy only; no runtime or speedup claim |
 | Review current official H3 API documentation | `verified` | V2 contract names `MiniMax-H3`; runtime admission remains pending |
-| Admit official H3 API | `planned` | [Issue #39](https://github.com/ksse29077-byte/HIVEFRAME/issues/39); explicit approval required before API key or paid call |
+| Optional H3 API adapter admission | `planned` | [Issue #39](https://github.com/ksse29077-byte/HIVEFRAME/issues/39) remains separate; it is not required for P0-LR or P1-L |
 | Admit future H3 open weights | `blocked` | official repository, checkpoint, source, license, digest, and runtime not jointly verified |
 | Preserve Wan M0 comparator | `done` | frozen code, pins, receipts, fingerprints, and reports; no new feature development |
 | Remove LTX from active scope | `done` | historical code and Git history retained; no cleanup in this change |

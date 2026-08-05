@@ -1041,28 +1041,41 @@ Detailed protocol and evidence are in
 and
 [`2026-08-05-m1-b0-model-free-locality-opportunity.md`](worklogs/2026-08-05-m1-b0-model-free-locality-opportunity.md).
 
-## 2026-08-05 — P0 H3-shaped product vertical slice
+## 2026-08-05 — P0-LR local-model-ready H3 product correction
 
-Issue [#53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) tracks one
-product question: can a user submit one bounded request, observe job state,
-download a saved result, and record accept/reject/retry feedback? The branch
-adds a dependency-free local Python/SQLite service and one-screen UI,
-deterministic offline `MockH3Backend`, and a disabled-by-default
-`MiniMaxH3Backend` contract shell. Product-First policy and the P0–P4 launch
-line were recorded in `c430daf`; preserved M0/M1 evidence was not changed.
+Issue [#53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53), branch
+`product/p0-h3-vertical-slice`, and Draft PR #54 were reused. The original
+API-shaped contract shell was corrected in place into a local-model-ready
+product boundary: an official H3-shaped `H3GenerationRequest`, asset-ID media,
+deterministic `MockH3Backend`, `MiniMaxH3LocalBackend`, lazy injectable
+`LocalPipelineFactory`, external artifacts, and an explicit default
+`artifact_pending` state. API-key checks, provider IDs/polling, API costs, and
+mandatory transfer consent are no longer part of the active product path.
 
-An initial focused checkpoint passed five tests in 1.743 seconds. After the
-bounded feedback-state, missing-key, and artifact-save fallback corrections
-changed the product code, the final focused invocation passed the same five
-test groups in 1.960 seconds. They cover the job/feedback contract, server
-smoke, Mock end-to-end result download and feedback, failed-job/manual retry,
-and key/path/upload boundaries.
-The full existing Python and Rust suites were skipped because their unchanged
-research/runtime surfaces are not release-blocking for this isolated P0
-module. Live H3 calls, API keys used by the app, paid calls, model operations,
-CUDA, cloud transfer, and tracked user artifacts were all zero. The bounded
-decision is `P0_VERTICAL_SLICE_READY` for Draft review; live H3 remains P1.
-Detailed usage, evidence, omissions, and limitations are in
+Local H3 never automatically falls back to a Mock success. The UI explicitly
+offers Mock H3 while Local H3 says `Waiting for official model files`. No source
+means prepare returns `artifact_pending`, load raises
+`model_source_not_configured`, and generation fails
+`local_backend_unavailable`. Local-files-only resolution accepts only an
+existing local directory or revision-pinned cache snapshot; it performs no
+automatic download. Sensitive source/revision/root values are reduced to
+configured/not-configured/valid/invalid status in public state and receipts.
+
+Bounded correction produced five materially changed-code checkpoints: 13
+focused tests passed in 1.205 seconds, then 1.612 seconds after the exact
+contract-name correction, and finally 1.574 seconds after error/output-candidate
+semantics changed, 1.458 seconds after readiness-state preservation changed,
+and 1.447 seconds after the non-offline loader path was made fail-closed. No
+unchanged-code rerun occurred. Full Python/Rust and
+unchanged M0/M1 suites were skipped. Model downloads, `from_pretrained` calls,
+model loads, GPU generations, CUDA, API calls, paid calls, external personal-
+data transfers, and selective-compute runs were all zero.
+
+The bounded decision is `P0_LOCAL_READY_WAITING_FOR_ARTIFACT`. P1-L requires an
+official model source/revision, model card and execution docs, reported size and
+location, explicit download approval, and one bounded local generation. It is
+not a mandatory live-API stage. Full contract, verification, limitations, and
+future inputs are recorded in
 [`2026-08-05-p0-h3-product-vertical-slice.md`](worklogs/2026-08-05-p0-h3-product-vertical-slice.md).
 
 ---

@@ -14,18 +14,21 @@ in [`AGENTS.md`](AGENTS.md). The preserved M0–M5 research line remains evidenc
 and an Engine Beta Track; it is not a prerequisite for shipping the bounded
 H3 product path.
 
-- **P0 — Product Vertical Slice:** one local screen for request, backend job
-  state, saved/downloadable result, consent-separated feedback, and one safe
-  manual-retry path. Use deterministic Mock H3 until live admission.
-- **P1 — Live MiniMax H3 Integration:** separately approved official API
-  recheck, key and cost controls, data-transfer consent, and bounded live-call
-  admission.
-- **P2 — Internal Alpha:** operate the single standard profile with internal
-  users and repair the core flow from recorded feedback.
-- **P3 — Limited Commercial Beta:** controlled users, retention/deletion and
-  operational safeguards, billing/cost controls, and explicit terms flow.
-- **P4 — 1.0 Release:** release the proven core generation, result, feedback,
-  and fallback path.
+- **P0 — Local-model-ready product vertical slice:** one local screen, the
+  official H3-shaped request contract, SQLite jobs/feedback, external artifact
+  storage, deterministic Mock H3, and a `MiniMaxH3LocalBackend` that waits in
+  `artifact_pending` without downloading or loading a model.
+- **P1-L — Official H3 artifact and one local generation:** after a separately
+  approved source, revision, size, license, and download plan are available,
+  download exactly that artifact and perform one bounded local load/generation.
+- **P2 — Real local H3 product flow:** replace provisional loader/output details
+  with the released official execution contract and harden the accepted-result
+  loop on the same minimal UI.
+- **P3 — HIVEFRAME selective runtime integration:** connect only a backend-
+  admitted selective mechanism with complete accepted-result cost evidence.
+- **P4 — Internal alpha and commercial release preparation:** bounded internal
+  operation, rights/retention/deletion safeguards, terms, packaging, and a
+  release decision based on product evidence.
 
 M1-B1/B2 are an optional **Engine Beta Track** limited to one backend and at
 most one selector/cache experiment. Integrate only a demonstrated product
@@ -34,9 +37,11 @@ track continues. No separate HIVEFRAME 2.0 RFC is a launch prerequisite.
 
 ## Backend target policy
 
-- **MiniMax H3:** highest-priority product backend target. Official API
-  documentation exists, but HIVEFRAME admission is pending Issue #39 and no
-  integration or speedup is claimed.
+- **MiniMax H3:** highest-priority local product backend target. Public product
+  documentation defines the functional request surface, but the local pipeline
+  class, artifact, immutable revision, dependencies, output object, and license
+  remain unconfirmed. P0 therefore implements a local-ready contract, not a
+  model integration or speedup claim.
 - **MiniMax H3 open weights:** future white-box candidate, blocked until the
   official weights, source, license, immutable digest, and runtime are
   verified. A publication plan is not a released checkpoint.

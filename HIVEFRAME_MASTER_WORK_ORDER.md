@@ -6,8 +6,9 @@ The normative constitution is maintained only in [`AGENTS.md`](AGENTS.md).
 Ship the smallest safe user-visible path, reuse unchanged evidence, and run
 only focused, smoke, core end-to-end, fallback, and release-blocking security
 checks unless the constitution requires a full suite. The official launch
-track is P0 Product Vertical Slice, P1 Live MiniMax H3 Integration, P2 Internal
-Alpha, P3 Limited Commercial Beta, and P4 1.0 Release.
+track is P0 Local-model-ready Vertical Slice, P1-L Official H3 Artifact plus
+one local generation, P2 Real Local H3 Product Flow, P3 Selective Runtime
+Integration, and P4 Internal Alpha and Commercial Release Preparation.
 
 The M0–M5 selective-recompute program remains preserved evidence and an
 Engine Beta Track. M1-B1/B2 may test at most one backend/selector-cache path
@@ -144,13 +145,17 @@ and a creator or B2B product only after earlier gates pass.
 
 ## Current authorized scope
 
-The current scope is P0: one local standard-profile product vertical slice
-using deterministic Mock H3 fixtures plus a disabled-by-default MiniMax H3
-contract. It includes request, job state, result save/download, consent-aware
-feedback, bounded manual retry, and external local artifact storage.
+The current scope is P0-LR: one local standard-profile product vertical slice
+using deterministic Mock H3 fixtures plus a disabled-by-default, local-files-
+only `MiniMaxH3LocalBackend`. It includes the official H3-shaped functional
+request contract, job state, result save/download, consent-aware feedback,
+bounded manual retry, external local artifact storage, and an explicit
+`artifact_pending` wait state until official model files are approved.
 
-It excludes live H3 calls and cost, model loading, CUDA, training, selective
-compute, M1-B1/B2, HIVEFRAME 2.0, and product-speedup claims.
+It excludes API integration, automatic model download, model loading, CUDA,
+training, selective compute, M1-B1/B2, HIVEFRAME 2.0, and product-speedup
+claims. P1-L, not a mandatory API stage, is the separately approved official
+artifact download plus one local generation.
 
 ## Definition of done for each change
 

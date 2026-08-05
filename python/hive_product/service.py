@@ -1,4 +1,4 @@
-"""Application service for the one-screen P0 user flow."""
+"""Application service for the one-screen local-model-ready P0 flow."""
 
 from __future__ import annotations
 
@@ -6,14 +6,21 @@ from base64 import b64decode
 from pathlib import Path
 from typing import Any
 import binascii
+import json
 import threading
 import uuid
 
-from .backends import H3Backend, MockH3Backend
+from .backends import H3Backend, MiniMaxH3LocalBackend, MockH3Backend
 from .contracts import (
+    BACKENDS,
     BackendFailure,
+    DEFAULT_ASPECT_RATIO,
+    DEFAULT_DURATION_SECONDS,
+    DEFAULT_RESOLUTION,
     FEEDBACK_DECISIONS,
     FEEDBACK_REASONS,
+    H3ContentItem,
+    H3GenerationRequest,
     MAX_REFERENCE_BYTES,
     MAX_RETRY,
     MINIMAX_POLICY_STATE,
@@ -22,8 +29,6 @@ from .contracts import (
     derive_training_eligibility,
     default_artifact_root,
     utc_now,
-    validate_duration,
-    validate_profile,
     validate_prompt,
     validate_reference_name,
 )
@@ -36,102 +41,122 @@ class ProductService:
         *,
         artifact_root: Path | None = None,
         backend: H3Backend | None = None,
+        local_backend: MiniMaxH3LocalBackend | None = None,
         fail_artifact_writes: bool = False,
     ) -> None:
         self.store = ProductStore(artifact_root or default_artifact_root())
-        self.backend = backend or MockH3Backend()
+        mock = backend or MockH3Backend()
+        self.backends: dict[str, H3Backend] = {
+            mock.name: mock,
+            "local_h3": local_backend or MiniMaxH3LocalBackend(),
+        }
         self.fail_artifact_writes = fail_artifact_writes
 
     def create_job(self, request: dict[str, Any]) -> dict[str, Any]:
         prompt = validate_prompt(request.get("prompt"))
-        profile = validate_profile(request.get("profile", PROFILE))
-        duration = validate_duration(request.get("duration_seconds", 5))
-        generation_consent = request.get("generation_consent") is True
-        if not generation_consent:
+        backend_name = request.get("backend", "mock_h3")
+        if backend_name not in BACKENDS or backend_name not in self.backends:
+            raise ValueError("backend must be mock_h3 or local_h3")
+        if request.get("generation_consent") is not True:
             raise ValueError("generation_consent must be accepted before creating a job")
-        prepared_reference: tuple[str, str, bytes] | None = None
-        reference = request.get("reference")
-        if reference is not None:
-            if not isinstance(reference, dict):
-                raise ValueError("reference must be an object")
-            encoded = reference.get("content_base64")
-            if not isinstance(encoded, str):
-                raise ValueError("reference content_base64 is required")
-            try:
-                content = b64decode(encoded, validate=True)
-            except (binascii.Error, ValueError) as error:
-                raise ValueError("reference content_base64 is invalid") from error
-            # ProductStore performs the filename, type, size, and containment
-            # checks before it writes any user bytes.
-            if not content or len(content) > MAX_REFERENCE_BYTES:
-                raise ValueError(f"reference image must contain 1 to {MAX_REFERENCE_BYTES} bytes")
-            prepared_reference = (
-                validate_reference_name(reference.get("name")),
-                str(reference.get("media_type", "application/octet-stream")),
-                content,
-            )
+        prepared_reference = self._prepare_reference(request.get("reference"))
+        content = [H3ContentItem("text", text=prompt)]
+        generation_request = H3GenerationRequest.create(
+            content=content,
+            resolution=request.get("resolution", DEFAULT_RESOLUTION),
+            duration_seconds=request.get("duration_seconds", DEFAULT_DURATION_SECONDS),
+            ratio=request.get("ratio", request.get("aspect_ratio", DEFAULT_ASPECT_RATIO)),
+            aigc_watermark=request.get("aigc_watermark", True),
+            profile=request.get("profile", PROFILE),
+        )
         job_id = f"job_{uuid.uuid4().hex}"
         now = utc_now()
         values = {
             "job_id": job_id,
             "created_at": now,
             "updated_at": now,
-            "backend": self.backend.name,
+            "backend": backend_name,
             "model": MODEL,
             "prompt": prompt,
             "reference_asset_id": None,
             "status": "queued",
-            "provider_job_id": None,
+            "backend_job_id": None,
             "error_code": None,
             "error_message": None,
             "output_asset_id": None,
             "receipt_id": None,
             "retry_count": 0,
-            "profile": profile,
-            "duration_seconds": duration,
+            "profile": generation_request.profile,
+            "duration_seconds": generation_request.duration_seconds,
+            "resolution": generation_request.resolution,
+            "aspect_ratio": generation_request.ratio,
+            "request_json": json.dumps(generation_request.to_dict(), ensure_ascii=False, sort_keys=True),
             "generation_consent": True,
-            "backend_transfer_consent": request.get("backend_transfer_consent") is True,
+            "backend_state": "queued",
         }
         job = self.store.create_job(values)
         if prepared_reference is not None:
-            asset = self.store.save_reference(
-                job_id,
-                prepared_reference[0],
-                prepared_reference[1],
-                prepared_reference[2],
+            asset = self.store.save_reference(job_id, *prepared_reference)
+            content.append(H3ContentItem("image", role="first_frame", asset_id=asset["asset_id"]))
+            generation_request = H3GenerationRequest.create(
+                content=content,
+                resolution=generation_request.resolution,
+                duration_seconds=generation_request.duration_seconds,
+                ratio=generation_request.requested_ratio,
+                aigc_watermark=generation_request.aigc_watermark,
+                profile=generation_request.profile,
             )
-            job = self.store.update_job(job_id, updated_at=utc_now(), reference_asset_id=asset["asset_id"])
+            job = self.store.update_job(
+                job_id,
+                updated_at=utc_now(),
+                reference_asset_id=asset["asset_id"],
+                request_json=json.dumps(generation_request.to_dict(), ensure_ascii=False, sort_keys=True),
+            )
         return self.public_job(job)
+
+    @staticmethod
+    def _prepare_reference(reference: Any) -> tuple[str, str, bytes] | None:
+        if reference is None:
+            return None
+        if not isinstance(reference, dict):
+            raise ValueError("reference must be an object")
+        encoded = reference.get("content_base64")
+        if not isinstance(encoded, str):
+            raise ValueError("reference content_base64 is required")
+        try:
+            content = b64decode(encoded, validate=True)
+        except (binascii.Error, ValueError) as error:
+            raise ValueError("reference content_base64 is invalid") from error
+        if not content or len(content) > MAX_REFERENCE_BYTES:
+            raise ValueError(f"reference image must contain 1 to {MAX_REFERENCE_BYTES} bytes")
+        return (
+            validate_reference_name(reference.get("name")),
+            str(reference.get("media_type", "application/octet-stream")),
+            content,
+        )
 
     def execute_job(self, job_id: str, *, fixture: str = "success") -> dict[str, Any]:
         job = self.store.get_job(job_id)
         if job["status"] != "queued":
             raise ValueError("only queued jobs can run")
-        self.store.update_job(
-            job_id,
-            updated_at=utc_now(),
-            status="running",
-            error_code=None,
-            error_message=None,
-        )
+        backend = self.backends[job["backend"]]
+        self.store.update_job(job_id, updated_at=utc_now(), status="running", backend_state="running", error_code=None, error_message=None)
         reference_sha = None
         if job["reference_asset_id"]:
             metadata, _ = self.store.get_asset(job["reference_asset_id"])
             reference_sha = metadata["sha256"]
         request = {
-            "prompt": job["prompt"],
-            "profile": job["profile"],
-            "duration_seconds": job["duration_seconds"],
+            "generation_request": H3GenerationRequest.from_dict(json.loads(job["request_json"])).to_dict(),
             "reference_sha256": reference_sha,
             "fixture": fixture,
         }
         try:
-            provider_job_id = self.backend.create_job(request)
-            self.store.update_job(job_id, updated_at=utc_now(), provider_job_id=provider_job_id)
-            status = self.backend.get_job_status(provider_job_id)
+            backend_job_id = backend.create_job(request)
+            self.store.update_job(job_id, updated_at=utc_now(), backend_job_id=backend_job_id)
+            status = backend.get_job_status(backend_job_id)
             if status != "succeeded":
-                raise RuntimeError(f"unsupported terminal provider status: {status}")
-            result = self.backend.get_result(provider_job_id)
+                raise BackendFailure("generation_failed", "The backend did not reach succeeded state.")
+            result = backend.get_result(backend_job_id)
             if self.fail_artifact_writes:
                 raise OSError("injected artifact save failure")
             output = self.store.save_result(job_id, result.filename, result.media_type, result.content)
@@ -139,43 +164,48 @@ class ProductService:
                 job_id,
                 updated_at=utc_now(),
                 status="succeeded",
+                backend_state="generation_succeeded",
                 output_asset_id=output["asset_id"],
                 error_code=None,
                 error_message=None,
             )
-            receipt = self.backend.build_receipt(
+            receipt = backend.build_receipt(
                 job_id=job_id,
                 profile=job["profile"],
                 status="succeeded",
+                request_contract=request["generation_request"],
                 output_sha256=output["sha256"],
+                output_classification=result.metadata.get("output_classification", "mock_fixture"),
                 reference_sha256=reference_sha,
                 generation_consent=True,
-                backend_transfer_consent=job["backend_transfer_consent"],
+                external_transfer_required=False,
                 training_eligibility="evaluation_only",
             )
             receipt_asset = self.store.save_receipt(job_id, receipt)
             succeeded = self.store.update_job(job_id, updated_at=utc_now(), receipt_id=receipt_asset["asset_id"])
             return self.public_job(succeeded)
         except Exception as error:
-            failure = self.backend.normalize_error(error)
+            failure = backend.normalize_error(error)
             if isinstance(error, OSError):
-                failure = BackendFailure("artifact_save_failure", "The result could not be saved.", True)
+                failure = BackendFailure("artifact_save_failed", "The result could not be saved.", True)
             failed = self.store.update_job(
                 job_id,
                 updated_at=utc_now(),
                 status="failed",
+                backend_state="generation_failed",
                 error_code=failure.code,
                 error_message=failure.message,
             )
-            receipt = self.backend.build_receipt(
+            receipt = backend.build_receipt(
                 job_id=job_id,
                 profile=job["profile"],
                 status="failed",
+                request_contract=request["generation_request"],
                 error_code=failure.code,
                 error_message=failure.message,
                 retryable=failure.retryable,
                 generation_consent=True,
-                backend_transfer_consent=job["backend_transfer_consent"],
+                external_transfer_required=False,
                 training_eligibility="evaluation_only",
             )
             try:
@@ -186,8 +216,7 @@ class ProductService:
             return self.public_job(failed)
 
     def execute_job_async(self, job_id: str, *, fixture: str = "success") -> None:
-        worker = threading.Thread(target=self.execute_job, kwargs={"job_id": job_id, "fixture": fixture}, daemon=True)
-        worker.start()
+        threading.Thread(target=self.execute_job, kwargs={"job_id": job_id, "fixture": fixture}, daemon=True).start()
 
     def retry_job(self, job_id: str) -> dict[str, Any]:
         job = self.store.get_job(job_id)
@@ -196,13 +225,8 @@ class ProductService:
         if job["retry_count"] >= MAX_RETRY:
             raise ValueError("maximum retry count reached")
         queued = self.store.update_job(
-            job_id,
-            updated_at=utc_now(),
-            status="queued",
-            retry_count=job["retry_count"] + 1,
-            provider_job_id=None,
-            error_code=None,
-            error_message=None,
+            job_id, updated_at=utc_now(), status="queued", retry_count=job["retry_count"] + 1,
+            backend_job_id=None, backend_state="queued", error_code=None, error_message=None,
         )
         return self.public_job(queued)
 
@@ -224,25 +248,16 @@ class ProductService:
         training_opt_in = request.get("training_opt_in") is True
         deletion_requested = request.get("deletion_requested") is True
         eligibility, retention = derive_training_eligibility(
-            generation_consent=job["generation_consent"],
-            training_opt_in=training_opt_in,
-            output_training_rights_confirmed=False,
-            deletion_requested=deletion_requested,
+            generation_consent=job["generation_consent"], training_opt_in=training_opt_in,
+            output_training_rights_confirmed=False, deletion_requested=deletion_requested,
         )
-        values = {
-            "feedback_id": f"feedback_{uuid.uuid4().hex}",
-            "job_id": job_id,
-            "created_at": utc_now(),
-            "decision": decision,
-            "user_accepted": accepted,
-            "feedback_reason": reason,
-            "generation_consent": int(job["generation_consent"]),
-            "training_opt_in": int(training_opt_in),
-            "training_eligibility": eligibility,
-            "deletion_requested": int(deletion_requested),
+        return self.store.save_feedback({
+            "feedback_id": f"feedback_{uuid.uuid4().hex}", "job_id": job_id, "created_at": utc_now(),
+            "decision": decision, "user_accepted": accepted, "feedback_reason": reason,
+            "generation_consent": int(job["generation_consent"]), "training_opt_in": int(training_opt_in),
+            "training_eligibility": eligibility, "deletion_requested": int(deletion_requested),
             "retention_status": retention,
-        }
-        return self.store.save_feedback(values)
+        })
 
     def get_job(self, job_id: str) -> dict[str, Any]:
         return self.public_job(self.store.get_job(job_id))
@@ -255,30 +270,26 @@ class ProductService:
 
     @staticmethod
     def public_job(job: dict[str, Any]) -> dict[str, Any]:
-        public = {
-            key: job[key]
-            for key in (
-                "job_id", "created_at", "updated_at", "backend", "model",
-                "reference_asset_id", "status", "provider_job_id", "error_code",
-                "error_message", "output_asset_id", "receipt_id", "retry_count",
-                "profile", "duration_seconds", "generation_consent",
-                "backend_transfer_consent",
-            )
-        }
+        public = {key: job[key] for key in (
+            "job_id", "created_at", "updated_at", "backend", "model", "reference_asset_id",
+            "status", "backend_job_id", "backend_state", "error_code", "error_message",
+            "output_asset_id", "receipt_id", "retry_count", "profile", "duration_seconds",
+            "resolution", "aspect_ratio", "generation_consent",
+        )}
         public["result_url"] = f"/api/jobs/{job['job_id']}/result" if job["output_asset_id"] else None
         public["max_retry"] = MAX_RETRY
         return public
 
-    @staticmethod
-    def public_config() -> dict[str, Any]:
+    def public_config(self) -> dict[str, Any]:
         return {
             "profile": PROFILE,
             "model_contract": MODEL,
-            "backend": "mock_h3",
-            "live_h3_enabled": False,
-            "live_call_count": 0,
-            "duration_seconds": {"minimum": 3, "maximum": 8, "default": 5},
+            "default_backend": "mock_h3",
+            "backends": {name: backend.public_status() for name, backend in self.backends.items()},
+            "resolution": DEFAULT_RESOLUTION,
+            "duration_seconds": DEFAULT_DURATION_SECONDS,
+            "ratio": DEFAULT_ASPECT_RATIO,
             "max_retry": MAX_RETRY,
             "policy_state": dict(MINIMAX_POLICY_STATE),
-            "legal_notice": "P0 terms, AUP, privacy, transfer-consent, and training-consent controls are placeholders, not legal text.",
+            "legal_notice": "Terms, AUP, privacy, retention, and training controls are placeholders, not legal text.",
         }

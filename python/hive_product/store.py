@@ -45,7 +45,6 @@ class ProductStore:
                     prompt TEXT NOT NULL,
                     reference_asset_id TEXT,
                     status TEXT NOT NULL,
-                    provider_job_id TEXT,
                     error_code TEXT,
                     error_message TEXT,
                     output_asset_id TEXT,
@@ -53,8 +52,12 @@ class ProductStore:
                     retry_count INTEGER NOT NULL DEFAULT 0,
                     profile TEXT NOT NULL,
                     duration_seconds INTEGER NOT NULL,
-                    generation_consent INTEGER NOT NULL,
-                    backend_transfer_consent INTEGER NOT NULL
+                    generation_consent INTEGER NOT NULL
+                    ,backend_job_id TEXT
+                    ,request_json TEXT NOT NULL DEFAULT '{}'
+                    ,resolution TEXT NOT NULL DEFAULT '768P'
+                    ,aspect_ratio TEXT NOT NULL DEFAULT '16:9'
+                    ,backend_state TEXT NOT NULL DEFAULT 'queued'
                 );
                 CREATE TABLE IF NOT EXISTS job_events (
                     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,14 +94,26 @@ class ProductStore:
                 );
                 """
             )
+            existing = {row[1] for row in connection.execute("PRAGMA table_info(jobs)")}
+            migrations = {
+                "backend_job_id": "TEXT",
+                "request_json": "TEXT NOT NULL DEFAULT '{}'",
+                "resolution": "TEXT NOT NULL DEFAULT '768P'",
+                "aspect_ratio": "TEXT NOT NULL DEFAULT '16:9'",
+                "backend_state": "TEXT NOT NULL DEFAULT 'queued'",
+            }
+            for name, declaration in migrations.items():
+                if name not in existing:
+                    connection.execute(f"ALTER TABLE jobs ADD COLUMN {name} {declaration}")
 
     def create_job(self, values: dict[str, Any]) -> dict[str, Any]:
         columns = (
             "job_id", "created_at", "updated_at", "backend", "model", "prompt",
-            "reference_asset_id", "status", "provider_job_id", "error_code",
+            "reference_asset_id", "status", "error_code",
             "error_message", "output_asset_id", "receipt_id", "retry_count",
             "profile", "duration_seconds", "generation_consent",
-            "backend_transfer_consent",
+            "backend_job_id", "request_json",
+            "resolution", "aspect_ratio", "backend_state",
         )
         with self._lock, self._connect() as connection:
             connection.execute(
@@ -114,9 +129,9 @@ class ProductStore:
     def update_job(self, job_id: str, **changes: Any) -> dict[str, Any]:
         validate_public_id(job_id, "job_id")
         allowed = {
-            "updated_at", "reference_asset_id", "status", "provider_job_id",
+            "updated_at", "reference_asset_id", "status",
             "error_code", "error_message", "output_asset_id", "receipt_id",
-            "retry_count",
+            "retry_count", "backend_job_id", "request_json", "backend_state",
         }
         if not changes or set(changes) - allowed:
             raise ValueError("unsupported job update")
@@ -142,7 +157,6 @@ class ProductStore:
             raise KeyError(job_id)
         result = dict(row)
         result["generation_consent"] = bool(result["generation_consent"])
-        result["backend_transfer_consent"] = bool(result["backend_transfer_consent"])
         return result
 
     def job_events(self, job_id: str) -> list[str]:

@@ -32,6 +32,9 @@ label { display: block; font-size: 13px; font-weight: 700; margin: 14px 0 8px; }
 textarea, select, input[type=file] { width: 100%; border: 1px solid var(--line); border-radius: 12px; background: #11151a; color: var(--ink); padding: 12px; }
 textarea { min-height: 150px; resize: vertical; font: inherit; line-height: 1.5; }
 .field-row { display: grid; grid-template-columns: .35fr .65fr; gap: 12px; }
+.fixed-settings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+.fixed-settings span { border: 1px solid var(--line); border-radius: 12px; padding: 10px; color: var(--muted); }
+.fixed-settings strong { display: block; margin-top: 3px; color: var(--ink); }
 .consent-box { margin-top: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.025); border-radius: 14px; padding: 14px; color: var(--muted); font-size: 13px; }
 .consent-box p { margin-top: 0; color: var(--ink); }
 .consent-box ul { margin-bottom: 0; padding-left: 18px; line-height: 1.6; }
@@ -58,5 +61,5 @@ code { overflow-wrap: anywhere; }
   .badge { display: inline-block; margin-top: 8px; }
   .grid { grid-template-columns: 1fr; }
   .flow-panel { grid-row: auto; }
-  .field-row, .button-row { grid-template-columns: 1fr; }
+  .field-row, .button-row, .fixed-settings { grid-template-columns: 1fr; }
 }

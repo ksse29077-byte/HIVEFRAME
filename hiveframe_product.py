@@ -12,7 +12,7 @@ from hive_product.service import ProductService
 
 
 def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(description="HIVEFRAME P0 local Mock H3 product vertical slice")
+    result = argparse.ArgumentParser(description="HIVEFRAME P0 local-model-ready product vertical slice")
     result.add_argument("--host", default="127.0.0.1", help="loopback host only")
     result.add_argument("--port", type=int, default=8765)
     result.add_argument(
@@ -30,7 +30,7 @@ def main() -> int:
     server = create_server(service, args.host, args.port)
     host, port = server.server_address[:2]
     print(f"HIVEFRAME P0 is available at http://{host}:{port}")
-    print("Backend: deterministic Mock H3; live MiniMax calls are disabled")
+    print("Backends: Mock H3 and Local H3 (artifact-pending by default; no automatic download)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

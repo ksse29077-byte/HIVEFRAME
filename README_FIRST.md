@@ -86,8 +86,10 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Build **P0 — Product Vertical Slice**: one local screen for a bounded H3-shaped
-generation request, job state, saved result, and user feedback. Live H3 calls
-remain disabled until the separately approved P1 admission work. Do not start
-M1-B1/B2, modify Wan hooks, or claim speedup from model-free evidence as part
-of P0.
+Complete **P0-LR — Local-model-ready Product Vertical Slice**: one local screen
+for a bounded H3-shaped request, job state, saved result, user feedback, and an
+explicit `artifact_pending` Local H3 state. Do not download or load a model.
+P1-L begins only after an official source/revision, model card, execution docs,
+size/location report, and download approval exist. API integration is optional,
+not a mandatory next stage. Do not start M1-B1/B2, modify Wan hooks, or claim
+speedup from model-free evidence as part of P0-LR.
