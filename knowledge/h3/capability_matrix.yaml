@@ -65,6 +65,25 @@ capabilities:
     available: true
     total_submit_to_terminal_seconds: 587.5131591
     benchmark_eligible: false
+  external_sageattention_kj:
+    state: verified_once
+    available: true
+    node_class: "PathchSageAttentionKJ"
+    mode: auto
+    gpu_class: "NVIDIA GeForce RTX 3060"
+    full_decode_succeeded: true
+    paired_submit_speedup: 1.2071483
+    decision: F0_SAGE_NO_GAIN
+    promoted: false
+    product_default: false
+    standard_fallback_available: true
+    visual_quality_review: required
+  h3_attention_override_hook:
+    state: verified_once
+    available: true
+    model_edge: "UNETLoader output before BasicScheduler and BasicGuider"
+    coarse_runtime_boundary: true
+    claim_boundary: "Hook location only; no HIVEFRAME Core acceleration is implemented."
   cache_node:
     state: observed
     available: false
@@ -94,3 +113,8 @@ candidate_rules:
     state: observed
     promotion_required: true
     rule: "A future one-click launcher should avoid sharing the default ComfyUI database between simultaneous local instances."
+  - candidate_id: "sageattention-kj-auto-fast-mode"
+    state: rejected
+    promotion_required: true
+    rule: "Enable SageAttention KJ auto as an optional product Fast mode."
+    reason: "The one paired run reached only 1.207x submit speedup, below the fixed 1.3x candidate threshold."

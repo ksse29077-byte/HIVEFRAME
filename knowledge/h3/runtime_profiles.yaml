@@ -67,6 +67,103 @@ profiles:
       host_ram_scope: "system-wide used RAM derived from ComfyUI system_stats"
       vram_scope: "system-sampled device usage"
 
+  - profile_id: "f0-local-h3-standard-rtx3060-12g-once"
+    state: reused_successfully
+    matching_key:
+      workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+      gpu_class: "NVIDIA GeForce RTX 3060"
+      vram_class: "12 GiB"
+      runtime_version: "ComfyUI 0.30.2"
+      model_logical_id: "MiniMax-H3"
+      execution_mode: "loopback_comfyui_standard_f0"
+    configuration:
+      width: 864
+      height: 480
+      frame_count: 124
+      fps: 24
+      steps: 20
+      scheduler: simple
+      sampler: res_multistep
+      denoise: 1.0
+      seed: 101
+      native_audio: true
+    outcome:
+      successful_profile: true
+      retries: 0
+      oom_count: 0
+      full_decode_succeeded: true
+      decoded_frame_count: 124
+      output_codec: h264
+      output_size_bytes: 262579
+    measurements:
+      queue_wait_seconds: 0.0838115
+      generation_wall_seconds: 586.8886883
+      total_submit_to_terminal_seconds: 586.9724998
+      runner_total_seconds: 595.4828687
+      peak_system_sampled_vram_bytes: 12460611508
+      peak_system_used_ram_bytes: 60500926464
+    boundaries:
+      performance_claim: false
+      paired_f0_reference: true
+      single_observation_only: true
+
+  - profile_id: "f0-local-h3-sage-auto-rtx3060-12g-once"
+    state: verified_once
+    matching_key:
+      workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+      gpu_class: "NVIDIA GeForce RTX 3060"
+      vram_class: "12 GiB"
+      runtime_version: "ComfyUI 0.30.2"
+      model_logical_id: "MiniMax-H3"
+      execution_mode: "loopback_comfyui_sageattention_kj_auto_f0"
+    acceleration:
+      provider: "SageAttention KJ"
+      kj_nodes_commit: "6edfa76599c13905968841b81309784a7dbb7803"
+      sageattention_version: "2.2.0+cu130torch2.10.0andhigher.post6"
+      triton_windows_version: "3.7.1.post27"
+      mode: auto
+      promoted: false
+    configuration:
+      width: 864
+      height: 480
+      frame_count: 124
+      fps: 24
+      steps: 20
+      scheduler: simple
+      sampler: res_multistep
+      denoise: 1.0
+      seed: 101
+      native_audio: true
+    outcome:
+      successful_profile: true
+      retries: 0
+      oom_count: 0
+      full_decode_succeeded: true
+      decoded_frame_count: 124
+      output_codec: h264
+      output_size_bytes: 264736
+    measurements:
+      queue_wait_seconds: 0.0719862
+      generation_wall_seconds: 486.1752295
+      total_submit_to_terminal_seconds: 486.2472157
+      runner_total_seconds: 497.1118352
+      peak_system_sampled_vram_bytes: 12460611508
+      peak_system_used_ram_bytes: 60398510080
+      paired_submit_speedup: 1.2071483
+      paired_generation_span_speedup: 1.2071546
+      paired_runner_speedup: 1.1978851
+      paired_time_reduction_percent: 17.1601368
+      denoising_speedup:
+        value: null
+        support_status: not_collected
+        reason: "ComfyUI history did not expose a denoising-only span."
+    boundaries:
+      decision: F0_SAGE_NO_GAIN
+      performance_claim: false
+      candidate_for_product_default: false
+      visual_quality_review: required
+      single_paired_observation_only: true
+
 runtime_environment:
   state: verified_once
   comfyui_version: "0.30.2"
@@ -84,4 +181,6 @@ reused_knowledge:
   - rule: "Never treat a still image or synthetic placeholder as successful video."
     state: reused_successfully
   - rule: "Do not automatically fall back from Local H3 to Mock H3."
+    state: reused_successfully
+  - rule: "Start Standard and Sage variants in separate owned runtime processes."
     state: reused_successfully

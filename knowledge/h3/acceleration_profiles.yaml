@@ -1,0 +1,70 @@
+schema_version: "0.1.0"
+knowledge_scope: "External F0 acceleration candidates for Local MiniMax H3"
+
+profiles:
+  - profile_id: "sageattention-kj-auto-rtx3060-f0"
+    state: verified_once
+    provider: "SageAttention KJ"
+    classification: external_f0_acceleration
+    workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+    runtime:
+      logical_id: COMFYUI_DESKTOP_MOBEON
+      version: "0.30.2"
+      commit: "dec5d9450a5290bcf63430409ea41018e67f41c3"
+      python: "3.13.12"
+      pytorch: "2.12.1+cu130"
+      cuda_build: "13.0"
+      gpu: "NVIDIA GeForce RTX 3060"
+      compute_capability: "8.6"
+      vram_class: "12 GiB"
+    implementation:
+      kj_nodes_source: "kijai/ComfyUI-KJNodes"
+      kj_nodes_commit: "6edfa76599c13905968841b81309784a7dbb7803"
+      node_class: "PathchSageAttentionKJ"
+      mode: auto
+      allow_compile: false
+      sageattention_upstream: "thu-ml/SageAttention@v2.2.0"
+      sageattention_runtime_package: "2.2.0+cu130torch2.10.0andhigher.post6"
+      sageattention_runtime_package_source: "woct0rdho/SageAttention v2.2.0-windows.post6"
+      triton_windows: "3.7.1.post27"
+    fixed_profile:
+      width: 864
+      height: 480
+      frame_count: 124
+      fps: 24
+      steps: 20
+      scheduler: simple
+      sampler: res_multistep
+      denoise: 1.0
+      seed: 101
+      native_audio: true
+    paired_result:
+      standard_submit_to_terminal_seconds: 586.9724998
+      sage_submit_to_terminal_seconds: 486.2472157
+      submit_speedup: 1.2071483
+      generation_span_speedup: 1.2071546
+      runner_total_speedup: 1.1978851
+      time_reduction_percent: 17.1601368
+      denoising_speedup:
+        value: null
+        support_status: not_collected
+        reason: "ComfyUI did not expose a denoising-only span."
+      standard_peak_system_sampled_vram_bytes: 12460611508
+      sage_peak_system_sampled_vram_bytes: 12460611508
+      standard_peak_system_used_ram_bytes: 60500926464
+      sage_peak_system_used_ram_bytes: 60398510080
+      output_integrity: passed
+      visual_quality_review: required
+      decision: F0_SAGE_NO_GAIN
+    product_policy:
+      promoted: false
+      product_default: false
+      standard_fallback: required
+      automatic_mode_sweep: forbidden
+      next_action: "Wait for user direction; do not adopt or test another accelerator automatically."
+
+hiveframe_core:
+  state: observed
+  implemented_acceleration: false
+  retained_hook: "MODEL edge after UNETLoader and before BasicScheduler/BasicGuider"
+  unresolved: "Change detection, cache reuse, selective recompute, boundary verification, and selective repair remain unimplemented."

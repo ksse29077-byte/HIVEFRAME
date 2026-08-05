@@ -91,6 +91,27 @@ product_control_plane:
   feedback_execution_in_smoke: false
   training_eligibility_default: evaluation_only
 
+f0_external_attention_patch:
+  state: verified_once
+  provider: "SageAttention KJ"
+  source_issue: 55
+  original_workflow_modified: false
+  standard_api_copy:
+    sage_node_count: 0
+  sage_api_copy:
+    sage_node_count: 1
+    node_class: "PathchSageAttentionKJ"
+    mode: auto
+    allow_compile: false
+    input_model_edge: "UNETLoader:0"
+    output_model_consumers:
+      - "BasicScheduler:model"
+      - "BasicGuider:model"
+  runtime_isolation:
+    separate_process_per_variant: true
+    reason: "The experimental node does not use normal model patching; restart prevents attention override state from crossing variants."
+  claim_boundary: "External F0 attention-kernel comparison only; no HIVEFRAME Core selective-compute acceleration."
+
 unsupported_or_unverified:
   cache_node:
     value: null
