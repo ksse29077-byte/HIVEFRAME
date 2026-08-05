@@ -13,6 +13,21 @@ Status date: 2026-08-05
 | `stopped` | explicitly discontinued without erasing prior evidence |
 | `unsupported` | current environment/backend lacks the capability |
 
+## Product launch track — highest priority
+
+The detailed Product-First Constitution is maintained only in
+[`AGENTS.md`](AGENTS.md). Research evidence remains preserved, but research
+expansion does not block the launch track.
+
+| Track | Status | Evidence or blocker |
+|---|---|---|
+| P0 — Local-model-ready vertical slice | `in_progress` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53); official H3-shaped request, Local H3 `artifact_pending`, Mock flow, focused verification; Draft PR #54 publication pending |
+| P1-L — Official artifact + one local generation | `planned` | requires official source/revision, model card/execution docs, approved download size/location, and one bounded run |
+| P2 — Real local H3 product flow | `planned` | replace provisional pipeline/output details only after official artifact code exists |
+| P3 — Selective runtime integration | `planned` | requires backend-admitted partial-compute evidence and complete accepted-result costs |
+| P4 — Internal alpha/commercial preparation | `planned` | operational, rights, retention/deletion, terms, packaging, and release safeguards |
+| M1-B1/B2 — Engine Beta Track | `planned` | separately approved, one backend/selector-cache maximum; integrate benefit or use `FALLBACK_ONLY`/`DROP` |
+
 ## R0 — Compound-eye architecture RFC
 
 | Task | Status | Evidence or blocker |
@@ -137,7 +152,7 @@ real-video corpus and oracle admission.
 |---|---|---|
 | Designate MiniMax H3 as primary product target | `verified` | policy only; no runtime or speedup claim |
 | Review current official H3 API documentation | `verified` | V2 contract names `MiniMax-H3`; runtime admission remains pending |
-| Admit official H3 API | `planned` | [Issue #39](https://github.com/ksse29077-byte/HIVEFRAME/issues/39); explicit approval required before API key or paid call |
+| Optional H3 API adapter admission | `planned` | [Issue #39](https://github.com/ksse29077-byte/HIVEFRAME/issues/39) remains separate; it is not required for P0-LR or P1-L |
 | Admit future H3 open weights | `blocked` | official repository, checkpoint, source, license, digest, and runtime not jointly verified |
 | Preserve Wan M0 comparator | `done` | frozen code, pins, receipts, fingerprints, and reports; no new feature development |
 | Remove LTX from active scope | `done` | historical code and Git history retained; no cleanup in this change |
@@ -206,20 +221,20 @@ actual selective compute, GPU-work reduction, speedup, or VRAM reduction.
 
 ## M1-B0 — Model-free Locality Opportunity
 
-Overall implementation and measurement status: `verified locally`. Publication
-status: `draft review pending`. Final bounded decision:
+Overall implementation and measurement status: `verified`. Publication
+status: `published`. Final bounded decision:
 `M1_B0_LOCALITY_SURFACE_MEASURED`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Create separate review surface | `in_progress` | [Issue #51](https://github.com/ksse29077-byte/HIVEFRAME/issues/51); branch `agent/m1-b0-model-free-locality` |
+| Create separate review surface | `published` | [Issue #51](https://github.com/ksse29077-byte/HIVEFRAME/issues/51) completed; branch preserved |
 | Verify C01-C12 FFV1 inputs | `verified` | 12/12 SHA, size, codec, shape, FPS, and frame counts pass |
 | Measure fixed pixel/tile/halo/temporal surface | `verified` | all predeclared gray8/RGB24 configurations retained |
 | Validate NumPy/Rust parity | `verified` | 24/24 clip-format pairs, zero mismatches |
 | Separate detector costs | `verified` | decode-only, resident-warm, and streaming scopes retained separately |
 | Run CPU worker sweep | `verified` | required 1/2/3/4/6 plus labeled 8/12 diagnostics |
 | Admit backend selective compute | `blocked` | M1-B1 is not started; selector and compute relevance remain unsupported |
-| Publish M1-B0 | `in_progress` | [Draft PR #52](https://github.com/ksse29077-byte/HIVEFRAME/pull/52) is open; no Ready transition or merge in this task |
+| Publish M1-B0 | `published` | [PR #52](https://github.com/ksse29077-byte/HIVEFRAME/pull/52) merged at `4ddb6a5...` |
 
 Guided Oracle movement evidence was not used as safe-skip truth. Model, CUDA,
 GPU, backend, VRAM, selective-compute, and product-speedup result counts remain
@@ -231,6 +246,25 @@ start M1-B1.
 Overall status: `planned`; protocol-only. It requires separate user approval
 and a separate Issue, branch, and Draft PR. It cannot bypass M1-B0 or backend
 evidence and is not started by the M1-A2 publication.
+
+## P0 — Local MiniMax H3 product vertical slice
+
+Overall implementation status: `verified_once`. Publication status: `draft`.
+Bounded decision: `P0_LOCAL_H3_COMFYUI_READY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Preserve P0-LR wait-state contract | `done` | existing Mock and future local-files-only adapter remain compatible |
+| Inspect supplied H3 assets and workflow | `verified_once` | four model components and one T2V workflow recognized without copying or modification |
+| Connect loopback ComfyUI backend | `implemented` | explicit backend key, bounded polling, cancellation, result and receipt collection |
+| Connect UI and product Job states | `verified_once` | Mock/real provenance, queued/running/succeeded, video display/download, feedback ledger |
+| Run one actual Local H3 smoke | `verified_once` | one submission, 124 decoded frames, OOM 0, retry 0 |
+| Preserve H3 Knowledge Flywheel | `implemented` | workflow, runtime, failure, capability, and decision files; no automatic promotion |
+| Publish P0 through Draft PR #54 | `in_progress` | branch update and Draft PR review pending |
+| Start P1 one-click launcher | `planned` | separate user approval required; parallel-runtime database isolation remains a candidate |
+
+This result proves only the first Local H3 product path. It does not establish
+quality, speed, cost, cache, selective compute, or production-default settings.
 
 ## Maintenance checklist
 

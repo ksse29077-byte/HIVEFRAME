@@ -1041,6 +1041,76 @@ Detailed protocol and evidence are in
 and
 [`2026-08-05-m1-b0-model-free-locality-opportunity.md`](worklogs/2026-08-05-m1-b0-model-free-locality-opportunity.md).
 
+## 2026-08-05 — P0-LR local-model-ready H3 product correction
+
+Issue [#53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53), branch
+`product/p0-h3-vertical-slice`, and Draft PR #54 were reused. The original
+API-shaped contract shell was corrected in place into a local-model-ready
+product boundary: an official H3-shaped `H3GenerationRequest`, asset-ID media,
+deterministic `MockH3Backend`, `MiniMaxH3LocalBackend`, lazy injectable
+`LocalPipelineFactory`, external artifacts, and an explicit default
+`artifact_pending` state. API-key checks, provider IDs/polling, API costs, and
+mandatory transfer consent are no longer part of the active product path.
+
+Local H3 never automatically falls back to a Mock success. The UI explicitly
+offers Mock H3 while Local H3 says `Waiting for official model files`. No source
+means prepare returns `artifact_pending`, load raises
+`model_source_not_configured`, and generation fails
+`local_backend_unavailable`. Local-files-only resolution accepts only an
+existing local directory or revision-pinned cache snapshot; it performs no
+automatic download. Sensitive source/revision/root values are reduced to
+configured/not-configured/valid/invalid status in public state and receipts.
+
+Bounded correction produced five materially changed-code checkpoints: 13
+focused tests passed in 1.205 seconds, then 1.612 seconds after the exact
+contract-name correction, and finally 1.574 seconds after error/output-candidate
+semantics changed, 1.458 seconds after readiness-state preservation changed,
+and 1.447 seconds after the non-offline loader path was made fail-closed. No
+unchanged-code rerun occurred. Full Python/Rust and
+unchanged M0/M1 suites were skipped. Model downloads, `from_pretrained` calls,
+model loads, GPU generations, CUDA, API calls, paid calls, external personal-
+data transfers, and selective-compute runs were all zero.
+
+The bounded decision is `P0_LOCAL_READY_WAITING_FOR_ARTIFACT`. P1-L requires an
+official model source/revision, model card and execution docs, reported size and
+location, explicit download approval, and one bounded local generation. It is
+not a mandatory live-API stage. Full contract, verification, limitations, and
+future inputs are recorded in
+[`2026-08-05-p0-h3-product-vertical-slice.md`](worklogs/2026-08-05-p0-h3-product-vertical-slice.md).
+
+## 2026-08-05 — P0 Local H3 through loopback ComfyUI
+
+Issue #53, `product/p0-h3-vertical-slice`, and Draft PR #54 were reused after
+an approved external H3 asset root became available. A new loopback-only
+`MiniMaxH3ComfyUIBackend` connects the existing product Job, UI, result,
+download, cancellation, and feedback contracts to one sanitized API copy of
+the supplied text-to-video workflow. The original workflow and four model
+components remained unchanged and outside Git.
+
+Exactly one workflow submission ran on ComfyUI 0.30.2 and RTX 3060. HIVEFRAME
+observed `queued → running → succeeded`; there was no OOM or retry. The
+effective workflow profile was 864x480, 124 frames, 24 FPS, 20 steps, fixed
+seed 101, and native audio. Submit-to-terminal time was 587.513159 seconds;
+system sampling observed 12,457,195,444 peak used VRAM bytes and
+60,520,648,704 peak system-wide used RAM bytes. Model-load time remains
+`null/not_collected`, not zero.
+
+The 262,579-byte H.264 MP4 has SHA-256 `ec4ddbac...641c4`; all 124 frames
+decoded successfully. The video, full receipt, prompt, database, and complete
+runtime log remain outside the repository. External API calls, API keys, paid
+calls, model downloads, original-asset changes, and tracked binaries were all
+zero. Focused changed-surface validation passed 18 tests in 2.329 seconds; full
+unchanged suites and repeated generation were intentionally skipped.
+
+Knowledge Flywheel entries preserve the prior artifact-pending history, record
+the actual run as `verified_once`, and mark only previously established safety
+rules as `reused_successfully`. No rule was automatically promoted. A nonfatal
+parallel-ComfyUI database-lock warning becomes a P1 launcher candidate, not a
+silent product default. The bounded decision is
+`P0_LOCAL_H3_COMFYUI_READY`; it is a one-run product-path result, not a quality,
+speed, cost, cache, or selective-compute claim. See the detailed
+[`P0 worklog`](worklogs/2026-08-05-p0-h3-product-vertical-slice.md).
+
 ---
 
 ## Entry template

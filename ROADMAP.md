@@ -7,11 +7,41 @@ recompute runtime for pretrained video generation and editing
 
 Evidence policy: no speedup claim before same-condition end-to-end proof
 
+## Official product launch priority
+
+This launch line has execution priority under the Product-First Constitution
+in [`AGENTS.md`](AGENTS.md). The preserved M0–M5 research line remains evidence
+and an Engine Beta Track; it is not a prerequisite for shipping the bounded
+H3 product path.
+
+- **P0 — Local-model-ready product vertical slice:** one local screen, the
+  official H3-shaped request contract, SQLite jobs/feedback, external artifact
+  storage, deterministic Mock H3, and a `MiniMaxH3LocalBackend` that waits in
+  `artifact_pending` without downloading or loading a model.
+- **P1-L — Official H3 artifact and one local generation:** after a separately
+  approved source, revision, size, license, and download plan are available,
+  download exactly that artifact and perform one bounded local load/generation.
+- **P2 — Real local H3 product flow:** replace provisional loader/output details
+  with the released official execution contract and harden the accepted-result
+  loop on the same minimal UI.
+- **P3 — HIVEFRAME selective runtime integration:** connect only a backend-
+  admitted selective mechanism with complete accepted-result cost evidence.
+- **P4 — Internal alpha and commercial release preparation:** bounded internal
+  operation, rights/retention/deletion safeguards, terms, packaging, and a
+  release decision based on product evidence.
+
+M1-B1/B2 are an optional **Engine Beta Track** limited to one backend and at
+most one selector/cache experiment. Integrate only a demonstrated product
+benefit; otherwise classify it `FALLBACK_ONLY` or `DROP` while the H3 launch
+track continues. No separate HIVEFRAME 2.0 RFC is a launch prerequisite.
+
 ## Backend target policy
 
-- **MiniMax H3:** highest-priority product backend target. Official API
-  documentation exists, but HIVEFRAME admission is pending Issue #39 and no
-  integration or speedup is claimed.
+- **MiniMax H3:** highest-priority local product backend target. Public product
+  documentation defines the functional request surface, but the local pipeline
+  class, artifact, immutable revision, dependencies, output object, and license
+  remain unconfirmed. P0 therefore implements a local-ready contract, not a
+  model integration or speedup claim.
 - **MiniMax H3 open weights:** future white-box candidate, blocked until the
   official weights, source, license, immutable digest, and runtime are
   verified. A publication plan is not a released checkpoint.

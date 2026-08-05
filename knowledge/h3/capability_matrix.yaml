@@ -1,0 +1,96 @@
+schema_version: "0.2.0"
+workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+
+capabilities:
+  text_to_video:
+    state: verified_once
+    available: true
+    evidence: "One loopback ComfyUI workflow submission produced a fully decoded MP4."
+  first_frame_input:
+    state: observed
+    available: false
+    reason: "The executed profile was text-to-video only."
+  native_audio:
+    state: verified_once
+    available: true
+    reason: "The executed workflow included audio decode and video/audio composition; audio quality was not evaluated."
+  loopback_runtime_start_stop:
+    state: verified_once
+    available: true
+    owned_process_only: true
+  workflow_dependency_inspection:
+    state: verified_once
+    available: true
+  local_model_path_mapping:
+    state: verified_once
+    available: true
+    original_assets_modified: false
+  queued_running_succeeded_mapping:
+    state: verified_once
+    available: true
+  failed_mapping:
+    state: verified_once
+    available: true
+    evidence: "Focused fake-runtime tests only."
+  cancellation:
+    state: verified_once
+    available: true
+    evidence: "Focused fake-runtime tests only; the successful real run was not cancelled."
+  video_result_collection:
+    state: verified_once
+    available: true
+    full_decode_succeeded: true
+  result_download:
+    state: verified_once
+    available: true
+  feedback_persistence:
+    state: reused_successfully
+    available: true
+    real_run_feedback_created: false
+  mock_fallback:
+    state: reused_successfully
+    available: true
+    automatic: false
+  cuda_execution:
+    state: verified_once
+    available: true
+    execution_count: 1
+  memory_profile:
+    state: verified_once
+    available: true
+    peak_system_sampled_vram_bytes: 12457195444
+    peak_system_used_ram_bytes: 60520648704
+  performance_profile:
+    state: verified_once
+    available: true
+    total_submit_to_terminal_seconds: 587.5131591
+    benchmark_eligible: false
+  cache_node:
+    state: observed
+    available: false
+  explicit_offload_node:
+    state: observed
+    available: false
+    reason: "Dynamic loading was logged, but no workflow-level offload node was verified."
+  selective_compute:
+    state: observed
+    available: false
+    reason: "P0 performed no selective-recompute integration."
+  external_minimax_api:
+    state: rejected
+    available: false
+    call_count: 0
+  training_eligibility:
+    state: verified_once
+    default: evaluation_only
+    automatic_promotion: false
+
+candidate_rules:
+  - candidate_id: "reuse-matching-local-comfy-profile"
+    state: observed
+    promotion_required: true
+    rule: "Reuse this exact profile only when workflow revision, GPU/VRAM class, runtime version, model logical ID, and execution mode all match."
+  - candidate_id: "isolate-parallel-comfyui-database"
+    state: observed
+    promotion_required: true
+    rule: "A future one-click launcher should avoid sharing the default ComfyUI database between simultaneous local instances."

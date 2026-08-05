@@ -49,12 +49,16 @@ I/O expansion are both recorded in
 
 ## Initial backend strategy
 
-- Primary product backend target: MiniMax H3. Its official V2 API documents
-  the model identifier `MiniMax-H3`, but HIVEFRAME admission remains pending
-  until the API, pricing, data, commercial, provenance, and runtime contract is
-  reviewed in Issue #39.
-- Future white-box target: MiniMax H3 open weights, blocked until an official
-  repository, checkpoint, license, digest, source, and runtime are verified.
+- Primary product backend target: MiniMax H3. P0 has verified one local
+  text-to-video product path through loopback ComfyUI on the supplied approved
+  workflow and assets. This is a single `verified_once` smoke, not a quality,
+  speed, cost, selective-compute, or production-default admission.
+- Optional H3 API admission remains separate in Issue #39; the local product
+  path does not call an external MiniMax API or require an API key.
+- The next product step is a separately approved P1 one-click Local H3
+  launcher. Public knowledge stores logical IDs and non-sensitive capability
+  evidence; models, outputs, prompts, full receipts, and runtime logs stay
+  outside Git.
 - Frozen legacy comparator: Wan 2.1 T2V 1.3B. Existing M0 code, receipts,
   fingerprints, and reports remain immutable evidence; no new Wan feature work
   is implied.

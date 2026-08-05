@@ -1,0 +1,122 @@
+schema_version: "0.2.0"
+workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+
+rules:
+  - rule_id: "h3-model-source-not-configured"
+    state: verified_once
+    match:
+      model_source: not_configured
+      operation: load_model
+    error_signature: model_source_not_configured
+    resolution: "Keep Local H3 in artifact_pending until an official source and revision are approved."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-local-generate-without-artifact"
+    state: verified_once
+    match:
+      backend: local_h3
+      artifact_state: artifact_pending
+      operation: generate_video
+    error_signature: local_backend_unavailable
+    resolution: "Explain that official files are pending; allow the user to select Mock H3 explicitly."
+    fallback:
+      backend: "Mock H3"
+      automatic: false
+
+  - rule_id: "h3-artifact-not-found-offline"
+    state: verified_once
+    match:
+      local_files_only: true
+      source_status: invalid
+    error_signature: artifact_not_found
+    resolution: "Confirm an existing local directory or revision-pinned cache snapshot; do not start a network download."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-automatic-download-disabled"
+    state: verified_once
+    match:
+      local_files_only: false
+    error_signature: runtime_incompatible
+    resolution: "Require a separate download approval and keep P0-LR offline."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-trust-remote-code-not-admitted"
+    state: verified_once
+    match:
+      trust_remote_code: true
+    error_signature: runtime_incompatible
+    resolution: "Do not enable remote code without explicit admission."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-model-source-inside-repository"
+    state: verified_once
+    match:
+      model_source_scope: repository
+    error_signature: artifact_not_found
+    resolution: "Use an approved external model root; never move or synthesize model files automatically."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-image-is-not-video"
+    state: verified_once
+    match:
+      normalized_output: provisional_image_output
+    error_signature: unsupported_output_contract
+    resolution: "Do not mark the job succeeded; wait for the official video output contract."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-output-missing"
+    state: verified_once
+    match:
+      normalized_output: output_missing
+    error_signature: output_missing
+    resolution: "Fail explicitly and retain a receipt; do not create a fake MP4."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-artifact-save-failed"
+    state: reused_successfully
+    match:
+      operation: artifact_persistence
+      result: failure
+    error_signature: artifact_save_failed
+    resolution: "Fail the job and preserve a partial receipt when possible; do not overwrite existing artifacts."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-comfyui-dependency-missing"
+    state: verified_once
+    match:
+      backend: minimax_h3_comfyui_local
+      operation: runtime_preflight
+      required_node_or_model: missing
+    error_signature: comfyui_dependency_required
+    resolution: "Stop before workflow submission and report the missing logical dependency; do not download automatically."
+    automatic_change_allowed: false
+
+  - rule_id: "h3-parallel-comfyui-database-lock"
+    state: observed
+    match:
+      operation: start_loopback_runtime
+      log_signature: "Could not acquire lock on database '<repository-root>/user/comfyui.db'"
+    error_signature: comfyui_database_lock_warning
+    resolution: "Candidate only: reuse one approved runtime or explicitly isolate the database URL in a future launcher revision."
+    observed_effect: "The one approved generation continued and succeeded; database persistence for the auxiliary runtime was unavailable."
+    automatic_change_allowed: false
+    promotion_required: true
+
+  - rule_id: "h3-output-full-decode-gate"
+    state: reused_successfully
+    match:
+      operation: collect_result
+      output_media_type: video/mp4
+    error_signature: output_decode_failed
+    resolution: "Require at least one video stream and decode every frame before declaring the P0 smoke successful."
+    automatic_change_allowed: false
+
+rejected_fallbacks:
+  - state: rejected
+    behavior: "Automatically change a Local H3 failure into a Mock H3 success."
+  - state: rejected
+    behavior: "Automatically download a model when the source is absent."
+  - state: rejected
+    behavior: "Treat a still image or fabricated MP4 as successful H3 video output."
+  - state: rejected
+    behavior: "Retry, sweep profiles, or change workflow settings automatically after an OOM or workflow failure."
