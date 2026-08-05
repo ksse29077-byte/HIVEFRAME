@@ -943,6 +943,106 @@ M1-B0 executions, and HIVEFRAME 2.0 RFC executions were all 0.
 
 ---
 
+## 2026-08-05 — M1-B0 model-free locality opportunity
+
+### Purpose and scope
+
+Issue [#51](https://github.com/ksse29077-byte/HIVEFRAME/issues/51) and branch
+`agent/m1-b0-model-free-locality` isolate the approved experiment from `main`.
+The branch started at PR #50 merge commit
+`5e93745b8280159ff79ea7ef75343790c0a78e48`. No duplicate Issue, branch, PR,
+or implementation was found and the starting worktree was clean.
+
+M1-B0 measures adjacent-frame pixel/tile locality and model-free detector cost
+on the twelve approved M1-A2 FFV1 derivatives. Guided Oracle boxes were not
+used as truth or for threshold selection. The result is not safe-skip truth,
+backend capability, selective compute, GPU work, VRAM reduction, or product
+speedup.
+
+### Predeclaration, implementation, and failures
+
+Commit `7288790eb4cb6404689941251bf8baed73557ec0` preserved twenty failing
+counterexamples before implementation. The first test attempt used the wrong
+unittest module path. The second established that the isolated embedded Python
+does not honor relative `PYTHONPATH`. The corrected harness collected the
+tests and failed on the intentionally missing implementation. Those failures
+are setup and preimplementation evidence, not successful measurements.
+
+Commit `3d05409` implemented the fixed `m1-b0-v1` config, Schema, vectorized
+NumPy reference, deterministic Rust detector/CLI, partial tiles, halo,
+temporal runs, global translation, parity gate, collision-safe phased runner,
+and cost profiles. Commit `9d11308` completed dependency-free receipt
+invariants and regression tests. No threshold, tile, halo, translation, repeat,
+or Gate rule changed after results were visible.
+
+The first full Python run found two pre-existing R3 byte-hash failures caused
+by global `core.autocrlf=true`, not by changed R3 evidence. The R3 Git blob
+already matched its recorded SHA-256. A scoped `.gitattributes` LF rule makes
+that one byte-hashed config materialize identically on Windows; R3 content and
+Git blob remain unchanged. The rerun passed all 237 Python tests with two
+declared optional-dependency skips. Cargo format/check and all 14 Rust tests
+also passed.
+
+### Input, parity, and measurement result
+
+All C01-C12 derivatives passed FFV1, 832x480, 16 FPS, frame-count, byte-size,
+and SHA-256 validation. There are 1,677 frames and 1,665 frame pairs. NumPy and
+Rust parity passed 24/24 gray8/RGB24 clip-format comparisons with zero
+mismatches.
+
+Across all clips, raw gray changed-pixel ratios were 55.2251%, 36.7986%,
+27.9859%, 20.6741%, 14.5320%, and 9.4529% at thresholds 0, 1, 2, 4, 8, and
+16. Translation-compensated ratios were 54.5530%, 35.4699%, 26.4276%,
+19.0551%, 13.0553%, and 8.3058%. Both complete surfaces are retained.
+
+At one disclosed anchor (threshold 4, 16x16, 5% activation), zero-halo active
+ratio was 44.5519%; one-tile halo raised it to 60.4169%, and two-tile halo to
+68.3729%. This is an illustration of closure cost, not a recommended
+configuration. Every predeclared configuration remains in the reports.
+
+Decode-only, resident-warm, and streaming decode+pipe+compare are separate
+scopes. Summed per-clip p50 values were 2.4770, 22.5681, and 24.8273 seconds.
+One-worker suite wall was 23.4902 seconds. Required CPU worker speedups for
+2/3/4/6 workers were 1.788x/2.452x/3.010x/4.018x; parallel efficiencies were
+0.894/0.817/0.752/0.670. Eight and twelve workers are separately labeled
+oversubscription diagnostics, never GPU streams. OS caches were not flushed,
+so no cold-disk result is recorded.
+
+Scheduling overhead, process-tree peak RSS, and CPU utilization remain null
+with reasons because validated samplers were not enabled. All backend-memory
+and VRAM projections are also null/unavailable; pixel fractions were not
+converted to tensor, cache, activation, or VRAM savings.
+
+### Evidence and Gate
+
+The local logical bundle inventory is 2,797,139,675 bytes with SHA-256
+`aee19615de605e9ff0fc3d190a0213d99a207c9622bd536e8d091354347cece0`.
+Only its logical asset ID, size, digest, and small aggregate reports are public.
+No local absolute path or media/raw/tool binary is tracked. Aggregate summary
+digest is `2cc1094d40b0f85424ca67cdff32a9b0a242b45ed50934ef6d4980d46bf73e3a`.
+
+The bounded decision is **`M1_B0_LOCALITY_SURFACE_MEASURED`**. It states that
+the fixed observation surface, parity, cost scopes, and worker sweep are
+available for Draft review. M1-B1 remains separate and unstarted.
+
+The branch was pushed normally and [Draft PR #52](https://github.com/ksse29077-byte/HIVEFRAME/pull/52)
+was opened against `main`. At its first publication checkpoint, local and
+remote heads matched at `c8c1c9fb23f959ee07de7afa5e39ecea2a869981`; GitHub
+reported the Draft as open, mergeable, and clean. It was not transitioned to
+Ready and was not merged.
+
+Model downloads 0, model loads 0, model runs 0, CUDA runs 0, GPU runs 0,
+backend integrations 0, selective-compute runs 0, VRAM measurements 0,
+product-speedup results 0, safe-skip truths 0, verified compute-relevance
+Oracles 0, paid API calls 0, and external personal-data transfers 0.
+
+Detailed protocol and evidence are in
+[`M1_B0_MODEL_FREE_LOCALITY_PROTOCOL.md`](M1_B0_MODEL_FREE_LOCALITY_PROTOCOL.md)
+and
+[`2026-08-05-m1-b0-model-free-locality-opportunity.md`](worklogs/2026-08-05-m1-b0-model-free-locality-opportunity.md).
+
+---
+
 ## Entry template
 
 ```markdown

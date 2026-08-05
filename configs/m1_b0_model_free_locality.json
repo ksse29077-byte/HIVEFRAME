@@ -1,0 +1,119 @@
+{
+  "schema_version": "0.1.0",
+  "protocol_revision": "m1-b0-v1",
+  "run_kind": "m1_b0_model_free_locality_opportunity",
+  "source_main_sha": "5e93745b8280159ff79ea7ef75343790c0a78e48",
+  "input_contract": {
+    "storage_class": "local_approved_artifact_store",
+    "asset_prefix": "approved-asset:m1-a2",
+    "derivative_format": "ffv1_matroska",
+    "width": 832,
+    "height": 480,
+    "fps": 16,
+    "primary_pixel_format": "gray8",
+    "secondary_pixel_format": "rgb24",
+    "clips": [
+      {"clip_id": "c01", "scene_class": "static_background_speaking_person", "frames": 205, "bytes": 18774362, "sha256": "f8620de20a277266daab1c4fccd2eb2616b3a29036f1e4987506911f62f23e5b"},
+      {"clip_id": "c02", "scene_class": "static_background_hand_motion", "frames": 150, "bytes": 16224917, "sha256": "84e7f15872e831e55ca3b19fd7c62fd230d85c1c74c7ac52b878c5b79e901aa3"},
+      {"clip_id": "c03", "scene_class": "static_background_local_object_motion", "frames": 90, "bytes": 8970308, "sha256": "00b0dc0ce0198a1b9971f3561fdb1ab58bcc0e0c93d962d919c7c21a8c3e0563"},
+      {"clip_id": "c04", "scene_class": "slow_pan", "frames": 121, "bytes": 13479168, "sha256": "24af9b252d8b079f06acfa15a549e704cc3707b36b39fd395f708d5b5a1ca941"},
+      {"clip_id": "c05", "scene_class": "zoom_in_out", "frames": 154, "bytes": 15070935, "sha256": "9710fad8a499876dd1f9223a9b56fb4d38148e9bdccd2eeae7cac71e4d14d916"},
+      {"clip_id": "c06", "scene_class": "handheld_shake", "frames": 151, "bytes": 23329477, "sha256": "d633d37179c0d8b8d4bacc008c49e52cd4feca4fffee6fc4aaa49c066ef702cb"},
+      {"clip_id": "c07", "scene_class": "hard_cut", "frames": 127, "bytes": 21472518, "sha256": "2ab83e6405cd0740fe164f7ab846685ee57938ae4ac320cdde8b277e1d3c6f9f"},
+      {"clip_id": "c08", "scene_class": "multiple_objects_occlusion", "frames": 143, "bytes": 14897263, "sha256": "6a5ecab734ff79c116efb149ff93ca14610577dcad0cee4290d9cd166fdefb2d"},
+      {"clip_id": "c09", "scene_class": "reflection_mirror", "frames": 132, "bytes": 14554997, "sha256": "14473ebcff24d7fc86a34aee88ae095147bb37e94a129e4d3b0cdf9f4ac356c2"},
+      {"clip_id": "c10", "scene_class": "complex_boundary_hair_water_smoke", "frames": 100, "bytes": 15377359, "sha256": "7237b5950d9869040e61a43fa89b27b62e06e8bd13ba001f559d4f1518525040"},
+      {"clip_id": "c11", "scene_class": "lighting_change", "frames": 139, "bytes": 11221843, "sha256": "a483ff7cb2f88b6d102c92015d37ebab22647ccd66db5f471bc860d8a168934d"},
+      {"clip_id": "c12", "scene_class": "local_static_camera_global_combination", "frames": 165, "bytes": 16304079, "sha256": "c2415a3d5d0d70660c9dca21e01cb1915992feef3bbf1931bba582f5104d80e2"}
+    ]
+  },
+  "tools": {
+    "ffmpeg_version": "7.1.1-essentials_build-www.gyan.dev",
+    "ffmpeg_sha256": "b90225987bdd042cca09a1efb5e34e9848f2d1dbf5fbcd388753a44145522997",
+    "ffprobe_version": "7.1.1-essentials_build-www.gyan.dev",
+    "ffprobe_sha256": "05e8fa639450f8191635192871ae37a3ec3e4638fa12f3b7d49c6522ba16a8ed"
+  },
+  "surface": {
+    "gray8_thresholds": [0, 1, 2, 4, 8, 16],
+    "rgb24_thresholds": [0, 2, 4, 8, 16],
+    "tile_sizes": [8, 16, 32, 64],
+    "activation_rules": [
+      {"id": "any", "minimum_changed_numerator": 1, "minimum_changed_denominator": null},
+      {"id": "1_percent", "minimum_changed_numerator": 1, "minimum_changed_denominator": 100},
+      {"id": "5_percent", "minimum_changed_numerator": 5, "minimum_changed_denominator": 100},
+      {"id": "10_percent", "minimum_changed_numerator": 10, "minimum_changed_denominator": 100}
+    ],
+    "halo_tiles": [0, 1, 2],
+    "partial_edge_policy": "include_without_crop_or_padding_using_actual_tile_pixel_count",
+    "run_percentile_method": "nearest_rank",
+    "full_pressure_thresholds": [0.75, 0.9, 1.0]
+  },
+  "translation": {
+    "profile": "global_translation_v1",
+    "downsample_width": 104,
+    "downsample_height": 60,
+    "downsample_method": "center_sample_stride_8",
+    "search_min": -4,
+    "search_max": 4,
+    "score": "overlap_mean_absolute_difference_exact_rational",
+    "tie_break": ["manhattan", "abs_dy", "abs_dx", "dy_ascending", "dx_ascending"],
+    "full_resolution_scale": 8,
+    "minimum_mad_margin_for_high_confidence": 0.25,
+    "exposed_border_policy": "active_or_uncertain",
+    "limitations": ["rotation", "zoom", "perspective", "optical_flow"]
+  },
+  "benchmark": {
+    "profiles": {
+      "decode_only": {"warmups": 0, "measured_repeats": 3},
+      "resident_warm": {"warmups": 1, "measured_repeats": 5},
+      "streaming": {"warmups": 1, "measured_repeats": 3}
+    },
+    "required_worker_sweep": [1, 2, 3, 4, 6],
+    "optional_oversubscription_diagnostics": [8, 12],
+    "cold_disk_benchmark": false,
+    "os_file_cache_flushed": false,
+    "worker_unit": "cpu_process_or_thread_not_gpu_stream"
+  },
+  "parity": {
+    "integer_counts": "exact",
+    "float_absolute_tolerance": 1e-12,
+    "benchmark_continues_on_mismatch": false,
+    "required_fields": [
+      "changed_pixel_count",
+      "tile_count",
+      "active_tile_count",
+      "partial_edge_tile_count",
+      "halo_expanded_tile_count",
+      "run_length_summary",
+      "global_translation_result",
+      "aggregate_digest"
+    ]
+  },
+  "unavailable_memory_metrics": [
+    "projected_latent_bytes_saved",
+    "projected_token_bytes_saved",
+    "projected_kv_cache_bytes_saved",
+    "actual_activation_memory_saved",
+    "actual_peak_vram_reduction",
+    "actual_allocator_fragmentation",
+    "actual_gpu_workspace_reduction"
+  ],
+  "claim_boundary": {
+    "observed_pixel_locality_only": true,
+    "safe_skip_truth_count": 0,
+    "verified_compute_relevance_oracles": 0,
+    "backend_selective_compute_results": 0,
+    "model_runs": 0,
+    "cuda_runs": 0,
+    "gpu_runs": 0,
+    "backend_integration_runs": 0,
+    "selective_compute_runs": 0,
+    "vram_measurement_runs": 0,
+    "product_speedup_results": 0
+  },
+  "decisions": [
+    "M1_B0_LOCALITY_SURFACE_MEASURED",
+    "M1_B0_REFINEMENT_REQUIRED",
+    "M1_B0_BLOCKED"
+  ]
+}

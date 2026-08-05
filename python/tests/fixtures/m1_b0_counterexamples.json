@@ -1,0 +1,204 @@
+{
+  "schema_version": "0.1.0",
+  "protocol_revision": "m1-b0-v1",
+  "base_contract": {
+    "purpose": "model_free_locality_opportunity",
+    "input": {
+      "width": 832,
+      "height": 480,
+      "hash_verified": true,
+      "derivative_immutable": true
+    },
+    "claim_boundary": {
+      "observed_pixel_locality_only": true,
+      "safe_skip_truth_count": 0,
+      "verified_compute_relevance_oracles": 0,
+      "backend_selective_compute_results": 0,
+      "model_runs": 0,
+      "cuda_runs": 0,
+      "gpu_runs": 0,
+      "vram_measurement_runs": 0,
+      "product_speedup_results": 0
+    },
+    "guided_oracle_usage": "excluded_from_measurement_truth",
+    "cost_profiles": {
+      "decode_only": ["decode"],
+      "compare_only_resident": ["compare", "tile_aggregation"],
+      "streaming_decode_compare": ["decode", "transfer", "compare", "tile_aggregation"]
+    },
+    "reference_implementation": "numpy_vectorized_reference",
+    "pure_python_pixel_loop_performance_baseline": false,
+    "partial_edge_tiles": {
+      "included": true,
+      "denominator": "actual_tile_pixel_count",
+      "crop_or_padding": false
+    },
+    "surface": {
+      "thresholds_frozen_before_measurement": true,
+      "protocol_revision_on_change": true,
+      "report_all_configurations": true,
+      "gray8_thresholds": [0, 1, 2, 4, 8, 16],
+      "rgb24_thresholds": [0, 2, 4, 8, 16],
+      "tile_sizes": [8, 16, 32, 64],
+      "activation_rules": ["any", "1_percent", "5_percent", "10_percent"],
+      "halos": [0, 1, 2]
+    },
+    "translation": {
+      "profile": "global_translation_v1",
+      "exposed_border_policy": "active_or_uncertain",
+      "raw_results_reported": true,
+      "compensated_results_reported": true
+    },
+    "global_invalidation": {
+      "hard_cut_pressure_recorded": true,
+      "label": "global_invalidation_candidate"
+    },
+    "halo": {
+      "closure_cost_reported": true,
+      "inflation_reported": true
+    },
+    "unavailable_metric": {
+      "value": null,
+      "status": "unavailable",
+      "reason": "Metric is not collected in the model-free protocol.",
+      "method": "not measured"
+    },
+    "workers": {
+      "logical_threads": 12,
+      "requested": [1, 2, 3, 4, 6, 8, 12],
+      "oversubscription_diagnostics": [8, 12]
+    },
+    "public_artifact": {
+      "asset_reference": "approved-asset:m1-a2/derivatives/c01",
+      "command_template": "<decoder> -i <derivative-input> <output-template>"
+    },
+    "result_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "parity": {
+      "integer_counts_exact": true,
+      "continue_benchmark_on_mismatch": false
+    },
+    "backend_capability_auto_admit": false
+  },
+  "counterexamples": [
+    {
+      "id": "pixel_locality_does_not_authorize_backend_skip",
+      "path": "claim_boundary.backend_selective_compute_results",
+      "value": 1,
+      "expected_error": "backend_claim_forbidden"
+    },
+    {
+      "id": "guided_oracle_is_not_safe_skip_truth",
+      "path": "guided_oracle_usage",
+      "value": "safe_skip_truth",
+      "expected_error": "guided_oracle_truth_forbidden"
+    },
+    {
+      "id": "streaming_cost_includes_decode",
+      "path": "cost_profiles.streaming_decode_compare",
+      "value": ["transfer", "compare", "tile_aggregation"],
+      "expected_error": "streaming_decode_scope_incomplete"
+    },
+    {
+      "id": "python_pixel_loop_is_not_primary_baseline",
+      "path": "pure_python_pixel_loop_performance_baseline",
+      "value": true,
+      "expected_error": "python_pixel_loop_baseline_forbidden"
+    },
+    {
+      "id": "partial_edge_tiles_cannot_be_dropped",
+      "path": "partial_edge_tiles.included",
+      "value": false,
+      "expected_error": "partial_edge_tiles_required"
+    },
+    {
+      "id": "threshold_changes_require_revision",
+      "path": "surface.protocol_revision_on_change",
+      "value": false,
+      "expected_error": "protocol_revision_required"
+    },
+    {
+      "id": "exposed_camera_border_cannot_freeze",
+      "path": "translation.exposed_border_policy",
+      "value": "frozen",
+      "expected_error": "exposed_border_cannot_freeze"
+    },
+    {
+      "id": "hard_cut_requires_global_pressure",
+      "path": "global_invalidation.hard_cut_pressure_recorded",
+      "value": false,
+      "expected_error": "global_invalidation_pressure_required"
+    },
+    {
+      "id": "halo_cost_cannot_be_omitted",
+      "path": "halo.closure_cost_reported",
+      "value": false,
+      "expected_error": "halo_cost_required"
+    },
+    {
+      "id": "unavailable_is_not_zero",
+      "path": "unavailable_metric.value",
+      "value": 0,
+      "expected_error": "unavailable_value_must_be_null"
+    },
+    {
+      "id": "oversubscription_requires_diagnostic_label",
+      "path": "workers.oversubscription_diagnostics",
+      "value": [],
+      "expected_error": "oversubscription_label_required"
+    },
+    {
+      "id": "public_report_forbids_local_absolute_path",
+      "path": "public_artifact.command_template",
+      "value": "C:\\Users\\example\\ffmpeg.exe -i input.mkv",
+      "expected_error": "public_absolute_path_forbidden"
+    },
+    {
+      "id": "reproducibility_requires_digest",
+      "path": "result_digest",
+      "value": "",
+      "expected_error": "result_digest_required"
+    },
+    {
+      "id": "parity_mismatch_blocks_benchmark",
+      "path": "parity.continue_benchmark_on_mismatch",
+      "value": true,
+      "expected_error": "parity_mismatch_must_block"
+    },
+    {
+      "id": "model_free_result_cannot_claim_speedup",
+      "path": "claim_boundary.product_speedup_results",
+      "value": 1,
+      "expected_error": "product_speedup_forbidden"
+    },
+    {
+      "id": "input_hash_change_blocks_measurement",
+      "path": "input.hash_verified",
+      "value": false,
+      "expected_error": "input_hash_verification_required"
+    },
+    {
+      "id": "partial_edge_denominator_is_actual_pixels",
+      "path": "partial_edge_tiles.denominator",
+      "value": "nominal_tile_area",
+      "expected_error": "partial_edge_denominator_invalid"
+    },
+    {
+      "id": "all_surface_results_must_be_reported",
+      "path": "surface.report_all_configurations",
+      "value": false,
+      "expected_error": "surface_cherry_pick_forbidden"
+    },
+    {
+      "id": "raw_camera_result_cannot_be_hidden",
+      "path": "translation.raw_results_reported",
+      "value": false,
+      "expected_error": "raw_translation_surface_required"
+    },
+    {
+      "id": "m1_b0_cannot_auto_admit_backend",
+      "path": "backend_capability_auto_admit",
+      "value": true,
+      "expected_error": "backend_auto_admission_forbidden"
+    }
+  ]
+}

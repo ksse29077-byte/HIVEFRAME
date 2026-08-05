@@ -1,5 +1,7 @@
 #![doc = "Model-free Compound I/O routing, fusion, planning, and admission evidence."]
 
+pub mod locality;
+
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;

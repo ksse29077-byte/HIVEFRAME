@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "run_kind": "m1_b0_counterexample_preimplementation_checkpoint",
+  "results_eligible": false,
+  "status": "expected_failure",
+  "source_main_sha": "5e93745b8280159ff79ea7ef75343790c0a78e48",
+  "command_template": "<python> -c <repository-local unittest discovery for test_m1_b0_counterexamples.py>",
+  "counterexample_count": 20,
+  "tests_run": 2,
+  "errors": 21,
+  "failures": 0,
+  "failure_stage": "implementation_import",
+  "failure_reason": "The predeclared contract validator hive_benchmarks.m1_b0_contract does not exist before implementation.",
+  "expected_resolution": "Implement the fixed protocol validator without changing the twenty counterexamples or their expected error codes.",
+  "claim_boundary": {
+    "model_runs": 0,
+    "cuda_runs": 0,
+    "gpu_runs": 0,
+    "backend_integration_runs": 0,
+    "selective_compute_runs": 0,
+    "vram_measurement_runs": 0,
+    "product_speedup_results": 0,
+    "safe_skip_truth_count": 0,
+    "verified_compute_relevance_oracles": 0
+  }
+}

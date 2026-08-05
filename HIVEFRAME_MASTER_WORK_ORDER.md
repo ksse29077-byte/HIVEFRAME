@@ -82,7 +82,10 @@ promoting visible movement to compute relevance or safe-skip truth.
 ### M1-B0 — Model-free locality opportunity
 
 Estimate locality opportunity and full-recompute pressure without a backend or
-product-speed claim. This requires a separate approval and review surface.
+product-speed claim. The dedicated `m1-b0-v1` branch has measured the complete
+predeclared C01-C12 surface with NumPy/Rust parity and decision
+`M1_B0_LOCALITY_SURFACE_MEASURED`; Draft review and publication remain pending.
+This result does not authorize skip or start M1-B1.
 
 ### M1-B1 — Backend capability admission
 
@@ -126,12 +129,14 @@ and a creator or B2B product only after earlier gates pass.
 
 ## Current authorized scope
 
-The current post-merge publication-sync scope is docs-only: update task and
-worklog records with verified PR #49 and Issue #48 state. It does not reopen
-M1-A2 implementation or authorize a new runtime experiment.
+The current scope is M1-B0 model-free locality opportunity measurement on the
+approved C01-C12 FFV1 derivatives. It includes fixed detector surfaces,
+NumPy/Rust parity, decode/resident/streaming cost separation, CPU worker
+scaling, receipts, and a Draft PR.
 
-It excludes model training, LoRA, Wan attention changes, CUDA/Triton kernels,
-multi-GPU, GUI, canonical benchmark execution, and actual sparse speedup claims.
+It excludes model training or loading, LoRA, Wan attention changes,
+CUDA/Triton kernels, GPU or VRAM benchmarks, backend integration, selective
+compute, M1-B1, HIVEFRAME 2.0, and actual product-speedup claims.
 
 ## Definition of done for each change
 

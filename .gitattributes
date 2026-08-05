@@ -1,0 +1,2 @@
+# Byte-hashed R3 predeclaration evidence must retain repository LF bytes.
+configs/m1-p0-r3.inprocess-shared-buffer.json text eol=lf
