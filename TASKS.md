@@ -247,6 +247,25 @@ Overall status: `planned`; protocol-only. It requires separate user approval
 and a separate Issue, branch, and Draft PR. It cannot bypass M1-B0 or backend
 evidence and is not started by the M1-A2 publication.
 
+## P0 — Local MiniMax H3 product vertical slice
+
+Overall implementation status: `verified_once`. Publication status: `draft`.
+Bounded decision: `P0_LOCAL_H3_COMFYUI_READY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Preserve P0-LR wait-state contract | `done` | existing Mock and future local-files-only adapter remain compatible |
+| Inspect supplied H3 assets and workflow | `verified_once` | four model components and one T2V workflow recognized without copying or modification |
+| Connect loopback ComfyUI backend | `implemented` | explicit backend key, bounded polling, cancellation, result and receipt collection |
+| Connect UI and product Job states | `verified_once` | Mock/real provenance, queued/running/succeeded, video display/download, feedback ledger |
+| Run one actual Local H3 smoke | `verified_once` | one submission, 124 decoded frames, OOM 0, retry 0 |
+| Preserve H3 Knowledge Flywheel | `implemented` | workflow, runtime, failure, capability, and decision files; no automatic promotion |
+| Publish P0 through Draft PR #54 | `in_progress` | branch update and Draft PR review pending |
+| Start P1 one-click launcher | `planned` | separate user approval required; parallel-runtime database isolation remains a candidate |
+
+This result proves only the first Local H3 product path. It does not establish
+quality, speed, cost, cache, selective compute, or production-default settings.
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.

@@ -1,0 +1,106 @@
+schema_version: "0.2.0"
+knowledge_scope: "HIVEFRAME P0 local MiniMax H3 through loopback ComfyUI"
+workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+source_pr: 54
+state: verified_once
+
+history:
+  - workflow_revision: "p0-lr-local-ready-v1"
+    state: superseded
+    decision: "P0_LOCAL_READY_WAITING_FOR_ARTIFACT"
+    note: "The wait-state contract remains valid history; a later approved local ComfyUI run supplied an executable workflow."
+
+workflow_kind:
+  value: "ComfyUI UI workflow with an embedded subgraph and a sanitized API execution copy"
+  state: verified_once
+  original_modified: false
+
+logical_components:
+  diffusion_model:
+    logical_id: "MiniMax-H3-FL2VA-INT8-ConvRot"
+    state: verified_once
+  text_encoder:
+    logical_id: "Qwen3-VL-32B-H3-NVFP4-AWQ"
+    state: verified_once
+  video_vae:
+    logical_id: "MiniMax-H3-Video-VAE-FP16"
+    state: verified_once
+  audio_vae:
+    logical_id: "MiniMax-H3-Audio-VAE-FP32"
+    state: verified_once
+
+node_roles:
+  UNETLoader: "load the diffusion model"
+  CLIPLoader: "load and run the MiniMax text encoder"
+  VAELoader: "load video and audio VAE modules"
+  RandomNoise: "supply the fixed seed"
+  BasicScheduler: "create the simple 20-step schedule"
+  KSamplerSelect: "select res_multistep"
+  MiniMaxH3ImageToVideo: "build text-to-video conditioning and initial latent"
+  BasicGuider: "bind conditioning to the model"
+  SamplerCustomAdvanced: "perform diffusion sampling"
+  VAEDecode: "decode video frames"
+  VAEDecodeAudio: "decode native audio"
+  CreateVideo: "combine decoded frames and audio at 24 FPS"
+  SaveVideo: "write an MP4 result"
+
+input_contract:
+  state: verified_once
+  mode: text_to_video_with_native_audio
+  user_prompt_public_storage: forbidden
+  mutable_api_copy_fields:
+    - prompt
+    - seed
+    - output_prefix
+  fixed_execution_profile:
+    width: 864
+    height: 480
+    frame_count: 124
+    fps: 24
+    steps: 20
+    scheduler: simple
+    sampler: res_multistep
+    denoise: 1.0
+    seed: 101
+
+output_contract:
+  state: verified_once
+  media_type: video/mp4
+  codec: h264
+  width: 864
+  height: 480
+  decoded_frame_count: 124
+  fps: 24.0
+  full_decode_succeeded: true
+  repository_storage: forbidden
+
+product_control_plane:
+  state: verified_once
+  backend_key: minimax_h3_comfyui_local
+  states:
+    - queued
+    - running
+    - succeeded
+    - failed
+    - cancelled
+  result_download: true
+  feedback_decisions:
+    - accepted
+    - rejected
+    - retry_requested
+  feedback_execution_in_smoke: false
+  training_eligibility_default: evaluation_only
+
+unsupported_or_unverified:
+  cache_node:
+    value: null
+    state: observed
+    reason: "No cache node was present in the executed workflow."
+  explicit_offload_node:
+    value: null
+    state: observed
+    reason: "Dynamic runtime loading was observed, but no workflow offload node was verified."
+  model_load_seconds:
+    value: null
+    state: observed
+    reason: "ComfyUI history did not isolate model loading from generation."

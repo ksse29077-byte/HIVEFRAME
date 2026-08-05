@@ -1,0 +1,87 @@
+schema_version: "0.2.0"
+matching_key_fields:
+  - workflow_revision
+  - gpu_class
+  - vram_class
+  - runtime_version
+  - model_logical_id
+  - execution_mode
+
+profiles:
+  - profile_id: "p0-lr-artifact-pending-offline"
+    state: superseded
+    matching_key:
+      workflow_revision: "p0-lr-local-ready-v1"
+      gpu_class: "not_applicable"
+      vram_class: "not_applicable"
+      runtime_version: "HIVEFRAME P0-LR"
+      model_logical_id: "MiniMax-H3"
+      execution_mode: "local_files_only"
+    successful_profile: false
+    note: "Preserved historical wait-state evidence; it is not the matching key for the later ComfyUI run."
+
+  - profile_id: "p0-local-h3-comfyui-rtx3060-12g-once"
+    state: verified_once
+    matching_key:
+      workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+      gpu_class: "NVIDIA GeForce RTX 3060"
+      vram_class: "12 GiB"
+      runtime_version: "ComfyUI 0.30.2"
+      model_logical_id: "MiniMax-H3"
+      execution_mode: "loopback_comfyui_text_to_video"
+    configuration:
+      width: 864
+      height: 480
+      frame_count: 124
+      fps: 24
+      steps: 20
+      scheduler: simple
+      sampler: res_multistep
+      denoise: 1.0
+      seed: 101
+      native_audio: true
+      bind_scope: loopback_only
+    outcome:
+      successful_profile: true
+      workflow_submissions: 1
+      retries: 0
+      oom_count: 0
+      full_decode_succeeded: true
+      decoded_frame_count: 124
+      output_codec: h264
+      output_size_bytes: 262579
+    measurements:
+      queue_wait_seconds: 0.0687138
+      generation_wall_seconds: 587.4444453
+      total_submit_to_terminal_seconds: 587.5131591
+      peak_system_sampled_vram_bytes: 12457195444
+      peak_system_used_ram_bytes: 60520648704
+      model_load_seconds:
+        value: null
+        support_status: not_collected
+        reason: "The runtime did not expose an isolated model-load span."
+    boundaries:
+      performance_claim: false
+      benchmark_eligible: false
+      single_observation_only: true
+      host_ram_scope: "system-wide used RAM derived from ComfyUI system_stats"
+      vram_scope: "system-sampled device usage"
+
+runtime_environment:
+  state: verified_once
+  comfyui_version: "0.30.2"
+  comfyui_commit: "dec5d9450a5290bcf63430409ea41018e67f41c3"
+  python: "3.13.12"
+  pytorch: "2.12.1+cu130"
+  allocator: "cudaMallocAsync"
+  gpu_class: "NVIDIA GeForce RTX 3060"
+  vram_total_bytes: 12884377600
+  physical_ram_total_bytes: 66145665024
+
+reused_knowledge:
+  - rule: "Keep the artifact store outside Git."
+    state: reused_successfully
+  - rule: "Never treat a still image or synthetic placeholder as successful video."
+    state: reused_successfully
+  - rule: "Do not automatically fall back from Local H3 to Mock H3."
+    state: reused_successfully

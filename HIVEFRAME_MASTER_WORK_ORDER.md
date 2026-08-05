@@ -6,9 +6,10 @@ The normative constitution is maintained only in [`AGENTS.md`](AGENTS.md).
 Ship the smallest safe user-visible path, reuse unchanged evidence, and run
 only focused, smoke, core end-to-end, fallback, and release-blocking security
 checks unless the constitution requires a full suite. The official launch
-track is P0 Local-model-ready Vertical Slice, P1-L Official H3 Artifact plus
-one local generation, P2 Real Local H3 Product Flow, P3 Selective Runtime
-Integration, and P4 Internal Alpha and Commercial Release Preparation.
+track is P0 Local-model-ready Vertical Slice, P0-H3 one actual loopback
+ComfyUI generation, P1 one-click Local H3 launcher, P2 Real Local H3 Product
+Flow, P3 Selective Runtime Integration, and P4 Internal Alpha and Commercial
+Release Preparation.
 
 The M0–M5 selective-recompute program remains preserved evidence and an
 Engine Beta Track. M1-B1/B2 may test at most one backend/selector-cache path
@@ -145,17 +146,19 @@ and a creator or B2B product only after earlier gates pass.
 
 ## Current authorized scope
 
-The current scope is P0-LR: one local standard-profile product vertical slice
-using deterministic Mock H3 fixtures plus a disabled-by-default, local-files-
-only `MiniMaxH3LocalBackend`. It includes the official H3-shaped functional
-request contract, job state, result save/download, consent-aware feedback,
-bounded manual retry, external local artifact storage, and an explicit
-`artifact_pending` wait state until official model files are approved.
+The current Draft scope completes P0-H3 on top of the preserved P0-LR
+contract. Deterministic Mock H3 remains explicit, while
+`MiniMaxH3ComfyUIBackend` connects one approved local workflow to product job
+state, result display/download, cancellation, receipts, and feedback. One
+loopback-only text-to-video submission generated and fully decoded an MP4 on
+RTX 3060; its state is `verified_once` and its private artifacts remain outside
+Git.
 
-It excludes API integration, automatic model download, model loading, CUDA,
-training, selective compute, M1-B1/B2, HIVEFRAME 2.0, and product-speedup
-claims. P1-L, not a mandatory API stage, is the separately approved official
-artifact download plus one local generation.
+It excludes external API integration, automatic model download, training,
+selective compute, M1-B1/B2, HIVEFRAME 2.0, performance claims, and automatic
+promotion of the observed runtime profile. P1 is the separately approved
+one-click Local H3 launcher, including a deliberate decision on parallel
+ComfyUI database isolation.
 
 ## Definition of done for each change
 

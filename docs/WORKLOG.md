@@ -1078,6 +1078,39 @@ not a mandatory live-API stage. Full contract, verification, limitations, and
 future inputs are recorded in
 [`2026-08-05-p0-h3-product-vertical-slice.md`](worklogs/2026-08-05-p0-h3-product-vertical-slice.md).
 
+## 2026-08-05 — P0 Local H3 through loopback ComfyUI
+
+Issue #53, `product/p0-h3-vertical-slice`, and Draft PR #54 were reused after
+an approved external H3 asset root became available. A new loopback-only
+`MiniMaxH3ComfyUIBackend` connects the existing product Job, UI, result,
+download, cancellation, and feedback contracts to one sanitized API copy of
+the supplied text-to-video workflow. The original workflow and four model
+components remained unchanged and outside Git.
+
+Exactly one workflow submission ran on ComfyUI 0.30.2 and RTX 3060. HIVEFRAME
+observed `queued → running → succeeded`; there was no OOM or retry. The
+effective workflow profile was 864x480, 124 frames, 24 FPS, 20 steps, fixed
+seed 101, and native audio. Submit-to-terminal time was 587.513159 seconds;
+system sampling observed 12,457,195,444 peak used VRAM bytes and
+60,520,648,704 peak system-wide used RAM bytes. Model-load time remains
+`null/not_collected`, not zero.
+
+The 262,579-byte H.264 MP4 has SHA-256 `ec4ddbac...641c4`; all 124 frames
+decoded successfully. The video, full receipt, prompt, database, and complete
+runtime log remain outside the repository. External API calls, API keys, paid
+calls, model downloads, original-asset changes, and tracked binaries were all
+zero. Focused changed-surface validation passed 18 tests in 2.329 seconds; full
+unchanged suites and repeated generation were intentionally skipped.
+
+Knowledge Flywheel entries preserve the prior artifact-pending history, record
+the actual run as `verified_once`, and mark only previously established safety
+rules as `reused_successfully`. No rule was automatically promoted. A nonfatal
+parallel-ComfyUI database-lock warning becomes a P1 launcher candidate, not a
+silent product default. The bounded decision is
+`P0_LOCAL_H3_COMFYUI_READY`; it is a one-run product-path result, not a quality,
+speed, cost, cache, or selective-compute claim. See the detailed
+[`P0 worklog`](worklogs/2026-08-05-p0-h3-product-vertical-slice.md).
+
 ---
 
 ## Entry template
