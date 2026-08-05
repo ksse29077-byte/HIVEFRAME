@@ -13,6 +13,7 @@ from hive_benchmarks.m1_b0_contract import (
     public_sanitation_errors,
     unavailable,
     validate_config,
+    validate_result_document,
 )
 from hive_benchmarks.m1_b0_locality import (
     _activate,
@@ -24,6 +25,7 @@ from hive_benchmarks.m1_b0_locality import (
     compensated_difference,
     estimate_global_translation,
 )
+from hive_benchmarks.m1_b0_runner import _compare_values, _profile_stats, _write_json_new
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -167,6 +169,58 @@ class M1B0LocalityTests(unittest.TestCase):
         expanded = _dilate_tiles(active, 1)
         self.assertEqual(expanded.shape, active.shape)
         self.assertEqual(int(expanded.sum()), 4)
+
+    def test_result_schema_invariants_accept_positive_and_reject_negative_fixture(self) -> None:
+        result_path = ROOT / "reports" / "m1_b0" / "locality_opportunity_summary.json"
+        if result_path.exists():
+            positive = json.loads(result_path.read_text(encoding="utf-8"))
+        else:
+            positive = {
+                "schema_version": "0.1.0",
+                "protocol_revision": "m1-b0-v1",
+                "run_kind": "m1_b0_model_free_locality_opportunity",
+                "decision": "M1_B0_LOCALITY_SURFACE_MEASURED",
+                "inputs": [
+                    {
+                        "clip_id": f"c{index:02d}", "width": 832, "height": 480, "fps": 16,
+                        "hash_verified": True, "derivative_sha256": f"{index:064x}",
+                    }
+                    for index in range(1, 13)
+                ],
+                "parity": {"passed": True, "clip_format_pairs": 24, "mismatches": []},
+                "claim_boundary": {field: 0 for field in (
+                    "model_runs", "cuda_runs", "gpu_runs", "backend_integration_runs",
+                    "selective_compute_runs", "vram_measurement_runs", "product_speedup_results",
+                    "safe_skip_truth_count", "verified_compute_relevance_oracles",
+                )},
+                "unavailable_memory_metrics": {"actual_peak_vram_reduction": unavailable("No GPU run.")},
+                "local_artifact_bundle": {"bytes": 1, "sha256": "a" * 64, "tracked_by_git": False},
+                "summary_digest": "b" * 64,
+            }
+        self.assertEqual(validate_result_document(positive), [])
+        negative = deepcopy(positive)
+        negative["claim_boundary"]["model_runs"] = 1
+        self.assertIn("claim_boundary.model_runs", validate_result_document(negative))
+
+    def test_parity_comparison_preserves_integer_exactness_and_float_tolerance(self) -> None:
+        mismatches: list[str] = []
+        _compare_values({"count": 3, "ratio": 0.5}, {"count": 3, "ratio": 0.5 + 1e-13}, "root", mismatches, 1e-12)
+        self.assertEqual(mismatches, [])
+        _compare_values({"count": 3}, {"count": 4}, "root", mismatches, 1e-12)
+        self.assertTrue(mismatches)
+
+    def test_profile_statistics_use_nearest_rank(self) -> None:
+        self.assertEqual(_profile_stats([3.0, 1.0, 2.0]), {"minimum": 1.0, "p50": 2.0, "p95": 3.0, "maximum": 3.0})
+
+    def test_output_collision_is_blocked_before_overwrite(self) -> None:
+        from tempfile import TemporaryDirectory
+
+        with TemporaryDirectory() as directory:
+            target = Path(directory) / "receipt.json"
+            _write_json_new(target, {"attempt": 1})
+            with self.assertRaisesRegex(RuntimeError, "OUTPUT_COLLISION"):
+                _write_json_new(target, {"attempt": 2})
+            self.assertEqual(json.loads(target.read_text(encoding="utf-8")), {"attempt": 1})
 
 
 if __name__ == "__main__":

@@ -22,6 +22,8 @@ ZERO_CLAIMS = (
     "model_runs",
     "cuda_runs",
     "gpu_runs",
+    "backend_integration_runs",
+    "selective_compute_runs",
     "vram_measurement_runs",
     "product_speedup_results",
 )
@@ -148,3 +150,76 @@ def validate_config(config: dict[str, Any]) -> list[str]:
 def public_sanitation_errors(value: Any) -> list[str]:
     rendered = json.dumps(value, ensure_ascii=False, sort_keys=True)
     return ["public_absolute_path"] if ABSOLUTE_PATH.search(rendered) else []
+
+
+def validate_result_document(document: dict[str, Any]) -> list[str]:
+    """Dependency-free validation for the strict M1-B0 public receipt contract.
+
+    Full Draft 2020-12 validation is performed when an optional validator is
+    available; this invariant layer remains executable in the pinned, no-new-
+    dependency M1-B0 environment.
+    """
+
+    errors: list[str] = []
+    if document.get("schema_version") != "0.1.0":
+        errors.append("schema_version")
+    if document.get("protocol_revision") != "m1-b0-v1":
+        errors.append("protocol_revision")
+    if document.get("run_kind") != "m1_b0_model_free_locality_opportunity":
+        errors.append("run_kind")
+    if document.get("decision") not in {
+        "M1_B0_LOCALITY_SURFACE_MEASURED",
+        "M1_B0_REFINEMENT_REQUIRED",
+        "M1_B0_BLOCKED",
+    }:
+        errors.append("decision")
+    inputs = document.get("inputs")
+    if not isinstance(inputs, list) or len(inputs) != 12:
+        errors.append("inputs")
+    else:
+        expected_ids = [f"c{index:02d}" for index in range(1, 13)]
+        if [item.get("clip_id") for item in inputs] != expected_ids:
+            errors.append("input_clip_ids")
+        for item in inputs:
+            if (
+                item.get("width") != 832
+                or item.get("height") != 480
+                or item.get("fps") != 16
+                or item.get("hash_verified") is not True
+                or not re.fullmatch(r"[0-9a-f]{64}", str(item.get("derivative_sha256", "")))
+            ):
+                errors.append(f"input:{item.get('clip_id', 'unknown')}")
+    parity = document.get("parity", {})
+    if parity.get("passed") is not True or parity.get("clip_format_pairs") != 24 or parity.get("mismatches") != []:
+        errors.append("parity")
+    claims = document.get("claim_boundary", {})
+    for field in (
+        "model_runs",
+        "cuda_runs",
+        "gpu_runs",
+        "backend_integration_runs",
+        "selective_compute_runs",
+        "vram_measurement_runs",
+        "product_speedup_results",
+        "safe_skip_truth_count",
+        "verified_compute_relevance_oracles",
+    ):
+        if claims.get(field) != 0:
+            errors.append(f"claim_boundary.{field}")
+    for name, metric in document.get("unavailable_memory_metrics", {}).items():
+        if not isinstance(metric, dict) or metric.get("value") is not None or metric.get("status") != "unavailable":
+            errors.append(f"unavailable_memory_metrics.{name}")
+        elif not metric.get("reason") or metric.get("method") != "not measured":
+            errors.append(f"unavailable_memory_metrics.{name}")
+    artifact = document.get("local_artifact_bundle", {})
+    if (
+        artifact.get("tracked_by_git") is not False
+        or not re.fullmatch(r"[0-9a-f]{64}", str(artifact.get("sha256", "")))
+        or not isinstance(artifact.get("bytes"), int)
+        or artifact.get("bytes", 0) < 1
+    ):
+        errors.append("local_artifact_bundle")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(document.get("summary_digest", ""))):
+        errors.append("summary_digest")
+    errors.extend(public_sanitation_errors(document))
+    return errors
