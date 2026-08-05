@@ -21,7 +21,7 @@ expansion does not block the launch track.
 
 | Track | Status | Evidence or blocker |
 |---|---|---|
-| P0 — Product Vertical Slice | `in_progress` | Issue #53; one local standard-profile Mock H3 flow, live H3 disabled |
+| P0 — Product Vertical Slice | `in_progress` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53); local implementation and five focused checks pass; Draft publication pending |
 | P1 — Live MiniMax H3 Integration | `planned` | explicit API/key/cost/data-transfer approval required |
 | P2 — Internal Alpha | `planned` | depends on P0/P1 core flow, not M1-B1/B2 completion |
 | P3 — Limited Commercial Beta | `planned` | operational, retention, terms, and billing safeguards |

@@ -21,6 +21,7 @@ Thumbs.db
 *.pth
 /models/
 /vendor/
+/hiveframe-product-data/
 outputs/
 reports/*.json
 reports/*.mp4

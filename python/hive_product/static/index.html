@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HIVEFRAME P0</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">HIVEFRAME · PRODUCT VERTICAL SLICE</p>
+        <h1>한 화면에서 영상 요청부터 피드백까지</h1>
+        <p class="lede">현재는 결정론적 Mock H3 모드입니다. 실제 영상이나 외부 전송, 과금은 발생하지 않습니다.</p>
+      </div>
+      <span id="backendBadge" class="badge">Mock H3 · Offline</span>
+    </header>
+
+    <section class="grid">
+      <form id="generationForm" class="panel flow-panel">
+        <div class="panel-title">
+          <span class="step">01</span>
+          <div><h2>생성 요청</h2><p>3–8초, 1인 장면, standard 프로필</p></div>
+        </div>
+
+        <label for="prompt">프롬프트</label>
+        <textarea id="prompt" maxlength="2000" required placeholder="예: 한 사람이 창가에서 카메라를 보며 천천히 고개를 든다."></textarea>
+
+        <div class="field-row">
+          <div>
+            <label for="duration">길이</label>
+            <select id="duration">
+              <option value="3">3초</option>
+              <option value="5" selected>5초</option>
+              <option value="8">8초</option>
+            </select>
+          </div>
+          <div>
+            <label for="reference">참조 이미지 (선택)</label>
+            <input id="reference" type="file" accept="image/png,image/jpeg,image/webp">
+          </div>
+        </div>
+
+        <div class="consent-box">
+          <p><strong>P0 고지 구조</strong> — 아래 문구는 법률 문서가 아닌 자리표시자입니다.</p>
+          <label class="check"><input id="generationConsent" type="checkbox" required> 생성 요청 및 로컬 저장에 동의합니다.</label>
+          <label class="check"><input id="transferConsent" type="checkbox"> 향후 외부 backend 전송 동의 (Mock에서는 전송 0회)</label>
+          <ul>
+            <li>서비스 약관 / AUP 자리표시자</li>
+            <li>개인정보·보유기간·삭제 절차 자리표시자</li>
+            <li>Backend 전송과 학습 동의는 서로 분리</li>
+          </ul>
+        </div>
+
+        <button id="generateButton" class="primary" type="submit">Mock 영상 요청 만들기</button>
+        <p id="formMessage" class="message" aria-live="polite"></p>
+      </form>
+
+      <section class="panel status-panel">
+        <div class="panel-title">
+          <span class="step">02</span>
+          <div><h2>Job 상태</h2><p>queued → running → succeeded / failed</p></div>
+        </div>
+        <div class="status-card">
+          <div><span class="muted">상태</span><strong id="jobStatus">요청 전</strong></div>
+          <div><span class="muted">Job ID</span><code id="jobId">—</code></div>
+          <div><span class="muted">모델 계약</span><span id="jobModel">MiniMax-H3</span></div>
+          <div><span class="muted">재시도</span><span id="retryCount">0 / 1</span></div>
+        </div>
+        <div id="errorCard" class="error-card hidden">
+          <strong id="errorCode"></strong>
+          <p id="errorMessage"></p>
+        </div>
+      </section>
+
+      <section class="panel result-panel">
+        <div class="panel-title">
+          <span class="step">03</span>
+          <div><h2>결과 저장</h2><p>외부 artifact root에 저장된 Mock 결과</p></div>
+        </div>
+        <div id="resultPlaceholder" class="result-placeholder">
+          <div class="mock-frame"><span>HIVEFRAME</span><strong>MOCK RESULT</strong></div>
+          <p>성공하면 결정론적 Mock 결과 파일을 내려받을 수 있습니다.</p>
+        </div>
+        <a id="downloadLink" class="secondary hidden" href="#" download>결과 다운로드</a>
+      </section>
+
+      <section class="panel feedback-panel">
+        <div class="panel-title">
+          <span class="step">04</span>
+          <div><h2>피드백</h2><p>수락·거절·수동 재시도</p></div>
+        </div>
+        <label for="feedbackReason">거절 사유</label>
+        <select id="feedbackReason">
+          <option value="">선택하세요</option>
+          <option value="face">얼굴</option><option value="hands">손</option>
+          <option value="motion">움직임</option><option value="camera">카메라</option>
+          <option value="background">배경</option><option value="prompt_mismatch">프롬프트 불일치</option>
+          <option value="other">기타</option>
+        </select>
+        <label class="check"><input id="trainingOptIn" type="checkbox"> 향후 학습 사용에 별도 동의 (P0에서는 training_allowed 불가)</label>
+        <label class="check"><input id="deletionRequested" type="checkbox"> 보유 결과 삭제 요청</label>
+        <div class="button-row">
+          <button id="acceptButton" type="button" disabled>수락</button>
+          <button id="rejectButton" type="button" disabled>거절</button>
+          <button id="retryButton" type="button" disabled>수동 재시도</button>
+        </div>
+        <p id="feedbackMessage" class="message" aria-live="polite"></p>
+      </section>
+    </section>
+  </main>
+  <script src="/app.js" defer></script>
+</body>
+</html>
