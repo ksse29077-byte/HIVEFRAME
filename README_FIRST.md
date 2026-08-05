@@ -2,7 +2,7 @@
 
 ## Current repository state
 
-As of 2026-08-03:
+As of 2026-08-05:
 
 - official Compound I/O architecture and roadmap are merged into `main`;
 - architecture RFC commit before this worklog addition:
@@ -34,7 +34,10 @@ As of 2026-08-03:
   observed-change evidence; the current Gate is `ORACLE_PROTOCOL_REVISE`;
 - MiniMax H3 is the primary product backend target, with API and future
   open-weight admission still gated separately; Wan remains the frozen M0
-  comparator and LTX is inactive.
+  comparator and LTX is inactive;
+- M1-B0 is published through PR #52 with bounded Gate
+  `M1_B0_LOCALITY_SURFACE_MEASURED`; it is evidence, not a launch prerequisite
+  or backend speedup claim.
 
 Always run `git status -sb` and `git rev-parse HEAD` before relying on this
 snapshot.
@@ -52,6 +55,12 @@ delta, or model-free ComputePlan has no backend skip authority by itself.
 
 This is not yet evidence of sparse speedup. The product goal is to reduce
 accepted-result wall time and GPU cost after including every new overhead.
+
+## Product-First priority
+
+The single normative `Product-First Execution Constitution` is in
+[`AGENTS.md`](AGENTS.md). Ship the smallest safe user flow, reuse unchanged
+evidence, and defer research that does not block that flow.
 
 ## What M0 means
 
@@ -77,11 +86,8 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Do not continue the superseded pixel-change Oracle promotion path or start a
-topology/backend performance run. The next bounded research step is a
-separately approved **M1-B0 — Model-free Locality Opportunity** task, followed
-by separate backend capability admission. It must use a new Issue, branch, and
-Draft PR and cannot reinterpret M1-A2 observed-change evidence as safe skip.
-
-Do not modify Wan hooks, connect a backend, or claim speedup from the current
-model-free evidence.
+Build **P0 — Product Vertical Slice**: one local screen for a bounded H3-shaped
+generation request, job state, saved result, and user feedback. Live H3 calls
+remain disabled until the separately approved P1 admission work. Do not start
+M1-B1/B2, modify Wan hooks, or claim speedup from model-free evidence as part
+of P0.

@@ -1,5 +1,20 @@
 # HIVEFRAME Master Work Order
 
+## Product-First execution priority
+
+The normative constitution is maintained only in [`AGENTS.md`](AGENTS.md).
+Ship the smallest safe user-visible path, reuse unchanged evidence, and run
+only focused, smoke, core end-to-end, fallback, and release-blocking security
+checks unless the constitution requires a full suite. The official launch
+track is P0 Product Vertical Slice, P1 Live MiniMax H3 Integration, P2 Internal
+Alpha, P3 Limited Commercial Beta, and P4 1.0 Release.
+
+The M0–M5 selective-recompute program remains preserved evidence and an
+Engine Beta Track. M1-B1/B2 may test at most one backend/selector-cache path
+when separately approved; a missing benefit becomes `FALLBACK_ONLY` or `DROP`
+and does not block the H3 launch track. A HIVEFRAME 2.0 RFC is not a launch
+prerequisite.
+
 ## Objective
 
 Develop HIVEFRAME into a commercial selective-recompute runtime that makes
@@ -84,7 +99,7 @@ promoting visible movement to compute relevance or safe-skip truth.
 Estimate locality opportunity and full-recompute pressure without a backend or
 product-speed claim. The dedicated `m1-b0-v1` branch has measured the complete
 predeclared C01-C12 surface with NumPy/Rust parity and decision
-`M1_B0_LOCALITY_SURFACE_MEASURED`; Draft review and publication remain pending.
+`M1_B0_LOCALITY_SURFACE_MEASURED`; PR #52 published it at `4ddb6a5...`.
 This result does not authorize skip or start M1-B1.
 
 ### M1-B1 — Backend capability admission
@@ -129,20 +144,20 @@ and a creator or B2B product only after earlier gates pass.
 
 ## Current authorized scope
 
-The current scope is M1-B0 model-free locality opportunity measurement on the
-approved C01-C12 FFV1 derivatives. It includes fixed detector surfaces,
-NumPy/Rust parity, decode/resident/streaming cost separation, CPU worker
-scaling, receipts, and a Draft PR.
+The current scope is P0: one local standard-profile product vertical slice
+using deterministic Mock H3 fixtures plus a disabled-by-default MiniMax H3
+contract. It includes request, job state, result save/download, consent-aware
+feedback, bounded manual retry, and external local artifact storage.
 
-It excludes model training or loading, LoRA, Wan attention changes,
-CUDA/Triton kernels, GPU or VRAM benchmarks, backend integration, selective
-compute, M1-B1, HIVEFRAME 2.0, and actual product-speedup claims.
+It excludes live H3 calls and cost, model loading, CUDA, training, selective
+compute, M1-B1/B2, HIVEFRAME 2.0, and product-speedup claims.
 
 ## Definition of done for each change
 
 1. Scope and preserved assets are stated.
 2. Contracts and failure semantics are explicit.
-3. Model-free or approved runtime verification passes.
+3. Product-First focused, smoke, core-flow, fallback, and required safety
+   verification passes; repeated full suites are skipped unless required.
 4. Unsupported and unverified claims remain marked.
 5. `TASKS.md` and `docs/WORKLOG.md` reflect the resulting state.
 6. One intentional commit contains only the task.

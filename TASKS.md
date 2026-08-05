@@ -13,6 +13,21 @@ Status date: 2026-08-05
 | `stopped` | explicitly discontinued without erasing prior evidence |
 | `unsupported` | current environment/backend lacks the capability |
 
+## Product launch track — highest priority
+
+The detailed Product-First Constitution is maintained only in
+[`AGENTS.md`](AGENTS.md). Research evidence remains preserved, but research
+expansion does not block the launch track.
+
+| Track | Status | Evidence or blocker |
+|---|---|---|
+| P0 — Product Vertical Slice | `in_progress` | Issue #53; one local standard-profile Mock H3 flow, live H3 disabled |
+| P1 — Live MiniMax H3 Integration | `planned` | explicit API/key/cost/data-transfer approval required |
+| P2 — Internal Alpha | `planned` | depends on P0/P1 core flow, not M1-B1/B2 completion |
+| P3 — Limited Commercial Beta | `planned` | operational, retention, terms, and billing safeguards |
+| P4 — 1.0 Release | `planned` | bounded release Gate after product feedback |
+| M1-B1/B2 — Engine Beta Track | `planned` | separately approved, one backend/selector-cache maximum; integrate benefit or use `FALLBACK_ONLY`/`DROP` |
+
 ## R0 — Compound-eye architecture RFC
 
 | Task | Status | Evidence or blocker |
@@ -206,20 +221,20 @@ actual selective compute, GPU-work reduction, speedup, or VRAM reduction.
 
 ## M1-B0 — Model-free Locality Opportunity
 
-Overall implementation and measurement status: `verified locally`. Publication
-status: `draft review pending`. Final bounded decision:
+Overall implementation and measurement status: `verified`. Publication
+status: `published`. Final bounded decision:
 `M1_B0_LOCALITY_SURFACE_MEASURED`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Create separate review surface | `in_progress` | [Issue #51](https://github.com/ksse29077-byte/HIVEFRAME/issues/51); branch `agent/m1-b0-model-free-locality` |
+| Create separate review surface | `published` | [Issue #51](https://github.com/ksse29077-byte/HIVEFRAME/issues/51) completed; branch preserved |
 | Verify C01-C12 FFV1 inputs | `verified` | 12/12 SHA, size, codec, shape, FPS, and frame counts pass |
 | Measure fixed pixel/tile/halo/temporal surface | `verified` | all predeclared gray8/RGB24 configurations retained |
 | Validate NumPy/Rust parity | `verified` | 24/24 clip-format pairs, zero mismatches |
 | Separate detector costs | `verified` | decode-only, resident-warm, and streaming scopes retained separately |
 | Run CPU worker sweep | `verified` | required 1/2/3/4/6 plus labeled 8/12 diagnostics |
 | Admit backend selective compute | `blocked` | M1-B1 is not started; selector and compute relevance remain unsupported |
-| Publish M1-B0 | `in_progress` | [Draft PR #52](https://github.com/ksse29077-byte/HIVEFRAME/pull/52) is open; no Ready transition or merge in this task |
+| Publish M1-B0 | `published` | [PR #52](https://github.com/ksse29077-byte/HIVEFRAME/pull/52) merged at `4ddb6a5...` |
 
 Guided Oracle movement evidence was not used as safe-skip truth. Model, CUDA,
 GPU, backend, VRAM, selective-compute, and product-speedup result counts remain

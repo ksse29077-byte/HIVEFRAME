@@ -7,6 +7,31 @@ recompute runtime for pretrained video generation and editing
 
 Evidence policy: no speedup claim before same-condition end-to-end proof
 
+## Official product launch priority
+
+This launch line has execution priority under the Product-First Constitution
+in [`AGENTS.md`](AGENTS.md). The preserved M0–M5 research line remains evidence
+and an Engine Beta Track; it is not a prerequisite for shipping the bounded
+H3 product path.
+
+- **P0 — Product Vertical Slice:** one local screen for request, backend job
+  state, saved/downloadable result, consent-separated feedback, and one safe
+  manual-retry path. Use deterministic Mock H3 until live admission.
+- **P1 — Live MiniMax H3 Integration:** separately approved official API
+  recheck, key and cost controls, data-transfer consent, and bounded live-call
+  admission.
+- **P2 — Internal Alpha:** operate the single standard profile with internal
+  users and repair the core flow from recorded feedback.
+- **P3 — Limited Commercial Beta:** controlled users, retention/deletion and
+  operational safeguards, billing/cost controls, and explicit terms flow.
+- **P4 — 1.0 Release:** release the proven core generation, result, feedback,
+  and fallback path.
+
+M1-B1/B2 are an optional **Engine Beta Track** limited to one backend and at
+most one selector/cache experiment. Integrate only a demonstrated product
+benefit; otherwise classify it `FALLBACK_ONLY` or `DROP` while the H3 launch
+track continues. No separate HIVEFRAME 2.0 RFC is a launch prerequisite.
+
 ## Backend target policy
 
 - **MiniMax H3:** highest-priority product backend target. Official API
