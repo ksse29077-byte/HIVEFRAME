@@ -103,6 +103,12 @@ export is auxiliary observed-change evidence, not compute-relevance or
 safe-skip truth. Verified compute-relevance Oracles and eligible backend
 selective-compute results remain zero.
 
+M1-B0 is now measured on its dedicated branch with bounded decision
+`M1_B0_LOCALITY_SURFACE_MEASURED`. All fixed C01-C12 pixel/tile/halo/temporal
+surfaces and model-free detector costs are available for Draft review. This is
+not safe-skip truth or backend admission: M1-B1 remains planned and requires a
+separate approval, Issue, branch, and review surface.
+
 ## Non-negotiable principles
 
 - **Mono is valid.** Do not split when 1×1 is safer or cheaper.

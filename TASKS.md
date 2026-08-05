@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-03
+Status date: 2026-08-05
 
 ## Status legend
 
@@ -206,9 +206,25 @@ actual selective compute, GPU-work reduction, speedup, or VRAM reduction.
 
 ## M1-B0 — Model-free Locality Opportunity
 
-Overall status: `planned`. A separate user approval, Issue, branch, and Draft
-PR are required. M1-B0 must not reinterpret Guided Oracle movement evidence as
-safe-skip truth or bypass backend capability admission.
+Overall implementation and measurement status: `verified locally`. Publication
+status: `draft review pending`. Final bounded decision:
+`M1_B0_LOCALITY_SURFACE_MEASURED`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Create separate review surface | `in_progress` | [Issue #51](https://github.com/ksse29077-byte/HIVEFRAME/issues/51); branch `agent/m1-b0-model-free-locality` |
+| Verify C01-C12 FFV1 inputs | `verified` | 12/12 SHA, size, codec, shape, FPS, and frame counts pass |
+| Measure fixed pixel/tile/halo/temporal surface | `verified` | all predeclared gray8/RGB24 configurations retained |
+| Validate NumPy/Rust parity | `verified` | 24/24 clip-format pairs, zero mismatches |
+| Separate detector costs | `verified` | decode-only, resident-warm, and streaming scopes retained separately |
+| Run CPU worker sweep | `verified` | required 1/2/3/4/6 plus labeled 8/12 diagnostics |
+| Admit backend selective compute | `blocked` | M1-B1 is not started; selector and compute relevance remain unsupported |
+| Publish M1-B0 | `in_progress` | Draft PR required; no Ready transition or merge in this task |
+
+Guided Oracle movement evidence was not used as safe-skip truth. Model, CUDA,
+GPU, backend, VRAM, selective-compute, and product-speedup result counts remain
+zero. The decision records a measured opportunity surface only and does not
+start M1-B1.
 
 ## HIVEFRAME 2.0 RFC
 

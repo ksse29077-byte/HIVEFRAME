@@ -26,6 +26,7 @@ from hive_benchmarks.m1_b0_locality import (
     estimate_global_translation,
 )
 from hive_benchmarks.m1_b0_runner import _compare_values, _profile_stats, _write_json_new
+from hive_benchmarks.m1_b0_audit import _canonical_digest as audit_digest
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -221,6 +222,9 @@ class M1B0LocalityTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "OUTPUT_COLLISION"):
                 _write_json_new(target, {"attempt": 2})
             self.assertEqual(json.loads(target.read_text(encoding="utf-8")), {"attempt": 1})
+
+    def test_audit_digest_is_order_independent_for_object_keys(self) -> None:
+        self.assertEqual(audit_digest({"b": 2, "a": 1}), audit_digest({"a": 1, "b": 2}))
 
 
 if __name__ == "__main__":
