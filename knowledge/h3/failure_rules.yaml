@@ -111,6 +111,36 @@ rules:
     resolution: "Require at least one video stream and decode every frame before declaring the P0 smoke successful."
     automatic_change_allowed: false
 
+  - rule_id: "h3-sageattention-kj-unavailable"
+    state: verified_once
+    match:
+      operation: sageattention_runtime_preflight
+      required_node_or_mode: missing
+    error_signature: sage_auto_unavailable
+    resolution: "Fail the Sage variant before submission and leave the Standard full-compute backend available."
+    fallback:
+      backend_path: standard_full_compute
+      automatic_success_conversion: false
+    automatic_change_allowed: false
+
+  - rule_id: "h3-sageattention-under-fast-threshold"
+    state: verified_once
+    match:
+      paired_submit_speedup: "< 1.3"
+    error_signature: f0_sage_no_gain
+    resolution: "Keep Standard as the product path; do not enable SageAttention by default or search other modes automatically."
+    observed_value: 1.2071483
+    automatic_change_allowed: false
+
+  - rule_id: "h3-sageattention-runtime-isolation"
+    state: reused_successfully
+    match:
+      operation: compare_standard_and_sage
+    error_signature: attention_override_state_may_persist
+    resolution: "Use a separately started and stopped owned ComfyUI process for each variant."
+    automatic_change_allowed: true
+    scope: "bounded F0 probe only"
+
 rejected_fallbacks:
   - state: rejected
     behavior: "Automatically change a Local H3 failure into a Mock H3 success."
@@ -120,3 +150,5 @@ rejected_fallbacks:
     behavior: "Treat a still image or fabricated MP4 as successful H3 video output."
   - state: rejected
     behavior: "Retry, sweep profiles, or change workflow settings automatically after an OOM or workflow failure."
+  - state: rejected
+    behavior: "Enable SageAttention as the product default after a single paired run below the 1.3x threshold."

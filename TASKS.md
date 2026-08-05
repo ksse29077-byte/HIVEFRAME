@@ -21,8 +21,9 @@ expansion does not block the launch track.
 
 | Track | Status | Evidence or blocker |
 |---|---|---|
-| P0 — Local-model-ready vertical slice | `in_progress` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53); official H3-shaped request, Local H3 `artifact_pending`, Mock flow, focused verification; Draft PR #54 publication pending |
-| P1-L — Official artifact + one local generation | `planned` | requires official source/revision, model card/execution docs, approved download size/location, and one bounded run |
+| P0 — Local H3 vertical slice | `done` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) completed; PR #54 merged; `P0_LOCAL_H3_COMFYUI_READY` |
+| F0-SAGE — External SageAttention paired probe | `verified_once` | Issue #55; 1.207148× is below 1.3×; `F0_SAGE_NO_GAIN`; Draft review pending |
+| P1 — One-click Local H3 launcher | `planned` | separate approval; the P0 runtime/database isolation observation remains a non-promoted candidate |
 | P2 — Real local H3 product flow | `planned` | replace provisional pipeline/output details only after official artifact code exists |
 | P3 — Selective runtime integration | `planned` | requires backend-admitted partial-compute evidence and complete accepted-result costs |
 | P4 — Internal alpha/commercial preparation | `planned` | operational, rights, retention/deletion, terms, packaging, and release safeguards |
@@ -249,7 +250,7 @@ evidence and is not started by the M1-A2 publication.
 
 ## P0 — Local MiniMax H3 product vertical slice
 
-Overall implementation status: `verified_once`. Publication status: `draft`.
+Overall implementation status: `verified_once`. Publication status: `published`.
 Bounded decision: `P0_LOCAL_H3_COMFYUI_READY`.
 
 | Task | Status | Evidence or blocker |
@@ -260,11 +261,30 @@ Bounded decision: `P0_LOCAL_H3_COMFYUI_READY`.
 | Connect UI and product Job states | `verified_once` | Mock/real provenance, queued/running/succeeded, video display/download, feedback ledger |
 | Run one actual Local H3 smoke | `verified_once` | one submission, 124 decoded frames, OOM 0, retry 0 |
 | Preserve H3 Knowledge Flywheel | `implemented` | workflow, runtime, failure, capability, and decision files; no automatic promotion |
-| Publish P0 through Draft PR #54 | `in_progress` | branch update and Draft PR review pending |
+| Publish P0 through PR #54 | `published` | Issue #53 completed; PR #54 merged at `d716a22...` |
 | Start P1 one-click launcher | `planned` | separate user approval required; parallel-runtime database isolation remains a candidate |
 
 This result proves only the first Local H3 product path. It does not establish
 quality, speed, cost, cache, selective compute, or production-default settings.
+
+## F0-SAGE — External SageAttention KJ paired validation
+
+Overall status: `verified_once`; publication status: `draft`; decision:
+`F0_SAGE_NO_GAIN`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated F0 review | `in_progress` | [Issue #55](https://github.com/ksse29077-byte/HIVEFRAME/issues/55); branch `accel/f0-h3-sageattention` |
+| Pin compatible external components | `verified_once` | KJNodes `6edfa765...`, SageAttention 2.2.0 post6, Triton Windows 3.7.1 post27 |
+| Preserve Standard workflow | `verified_once` | Sage node count 0; new Standard output hash equals P0 |
+| Patch Sage API copy | `verified_once` | one `PathchSageAttentionKJ` node in `auto`; two MODEL consumers rewired |
+| Execute fixed paired comparison | `verified_once` | Standard 586.972500 s; Sage 486.247216 s; 1.207148×; OOM/retry 0 |
+| Verify output integrity | `verified_once` | both H.264, 864x480, 124/124 frames, 24 FPS, native audio, black/corrupt 0 |
+| Promote Fast mode | `rejected` | below fixed 1.3× candidate threshold; visual review remains required |
+
+This is external F0 acceleration, not HIVEFRAME Core acceleration. Standard
+full compute remains the fallback. No other mode, accelerator, Rust runtime,
+selective compute, or model training is authorized automatically.
 
 ## Maintenance checklist
 

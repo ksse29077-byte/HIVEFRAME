@@ -1111,6 +1111,39 @@ silent product default. The bounded decision is
 speed, cost, cache, or selective-compute claim. See the detailed
 [`P0 worklog`](worklogs/2026-08-05-p0-h3-product-vertical-slice.md).
 
+## 2026-08-05 — F0 Local H3 SageAttention KJ paired validation
+
+Issue #55 and branch `accel/f0-h3-sageattention` isolate one external
+attention-kernel experiment after P0 shipped. The original H3 workflow and
+model assets remained unchanged and outside Git. A fixed KJNodes checkout at
+`6edfa765...`, a checksum-verified SageAttention 2.2.0 Windows ABI3 package,
+and Triton Windows 3.7.1 post27 were added without changing Python 3.13.12,
+PyTorch 2.12.1+cu130, CUDA 13.0, ComfyUI 0.30.2, or the driver. A model-free
+BF16 Sage kernel call passed on RTX 3060 Compute Capability 8.6.
+
+The Standard API copy retained zero Sage nodes. The Sage copy added exactly
+one `PathchSageAttentionKJ` node in `auto` mode between the loaded MODEL and
+both `BasicScheduler` and `BasicGuider`. Each variant ran once in a separate
+owned loopback ComfyUI process with the same private P0 prompt/hash, seed 101,
+864x480, 124 frames, 24 FPS, 20 steps, `simple`, `res_multistep`, denoise 1.0,
+and native audio.
+
+Standard submit-to-terminal was 586.972500 seconds; Sage was 486.247216
+seconds. The paired speedup is 1.207148× and the reduction is 17.160137%,
+below the fixed 1.3× Fast-candidate threshold. Both outputs decoded 124/124
+H.264 frames, contained audio, and had zero black or corrupted frames; OOM and
+retry were zero. Denoising-only speedup remains `null/not_collected` because
+ComfyUI did not expose that span. System-sampled peak VRAM was the same
+12,460,611,508 bytes for both runs.
+
+The bounded decision is **`F0_SAGE_NO_GAIN`**. This is external F0 evidence,
+not HIVEFRAME Core acceleration. Sage was not promoted, Standard full compute
+remains unchanged, and `VISUAL_QUALITY_REVIEW_REQUIRED` remains explicit.
+Thirteen focused model-free tests passed; full Python/Rust and all repeat,
+profile, seed, mode, and accelerator sweeps were omitted. Actual H3 generation
+count was exactly two. See the detailed
+[`F0-SAGE worklog`](worklogs/2026-08-05-f0-h3-sageattention.md).
+
 ---
 
 ## Entry template
