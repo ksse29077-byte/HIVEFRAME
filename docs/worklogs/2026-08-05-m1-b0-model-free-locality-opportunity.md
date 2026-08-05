@@ -6,6 +6,8 @@ Branch: `agent/m1-b0-model-free-locality`
 
 Issue: [#51](https://github.com/ksse29077-byte/HIVEFRAME/issues/51)
 
+Draft PR: [#52](https://github.com/ksse29077-byte/HIVEFRAME/pull/52)
+
 Starting `origin/main`: `5e93745b8280159ff79ea7ef75343790c0a78e48`
 
 Final decision: `M1_B0_LOCALITY_SURFACE_MEASURED`
@@ -210,3 +212,20 @@ compute unit, dependency closure, state/cache ownership, invalidation and
 fallback semantics, supported tensor/memory measurements, full-compute parity,
 and receipts for actual backend work. Pixel fractions cannot be converted to
 VRAM or speed without those facts.
+
+## Publication checkpoint
+
+The branch was published with a normal push; no force-push, rebase, or history
+rewrite occurred. Draft PR #52 is open against `main`, remains Draft, and was
+verified `MERGEABLE`/`CLEAN`. It was not marked Ready and was not merged.
+
+Commit sequence:
+
+- counterexamples: `7288790eb4cb6404689941251bf8baed73557ec0`;
+- deterministic implementation: `3d054091e27381e29a3315afb03af832142c6149`;
+- receipt invariant tests: `9d113088d31659d6f9661875050aa966f316cdcd`;
+- measured evidence and documents: `c8c1c9fb23f959ee07de7afa5e39ecea2a869981`.
+
+At the initial Draft publication checkpoint, local and remote branch heads both
+equaled `c8c1c9fb23f959ee07de7afa5e39ecea2a869981`. The final docs-only metadata
+commit containing this paragraph is the later PR head recorded by GitHub.

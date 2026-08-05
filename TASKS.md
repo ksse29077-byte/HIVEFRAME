@@ -219,7 +219,7 @@ status: `draft review pending`. Final bounded decision:
 | Separate detector costs | `verified` | decode-only, resident-warm, and streaming scopes retained separately |
 | Run CPU worker sweep | `verified` | required 1/2/3/4/6 plus labeled 8/12 diagnostics |
 | Admit backend selective compute | `blocked` | M1-B1 is not started; selector and compute relevance remain unsupported |
-| Publish M1-B0 | `in_progress` | Draft PR required; no Ready transition or merge in this task |
+| Publish M1-B0 | `in_progress` | [Draft PR #52](https://github.com/ksse29077-byte/HIVEFRAME/pull/52) is open; no Ready transition or merge in this task |
 
 Guided Oracle movement evidence was not used as safe-skip truth. Model, CUDA,
 GPU, backend, VRAM, selective-compute, and product-speedup result counts remain
