@@ -149,6 +149,13 @@ class C1StepPolicyTests(unittest.TestCase):
         config.validate()
         self.assertEqual(c1_settings_digest(), c1_settings_digest())
 
+    def test_custom_node_guard_is_module_local_for_locked_comfyui_classes(self) -> None:
+        source = (
+            ROOT / "python" / "hive_product" / "comfyui_nodes" / "hiveframe_c1_policy" / "__init__.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("_ACTIVE = False", source)
+        self.assertNotIn("cls._active", source)
+
     def test_gate_uses_predeclared_limits_and_requires_twenty_full_compute_calls(self) -> None:
         policy = {
             "callback_count": 20,

@@ -217,9 +217,9 @@ def run_probe(*, run_id: str, p0_database: Path, private_run_root: Path) -> dict
         resource_sampler.start()
         receipt["generation_attempt_count"] = 1
         prompt_id, history = asyncio.run(_collect_websocket_run(backend, workflow, timeline))
+        receipt["backend_prompt_id"] = prompt_id
         if timeline.terminal_event != "execution_success":
             raise RuntimeError(f"ComfyUI terminal event was {timeline.terminal_event}")
-        receipt["backend_prompt_id"] = prompt_id
         collection_started = time.monotonic()
         descriptor, content = _history_video(backend, history)
         output = root / "c1-rust-full-compute.mp4"
@@ -290,6 +290,7 @@ def run_probe(*, run_id: str, p0_database: Path, private_run_root: Path) -> dict
             ),
         }
         if timeline is not None:
+            receipt["websocket_event_types"] = sorted({event["type"] for event in timeline.events})
             receipt["node_timeline"] = timeline.node_timeline()
             receipt["progress_timeline"] = timeline.progress_summary()
             receipt["phase_attribution"] = timeline.phase_attribution(

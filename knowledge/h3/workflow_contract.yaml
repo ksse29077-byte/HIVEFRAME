@@ -112,6 +112,24 @@ f0_external_attention_patch:
     reason: "The experimental node does not use normal model patching; restart prevents attention override state from crossing variants."
   claim_boundary: "External F0 attention-kernel comparison only; no HIVEFRAME Core selective-compute acceleration."
 
+c1_rust_policy_api_copy:
+  state: observed
+  source_issue: 59
+  original_workflow_modified: false
+  installed_comfyui_core_modified: false
+  standard_sampler_node: SamplerCustomAdvanced
+  api_copy_sampler_node: HIVEFRAMERustPolicySampler
+  callback_hook: sampler.progress_callback
+  policy: full_compute_only
+  actual_submission_count: 1
+  actual_callback_count: 0
+  terminal_result: execution_error
+  failure_stage: wrapper_entry_before_first_callback
+  post_attempt_fix_state: model_free_verified
+  parity_state: unverified
+  decision: C1_RUST_POLICY_BRIDGE_REVISE_ONCE
+  claim_boundary: "The API copy and repository custom node are implemented, but no successful C1 video exists and no policy-overhead gate is satisfied."
+
 unsupported_or_unverified:
   cache_node:
     value: null

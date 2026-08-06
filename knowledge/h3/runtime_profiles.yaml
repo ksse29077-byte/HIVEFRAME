@@ -164,6 +164,59 @@ profiles:
       visual_quality_review: required
       single_paired_observation_only: true
 
+  - profile_id: "c1-rust-full-compute-rtx3060-12g-attempt-001"
+    state: observed
+    matching_key:
+      workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+      gpu_class: "NVIDIA GeForce RTX 3060"
+      vram_class: "12 GiB"
+      runtime_version: "ComfyUI 0.30.2"
+      model_logical_id: "MiniMax-H3"
+      execution_mode: "loopback_comfyui_c1_rust_full_compute_policy"
+    configuration:
+      width: 864
+      height: 480
+      frame_count: 124
+      fps: 24
+      steps: 20
+      scheduler: simple
+      sampler: res_multistep
+      denoise: 1.0
+      seed: 101
+      native_audio: true
+      sage_nodes: 0
+    outcome:
+      successful_profile: false
+      workflow_submissions: 1
+      retries: 0
+      oom_count: 0
+      callback_count: 0
+      rust_call_count: 0
+      output_created: false
+      results_eligible: false
+      decision: C1_RUST_POLICY_BRIDGE_REVISE_ONCE
+    measurements:
+      submit_to_terminal_seconds: 34.4436708
+      runner_total_seconds: 42.6393759
+      peak_comfyui_system_sampled_vram_bytes: 12011518624
+      peak_nvidia_system_sampled_vram_bytes: 11623464960
+      peak_process_tree_rss_bytes: 19380944896
+      policy_boundary_p95_seconds:
+        value: null
+        support_status: not_collected
+        reason: "The wrapper failed before the first sampler callback."
+    failure:
+      signature: "Cannot modify class attribute '<guard>' on locked ComfyUI V3 node class"
+      stage: sampler_wrapper_entry_before_first_callback
+      corrected_after_attempt: true
+      correction_scope: model_free_only
+      second_generation_run: false
+    boundaries:
+      performance_claim: false
+      parity_claim: false
+      product_default: false
+      selective_compute: false
+
 runtime_environment:
   state: verified_once
   comfyui_version: "0.30.2"

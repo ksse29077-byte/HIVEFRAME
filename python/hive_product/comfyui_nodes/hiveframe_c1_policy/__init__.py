@@ -15,6 +15,7 @@ from hive_product.rust_step_policy import PolicyContext, RustStepPolicyBridge, w
 
 
 POLICY_RECEIPT_ENV = "HIVEFRAME_C1_POLICY_RECEIPT"
+_ACTIVE = False
 
 
 def _write_receipt(bridge: RustStepPolicyBridge, sampler_succeeded: bool, error: str | None) -> None:
@@ -33,8 +34,6 @@ def _write_receipt(bridge: RustStepPolicyBridge, sampler_succeeded: bool, error:
 
 class HIVEFRAMERustPolicySampler(io.ComfyNode):
     """Delegate the unchanged sampler while observing each progress callback."""
-
-    _active = False
 
     @classmethod
     def define_schema(cls):
@@ -69,7 +68,8 @@ class HIVEFRAMERustPolicySampler(io.ComfyNode):
         workflow_revision_digest: str,
         settings_digest: str,
     ) -> io.NodeOutput:
-        if cls._active:
+        global _ACTIVE
+        if _ACTIVE:
             raise RuntimeError("C1 policy wrapper rejects concurrent sampler execution")
         bridge = RustStepPolicyBridge(
             PolicyContext(
@@ -84,7 +84,7 @@ class HIVEFRAMERustPolicySampler(io.ComfyNode):
             original_callback = original_prepare_callback(model, steps, x0_output_dict)
             return wrap_progress_callback(original_callback, bridge)
 
-        cls._active = True
+        _ACTIVE = True
         latent_preview.prepare_callback = prepare_callback
         try:
             result = SamplerCustomAdvanced.execute(noise, guider, sampler, sigmas, latent_image)
@@ -96,7 +96,7 @@ class HIVEFRAMERustPolicySampler(io.ComfyNode):
             return result
         finally:
             latent_preview.prepare_callback = original_prepare_callback
-            cls._active = False
+            _ACTIVE = False
 
 
 class C1PolicyExtension(ComfyExtension):

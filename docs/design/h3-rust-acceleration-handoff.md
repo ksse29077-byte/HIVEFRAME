@@ -1,6 +1,6 @@
 # H3 Rust Acceleration Handoff Contract
 
-Status: design only; no Rust implementation, selective compute, cache reuse, or product Fast Mode is included.
+Status: C1 metadata bridge implemented and model-free verified; runtime parity requires one revised validation. No selective compute, cache reuse, or product Fast Mode is included.
 
 ## Selected boundary
 
@@ -41,6 +41,16 @@ Prompt text, user paths, media, credentials, model filenames, host tensor copies
 - receipt fields for Rust core time, Python wrapper time, FFI time, bytes copied, and fallback use.
 
 For the first implementation, only `FULL_COMPUTE` and `ESCALATE_FULL_COMPUTE` are valid. Unknown schema versions, missing fields, timeouts, Rust failures, uncertainty, or unsupported capabilities must fail open to the unchanged Standard H3 path.
+
+## C1 implementation and observed boundary
+
+C1 uses the existing Cargo workspace rather than creating a new runtime. `hive-retina-runtime` owns the deterministic policy and fixed-layout structs; `hive-retina-python` exposes one in-process PyO3 0.29 call through the existing `abi3-py312` extension. ABI version 1 uses a 184-byte `StepObservation` and a 76-byte `StepDirective`. Each normal callback may issue at most one Rust call. The declared transferred metadata is the two struct sizes per call, and tensor bytes are always zero.
+
+The repository-owned `HIVEFRAMERustPolicySampler` delegates the installed `SamplerCustomAdvanced` implementation. It temporarily wraps `latent_preview.prepare_callback` in the owned process, calls the Rust policy before delegating the original callback arguments unchanged, and restores the original function in `finally`. The installed ComfyUI source and the original workflow remain unchanged. Removing the custom-node search path restores the Standard node immediately.
+
+Model-free verification covered deterministic full-compute directives, explicit escalation, malformed/unknown response fallback, ABI roundtrip, a contained Rust panic, original-callback delegation, fixed digests, zero tensor transfer, and actual ComfyUI custom-node registration. The single approved runtime submission then failed at wrapper entry before the first callback because ComfyUI V3 locks its cloned node class and the first wrapper version attempted to mutate a class-level concurrency guard. Therefore callback count, Rust-call count, policy timing, transferred bytes for the actual run, and video parity are unavailable rather than zero-valued performance evidence.
+
+The guard was moved to module-local state after the failed attempt and the corrected delegation path passed a model-free direct-call check with one callback and one Rust call. No second generation was run. The bounded C1 result is `C1_RUST_POLICY_BRIDGE_REVISE_ONCE`; the 0.2235-second boundary-P95, 4.866-second cumulative-policy, and 616.336-second submit-to-terminal gates remain unchanged and unpassed until a separately approved validation succeeds.
 
 ## Acceptance gates for the first implementation
 

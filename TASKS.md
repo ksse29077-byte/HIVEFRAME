@@ -288,23 +288,44 @@ selective compute, or model training is authorized automatically.
 
 ## C0-H3 — Execution phase and Runtime Hook Map
 
-Overall status: `verified_once`; publication status: `ready_for_draft_pr`.
+Overall status: `verified_once`; publication status: `published`.
 Bounded decision: `C0_H3_PHASE_MAP_READY`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated C0 work | `in_progress` | [Issue #57](https://github.com/ksse29077-byte/HIVEFRAME/issues/57); branch `core/c0-h3-execution-phase-map` |
+| Track isolated C0 work | `published` | [Issue #57](https://github.com/ksse29077-byte/HIVEFRAME/issues/57) completed; [PR #58](https://github.com/ksse29077-byte/HIVEFRAME/pull/58) merged as `3d6728d...`; branch preserved |
 | Add model-free telemetry fixtures | `verified` | WebSocket lifecycle, progress semantics, phase union, resource context, sanitizer, collision, and fixed-profile tests |
 | Execute one Standard instrumented run | `verified_once` | 864x480, 124/124 frames, 20 steps, audio, retry 0, Sage nodes 0 |
 | Attribute execution phases | `verified_once` | sampler 486.604 s (81.196% runner); video VAE 63.162 s (10.539%); exact kernel time remains unavailable |
 | Map runtime hooks | `verified_once` | observable, controllable, wrapper/custom-node/core-patch, not-found, and unsafe states recorded |
 | Select first Rust handoff target | `contract_only` | sampler progress/callback metadata boundary; initial directive remains `FULL_COMPUTE` |
-| Implement Rust acceleration | `not_started` | separate approval and issue required |
+| Implement Rust acceleration | `superseded_by_c1` | metadata-only C1 bridge work is tracked separately below; selective acceleration remains not started |
 
 C0 does not implement Rust, Compound Eye execution, selective compute, cache
 reuse, a product Fast Mode, or training. The unchanged Standard H3 path is the
 mandatory fallback. Raw events, media, logs, prompt, and private receipt remain
 outside Git.
+
+## C1 — Rust Sampler Step Policy Bridge
+
+Overall status: `revise_once`; publication status: `draft_pr`. Bounded decision:
+`C1_RUST_POLICY_BRIDGE_REVISE_ONCE`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C1 work | `in_progress` | [Issue #59](https://github.com/ksse29077-byte/HIVEFRAME/issues/59); [Draft PR #60](https://github.com/ksse29077-byte/HIVEFRAME/pull/60); branch `core/c1-rust-sampler-policy-bridge` |
+| Reuse existing Rust workspace and PyO3 bridge | `implemented` | `hive-retina-runtime` plus `hive-retina-python`, ABI v1, PyO3 0.29 `abi3-py312` |
+| Define fixed metadata contracts | `verified` | 184-byte `StepObservation`, 76-byte `StepDirective`, fixed digests/enums, no tensors or private payloads |
+| Enforce full-compute-only policy | `verified` | `FULL_COMPUTE` / `ESCALATE_FULL_COMPUTE`; every skip/reuse/partial counter fixed at zero; panic and malformed-response fail-open tests |
+| Register repository runtime wrapper | `verified_once` | custom node visible in ComfyUI 0.30.2 without core or original-workflow changes |
+| Execute approved Standard parity run | `failed` | one submission, retry 0; locked V3 class guard failed before callback 1; output and policy timing unavailable |
+| Correct the observed wrapper defect | `model_free_verified` | guard moved to module-local state; one direct delegated callback and Rust call passed; second H3 generation 0 |
+| Pass C1 parity and overhead gates | `blocked` | separate approval is required for one revised fixed-profile run; thresholds remain unchanged |
+
+C1 does not implement or validate step/block/token/latent skipping, cache reuse,
+partial compute, Compound Eye execution, Fast Mode, SageAttention, or training.
+The failed 34.44-second attempt is diagnostic and is not performance evidence.
+See the detailed [C1 worklog](docs/worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
 
 ## Maintenance checklist
 

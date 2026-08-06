@@ -1183,6 +1183,42 @@ selective compute, cache reuse, Fast Mode, and model training remain zero.
 The bounded result is `C0_H3_PHASE_MAP_READY`; see the detailed
 [`C0-H3 worklog`](worklogs/2026-08-06-c0-h3-execution-phase-map.md).
 
+PR #58 was subsequently merged by normal merge commit
+`3d6728d3c1826c4171130816c382c5ecec444f43` at
+`2026-08-06T02:40:41Z`; Issue #57 was completed and the source branch was
+preserved. The three pre-merge corrections were whitespace-only and retained
+all C0 measurements and claims.
+
+## 2026-08-06 — C1 Rust sampler step policy bridge
+
+Issue #59, branch `core/c1-rust-sampler-policy-bridge`, and Draft PR #60
+isolate a metadata-only PyO3 policy boundary at `sampler.progress_callback`.
+The existing Cargo workspace and `hive-retina-runtime` /
+`hive-retina-python` crates are reused. ABI version 1 defines a 184-byte
+`StepObservation` and 76-byte `StepDirective`; the only decisions are
+`FULL_COMPUTE` and `ESCALATE_FULL_COMPUTE`. Tensors, prompts, paths, model
+state, CUDA addresses, skip/reuse directives, and partial compute are excluded.
+
+Model-free evidence includes 13 focused Python tests, three focused Rust
+tests, a real ABI roundtrip, contained panic probe, ComfyUI 0.30.2 custom-node
+registration, and original-callback delegation. One approved Standard H3
+workflow was then submitted with the fixed 864x480, 124-frame, 20-step,
+native-audio profile. It failed at repository wrapper entry before callback 1
+because ComfyUI's locked V3 class rejected mutation of a class-level guard.
+Retry, OOM, output, callback, and Rust-call counts were 0 except for the one
+workflow submission. The failed diagnostic submit span was 34.443671 seconds
+and is not performance evidence.
+
+The guard was moved to module-local state and the corrected path passed a
+model-free direct-call check with one delegated callback and one Rust call.
+No second generation ran. Consequently the boundary-P95, cumulative-policy,
+end-to-end, output-integrity, and functional-parity gates remain unverified.
+The bounded result is `C1_RUST_POLICY_BRIDGE_REVISE_ONCE`, not Ready. Raw
+events, samples, full logs, private receipt, build log, prompt, paths, and any
+media remain outside Git. External API, model download, Sage, selective
+compute, cache reuse, Fast Mode, and training counts remain zero. See the
+detailed [C1 worklog](worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
+
 ---
 
 ## Entry template
