@@ -1,6 +1,6 @@
 # H3 Rust Acceleration Handoff Contract
 
-Status: C1 metadata bridge implemented and model-free verified; runtime parity requires one revised validation. No selective compute, cache reuse, or product Fast Mode is included.
+Status: C1 metadata bridge full-compute parity verified once. No selective compute, cache reuse, or product Fast Mode is included.
 
 ## Selected boundary
 
@@ -50,7 +50,9 @@ The repository-owned `HIVEFRAMERustPolicySampler` delegates the installed `Sampl
 
 Model-free verification covered deterministic full-compute directives, explicit escalation, malformed/unknown response fallback, ABI roundtrip, a contained Rust panic, original-callback delegation, fixed digests, zero tensor transfer, and actual ComfyUI custom-node registration. The single approved runtime submission then failed at wrapper entry before the first callback because ComfyUI V3 locks its cloned node class and the first wrapper version attempted to mutate a class-level concurrency guard. Therefore callback count, Rust-call count, policy timing, transferred bytes for the actual run, and video parity are unavailable rather than zero-valued performance evidence.
 
-The guard was moved to module-local state after the failed attempt and the corrected delegation path passed a model-free direct-call check with one callback and one Rust call. No second generation was run. The bounded C1 result is `C1_RUST_POLICY_BRIDGE_REVISE_ONCE`; the 0.2235-second boundary-P95, 4.866-second cumulative-policy, and 616.336-second submit-to-terminal gates remain unchanged and unpassed until a separately approved validation succeeds.
+The guard was moved to module-local state after the failed attempt and the corrected delegation path passed a model-free direct-call check with one callback and one Rust call. A separately approved regression then submitted the unchanged Standard profile exactly once. It observed 20 callbacks, 20 Rust calls, and 20 `FULL_COMPUTE` directives with zero escalation, fallback, skip, reuse, partial compute, or tensor transfer. Boundary p95 was 38.1 microseconds, the predeclared conservative cumulative policy span was 2.592 milliseconds, and submit-to-terminal was 556.433128 seconds. All fixed gates passed.
+
+The 864x480 H.264 output decoded all 124 frames at 24 FPS and contained one audio stream. OOM, retry, black-frame, corrupted-frame, CUDA-error-signature, and NaN-signature counts were zero under their recorded checks. The bounded result is `C1_RUST_POLICY_BRIDGE_READY`, verified once and not promoted to a product default. Full compute remains the mandatory fallback. The next separate handoff is a shadow-only Compound Eye policy that changes no H3 computation and reports zero skipped work.
 
 ## Acceptance gates for the first implementation
 

@@ -1211,13 +1211,23 @@ and is not performance evidence.
 
 The guard was moved to module-local state and the corrected path passed a
 model-free direct-call check with one delegated callback and one Rust call.
-No second generation ran. Consequently the boundary-P95, cumulative-policy,
-end-to-end, output-integrity, and functional-parity gates remain unverified.
-The bounded result is `C1_RUST_POLICY_BRIDGE_REVISE_ONCE`, not Ready. Raw
-events, samples, full logs, private receipt, build log, prompt, paths, and any
-media remain outside Git. External API, model download, Sage, selective
-compute, cache reuse, Fast Mode, and training counts remain zero. See the
-detailed [C1 worklog](worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
+The user then approved exactly one regression generation. It completed with
+20 callbacks, 20 Rust calls, 20 `FULL_COMPUTE` directives, and zero fallback,
+escalation, skipped work, cache reuse, partial compute, or tensor transfer.
+Boundary p95 was 38.1 microseconds, the conservative cumulative policy span
+was 2.592 milliseconds, and submit-to-terminal was 556.433128 seconds. The
+H.264 output decoded all 124 frames at 864x480 and 24 FPS with one audio
+stream; retry, OOM, black-frame, corrupted-frame, CUDA-error-signature, and
+NaN-signature counts were zero under their recorded checks.
+
+The bounded result is `C1_RUST_POLICY_BRIDGE_READY`, verified once and not
+promoted to a product default. The single-run time difference is not a
+speedup claim. Raw events, samples, full logs, private receipts, build log,
+prompt, paths, and media remain outside Git. External API, model download,
+Sage, selective compute, cache reuse, Fast Mode, and training counts remain
+zero. `REVISE_ONCE` is consumed; the next separate approval would be C2
+Compound Eye Shadow Policy with actual H3 computation still full compute. See
+the detailed [C1 worklog](worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
 
 ---
 

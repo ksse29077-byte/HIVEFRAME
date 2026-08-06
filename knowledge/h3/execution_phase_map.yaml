@@ -145,3 +145,21 @@ selected_target:
   product_default_changed: false
   selective_compute_implemented: false
   full_compute_fallback_required: true
+
+c1_full_compute_parity_follow_up:
+  state: verified_once
+  decision: C1_RUST_POLICY_BRIDGE_READY
+  run_count: 1
+  retry_count: 0
+  callback_count: 20
+  rust_call_count: 20
+  full_compute_count: 20
+  tensor_bytes_transferred: 0
+  boundary_p95_seconds: 0.0000381
+  conservative_cumulative_policy_seconds: 0.002592
+  submit_to_terminal_seconds: 556.4331281
+  sampler_node_seconds: 486.6131019
+  decoded_frame_count: 124
+  audio_stream_count: 1
+  promoted: false
+  claim_boundary: "One full-compute parity regression; not acceleration, selective compute, or a product-default promotion."

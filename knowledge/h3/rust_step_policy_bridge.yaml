@@ -1,9 +1,9 @@
 schema_version: "0.1.0"
 knowledge_id: "h3-c1-rust-step-policy-bridge-2026-08-06"
-state: observed
+state: verified_once
 workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
-decision: C1_RUST_POLICY_BRIDGE_REVISE_ONCE
-claim_boundary: "The metadata-only policy and fail-open boundary passed model-free tests. The single approved H3 submission failed before the first sampler callback, so runtime parity and overhead gates remain unverified."
+decision: C1_RUST_POLICY_BRIDGE_READY
+claim_boundary: "The metadata-only policy and fail-open boundary passed model-free tests, and one approved regression verified the unchanged full-compute path. No selective compute, acceleration, or product-default claim is made."
 
 implementation:
   rust_workspace: existing_workspace
@@ -110,24 +110,81 @@ post_attempt_correction:
   semantic_policy_changed: false
   abi_changed: false
   workflow_changed: false
-  second_generation_run: false
+  approved_regression_run: true
+
+approved_regression_attempt:
+  state: verified_once
+  submission_count: 1
+  retry_count: 0
+  terminal_state: execution_success
+  callback_count: 20
+  rust_call_count: 20
+  full_compute_count: 20
+  escalate_full_compute_count: 0
+  python_fallback_count: 0
+  unknown_decision_count: 0
+  sampler_succeeded: true
+  skipped_step_count: 0
+  skipped_block_count: 0
+  skipped_token_count: 0
+  skipped_latent_count: 0
+  reused_cache_count: 0
+  partial_compute_count: 0
+  metadata_bytes_transferred: 5200
+  tensor_bytes_transferred: 0
+  observation_build_p50_seconds: 0.0000064
+  observation_build_p95_seconds: 0.0000093
+  boundary_roundtrip_p50_seconds: 0.0000166
+  boundary_roundtrip_p95_seconds: 0.0000381
+  rust_policy_p50_seconds: 0.0000013
+  rust_policy_p95_seconds: 0.0000020
+  conservative_total_policy_p95_seconds: 0.0000488
+  conservative_cumulative_policy_seconds: 0.002592
+  submit_to_terminal_seconds: 556.4331281
+  runner_total_seconds: 566.4373634
+  peak_comfyui_system_sampled_vram_bytes: 12461735860
+  peak_nvidia_system_sampled_vram_bytes: 11990466560
+  peak_process_tree_rss_bytes: 46791315456
+  peak_system_wide_used_ram_bytes: 61036601344
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frame_count: 124
+    fps: 24.0
+    audio_stream_count: 1
+    black_frame_count: 0
+    corrupted_frame_count: 0
+    size_bytes: 262846
+    sha256: "649ac99d25cf9a5805c5c1b5ef3e33134df43ba51318622791cae7d40eb410ab"
+  exact_gpu_kernel_time:
+    value: null
+    support_status: not_collected
+    reason: "No profiler run was authorized."
+  directive_parse_time:
+    value: null
+    support_status: not_collected
+    reason: "The fixed probe did not instrument directive parsing independently."
+  results_eligible: true
+  promoted: false
 
 gates:
   boundary_p95_limit_seconds: 0.2235
   cumulative_policy_limit_seconds: 4.866
   submit_to_terminal_limit_seconds: 616.336
   boundary_p95_result:
-    value: null
-    state: observed
-    reason: "The failure occurred before the first callback."
+    value: 0.0000381
+    unit: seconds
+    state: verified_once
   cumulative_policy_result:
-    value: null
-    state: observed
-    reason: "No callback policy sample exists."
+    value: 0.002592
+    unit: seconds
+    state: verified_once
+    method: "Conservative sum of observation, boundary roundtrip, and nested Rust policy spans."
   parity_result:
-    value: null
-    state: observed
-    reason: "No video output was created."
+    value: true
+    state: verified_once
+    reason: "Unchanged full-compute path produced and decoded the fixed H.264 video contract."
 
 automatic_product_application: false
 promotion_required: true

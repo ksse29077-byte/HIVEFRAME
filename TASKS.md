@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-05
+Status date: 2026-08-06
 
 ## Status legend
 
@@ -308,8 +308,8 @@ outside Git.
 
 ## C1 — Rust Sampler Step Policy Bridge
 
-Overall status: `revise_once`; publication status: `draft_pr`. Bounded decision:
-`C1_RUST_POLICY_BRIDGE_REVISE_ONCE`.
+Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+decision: `C1_RUST_POLICY_BRIDGE_READY`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
@@ -320,12 +320,15 @@ Overall status: `revise_once`; publication status: `draft_pr`. Bounded decision:
 | Register repository runtime wrapper | `verified_once` | custom node visible in ComfyUI 0.30.2 without core or original-workflow changes |
 | Execute approved Standard parity run | `failed` | one submission, retry 0; locked V3 class guard failed before callback 1; output and policy timing unavailable |
 | Correct the observed wrapper defect | `model_free_verified` | guard moved to module-local state; one direct delegated callback and Rust call passed; second H3 generation 0 |
-| Pass C1 parity and overhead gates | `blocked` | separate approval is required for one revised fixed-profile run; thresholds remain unchanged |
+| Execute approved regression parity run | `verified_once` | one additional authorized submission, retry 0; 20 callbacks and 20 Rust calls, full-compute output decoded 124/124 |
+| Pass C1 parity and overhead gates | `verified_once` | boundary p95 38.1 us, conservative cumulative policy span 2.592 ms, submit-to-terminal 556.433 s |
 
 C1 does not implement or validate step/block/token/latent skipping, cache reuse,
 partial compute, Compound Eye execution, Fast Mode, SageAttention, or training.
-The failed 34.44-second attempt is diagnostic and is not performance evidence.
-See the detailed [C1 worklog](docs/worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
+The failed 34.44-second first attempt remains diagnostic history. The single
+approved regression validates metadata-only full-compute parity; it is not a
+speedup claim or product-default promotion. See the detailed
+[C1 worklog](docs/worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
 
 ## Maintenance checklist
 

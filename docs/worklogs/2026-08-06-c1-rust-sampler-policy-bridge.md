@@ -6,8 +6,8 @@ Branch: `core/c1-rust-sampler-policy-bridge`
 Draft PR: [#60](https://github.com/ksse29077-byte/HIVEFRAME/pull/60)
 Base main: `3d6728d3c1826c4171130816c382c5ecec444f43`
 Core implementation commit: `2a67be0945529c4b88e0a91bf96902c80a215145`
-Status: Draft; one revised runtime validation requires separate approval
-Decision: `C1_RUST_POLICY_BRIDGE_REVISE_ONCE`
+Status: Draft; approved regression validation completed
+Decision: `C1_RUST_POLICY_BRIDGE_READY`
 
 ## Product question and scope
 
@@ -59,7 +59,7 @@ Before GPU work:
 
 The first Windows Python 3.13 invocation of the unchanged backend suite reached all functional assertions but left one SQLite file open during temporary-directory teardown. The same 12-test focused set passed under WSL Python 3.12. This environment-specific cleanup event was not reported as a C1 product pass.
 
-## Exactly one approved runtime attempt
+## First approved runtime attempt
 
 The fixed Standard profile was used: 864x480, 124 frames, 24 FPS, 20 steps, seed 101, `simple`, `res_multistep`, denoise 1.0, native audio, H.264 output, and zero Sage nodes. The private P0 prompt was reused by digest and was not written to Git. GPU preflight observed an RTX 3060 12 GiB with 12,104 MiB free and about 52.0 GB free host RAM. One UI process was listed by NVIDIA with no reported compute memory and total device use was 10 MiB; it was not an active generation workload.
 
@@ -96,13 +96,60 @@ ComfyUI clones and locks V3 node classes. The initial wrapper attempted to mutat
 
 No second H3 generation was run. Therefore the correction is not runtime-parity evidence. The fixed 0.2235-second boundary-P95, 4.866-second cumulative-policy, and 616.336-second submit-to-terminal gates were not changed after seeing the result and remain unpassed.
 
+## Authorized regression validation
+
+The user granted a one-time exception for exactly one regression generation after the module-local guard correction. The run started from clean local, remote, and Draft PR head `4046c9b2b13fe431a401e7c8b22d5a80febeab69`. PR #60 was Open, Draft, mergeable, and had zero unresolved review threads; Issue #59 remained Open. This approval consumed the only `REVISE_ONCE` runtime retry.
+
+Model-free preflight reused the existing test evidence and ran no full suite. It confirmed the module-local guard, zero Rust-source changes since the core implementation commit, release extension SHA-256 `34933e97...8db83`, ABI 1 with 184/76-byte structures, Rust extension import, ComfyUI 0.30.2 custom-node registration, unchanged workflow SHA-256 `31ab33fd...786e6`, matching private-prompt digest, the fixed Standard profile, and zero Sage nodes. The preflight submitted zero workflows and loaded zero models. The runtime fingerprint remained Python 3.13.12, PyTorch 2.12.1+cu130, CUDA build 13.0, RTX 3060 12 GiB, driver 610.88, Rust 1.97.1, and PyO3 0.29.0.
+
+Regression run ID `c1-rust-full-compute-regression-4046c9b-001` submitted the workflow exactly once. Private prompt ID `fb7e5fdb-c5cc-43f9-8fe5-6fe16ed09356` was accepted/queued at `2026-08-06T03:41:58.805259Z`, entered `execution_start` at `2026-08-06T03:41:58.805868Z`, and reached `execution_success` at `2026-08-06T03:51:15.201175Z`. Retry count, OOM signatures, CUDA-error signatures, and NaN log signatures were all zero. Raw events, full receipts, resources, logs, prompt content, paths, and media remain repository-external.
+
+| Policy observation | Result |
+|---|---:|
+| Callback / Rust call / FULL_COMPUTE | 20 / 20 / 20 |
+| ESCALATE / Python fallback / unknown decision | 0 / 0 / 0 |
+| Guard acquisition / release | one wrapper entry / one normal `finally` exit; dedicated counters not collected |
+| Callback delegation | 20 |
+| Skipped step/block/token/latent | 0 / 0 / 0 / 0 |
+| Reused cache / partial compute | 0 / 0 |
+| Tensor bytes transferred | 0 |
+| Metadata bytes transferred | 5,200 total; 260 per Rust call |
+| Observation build p50 / p95 / max | 6.4 / 9.3 / 9.6 us |
+| Python-to-Rust roundtrip p50 / p95 / max | 16.6 / 38.1 / 1,525.0 us |
+| Rust policy p50 / p95 / max | 1.3 / 2.0 / 555.0 us |
+| Conservative total policy p50 / p95 / max | 24.0 / 48.8 / 2,087.3 us |
+| Conservative cumulative policy span | 2.592 ms |
+
+The conservative total and cumulative values add observation, boundary, and Rust policy values even though Rust time is nested within the boundary span; this preserves the predeclared gate. Directive parsing was not independently instrumented and remains `null/not_collected`, not zero. Guard acquisition/release did not have dedicated receipt counters; normal sampler return plus the unconditional `finally` restoration provides structural success evidence. The separate fail-open focused evidence remains the previously passed model-free test, not a second generation.
+
+| Runtime phase | Seconds |
+|---|---:|
+| Runtime startup | 8.574572 |
+| Queue wait | 0.026641, submit to `execution_start` receive boundary |
+| Model and encoder loader nodes | 0.771118; lazy materialization may remain inside sampler |
+| Prompt and AV latent | 2.404550 |
+| Sampler node | 486.613102 |
+| Audio VAE | 1.314689 |
+| Video VAE | 63.574093 |
+| Video assembly and encode | 1.727046 |
+| Result collection | 0.705886 |
+| Submit to terminal | 556.433128 |
+| Runner total | 566.437363 |
+
+The C1 sampler span differed from C0 by +0.009410 seconds (+0.001934%), while submit-to-terminal differed by -30.553368 seconds (-5.205123%). This is one regression run and is not a performance improvement or regression claim. The fixed boundary-P95, cumulative-policy, and submit guards all passed.
+
+System sampling observed 12,461,735,860 peak ComfyUI-reported used-VRAM bytes, 11,990,466,560 peak NVIDIA used-VRAM bytes, 46,791,315,456 peak process-tree RSS bytes, 61,036,601,344 peak system-wide used-RAM bytes, and 100% peak GPU utilization. These are sampled system/process values, not PyTorch allocator peaks; allocator peak remains `null/unavailable` because the external runner cannot read it safely.
+
+The 262,846-byte output has SHA-256 `649ac99d25cf9a5805c5c1b5ef3e33134df43ba51318622791cae7d40eb410ab`. It is H.264 at 864x480, 24 FPS, with one audio stream. All 124 frames decoded; black frames and corrupted frames were zero. Runtime-log scans found zero OOM, CUDA-error, NaN, traceback, or execution-error signatures. This is full-compute parity evidence only; past and current output hashes need not match.
+
 ## Public/private evidence and cost receipt
 
-The generated media count was zero. The full runtime log, raw WebSocket events, raw resource samples, private receipt, actual paths, private prompt, and release build log remain outside Git. Public files contain only logical IDs, sanitized error signatures, aggregate measurements, contracts, and test outcomes. No DLL, PDB, EXE, model, video, credential, token, user path, or prompt is tracked.
+The first attempt produced zero media; the authorized regression produced one repository-external MP4. The full runtime log, raw WebSocket events, raw resource samples, private receipt, actual paths, private prompt, release build log, and generated video remain outside Git. Public files contain only logical IDs, sanitized error signatures, aggregate measurements, contracts, and test outcomes. No DLL, PDB, EXE, model, video, credential, token, user path, or prompt is tracked.
 
-- Actual H3 submissions: 1.
+- Actual H3 submissions: 2 total: one preserved failed attempt and one authorized regression.
 - Actual H3 retries: 0.
-- Second generation after correction: 0.
+- Regression generations after correction: 1.
+- Third generation: 0.
 - External API calls and paid calls: 0.
 - Model downloads: 0.
 - Sage generations and alternate accelerator exploration: 0.
@@ -111,6 +158,6 @@ The generated media count was zero. The full runtime log, raw WebSocket events, 
 
 ## Decision and next action
 
-The bounded decision is **`C1_RUST_POLICY_BRIDGE_REVISE_ONCE`**. The metadata contract, Rust policy, panic containment, custom-node registration, and corrected delegation are model-free verified. A successful full-compute generation, callback/Rust-call counts, timing gates, video integrity, and functional parity are not verified.
+The bounded decision is **`C1_RUST_POLICY_BRIDGE_READY`**. The approved regression verified one metadata-only Rust call per actual sampler callback, full-compute-only behavior, zero tensor transfer, the unchanged video path, and every fixed overhead/output Gate. `REVISE_ONCE` is consumed. The bridge remains Draft and is not promoted to a product default.
 
-The next action requires separate approval for exactly one revised fixed-profile C1 validation using a new collision-free private run root. It must not change the profile, thresholds, policy, model, or workflow; it must not retry on failure. C1 remains Draft and is not eligible for Ready or merge.
+The next separately approved stage is **C2 — Compound Eye Shadow Policy**. C2 may produce Stable/Active/Uncertain shadow decisions while actual H3 execution remains full compute and skipped computation remains zero. This task does not mark PR #60 Ready, merge it, close Issue #59, or begin C2.
