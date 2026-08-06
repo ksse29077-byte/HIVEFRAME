@@ -1144,6 +1144,45 @@ profile, seed, mode, and accelerator sweeps were omitted. Actual H3 generation
 count was exactly two. See the detailed
 [`F0-SAGE worklog`](worklogs/2026-08-05-f0-h3-sageattention.md).
 
+PR #56 was subsequently moved from Draft and merged to main as normal merge
+commit `2faa8a7040f0a3d7c855d0bea5d1db1495de6564`; Issue #55 was completed and
+the source branch was preserved. This publication keeps the product decision
+`DROP_AS_PRODUCT_ACCELERATOR` and repository evidence decision
+`KEEP_AS_OPTIONAL_EVIDENCE`; it does not promote SageAttention.
+
+## 2026-08-06 — C0 Local H3 execution phase and Runtime Hook Map
+
+After F0 publication, Issue #57 and branch
+`core/c0-h3-execution-phase-map` isolated one C0 measurement and design pass.
+Model-free WebSocket, progress, phase-union, resource-context, sanitizer,
+unsupported-value, and collision fixtures were implemented before GPU work.
+The initial nine code-only focused tests passed, and the final suite including
+public YAML contract validation passed 10/10. A separate unchanged backend-suite invocation
+hit one Windows/Python 3.13 SQLite handle-cleanup error after its product
+assertions; that environmental cleanup result was retained rather than
+reported as a pass.
+
+Exactly one unchanged Standard H3 workflow ran with zero Sage nodes and zero
+retry. The 864x480 H.264 result decoded 124/124 frames at 24 FPS with native
+audio. Submit-to-terminal was 586.986496 seconds, only +0.002385% from the
+historical 586.972500-second Standard sample. Runner entry-to-stop was
+599.298147 seconds.
+
+The sampler node occupied 486.603692 seconds (81.196% of runner time), video
+VAE decode 63.162271 seconds (10.539%), and prompt/AV conditioning 33.672949
+seconds (5.619%). Twenty client-observed progress intervals had a
+22.353163-second median. They are not exact GPU step durations. Lazy model
+materialization overlapped the sampler span, and exact GPU-kernel duration and
+PyTorch allocator peaks remain null with explicit unsupported reasons.
+
+The public phase map and hook map select exactly one future Rust target: a
+coarse, metadata-only sampler progress/callback policy boundary. The first
+handoff must return full-compute directives, move zero tensors across FFI, and
+fail open to the unchanged Standard workflow. Rust code, Compound Eye runtime,
+selective compute, cache reuse, Fast Mode, and model training remain zero.
+The bounded result is `C0_H3_PHASE_MAP_READY`; see the detailed
+[`C0-H3 worklog`](worklogs/2026-08-06-c0-h3-execution-phase-map.md).
+
 ---
 
 ## Entry template

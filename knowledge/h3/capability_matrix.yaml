@@ -84,6 +84,26 @@ capabilities:
     model_edge: "UNETLoader output before BasicScheduler and BasicGuider"
     coarse_runtime_boundary: true
     claim_boundary: "Hook location only; no HIVEFRAME Core acceleration is implemented."
+  execution_phase_telemetry:
+    state: verified_once
+    available: true
+    run_count: 1
+    node_boundary: "ComfyUI WebSocket execution lifecycle"
+    resource_sampling: "One-second system and process-tree samples"
+    exact_gpu_kernel_time: not_collected
+    independent_model_materialization_time: unavailable
+  sampler_progress_observation:
+    state: verified_once
+    available: true
+    interval_count: 20
+    semantic: observed_progress_interval
+    exact_gpu_step_duration: false
+  rust_sampler_policy_handoff:
+    state: observed
+    available: false
+    boundary: metadata_only_coarse_ffi
+    implementation_state: contract_only
+    full_compute_fallback_required: true
   cache_node:
     state: observed
     available: false
@@ -94,7 +114,7 @@ capabilities:
   selective_compute:
     state: observed
     available: false
-    reason: "P0 performed no selective-recompute integration."
+    reason: "P0 and C0 performed no selective-recompute integration."
   external_minimax_api:
     state: rejected
     available: false

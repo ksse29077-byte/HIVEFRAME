@@ -1,0 +1,197 @@
+schema_version: "0.1.0"
+knowledge_id: "h3-c0-runtime-hook-map-2026-08-06"
+state: verified_once
+workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+claim_boundary: "Source inspection plus one instrumented Standard run; no selective compute or Rust acceleration is implemented."
+
+hooks:
+  - hook_id: comfy.node.execution_boundary
+    status: observable_now
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: low
+    data_copied: false
+    gpu_synchronization: false
+    cache_candidate: false
+    invalidation_required: false
+    full_compute_fallback: true
+    rust_ffi_fit: coarse_control_and_telemetry
+    compound_eye_connection: phase_receipt_and_compute_plan_audit
+    evidence: "execution.py emits executing/executed lifecycle messages."
+  - hook_id: h3.conditioning_and_av_latent
+    status: observable_now
+    h3_specific: true
+    backend_independent: false
+    expected_overhead: low
+    data_copied: false
+    gpu_synchronization: false
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: metadata_only
+    compound_eye_connection: shared_visual_state_conditioning_digest
+    evidence: "MiniMaxH3ImageToVideo is a discrete workflow node."
+  - hook_id: sampler.node_boundary
+    status: observable_now
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: low
+    data_copied: false
+    gpu_synchronization: false
+    cache_candidate: false
+    invalidation_required: false
+    full_compute_fallback: true
+    rust_ffi_fit: coarse_control_and_telemetry
+    compound_eye_connection: compute_plan_execution_span
+    evidence: "SamplerCustomAdvanced is visible as one node span."
+  - hook_id: sampler.progress_callback
+    status: requires_runtime_wrapper
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: low_to_medium
+    data_copied: false
+    gpu_synchronization: unknown
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: preferred_metadata_boundary
+    compound_eye_connection: step_level_active_stable_uncertain_policy
+    evidence: "SamplerCustomAdvanced creates latent_preview.prepare_callback and passes it to guider.sample."
+  - hook_id: h3.model_call_wrapper
+    status: requires_runtime_wrapper
+    h3_specific: true
+    backend_independent: false
+    expected_overhead: medium
+    data_copied: false
+    gpu_synchronization: unknown
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: metadata_decision_only
+    compound_eye_connection: compute_plan_to_full_model_call_gate
+    evidence: "MiniMaxH3Model.forward is reachable through the sampler/model-patcher call chain."
+  - hook_id: h3.transformer_block
+    status: requires_runtime_wrapper
+    h3_specific: true
+    backend_independent: false
+    expected_overhead: medium
+    data_copied: false
+    gpu_synchronization: unknown
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: policy_only
+    compound_eye_connection: future_block_activity_plan
+    evidence: "MiniMax H3 transformer blocks expose Python forward methods, but the approved workflow has no control hook."
+  - hook_id: h3.attention_forward
+    status: requires_custom_node
+    h3_specific: true
+    backend_independent: false
+    expected_overhead: medium
+    data_copied: false
+    gpu_synchronization: unknown
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: unsuitable_for_fine_grained_ffi
+    compound_eye_connection: future_token_or_head_activity_plan
+    evidence: "F0 demonstrated object-patch reachability; it did not establish a Core acceleration contract."
+  - hook_id: h3.qkv_tensor
+    status: requires_custom_node
+    h3_specific: true
+    backend_independent: false
+    expected_overhead: high_if_copied
+    data_copied: unknown
+    gpu_synchronization: likely
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: unsafe_for_tensor_round_trips
+    compound_eye_connection: future_semantic_token_groups
+    evidence: "QKV exists inside attention forward; no approved external tensor hook was found."
+  - hook_id: sampler.current_previous_latent
+    status: requires_runtime_wrapper
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: high_if_host_copied
+    data_copied: unknown
+    gpu_synchronization: likely
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: metadata_or_shared_device_handle_only
+    compound_eye_connection: temporal_change_and_cache_receipt
+    evidence: "The sampler callback receives denoising state, but the external WebSocket exposes progress only."
+  - hook_id: patch_or_tile_recompute
+    status: not_found
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: unknown
+    data_copied: unknown
+    gpu_synchronization: unknown
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: contract_not_available
+    compound_eye_connection: intended_compute_plan_region_selector
+    evidence: "No approved H3 workflow or installed-source hook accepts a regional denoising plan."
+  - hook_id: result_cache_reuse
+    status: unsafe
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: unknown
+    data_copied: unknown
+    gpu_synchronization: unknown
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: metadata_index_only_until_proven
+    compound_eye_connection: temporal_cache_candidate
+    evidence: "ComfyUI node caching exists, but semantic invalidation and denoising-state validity are unproven."
+  - hook_id: model_residency_and_offload
+    status: requires_runtime_wrapper
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: medium
+    data_copied: true
+    gpu_synchronization: likely
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: coarse_lifecycle_policy
+    compound_eye_connection: runtime_budget_and_fallback_policy
+    evidence: "Runtime logs expose dynamic loading, but the workflow has no explicit residency control node."
+  - hook_id: video_vae_decode_boundary
+    status: observable_now
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: low
+    data_copied: false
+    gpu_synchronization: false
+    cache_candidate: true
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: coarse_decode_schedule
+    compound_eye_connection: future_region_decode_or_repair_plan
+    evidence: "VAEDecode is a discrete 63.162-second node span in the C0 run."
+  - hook_id: standard_full_compute_fallback
+    status: controllable_now
+    h3_specific: false
+    backend_independent: true
+    expected_overhead: low
+    data_copied: false
+    gpu_synchronization: false
+    cache_candidate: false
+    invalidation_required: false
+    full_compute_fallback: true
+    rust_ffi_fit: mandatory_fail_open_contract
+    compound_eye_connection: uncertain_or_unsupported_plan_escalation
+    evidence: "The unchanged Standard workflow remains selectable and executed with zero Sage nodes."
+
+selected_target:
+  hook_id: sampler.progress_callback
+  selected_acceleration_target: true
+  selection_reason: "The sampler span accounted for 81.196% of runner time and already has a callback boundary suitable for metadata-only Rust policy."
+  implementation_state: handoff_contract_only
+  product_promotion: false
+

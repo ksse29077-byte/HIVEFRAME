@@ -64,7 +64,21 @@ profiles:
       next_action: "Wait for user direction; do not adopt or test another accelerator automatically."
 
 hiveframe_core:
-  state: observed
+  state: verified_once
   implemented_acceleration: false
-  retained_hook: "MODEL edge after UNETLoader and before BasicScheduler/BasicGuider"
-  unresolved: "Change detection, cache reuse, selective recompute, boundary verification, and selective repair remain unimplemented."
+  retained_hook: "Sampler progress/callback and model-wrapper control plane"
+  phase_map:
+    workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+    sampler_node_seconds: 486.6036916000012
+    sampler_runner_percent: 81.19559423252987
+    video_vae_decode_seconds: 63.162270699991495
+    selected_target: sampler_step_execution_policy
+    state: verified_once
+    implementation_state: contract_only
+  rust_handoff:
+    state: observed
+    boundary: metadata_only_coarse_ffi
+    tensor_bytes_crossing_ffi: 0
+    initial_directive: FULL_COMPUTE
+    product_promotion: false
+  unresolved: "Change detection, cache reuse, selective recompute, boundary verification, selective repair, and Rust execution remain unimplemented."

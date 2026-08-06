@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import json
 import unittest
+import yaml
 
 from hive_product.comfyui_backend import MiniMaxH3ComfyUIBackend
 from hive_product.c0_h3_phase_probe import (
@@ -159,6 +160,21 @@ class C0H3PhaseProbeTests(unittest.TestCase):
             (root / "existing.json").write_text("{}", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "already contains artifacts"):
                 _safe_run_root(root, "c0-fixture-001")
+
+    def test_public_phase_and_hook_knowledge_matches_contract(self) -> None:
+        repository = Path(__file__).resolve().parents[2]
+        phase_map = yaml.safe_load((repository / "knowledge/h3/execution_phase_map.yaml").read_text(encoding="utf-8"))
+        hook_map = yaml.safe_load((repository / "knowledge/h3/runtime_hook_map.yaml").read_text(encoding="utf-8"))
+        self.assertEqual(phase_map["decision"], "C0_H3_PHASE_MAP_READY")
+        self.assertEqual(phase_map["source"]["run_count"], 1)
+        self.assertEqual(phase_map["fixed_profile"]["sage_nodes"], 0)
+        self.assertFalse(phase_map["selected_target"]["selective_compute_implemented"])
+        self.assertIsNone(phase_map["measurement_contract"]["exact_gpu_kernel_time"]["value"])
+        validate_hook_map(hook_map["hooks"])
+        selected = [item for item in hook_map["hooks"] if item["hook_id"] == hook_map["selected_target"]["hook_id"]]
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["status"], "requires_runtime_wrapper")
+        self.assertTrue(selected[0]["full_compute_fallback"])
 
 
 if __name__ == "__main__":

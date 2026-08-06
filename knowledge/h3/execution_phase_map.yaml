@@ -1,0 +1,147 @@
+schema_version: "0.1.0"
+knowledge_id: "h3-c0-execution-phase-map-2026-08-06"
+state: verified_once
+decision: C0_H3_PHASE_MAP_READY
+source:
+  issue: 57
+  base_main_commit: "2faa8a7040f0a3d7c855d0bea5d1db1495de6564"
+  instrumentation_commit: "47709ecf4bf22f627c763d306ec704cc4b602f78"
+  workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+  run_count: 1
+  retry_count: 0
+  profiler_enabled: false
+
+fixed_profile:
+  width: 864
+  height: 480
+  frame_count: 124
+  fps: 24
+  steps: 20
+  scheduler: simple
+  sampler: res_multistep
+  denoise: 1.0
+  seed: 101
+  native_audio: true
+  sage_nodes: 0
+  standard_full_compute: true
+
+runtime:
+  logical_id: COMFYUI_DESKTOP_MOBEON
+  version: "0.30.2"
+  commit: "dec5d9450a5290bcf63430409ea41018e67f41c3"
+  python: "3.13.12"
+  pytorch: "2.12.1+cu130"
+  cuda_build: "13.0"
+  gpu: "NVIDIA GeForce RTX 3060"
+  compute_capability: "8.6"
+  vram_class: "12 GiB"
+  allocator_backend: cudaMallocAsync
+
+measurement_contract:
+  runtime_boundary: "Owned loopback ComfyUI process start through stop"
+  node_boundary: "ComfyUI WebSocket executing events received by the isolated runner"
+  progress_boundary: "Client receive intervals for progress events; not GPU step durations"
+  resource_sampling: "One-second system sampling through ComfyUI system_stats, nvidia-smi, and process-tree RSS"
+  raw_evidence_location: repository_external
+  public_evidence: aggregate_only
+  exact_gpu_kernel_time:
+    value: null
+    support_status: not_collected
+    reason: "No profiler run was authorized; event spans and sampled utilization are not kernel duration."
+  independent_model_materialization_time:
+    value: null
+    support_status: unavailable
+    reason: "Lazy materialization occurs inside the sampler node without an independent event boundary."
+
+totals:
+  runtime_startup_seconds: 11.627415800001472
+  submit_to_terminal_seconds: 586.9864964000008
+  result_collection_seconds: 0.13120499999786261
+  runtime_shutdown_seconds: 0.0012681000080192462
+  runner_total_seconds: 599.2981469000079
+  unattributed_seconds: 0.5568593999923905
+  historical_standard_submit_seconds: 586.9724998
+  historical_relative_change_percent: 0.002384541014355257
+  comparison_eligible: true
+  comparison_note: "Single instrumentation run; the submit span remained within the fixed 5% comparability bound."
+
+phases:
+  - phase: model_and_encoder_loading
+    seconds: 0.7453184000041801
+    runner_percent: 0.12436521018119144
+    confidence: medium
+    source: "Loader-node WebSocket boundaries"
+    caveat: "Lazy model materialization and transfers can occur in the sampler span."
+  - phase: prompt_conditioning
+    seconds: 33.67294879999827
+    runner_percent: 5.618730672567315
+    confidence: medium
+    source: "Conditioning and AV-latent node boundaries"
+  - phase: denoising
+    seconds: 486.6036916000012
+    runner_percent: 81.19559423252987
+    confidence: medium
+    source: "SamplerCustomAdvanced node boundary"
+    caveat: "Includes lazy model initialization and sampler orchestration; not GPU-kernel-only time."
+  - phase: vae_audio_decode
+    seconds: 1.2567770000023302
+    runner_percent: 0.20970814051457795
+    confidence: medium
+    source: "VAEDecodeAudio node boundary"
+  - phase: vae_video_decode
+    seconds: 63.162270699991495
+    runner_percent: 10.539373603391109
+    confidence: medium
+    source: "VAEDecode node boundary"
+  - phase: encoding
+    seconds: 1.5403921000106493
+    runner_percent: 0.257032681976182
+    confidence: medium
+    source: "CreateVideo and SaveVideo node boundaries"
+
+sampler_progress:
+  semantic: observed_progress_interval
+  not_claimed_as: exact_gpu_denoising_step_duration
+  interval_count: 20
+  first_interval_seconds: 62.01846449999721
+  median_interval_seconds: 22.35316305000015
+  mean_interval_seconds: 23.97109725499977
+  p90_interval_seconds: 22.36123630000802
+  last_interval_seconds: 22.354097099989303
+  interpretation: "The long first interval is consistent with logged lazy initialization, but is not isolated model-load evidence."
+
+resources:
+  sample_count: 540
+  sample_interval_seconds: 1.0
+  sampling_query_wall_seconds_total: 44.805064399930416
+  sampling_execution: parallel_observer_thread
+  peak_comfyui_system_sampled_vram_bytes: 12481828788
+  peak_nvidia_system_sampled_vram_bytes: 11956912128
+  peak_gpu_utilization_percent: 100
+  peak_process_tree_rss_bytes: 47271677952
+  peak_system_wide_used_ram_bytes: 61114191872
+  torch_allocator_peak_bytes:
+    value: null
+    support_status: unavailable
+    reason: "The external runner cannot safely read the ComfyUI process allocator peak."
+
+output_integrity:
+  state: verified_once
+  codec: h264
+  width: 864
+  height: 480
+  decoded_frame_count: 124
+  fps: 24.0
+  audio_stream_count: 1
+  size_bytes: 262576
+  sha256: "f9654b8be83db9776d11dd061644c34f1db358910bffa6a2f471a66164640998"
+
+selected_target:
+  target_id: sampler_step_execution_policy
+  selected_acceleration_target: true
+  boundary: "Sampler progress/callback and model-wrapper control plane"
+  rationale: "The observed sampler span is the dominant 486.604-second phase while preserving a coarse metadata-only Rust boundary."
+  implementation_state: contract_only
+  product_default_changed: false
+  selective_compute_implemented: false
+  full_compute_fallback_required: true
