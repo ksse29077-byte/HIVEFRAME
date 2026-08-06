@@ -11,6 +11,9 @@ from hive_product.compound_eye_shadow import (
     EYE_STABLE,
     EYE_UNCERTAIN,
     FULL_COMPUTE,
+    H3_AUDIO_SHAPE,
+    H3_SIGNAL_ADAPTER,
+    H3_VIDEO_SHAPE,
     QUANTIZATION_SCALE,
     SKETCH_VALUE_COUNT,
     CompoundEyeShadowBridge,
@@ -47,6 +50,15 @@ def sketch(value: int = 4096) -> SketchResult:
         gpu_to_host_ns=20,
         host_quantization_ns=30,
     )
+
+
+def h3_nested(video, audio):
+    nested_type = type("NestedTensor", (), {})
+    nested_type.__module__ = "comfy.nested_tensor"
+    x0 = nested_type()
+    x0.is_nested = True
+    x0.tensors = [video, audio]
+    return x0
 
 
 class FakeC2Extension:
@@ -117,7 +129,10 @@ class CompoundEyeShadowTests(unittest.TestCase):
             self.skipTest("torch unavailable in focused model-free test environment")
         import torch
 
-        x0 = torch.ones((1, 2, 3, 8, 8), dtype=torch.float32)
+        x0 = h3_nested(
+            torch.ones(H3_VIDEO_SHAPE, dtype=torch.float32),
+            torch.zeros(H3_AUDIO_SHAPE, dtype=torch.float32),
+        )
         result = extract_x0_sketch(x0)
         self.assertEqual(len(result.values_q), 48)
         self.assertEqual(set(result.values_q), {QUANTIZATION_SCALE})
@@ -134,6 +149,50 @@ class CompoundEyeShadowTests(unittest.TestCase):
 
         with self.assertRaises(ShadowSignalNotAdmitted):
             extract_x0_sketch(torch.ones((1, 2, 8, 8)))
+        with self.assertRaises(ShadowSignalNotAdmitted):
+            extract_x0_sketch(torch.ones(H3_VIDEO_SHAPE))
+
+    def test_exact_h3_nested_video_adapter_uses_only_video_slot(self) -> None:
+        if importlib.util.find_spec("torch") is None:
+            self.skipTest("torch unavailable in focused model-free test environment")
+        import torch
+
+        x0 = h3_nested(
+            torch.ones(H3_VIDEO_SHAPE, dtype=torch.float32),
+            torch.zeros(H3_AUDIO_SHAPE, dtype=torch.float32),
+        )
+        result = extract_x0_sketch(x0)
+        self.assertEqual(result.signal_adapter, H3_SIGNAL_ADAPTER)
+        self.assertEqual(result.container_type, "comfy.nested_tensor.NestedTensor")
+        self.assertEqual(result.container_tensor_count, 2)
+        self.assertEqual(result.source_shape, H3_VIDEO_SHAPE)
+        self.assertEqual(set(result.values_q), {QUANTIZATION_SCALE})
+
+    def test_h3_nested_adapter_rejects_ambiguous_or_changed_contracts(self) -> None:
+        if importlib.util.find_spec("torch") is None:
+            self.skipTest("torch unavailable in focused model-free test environment")
+        import torch
+
+        valid_video = torch.ones(H3_VIDEO_SHAPE)
+        valid_audio = torch.ones(H3_AUDIO_SHAPE)
+        for tensors in (
+            [valid_video],
+            [valid_video, valid_audio, valid_audio],
+            [torch.ones((1, 24, 36, 30, 54)), valid_audio],
+            [valid_video, torch.ones((1, 32, 2, 206))],
+        ):
+            x0 = h3_nested(tensors[0], tensors[1]) if len(tensors) == 2 else h3_nested(valid_video, valid_audio)
+            x0.tensors = tensors
+            with self.assertRaises(ShadowSignalNotAdmitted):
+                extract_x0_sketch(x0)
+
+        wrong_type = type("NestedTensor", (), {})
+        wrong_type.__module__ = "unapproved.container"
+        x0 = wrong_type()
+        x0.is_nested = True
+        x0.tensors = [valid_video, valid_audio]
+        with self.assertRaises(ShadowSignalNotAdmitted):
+            extract_x0_sketch(x0)
 
     def test_no_full_cpu_copy_numpy_or_raw_tensor_ffi(self) -> None:
         source = (ROOT / "python" / "hive_product" / "compound_eye_shadow.py").read_text(encoding="utf-8")
@@ -259,7 +318,12 @@ class CompoundEyeShadowTests(unittest.TestCase):
             "topology": "overlap_2x2",
             "eye_count": 5,
             "events": [
-                {"source_shape": [1, 16, 31, 60, 108], "source_device_type": "cuda"}
+                {
+                    "source_shape": list(H3_VIDEO_SHAPE),
+                    "source_dtype": "torch.bfloat16",
+                    "source_device_type": "cuda",
+                    "signal_adapter": H3_SIGNAL_ADAPTER,
+                }
             ] * 20,
             "skipped_step_count": 0,
             "skipped_block_count": 0,

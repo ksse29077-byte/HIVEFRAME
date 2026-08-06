@@ -58,6 +58,8 @@ def c2_settings_digest() -> str:
         "topology": "overlap_2x2",
         "eye_count": 5,
         "sketch_source": "x0",
+        "signal_adapter": "h3_nested_video_v1",
+        "signal_path": "x0.tensors[0]",
         "sketch_grid": [4, 4],
         "sketch_metrics": ["mean", "mean_abs", "rms"],
         "quantization_scale": 4096,
@@ -97,25 +99,43 @@ def build_c2_workflow(
 def inspect_callback_source(comfyui_root: Path) -> dict[str, Any]:
     latent_preview = comfyui_root / "latent_preview.py"
     samplers = comfyui_root / "comfy" / "samplers.py"
-    if not latent_preview.is_file() or not samplers.is_file():
+    nested_tensor = comfyui_root / "comfy" / "nested_tensor.py"
+    h3_nodes = comfyui_root / "comfy_extras" / "nodes_minimax_h3.py"
+    if not all(path.is_file() for path in (latent_preview, samplers, nested_tensor, h3_nodes)):
         raise RuntimeError("C2 callback source files are unavailable")
     preview_source = latent_preview.read_text(encoding="utf-8")
     sampler_source = samplers.read_text(encoding="utf-8")
+    nested_source = nested_tensor.read_text(encoding="utf-8")
+    h3_source = h3_nodes.read_text(encoding="utf-8")
     checks = {
         "prepare_callback_signature": "def prepare_callback(model, steps, x0_output_dict=None):" in preview_source,
         "callback_signature": "def callback(step, x0, x, total_steps):" in preview_source,
         "x0_receipt_assignment": 'x0_output_dict["x0"] = x0' in preview_source,
         "denoised_is_x0_argument": 'callback(x["i"], x["denoised"], x["x"], total_steps)' in sampler_source,
+        "callback_rebuilds_nested_x0": "NestedTensor(comfy.utils.unpack_latents(x0, latent_shapes))" in sampler_source,
+        "nested_tensor_owns_ordered_list": "self.tensors = list(tensors)" in nested_source,
+        "h3_video_audio_slot_order": "NestedTensor((video, audio))" in h3_source,
+        "h3_video_shape_contract": "[batch_size, 24, latent_t, height // 16, width // 16]" in h3_source,
+        "h3_audio_shape_contract": "[batch_size, 32, 2, audio_t]" in h3_source,
     }
     if not all(checks.values()):
         raise RuntimeError("C2 callback source contract changed")
     return {
         "state": "admitted",
-        "logical_locations": ["<comfyui-root>/latent_preview.py", "<comfyui-root>/comfy/samplers.py"],
+        "logical_locations": [
+            "<comfyui-root>/latent_preview.py",
+            "<comfyui-root>/comfy/samplers.py",
+            "<comfyui-root>/comfy/nested_tensor.py",
+            "<comfyui-root>/comfy_extras/nodes_minimax_h3.py",
+        ],
         "checks": checks,
         "latent_preview_sha256": sha256(latent_preview.read_bytes()).hexdigest(),
         "samplers_sha256": sha256(samplers.read_bytes()).hexdigest(),
+        "nested_tensor_sha256": sha256(nested_tensor.read_bytes()).hexdigest(),
+        "h3_nodes_sha256": sha256(h3_nodes.read_bytes()).hexdigest(),
         "x0_provenance": "sampler callback denoised argument",
+        "signal_adapter": "h3_nested_video_v1",
+        "signal_path": "x0.tensors[0]",
         "x_argument_used": False,
     }
 
@@ -129,7 +149,9 @@ def _shadow_gate(policy: Mapping[str, Any], submit_seconds: float | None) -> dic
     source_admitted = bool(events) and all(
         isinstance(event.get("source_shape"), list)
         and len(event["source_shape"]) == 5
+        and event.get("source_dtype") == "torch.bfloat16"
         and event.get("source_device_type") == "cuda"
+        and event.get("signal_adapter") == "h3_nested_video_v1"
         for event in events
     )
     actual_zero = all(

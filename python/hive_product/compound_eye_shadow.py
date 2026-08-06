@@ -20,6 +20,10 @@ TOPOLOGY_ID = 1
 TOPOLOGY_NAME = "overlap_2x2"
 SKETCH_SOURCE_ID = 1
 SKETCH_SOURCE_NAME = "x0"
+H3_SIGNAL_ADAPTER = "h3_nested_video_v1"
+H3_NESTED_TYPE = "comfy.nested_tensor.NestedTensor"
+H3_VIDEO_SHAPE = (1, 24, 37, 30, 54)
+H3_AUDIO_SHAPE = (1, 32, 2, 207)
 SKETCH_GRID = (4, 4)
 SKETCH_METRICS = ("mean", "mean_abs", "rms")
 SKETCH_VALUE_COUNT = 48
@@ -85,6 +89,31 @@ class SketchResult:
     host_transfer_count: int = 1
     host_transfer_bytes: int = SKETCH_VALUE_COUNT * 4
     persistent_gpu_bytes: int = 0
+    signal_adapter: str = "direct_tensor"
+    container_type: str = "torch.Tensor"
+    container_tensor_count: int = 1
+
+
+def _adapt_h3_x0_video(x0: Any, torch: Any) -> tuple[Any, str, str, int]:
+    """Select only the source-proven H3 video slot from the callback container."""
+
+    x0_type = type(x0)
+    container_type = f"{x0_type.__module__}.{x0_type.__qualname__}"
+    if container_type != H3_NESTED_TYPE or not bool(getattr(x0, "is_nested", False)):
+        raise ShadowSignalNotAdmitted("x0_not_supported_h3_nested_tensor")
+    tensors = getattr(x0, "tensors", None)
+    if not isinstance(tensors, list) or len(tensors) != 2:
+        raise ShadowSignalNotAdmitted("h3_nested_tensor_contract_mismatch")
+    video, audio = tensors
+    if not isinstance(video, torch.Tensor) or not isinstance(audio, torch.Tensor):
+        raise ShadowSignalNotAdmitted("h3_nested_member_not_tensor")
+    if tuple(int(value) for value in video.shape) != H3_VIDEO_SHAPE:
+        raise ShadowSignalNotAdmitted("h3_video_shape_mismatch")
+    if tuple(int(value) for value in audio.shape) != H3_AUDIO_SHAPE:
+        raise ShadowSignalNotAdmitted("h3_audio_shape_mismatch")
+    if video.dtype != audio.dtype or video.device != audio.device:
+        raise ShadowSignalNotAdmitted("h3_nested_member_dtype_or_device_mismatch")
+    return video, H3_SIGNAL_ADAPTER, container_type, len(tensors)
 
 
 def extract_x0_sketch(x0: Any) -> SketchResult:
@@ -101,19 +130,16 @@ def extract_x0_sketch(x0: Any) -> SketchResult:
         import torch.nn.functional as functional
     except ImportError as error:
         raise ShadowSignalNotAdmitted("torch_unavailable") from error
-    if not isinstance(x0, torch.Tensor):
-        raise ShadowSignalNotAdmitted("x0_not_tensor")
-    if bool(getattr(x0, "is_nested", False)):
-        raise ShadowSignalNotAdmitted("nested_x0_unsupported")
-    if x0.ndim != 5 or min(int(value) for value in x0.shape) <= 0:
+    source, signal_adapter, container_type, container_tensor_count = _adapt_h3_x0_video(x0, torch)
+    if source.ndim != 5 or min(int(value) for value in source.shape) <= 0:
         raise ShadowSignalNotAdmitted("x0_spatial_axes_not_safely_identified")
-    if not (x0.dtype.is_floating_point or x0.dtype.is_complex):
+    if not (source.dtype.is_floating_point or source.dtype.is_complex):
         raise ShadowSignalNotAdmitted("x0_dtype_unsupported")
-    if x0.dtype.is_complex:
+    if source.dtype.is_complex:
         raise ShadowSignalNotAdmitted("x0_complex_dtype_unsupported")
 
     reduction_started = perf_counter_ns()
-    detached = x0.detach()
+    detached = source.detach()
     leading_axes = (0, 1, 2)
     mean_map = detached.mean(dim=leading_axes, dtype=torch.float32)
     mean_abs_map = detached.abs().mean(dim=leading_axes, dtype=torch.float32)
@@ -138,12 +164,15 @@ def extract_x0_sketch(x0: Any) -> SketchResult:
     host_quantization_ns = perf_counter_ns() - quantization_started
     return SketchResult(
         values_q=quantized,
-        source_shape=tuple(int(value) for value in x0.shape),
-        source_dtype=str(x0.dtype),
-        source_device_type=str(x0.device.type),
+        source_shape=tuple(int(value) for value in source.shape),
+        source_dtype=str(source.dtype),
+        source_device_type=str(source.device.type),
         reduction_enqueue_ns=reduction_enqueue_ns,
         gpu_to_host_ns=gpu_to_host_ns,
         host_quantization_ns=host_quantization_ns,
+        signal_adapter=signal_adapter,
+        container_type=container_type,
+        container_tensor_count=container_tensor_count,
     )
 
 
@@ -383,6 +412,9 @@ class CompoundEyeShadowBridge:
             "source_shape": list(sketch.source_shape),
             "source_dtype": sketch.source_dtype,
             "source_device_type": sketch.source_device_type,
+            "signal_adapter": sketch.signal_adapter,
+            "container_type": sketch.container_type,
+            "container_tensor_count": sketch.container_tensor_count,
             "shared_visual_state_digest": parsed["shared_visual_state_digest"],
             "compute_plan_digest": parsed["compute_plan_digest"],
             "decision_digest": parsed["decision_digest"],
@@ -453,6 +485,8 @@ class CompoundEyeShadowBridge:
             "eye_count": EYE_COUNT,
             "sketch": {
                 "source": SKETCH_SOURCE_NAME,
+                "signal_adapter": H3_SIGNAL_ADAPTER,
+                "container_path": "x0.tensors[0]",
                 "grid": list(SKETCH_GRID),
                 "metrics": list(SKETCH_METRICS),
                 "value_count": SKETCH_VALUE_COUNT,
