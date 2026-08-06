@@ -2,7 +2,7 @@ schema_version: "0.1.0"
 knowledge_id: "h3-c0-runtime-hook-map-2026-08-06"
 state: verified_once
 workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
-claim_boundary: "Source inspection plus one instrumented Standard run; no selective compute or Rust acceleration is implemented."
+claim_boundary: "C0 source inspection and one instrumented Standard run remain valid. C1 verified the metadata-only Rust bridge once with the unchanged full-compute path; no selective compute or acceleration claim exists."
 
 hooks:
   - hook_id: comfy.node.execution_boundary
@@ -45,7 +45,7 @@ hooks:
     compound_eye_connection: compute_plan_execution_span
     evidence: "SamplerCustomAdvanced is visible as one node span."
   - hook_id: sampler.progress_callback
-    status: requires_runtime_wrapper
+    status: controllable_now
     h3_specific: false
     backend_independent: true
     expected_overhead: low_to_medium
@@ -56,7 +56,7 @@ hooks:
     full_compute_fallback: true
     rust_ffi_fit: preferred_metadata_boundary
     compound_eye_connection: step_level_active_stable_uncertain_policy
-    evidence: "SamplerCustomAdvanced creates latent_preview.prepare_callback and passes it to guider.sample."
+    evidence: "SamplerCustomAdvanced creates latent_preview.prepare_callback and passes it to guider.sample. After the preserved first-attempt failure and module-local guard correction, one approved regression observed 20 callbacks, 20 Rust calls, and full-compute parity."
   - hook_id: h3.model_call_wrapper
     status: requires_runtime_wrapper
     h3_specific: true
@@ -192,5 +192,18 @@ selected_target:
   hook_id: sampler.progress_callback
   selected_acceleration_target: true
   selection_reason: "The sampler span accounted for 81.196% of runner time and already has a callback boundary suitable for metadata-only Rust policy."
-  implementation_state: handoff_contract_only
+  implementation_state: full_compute_parity_verified_once
   product_promotion: false
+  c1_follow_up:
+    state: verified_once
+    issue: 59
+    decision: C1_RUST_POLICY_BRIDGE_READY
+    actual_submissions: 2
+    failed_first_submission: true
+    approved_regression_submissions: 1
+    callbacks_observed: 20
+    rust_calls_observed: 20
+    full_compute_decisions: 20
+    tensor_bytes_transferred: 0
+    third_generation_run: false
+    promoted: false

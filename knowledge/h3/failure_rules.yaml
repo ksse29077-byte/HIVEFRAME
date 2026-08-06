@@ -141,6 +141,21 @@ rules:
     automatic_change_allowed: true
     scope: "bounded F0 probe only"
 
+  - rule_id: "h3-comfyui-v3-locked-node-class-mutation"
+    state: verified_once
+    match:
+      operation: repository_owned_sampler_wrapper_entry
+      runtime: "ComfyUI V3 node clone"
+      log_signature: "Cannot modify class attribute '<guard>' on locked class"
+    error_signature: c1_locked_node_class_attribute
+    resolution: "Keep mutable execution-guard state at module or instance scope; never assign to the locked V3 node class. Revalidate model-free before requesting another generation."
+    observed_effect: "The single C1 submission stopped before the first progress callback; no output or policy timing sample was created."
+    fallback:
+      backend_path: standard_full_compute
+      automatic_success_conversion: false
+    automatic_change_allowed: false
+    promotion_required: true
+
 rejected_fallbacks:
   - state: rejected
     behavior: "Automatically change a Local H3 failure into a Mock H3 success."

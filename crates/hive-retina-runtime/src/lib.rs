@@ -18,6 +18,165 @@ pub const TOPOLOGIES: [&str; 5] = [
     "motion_focused",
 ];
 
+pub const C1_STEP_POLICY_ABI_VERSION: u32 = 1;
+pub const C1_DECISION_FULL_COMPUTE: u32 = 0;
+pub const C1_DECISION_ESCALATE_FULL_COMPUTE: u32 = 1;
+pub const C1_REASON_NONE: u32 = 0;
+pub const C1_REASON_ABI_MISMATCH: u32 = 1;
+pub const C1_REASON_STRUCT_SIZE_MISMATCH: u32 = 2;
+pub const C1_REASON_STEP_RANGE_INVALID: u32 = 3;
+pub const C1_REASON_DIGEST_MISSING: u32 = 4;
+pub const C1_REASON_FULL_COMPUTE_UNSUPPORTED: u32 = 5;
+pub const C1_REASON_UNCERTAINTY_PRESENT: u32 = 6;
+pub const C1_REASON_INVALIDATION_PRESENT: u32 = 7;
+pub const C1_REASON_UNSUPPORTED_METADATA: u32 = 8;
+pub const C1_REASON_FALLBACK_UNSUPPORTED: u32 = 9;
+pub const C1_REASON_RUST_PANIC: u32 = 10;
+
+/// Fixed-size, metadata-only callback observation for the C1 full-compute gate.
+///
+/// No tensor, prompt, filesystem path, media payload, CUDA pointer, model
+/// weight, credential, or variable-length string is admitted by this contract.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct StepObservation {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub run_digest: [u8; 32],
+    pub workflow_revision_digest: [u8; 32],
+    pub settings_digest: [u8; 32],
+    pub step_index: u32,
+    pub total_steps: u32,
+    pub sampler_logical_id: u32,
+    pub scheduler_logical_id: u32,
+    pub timestep_available: u32,
+    pub timestep_bits: u64,
+    pub sigma_available: u32,
+    pub sigma_bits: u64,
+    pub uncertainty_flags: u32,
+    pub invalidation_flags: u32,
+    pub full_compute_supported: u32,
+    pub fallback_supported: u32,
+    pub cache_available: u32,
+    pub receipt_required: u32,
+    pub unsupported_flags: u32,
+}
+
+impl StepObservation {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+}
+
+/// Fixed-size C1 directive. All skip/reuse/partial counters remain zero.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct StepDirective {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub decision_code: u32,
+    pub reason_code: u32,
+    pub unsupported_flags: u32,
+    pub decision_digest: [u8; 32],
+    pub skipped_step_count: u32,
+    pub skipped_block_count: u32,
+    pub skipped_token_count: u32,
+    pub skipped_latent_count: u32,
+    pub reused_cache_count: u32,
+    pub partial_compute_count: u32,
+}
+
+impl StepDirective {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+
+    pub fn fail_open(reason_code: u32, decision_digest: [u8; 32]) -> Self {
+        Self::new(
+            C1_DECISION_ESCALATE_FULL_COMPUTE,
+            reason_code,
+            decision_digest,
+        )
+    }
+
+    fn new(decision_code: u32, reason_code: u32, decision_digest: [u8; 32]) -> Self {
+        Self {
+            abi_version: C1_STEP_POLICY_ABI_VERSION,
+            struct_size: Self::contract_size(),
+            decision_code,
+            reason_code,
+            unsupported_flags: 0,
+            decision_digest,
+            skipped_step_count: 0,
+            skipped_block_count: 0,
+            skipped_token_count: 0,
+            skipped_latent_count: 0,
+            reused_cache_count: 0,
+            partial_compute_count: 0,
+        }
+    }
+}
+
+fn c1_observation_digest(observation: &StepObservation) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(observation.abi_version.to_le_bytes());
+    hasher.update(observation.struct_size.to_le_bytes());
+    hasher.update(observation.run_digest);
+    hasher.update(observation.workflow_revision_digest);
+    hasher.update(observation.settings_digest);
+    hasher.update(observation.step_index.to_le_bytes());
+    hasher.update(observation.total_steps.to_le_bytes());
+    hasher.update(observation.sampler_logical_id.to_le_bytes());
+    hasher.update(observation.scheduler_logical_id.to_le_bytes());
+    hasher.update(observation.timestep_available.to_le_bytes());
+    hasher.update(observation.timestep_bits.to_le_bytes());
+    hasher.update(observation.sigma_available.to_le_bytes());
+    hasher.update(observation.sigma_bits.to_le_bytes());
+    hasher.update(observation.uncertainty_flags.to_le_bytes());
+    hasher.update(observation.invalidation_flags.to_le_bytes());
+    hasher.update(observation.full_compute_supported.to_le_bytes());
+    hasher.update(observation.fallback_supported.to_le_bytes());
+    hasher.update(observation.cache_available.to_le_bytes());
+    hasher.update(observation.receipt_required.to_le_bytes());
+    hasher.update(observation.unsupported_flags.to_le_bytes());
+    hasher.finalize().into()
+}
+
+/// Deterministic C1 policy. It can only preserve full compute or fail open to
+/// an explicit full-compute escalation; it cannot authorize selective work.
+pub fn evaluate_step_policy(observation: &StepObservation) -> StepDirective {
+    let digest = c1_observation_digest(observation);
+    let reason = if observation.abi_version != C1_STEP_POLICY_ABI_VERSION {
+        C1_REASON_ABI_MISMATCH
+    } else if observation.struct_size != StepObservation::contract_size() {
+        C1_REASON_STRUCT_SIZE_MISMATCH
+    } else if observation.total_steps == 0 || observation.step_index >= observation.total_steps {
+        C1_REASON_STEP_RANGE_INVALID
+    } else if observation.run_digest == [0; 32]
+        || observation.workflow_revision_digest == [0; 32]
+        || observation.settings_digest == [0; 32]
+    {
+        C1_REASON_DIGEST_MISSING
+    } else if observation.full_compute_supported != 1 {
+        C1_REASON_FULL_COMPUTE_UNSUPPORTED
+    } else if observation.fallback_supported != 1 {
+        C1_REASON_FALLBACK_UNSUPPORTED
+    } else if observation.uncertainty_flags != 0 {
+        C1_REASON_UNCERTAINTY_PRESENT
+    } else if observation.invalidation_flags != 0 {
+        C1_REASON_INVALIDATION_PRESENT
+    } else if observation.unsupported_flags != 0 {
+        C1_REASON_UNSUPPORTED_METADATA
+    } else {
+        C1_REASON_NONE
+    };
+    if reason == C1_REASON_NONE {
+        StepDirective::new(C1_DECISION_FULL_COMPUTE, reason, digest)
+    } else {
+        StepDirective::fail_open(reason, digest)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct PixelBox {
     pub x: usize,
@@ -1417,6 +1576,73 @@ pub fn benchmark_suite(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn c1_observation() -> StepObservation {
+        StepObservation {
+            abi_version: C1_STEP_POLICY_ABI_VERSION,
+            struct_size: StepObservation::contract_size(),
+            run_digest: [1; 32],
+            workflow_revision_digest: [2; 32],
+            settings_digest: [3; 32],
+            step_index: 7,
+            total_steps: 20,
+            sampler_logical_id: 1,
+            scheduler_logical_id: 1,
+            timestep_available: 0,
+            timestep_bits: 0,
+            sigma_available: 0,
+            sigma_bits: 0,
+            uncertainty_flags: 0,
+            invalidation_flags: 0,
+            full_compute_supported: 1,
+            fallback_supported: 1,
+            cache_available: 0,
+            receipt_required: 1,
+            unsupported_flags: 0,
+        }
+    }
+
+    #[test]
+    fn c1_full_compute_policy_is_deterministic_and_never_skips() {
+        let observation = c1_observation();
+        let first = evaluate_step_policy(&observation);
+        let second = evaluate_step_policy(&observation);
+        assert_eq!(first, second);
+        assert_eq!(first.decision_code, C1_DECISION_FULL_COMPUTE);
+        assert_eq!(first.reason_code, C1_REASON_NONE);
+        assert_eq!(first.skipped_step_count, 0);
+        assert_eq!(first.skipped_block_count, 0);
+        assert_eq!(first.skipped_token_count, 0);
+        assert_eq!(first.skipped_latent_count, 0);
+        assert_eq!(first.reused_cache_count, 0);
+        assert_eq!(first.partial_compute_count, 0);
+    }
+
+    #[test]
+    fn c1_abnormal_metadata_escalates_to_full_compute() {
+        let mut observation = c1_observation();
+        observation.uncertainty_flags = 1;
+        let result = evaluate_step_policy(&observation);
+        assert_eq!(result.decision_code, C1_DECISION_ESCALATE_FULL_COMPUTE);
+        assert_eq!(result.reason_code, C1_REASON_UNCERTAINTY_PRESENT);
+        assert_eq!(result.skipped_step_count, 0);
+        assert_eq!(result.reused_cache_count, 0);
+        assert_eq!(result.partial_compute_count, 0);
+    }
+
+    #[test]
+    fn c1_contract_sizes_are_fixed_and_self_describing() {
+        assert_eq!(
+            StepObservation::contract_size() as usize,
+            std::mem::size_of::<StepObservation>()
+        );
+        assert_eq!(
+            StepDirective::contract_size() as usize,
+            std::mem::size_of::<StepDirective>()
+        );
+        assert!(StepObservation::contract_size() >= 128);
+        assert!(StepDirective::contract_size() >= 64);
+    }
 
     fn semantic(profile: &str, topology: Topology) -> SemanticResult {
         let profile = InputProfile::named(profile, 101).expect("profile");

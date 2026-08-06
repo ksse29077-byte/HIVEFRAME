@@ -1,10 +1,14 @@
 #![doc = "Bounded Python 3.12 shared-buffer adapter for the model-free R3 probe."]
 
-use hive_retina_runtime::{InputProfile, PixelBox, R3CandidateSummary};
+use hive_retina_runtime::{
+    evaluate_step_policy as evaluate_step_policy_core, InputProfile, PixelBox, R3CandidateSummary,
+    StepDirective, StepObservation, C1_REASON_RUST_PANIC, C1_STEP_POLICY_ABI_VERSION,
+};
 use pyo3::buffer::PyBuffer;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyDict, PyModule};
+use pyo3::types::{PyAny, PyBytes, PyDict, PyModule};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::time::Instant;
 
 const WIDTH: usize = 1920;
@@ -139,10 +143,129 @@ fn empty_boundary_probe() -> u8 {
     0
 }
 
+fn fixed_digest(value: &Bound<'_, PyBytes>, name: &str) -> PyResult<[u8; 32]> {
+    value
+        .as_bytes()
+        .try_into()
+        .map_err(|_| PyValueError::new_err(format!("{name} must contain exactly 32 bytes.")))
+}
+
+fn set_directive(dict: &Bound<'_, PyDict>, directive: &StepDirective) -> PyResult<()> {
+    dict.set_item("abi_version", directive.abi_version)?;
+    dict.set_item("struct_size", directive.struct_size)?;
+    dict.set_item("decision_code", directive.decision_code)?;
+    dict.set_item("reason_code", directive.reason_code)?;
+    dict.set_item("unsupported_flags", directive.unsupported_flags)?;
+    dict.set_item(
+        "decision_digest",
+        PyBytes::new(dict.py(), &directive.decision_digest),
+    )?;
+    dict.set_item("skipped_step_count", directive.skipped_step_count)?;
+    dict.set_item("skipped_block_count", directive.skipped_block_count)?;
+    dict.set_item("skipped_token_count", directive.skipped_token_count)?;
+    dict.set_item("skipped_latent_count", directive.skipped_latent_count)?;
+    dict.set_item("reused_cache_count", directive.reused_cache_count)?;
+    dict.set_item("partial_compute_count", directive.partial_compute_count)?;
+    Ok(())
+}
+
+/// One in-process, fixed-metadata policy call. No Python callback, file I/O,
+/// network I/O, lock, sleep, tensor, model state, or CUDA address crosses it.
+#[pyfunction]
+#[allow(clippy::too_many_arguments)]
+fn evaluate_step_policy<'py>(
+    py: Python<'py>,
+    abi_version: u32,
+    struct_size: u32,
+    run_digest: &Bound<'py, PyBytes>,
+    workflow_revision_digest: &Bound<'py, PyBytes>,
+    settings_digest: &Bound<'py, PyBytes>,
+    step_index: u32,
+    total_steps: u32,
+    sampler_logical_id: u32,
+    scheduler_logical_id: u32,
+    timestep_available: bool,
+    timestep_bits: u64,
+    sigma_available: bool,
+    sigma_bits: u64,
+    uncertainty_flags: u32,
+    invalidation_flags: u32,
+    full_compute_supported: bool,
+    fallback_supported: bool,
+    cache_available: bool,
+    receipt_required: bool,
+    unsupported_flags: u32,
+) -> PyResult<Bound<'py, PyDict>> {
+    let observation = StepObservation {
+        abi_version,
+        struct_size,
+        run_digest: fixed_digest(run_digest, "run_digest")?,
+        workflow_revision_digest: fixed_digest(
+            workflow_revision_digest,
+            "workflow_revision_digest",
+        )?,
+        settings_digest: fixed_digest(settings_digest, "settings_digest")?,
+        step_index,
+        total_steps,
+        sampler_logical_id,
+        scheduler_logical_id,
+        timestep_available: u32::from(timestep_available),
+        timestep_bits,
+        sigma_available: u32::from(sigma_available),
+        sigma_bits,
+        uncertainty_flags,
+        invalidation_flags,
+        full_compute_supported: u32::from(full_compute_supported),
+        fallback_supported: u32::from(fallback_supported),
+        cache_available: u32::from(cache_available),
+        receipt_required: u32::from(receipt_required),
+        unsupported_flags,
+    };
+    let started = Instant::now();
+    let evaluated = catch_unwind(AssertUnwindSafe(|| evaluate_step_policy_core(&observation)));
+    let rust_policy_ns = started.elapsed().as_nanos();
+    let result = PyDict::new(py);
+    match evaluated {
+        Ok(directive) => {
+            result.set_item("ffi_status", 0)?;
+            set_directive(&result, &directive)?;
+        }
+        Err(_) => {
+            result.set_item("ffi_status", 1)?;
+            set_directive(
+                &result,
+                &StepDirective::fail_open(C1_REASON_RUST_PANIC, [0; 32]),
+            )?;
+        }
+    }
+    result.set_item("rust_policy_ns", rust_policy_ns)?;
+    Ok(result)
+}
+
+#[pyfunction]
+fn step_policy_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    result.set_item("abi_version", C1_STEP_POLICY_ABI_VERSION)?;
+    result.set_item("observation_struct_size", StepObservation::contract_size())?;
+    result.set_item("directive_struct_size", StepDirective::contract_size())?;
+    result.set_item("max_rust_calls_per_callback", 1)?;
+    result.set_item("tensor_bytes_per_callback", 0)?;
+    Ok(result)
+}
+
+#[pyfunction]
+fn step_policy_panic_boundary_probe() -> u32 {
+    let result = catch_unwind(|| panic!("C1 panic-boundary probe"));
+    u32::from(result.is_err())
+}
+
 #[pymodule]
 fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(run_candidate, module)?)?;
     module.add_function(wrap_pyfunction!(empty_boundary_probe, module)?)?;
+    module.add_function(wrap_pyfunction!(evaluate_step_policy, module)?)?;
+    module.add_function(wrap_pyfunction!(step_policy_contract, module)?)?;
+    module.add_function(wrap_pyfunction!(step_policy_panic_boundary_probe, module)?)?;
     module.add("__version__", env!("CARGO_PKG_VERSION"))?;
     module.add("pyo3_version", "0.29.0")?;
     module.add("python_abi", "abi3-py312")?;

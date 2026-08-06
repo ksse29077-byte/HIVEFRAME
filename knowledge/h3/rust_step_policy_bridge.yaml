@@ -1,0 +1,191 @@
+schema_version: "0.1.0"
+knowledge_id: "h3-c1-rust-step-policy-bridge-2026-08-06"
+state: verified_once
+workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+decision: C1_RUST_POLICY_BRIDGE_READY
+claim_boundary: "The metadata-only policy and fail-open boundary passed model-free tests, and one approved regression verified the unchanged full-compute path. No selective compute, acceleration, or product-default claim is made."
+
+implementation:
+  rust_workspace: existing_workspace
+  rust_core_crate: hive-retina-runtime
+  python_extension_crate: hive-retina-python
+  bridge: pyo3_in_process_abi3_py312
+  pyo3_version: "0.29.0"
+  abi_version: 1
+  observation_struct_size_bytes: 184
+  directive_struct_size_bytes: 76
+  max_rust_calls_per_callback: 1
+  runtime_wrapper: repository_owned_comfyui_custom_node
+  callback_hook: sampler.progress_callback
+  original_workflow_modified: false
+  installed_comfyui_core_modified: false
+
+step_observation:
+  representation: fixed_size_metadata_only
+  fields:
+    - abi_version
+    - struct_size
+    - run_digest
+    - workflow_revision_digest
+    - settings_digest
+    - step_index
+    - total_steps
+    - sampler_logical_id
+    - scheduler_logical_id
+    - timestep_available
+    - timestep_bits
+    - sigma_available
+    - sigma_bits
+    - uncertainty_flags
+    - invalidation_flags
+    - full_compute_supported
+    - fallback_supported
+    - cache_available
+    - receipt_required
+    - unsupported_flags
+  forbidden_payloads:
+    - prompt
+    - user_path
+    - media
+    - tensor
+    - cuda_pointer
+    - model_weight
+    - credential
+
+step_directive:
+  allowed_decisions:
+    - FULL_COMPUTE
+    - ESCALATE_FULL_COMPUTE
+  rejected_decisions:
+    - SKIP_STEP
+    - SKIP_BLOCK
+    - SKIP_TOKEN
+    - SKIP_LATENT
+    - REUSE_CACHE
+    - PARTIAL_COMPUTE
+  skipped_compute_count: 0
+  reused_cache_count: 0
+  partial_compute_count: 0
+
+model_free_verification:
+  state: verified_once
+  deterministic_rust_policy_tests: 3
+  focused_python_tests: 13
+  actual_abi_roundtrips: 1
+  panic_boundary_contained: true
+  custom_node_registered_in_comfyui: true
+  workflow_submissions: 0
+  tensor_bytes_transferred: 0
+  wrapper_guard_fix:
+    state: verified_once
+    method: model_free_direct_delegate_call
+    callback_count: 1
+    rust_call_count: 1
+    second_generation_count: 0
+
+approved_runtime_attempt:
+  state: observed
+  submission_count: 1
+  retry_count: 0
+  terminal_state: execution_error
+  callback_count: 0
+  rust_call_count: 0
+  full_compute_count: 0
+  policy_receipt_created: false
+  output_created: false
+  oom_count: 0
+  submit_to_terminal_seconds: 34.4436708
+  runner_total_seconds: 42.6393759
+  peak_comfyui_system_sampled_vram_bytes: 12011518624
+  peak_nvidia_system_sampled_vram_bytes: 11623464960
+  peak_process_tree_rss_bytes: 19380944896
+  failure_signature: "Cannot modify class attribute '<guard>' on locked ComfyUI V3 node class"
+  failure_stage: sampler_wrapper_entry_before_first_callback
+  results_eligible: false
+
+post_attempt_correction:
+  state: verified_once
+  scope: model_free_only
+  change: "Move the concurrent-execution guard from a locked ComfyUI class attribute to module-local state."
+  semantic_policy_changed: false
+  abi_changed: false
+  workflow_changed: false
+  approved_regression_run: true
+
+approved_regression_attempt:
+  state: verified_once
+  submission_count: 1
+  retry_count: 0
+  terminal_state: execution_success
+  callback_count: 20
+  rust_call_count: 20
+  full_compute_count: 20
+  escalate_full_compute_count: 0
+  python_fallback_count: 0
+  unknown_decision_count: 0
+  sampler_succeeded: true
+  skipped_step_count: 0
+  skipped_block_count: 0
+  skipped_token_count: 0
+  skipped_latent_count: 0
+  reused_cache_count: 0
+  partial_compute_count: 0
+  metadata_bytes_transferred: 5200
+  tensor_bytes_transferred: 0
+  observation_build_p50_seconds: 0.0000064
+  observation_build_p95_seconds: 0.0000093
+  boundary_roundtrip_p50_seconds: 0.0000166
+  boundary_roundtrip_p95_seconds: 0.0000381
+  rust_policy_p50_seconds: 0.0000013
+  rust_policy_p95_seconds: 0.0000020
+  conservative_total_policy_p95_seconds: 0.0000488
+  conservative_cumulative_policy_seconds: 0.002592
+  submit_to_terminal_seconds: 556.4331281
+  runner_total_seconds: 566.4373634
+  peak_comfyui_system_sampled_vram_bytes: 12461735860
+  peak_nvidia_system_sampled_vram_bytes: 11990466560
+  peak_process_tree_rss_bytes: 46791315456
+  peak_system_wide_used_ram_bytes: 61036601344
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frame_count: 124
+    fps: 24.0
+    audio_stream_count: 1
+    black_frame_count: 0
+    corrupted_frame_count: 0
+    size_bytes: 262846
+    sha256: "649ac99d25cf9a5805c5c1b5ef3e33134df43ba51318622791cae7d40eb410ab"
+  exact_gpu_kernel_time:
+    value: null
+    support_status: not_collected
+    reason: "No profiler run was authorized."
+  directive_parse_time:
+    value: null
+    support_status: not_collected
+    reason: "The fixed probe did not instrument directive parsing independently."
+  results_eligible: true
+  promoted: false
+
+gates:
+  boundary_p95_limit_seconds: 0.2235
+  cumulative_policy_limit_seconds: 4.866
+  submit_to_terminal_limit_seconds: 616.336
+  boundary_p95_result:
+    value: 0.0000381
+    unit: seconds
+    state: verified_once
+  cumulative_policy_result:
+    value: 0.002592
+    unit: seconds
+    state: verified_once
+    method: "Conservative sum of observation, boundary roundtrip, and nested Rust policy spans."
+  parity_result:
+    value: true
+    state: verified_once
+    reason: "Unchanged full-compute path produced and decoded the fixed H.264 video contract."
+
+automatic_product_application: false
+promotion_required: true
+rollback: "Remove the repository custom-node path and restore the unchanged SamplerCustomAdvanced API copy."
