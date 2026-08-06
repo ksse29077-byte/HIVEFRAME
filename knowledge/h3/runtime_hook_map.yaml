@@ -194,4 +194,3 @@ selected_target:
   selection_reason: "The sampler span accounted for 81.196% of runner time and already has a callback boundary suitable for metadata-only Rust policy."
   implementation_state: handoff_contract_only
   product_promotion: false
-

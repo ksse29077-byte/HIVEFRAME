@@ -1,10 +1,10 @@
 # C0-H3 Execution Phase and Runtime Hook Map
 
-Date: 2026-08-06  
-Issue: [#57](https://github.com/ksse29077-byte/HIVEFRAME/issues/57)  
-Branch: `core/c0-h3-execution-phase-map`  
-Base main: `2faa8a7040f0a3d7c855d0bea5d1db1495de6564`  
-Status: Draft PR preparation  
+Date: 2026-08-06
+Issue: [#57](https://github.com/ksse29077-byte/HIVEFRAME/issues/57)
+Branch: `core/c0-h3-execution-phase-map`
+Base main: `2faa8a7040f0a3d7c855d0bea5d1db1495de6564`
+Status: Draft PR preparation
 Decision: `C0_H3_PHASE_MAP_READY`
 
 ## Product question and boundaries

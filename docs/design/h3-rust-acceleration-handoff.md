@@ -68,4 +68,3 @@ The installed ComfyUI source was inspected without modification. The logical cal
 5. `nodes.py::VAEDecode`, `comfy_extras/nodes_audio.py::VAEDecodeAudio`, and the video nodes decode and encode the result.
 
 This call chain identifies reachable boundaries only. It does not prove that skipping or caching any computation is correct.
-
