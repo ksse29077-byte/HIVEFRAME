@@ -332,8 +332,9 @@ speedup claim or product-default promotion. See the detailed
 
 ## C2 — Local H3 Compound Eye Shadow Policy
 
-Overall status: `verified_once`; publication status: `draft_pr`. Bounded
-decision: `C2_SHADOW_SIGNAL_NOT_ADMITTED`.
+Overall status: `revise_once`; publication status: `draft_pr`. Latest bounded
+decision: `C2_SHADOW_REVISE_ONCE`; the initial run remains
+`C2_SHADOW_SIGNAL_NOT_ADMITTED` evidence.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
@@ -342,13 +343,18 @@ decision: `C2_SHADOW_SIGNAL_NOT_ADMITTED`.
 | Implement separate C2 Rust/PyO3 ABI | `verified` | 536-byte observation, 232-byte directive, one fixed-sketch call maximum, actual decisions limited to Full Compute/escalation |
 | Pass focused model-free validation | `verified` | seven C2 Rust tests, workspace check, 20 C2+C1 Python tests, real ABI roundtrip, compile/fmt/diff checks |
 | Execute approved Standard shadow run | `verified_once` | one submission, retry 0, video 124/124; all 20 callbacks fail open because x0 is not a `torch.Tensor` |
-| Admit stable shadow candidates | `unsupported` | no sketch or Rust call admitted; stable/validated/contradicted counts 0/0/0 |
-| Select C3 execution hook | `not_admitted` | exact selection `no_c3_admission`; alternate tensor source and threshold adjustment prohibited |
+| Identify and fix one exact container path | `model_free_verified` | source-backed `x0.tensors[0]`; fixed video/audio container contract; 14/14 focused tests |
+| Execute the one approved C2-R1 regression | `verified_once` | one submission, retry 0; adapter 20/20, Rust 20/20, Full Compute 20/20, video 124/124 |
+| Validate stable candidates counterfactually | `verified_once` | 76 eligible eye-steps; stable/active/uncertain 25/4/47; validated/contradicted/unvalidated 25/0/0 |
+| Pass C2-R1 admission and overhead gates | `revise_once` | actual signal dtype was `torch.float32` while the committed gate required BF16; 48-scalar blocking transfer made total-shadow p95 7.147 s and cumulative span 135.699 s |
+| Select C3 execution hook | `not_admitted` | transformer wrapper remained a counterfactual candidate only; no C3 implementation is admitted from a failed R1 gate |
 
-C2 preserved Standard Full Compute and produced a valid H.264 video, but that
-does not make the shadow policy successful. Actual skip, cache reuse, partial
-compute, tensor FFI, speedup, and product promotion remain zero. No second
-generation or C3 implementation is authorized. See the detailed
+C2-R1 preserved Standard Full Compute and produced a valid H.264 video, but
+that does not make the shadow policy successful. The structural adapter and
+next-step stable validation worked once; the dtype admission contract and
+blocking GPU-to-host sketch path did not. Actual skip, cache reuse, partial
+compute, raw-tensor FFI, speedup, and product promotion remain zero. No second
+generation, post-result code fix, or C3 implementation is authorized. See the detailed
 [C2 worklog](docs/worklogs/2026-08-06-c2-h3-compound-eye-shadow.md).
 
 ## Maintenance checklist

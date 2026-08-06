@@ -1270,6 +1270,33 @@ logical root `C2_ARTIFACT_ROOT`. See the detailed
 [C2 worklog](worklogs/2026-08-06-c2-h3-compound-eye-shadow.md) and
 [C3 handoff](design/h3-c3-selective-compute-handoff.md).
 
+C2-R1 then fixed only the source-proven `x0.tensors[0]` container path. The
+adapter commit passed 14/14 focused model-free tests and was pushed before the
+single approved regression. That one owned-runtime submission completed with
+20 callbacks, 20 Rust calls, 20 `FULL_COMPUTE` directives, zero escalation or
+fallback, and zero actual skip, cache reuse, partial compute, or raw-tensor
+Rust transfer. The H.264 output decoded 124/124 frames at 864x480 and 24 FPS
+with native audio; retry, OOM, CUDA-error, NaN, black-frame, and corrupted-frame
+counts were zero under the recorded checks.
+
+The observed container was `comfy.nested_tensor.NestedTensor`; its approved
+video slot was `[1,24,37,30,54]` on CUDA. The actual dtype was
+`torch.float32`, contradicting the committed BF16 admission check. The code
+therefore allowed Rust evaluation through its structural adapter but the
+post-run source gate rejected the signal. This is a wrapper/admission-contract
+defect, not successful runtime admission. In addition, each 48-float host
+transfer blocked for about 7.14 seconds: total-shadow p95 was 7.147004 seconds
+and cumulative shadow span was 135.699001 seconds, both above fixed limits.
+
+Counterfactual evidence remains useful but is not promoted: 76 eligible
+regional eye-steps yielded 25 stable, 4 active, and 47 uncertain candidates;
+all 25 stable candidates were validated by the next Full Compute callback,
+with zero contradiction and zero unvalidated candidates. One global
+invalidation and zero overlap conflicts were observed. Because the dtype and
+overhead gates failed, the final bounded decision is `C2_SHADOW_REVISE_ONCE`.
+The runtime's transformer-block candidate remains candidate-only; C3 admission
+is `no_c3_admission`. No second generation or post-result code change was made.
+
 ---
 
 ## Entry template

@@ -2,8 +2,8 @@ schema_version: "0.1.0"
 knowledge_id: "h3-c2-compound-eye-shadow-policy-2026-08-06"
 state: verified_once
 workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
-decision: C2_SHADOW_SIGNAL_NOT_ADMITTED
-claim_boundary: "One Standard H3 full-compute run reached all 20 callbacks, but the callback x0 object was not a torch.Tensor and therefore the fixed sketch and Rust shadow policy were not admitted. No source substitution, selective compute, cache reuse, speedup, or product-default claim is made."
+decision: C2_SHADOW_REVISE_ONCE
+claim_boundary: "The initial run rejected plain x0. One approved R1 run structurally admitted only x0.tensors[0] and validated stable candidates, but the actual float32 signal contradicted the committed BF16 gate and the blocking 48-scalar host transfer exceeded overhead limits. No selective compute, cache reuse, speedup, or product-default claim is made."
 
 source_contract:
   callback: sampler.progress_callback
@@ -152,3 +152,70 @@ runtime_evidence:
 automatic_product_application: false
 promotion_required: true
 rollback: "Remove the C2 workflow wrapper and retain the unchanged Standard H3 SamplerCustomAdvanced path."
+
+r1_runtime_evidence:
+  state: verified_once
+  approved_generation_count: 1
+  completed_generation_count: 1
+  retry_count: 0
+  terminal_state: execution_success
+  signal_adapter: h3_nested_video_v1
+  container_type: comfy.nested_tensor.NestedTensor
+  tensor_path: x0.tensors[0]
+  container_tensor_count: 2
+  video_shape: [1, 24, 37, 30, 54]
+  video_layout: "[batch, channel, temporal, height, width]"
+  observed_dtype: torch.float32
+  observed_device: cuda
+  committed_gate_dtype: torch.bfloat16
+  structural_adapter_admission_count: 20
+  structural_adapter_rejection_count: 0
+  final_source_gate_admitted: false
+  defect: "The adapter reached Rust before the committed dtype gate rejected the actual signal."
+  callback_count: 20
+  rust_call_count: 20
+  full_compute_count: 20
+  escalate_count: 0
+  fallback_count: 0
+  eligible_eye_step_count: 76
+  stable_candidate_count: 25
+  active_candidate_count: 4
+  uncertain_candidate_count: 47
+  validated_stable_count: 25
+  contradicted_stable_count: 0
+  unvalidated_stable_count: 0
+  stable_coverage: 0.32894736842105265
+  contradiction_rate: 0.0
+  global_invalidation_count: 1
+  overlap_conflict_count: 0
+  sketch_host_transfer_count: 20
+  sketch_host_transfer_bytes: 3840
+  full_tensor_host_copy_count: 0
+  tensor_bytes_to_rust: 0
+  skipped_compute_count: 0
+  cache_reuse_count: 0
+  partial_compute_count: 0
+  total_shadow_p95_seconds: 7.1470038
+  cumulative_shadow_seconds: 135.6990011
+  rust_boundary_p95_seconds: 0.0000376
+  submit_to_terminal_seconds: 588.5912212
+  runner_total_seconds: 600.5575121
+  sampler_node_seconds: 487.7354032
+  peak_nvidia_system_sampled_vram_bytes: 11990466560
+  peak_process_tree_rss_bytes: 47056539648
+  persistent_host_state_bytes: 30972
+  persistent_rust_state_bytes: 0
+  persistent_gpu_state_bytes: 0
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frame_count: 124
+    fps: 24.0
+    audio_stream_count: 1
+    black_frame_count: 0
+    corrupted_frame_count: 0
+    size_bytes: 262853
+    sha256: "41bfa11d705f4352417810aa2dc36edad522bd0acd47b2f37804c3be1785bfef"
+  selected_c3_hook: no_c3_admission
+  promoted: false

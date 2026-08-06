@@ -130,6 +130,24 @@ capabilities:
     selected_c3_hook: no_c3_admission
     selective_compute_available: false
     promoted: false
+  compound_eye_shadow_tensor_adapter_r1:
+    state: verified_once
+    available: false
+    exact_signal_path: x0.tensors[0]
+    structural_adapter_admission_count: 20
+    actual_dtype: torch.float32
+    committed_gate_dtype: torch.bfloat16
+    final_source_gate_admitted: false
+    rust_call_count: 20
+    full_compute_count: 20
+    stable_candidate_count: 25
+    validated_stable_count: 25
+    contradicted_stable_count: 0
+    blocking_host_transfer_p95_seconds: 7.1467292
+    decision: C2_SHADOW_REVISE_ONCE
+    selected_c3_hook: no_c3_admission
+    selective_compute_available: false
+    promoted: false
   cache_node:
     state: observed
     available: false

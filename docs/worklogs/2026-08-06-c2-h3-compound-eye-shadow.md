@@ -1,14 +1,18 @@
 # C2 Local H3 Compound Eye Shadow Policy
 
 Date: 2026-08-06
-Status: Draft PR evidence recorded; Issue remains open
-Final decision: `C2_SHADOW_SIGNAL_NOT_ADMITTED`
+Status: Draft PR C2-R1 evidence recorded; Issue remains open
+Final decision: `C2_SHADOW_REVISE_ONCE`
 
 ## Product question
 
 Can one real Local H3 sampler callback expose a bounded `x0` signal from which a five-eye `overlap_2x2` topology can propose conservative next-step `STABLE`, `ACTIVE`, and `UNCERTAIN` states while the actual workflow remains Standard Full Compute?
 
-The one approved run answered only the signal-admission part: no. The callback executed 20 times, but its `x0` object was not a `torch.Tensor`. The fixed contract explicitly prohibited switching to `x` or another internal value after observing this result.
+The initial approved run answered only the plain-tensor signal-admission part:
+no. The callback executed 20 times, but its `x0` object was not a
+`torch.Tensor`. That initial result remains immutable evidence below. A later
+read-only source investigation identified one exact container path, and C2-R1
+tested only that path under a separate one-run approval.
 
 ## Repository state
 
@@ -140,3 +144,91 @@ No safe hook is selected to reduce the 486-second sampler phase. Rust controlled
 This evidence verifies once that the repository wrapper can fail open while one real Standard H3 video completes, and that the actual callback object does not meet the predeclared plain-tensor signal contract. It does not verify Compound Eye state quality, selective compute, cache reuse, compute reduction, speedup, VRAM reduction, partial repair, or a product default.
 
 C1, M0, M1, Sage, quality, profiler, alternate signal, alternate topology, threshold sweep, second generation, Fast Mode, and training runs were omitted. Thresholds were not relaxed after seeing the result. H3 knowledge remains `verified_once`, never `promoted`.
+
+## C2-R1 exact container adapter regression
+
+The read-only C2-S0 investigation established the exact public source contract
+`comfy.nested_tensor.NestedTensor -> tensors[0]`. No recursive tensor search,
+`x` substitution, private attribute, RGB/VAE preview, QKV, model weight, or
+prompt state was admitted. The third branch commit fixed that one path and
+passed Python compilation, 14/14 focused model-free tests, diff checking,
+secret/path scanning, and binary scanning before a normal push. The model-free
+test path loaded no model and executed no CUDA work.
+
+Exactly one C2-R1 owned-runtime workflow was then submitted. There was no
+retry or additional generation. The structural adapter admitted all 20
+callbacks and observed:
+
+- container: `comfy.nested_tensor.NestedTensor`, two ordered tensors
+- video path: `x0.tensors[0]`
+- video layout: `[B,C,T,H,W]`
+- video shape: `[1,24,37,30,54]`
+- observed dtype/device: `torch.float32` / `cuda`
+- Rust calls / Full Compute directives: 20 / 20
+- escalation / fallback: 0 / 0
+- raw tensor bytes to Rust / full-tensor host copies: 0 / 0
+- sketch transfers: 20 x 192 bytes = 3,840 bytes
+- skip / cache reuse / partial compute: 0 / 0 / 0
+
+The actual dtype contradicted the committed post-run source gate, which
+required `torch.bfloat16`. Structural extraction consequently reached Rust,
+while `source_x0_admitted` was false in the final gate. Because contract
+mismatch was supposed to stop Rust before evaluation, this is a clear
+wrapper/admission-contract defect. The result is not reinterpreted as a
+successful admission and the code was not changed after the run.
+
+### Stable counterfactual validation
+
+The first 19 callbacks provided 76 eligible regional eye-steps. Their
+candidate counts were 25 stable, 4 active, and 47 uncertain. All 25 stable
+candidates were checked against the next actual Full Compute callback and all
+25 validated; contradicted and unvalidated counts were both zero. Stable
+coverage was 32.894737% and contradiction rate was 0%. One global invalidation
+and zero overlap conflicts were observed. These figures are one-run shadow
+evidence only, not authorization to skip work.
+
+### C2-R1 timing and memory
+
+| Metric | p50 | p95 | max |
+|---|---:|---:|---:|
+| Sketch reduction enqueue | 0.000165 s | 0.000903 s | 0.058090 s |
+| GPU-to-host 48-float transfer | 7.139598 s | 7.146729 s | 7.147384 s |
+| Host quantization | 0.000053 s | 0.000063 s | 0.000066 s |
+| Observation build | 0.000007 s | 0.000010 s | 0.000010 s |
+| Rust boundary | 0.000030 s | 0.000038 s | 0.001073 s |
+| Rust policy | 0.000004 s | 0.000005 s | 0.000640 s |
+| Total shadow callback | 7.139903 s | 7.147004 s | 7.147646 s |
+
+The cumulative shadow span was 135.699001 seconds, above the fixed 4.866-second
+limit. Total-shadow p95 also exceeded the fixed 0.1118-second limit. Rust
+boundary p95 passed its 0.001-second limit, and submit-to-terminal was
+588.591221 seconds, within 616.336 seconds. The 48-value `.to(cpu)` operation
+caused a blocking device synchronization and dominates the shadow cost; it is
+not GPU-kernel duration.
+
+Persistent shadow state was estimated as 30,972 host bytes, 0 Rust-retained
+bytes, and 0 GPU-retained bytes. Peak NVIDIA sampled VRAM was 11,990,466,560
+bytes and peak process-tree RSS was 47,056,539,648 bytes. Exact allocator and
+GPU-kernel durations remain unavailable because no profiler run was authorized.
+
+### Output and decision
+
+The private H.264 output is 864x480, 124/124 decoded frames, 24 FPS, one audio
+stream, zero black or corrupted frames, and 262,853 bytes. Its SHA-256 is
+`41bfa11d705f4352417810aa2dc36edad522bd0acd47b2f37804c3be1785bfef`.
+OOM, retry, CUDA-error, NaN, traceback, and execution-error signatures were all
+zero under the recorded checks. Runner total was 600.557512 seconds, sampler
+487.735403 seconds, and video VAE decode 63.563118 seconds. No speedup is
+claimed from a single wall-clock result.
+
+The runner emitted `C2_SHADOW_SIGNAL_NOT_ADMITTED`; the evidence review assigns
+the more specific bounded result `C2_SHADOW_REVISE_ONCE` because the committed
+dtype gate and pre-Rust adapter enforcement disagree. The transformer-block
+hook returned by the counterfactual selector is candidate-only and is not C3
+admission. Final C3 selection remains `no_c3_admission`. A separately approved
+revision would need to predeclare the actual float32 callback contract and a
+nonblocking/device-resident sketch path before any further generation.
+
+Actual skip, cache reuse, partial compute, speedup claim, product promotion,
+Ready transition, merge, and Issue closure remain zero. Private prompt, media,
+receipts, raw events, complete logs, and machine paths remain outside Git.

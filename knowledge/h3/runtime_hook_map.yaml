@@ -224,3 +224,21 @@ selected_target:
     source_substitution_count: 0
     selected_c3_hook: no_c3_admission
     promoted: false
+  c2_r1_follow_up:
+    state: verified_once
+    decision: C2_SHADOW_REVISE_ONCE
+    exact_signal_path: x0.tensors[0]
+    structural_adapter_admissions: 20
+    actual_signal_dtype: torch.float32
+    committed_gate_dtype: torch.bfloat16
+    rust_calls_observed: 20
+    full_compute_decisions: 20
+    stable_candidates: 25
+    validated_stable: 25
+    contradicted_stable: 0
+    total_shadow_p95_seconds: 7.1470038
+    cumulative_shadow_seconds: 135.6990011
+    counterfactual_candidate: h3.transformer_block_wrapper
+    selected_c3_hook: no_c3_admission
+    reason: "The dtype contract and blocking host-transfer overhead gates failed."
+    promoted: false

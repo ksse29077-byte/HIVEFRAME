@@ -60,3 +60,23 @@ Not admitted. A future separately approved signal-admission study must first est
 - Stable coverage, safe skip, cache key, invalidation completeness, speedup, and product value: unsupported.
 
 This hook cannot yet reduce the observed sampler phase, does not let Rust control actual GPU computation, and has no partial-repair connection. Standard rollback remains immediate, but no RTX 3060 or cross-backend C3 trial is authorized from this result.
+
+## C2-R1 update
+
+C2-R1 admitted the source-proven `x0.tensors[0]` structural path for all 20
+callbacks and counterfactually validated 25/25 stable candidates with zero
+contradiction. This does not supersede the no-admission decision. The actual
+callback video tensor was CUDA float32, while the committed source gate required
+BF16, and the adapter allowed Rust calls before that mismatch was applied. The
+post-run result is therefore `C2_SHADOW_REVISE_ONCE`, not an admitted signal.
+
+The GPU-to-host transfer of only 48 floats still blocked for about 7.14 seconds
+per callback, producing 7.147004-second total-shadow p95 and 135.699001 seconds
+cumulative overhead. Rust boundary p95 itself was only 37.6 microseconds, so
+the current bottleneck is the synchronizing tensor-to-host boundary rather than
+metadata evaluation.
+
+The selector's `h3.transformer_block_wrapper` result is retained as a
+counterfactual candidate only. It is not a C3 authorization because the signal
+contract and overhead gates failed. The effective C3 selection remains
+`no_c3_admission`; Full Compute fallback and wrapper removal are the rollback.
