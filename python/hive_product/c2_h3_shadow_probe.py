@@ -26,15 +26,25 @@ from .c0_h3_phase_probe import (
     unsupported,
 )
 from .comfyui_backend import ComfyUIH3Config, MiniMaxH3ComfyUIBackend
+from .compound_eye_shadow import (
+    ASYNC_RING_SIZE,
+    H3_AUDIO_SHAPE,
+    H3_CALLBACK_DEVICE_TYPE,
+    H3_CALLBACK_VIDEO_DTYPE,
+    H3_SIGNAL_ADAPTER,
+    H3_VIDEO_SHAPE,
+    PREDICTION_HORIZON_STEPS,
+)
 from .sageattention_probe import SAGE_NODE_CLASS, _decode_video, _load_private_prompt
 
 
-C2_SCHEMA_VERSION = "c2.h3.compound-eye-shadow.1"
+C2_SCHEMA_VERSION = "c2.h3.compound-eye-shadow.2"
 APPROVED_WORKFLOW_SHA256 = "31ab33fdb053a7834cc866bd7aa08b887518fc656e4a796c89779c6b5e1786e6"
 C2_NODE_CLASS = "HIVEFRAMECompoundEyeShadowSampler"
-SHADOW_P95_LIMIT_SECONDS = 0.1118
+SHADOW_P95_LIMIT_SECONDS = 0.005
 BOUNDARY_P95_LIMIT_SECONDS = 0.001
-CUMULATIVE_SHADOW_LIMIT_SECONDS = 4.866
+CUMULATIVE_SHADOW_LIMIT_SECONDS = 0.250
+CUDA_SKETCH_P95_LIMIT_SECONDS = 0.100
 SUBMIT_TO_TERMINAL_LIMIT_SECONDS = 616.336
 
 
@@ -60,6 +70,11 @@ def c2_settings_digest() -> str:
         "sketch_source": "x0",
         "signal_adapter": "h3_nested_video_v1",
         "signal_path": "x0.tensors[0]",
+        "signal_dtype": H3_CALLBACK_VIDEO_DTYPE,
+        "signal_device_type": H3_CALLBACK_DEVICE_TYPE,
+        "async_ring_size": ASYNC_RING_SIZE,
+        "async_stream_method": "current_cuda_stream",
+        "prediction_horizon_steps": PREDICTION_HORIZON_STEPS,
         "sketch_grid": [4, 4],
         "sketch_metrics": ["mean", "mean_abs", "rms"],
         "quantization_scale": 4096,
@@ -141,19 +156,37 @@ def inspect_callback_source(comfyui_root: Path) -> dict[str, Any]:
 
 
 def _shadow_gate(policy: Mapping[str, Any], submit_seconds: float | None) -> dict[str, Any]:
-    total_p95_ns = policy.get("total_shadow_callback", {}).get("p95_ns")
+    total_p95_ns = policy.get("callback_shadow_cpu", {}).get("p95_ns")
+    cuda_p95_ns = policy.get("cuda_async_sketch", {}).get("p95_ns")
     boundary_p95_ns = policy.get("boundary_roundtrip", {}).get("p95_ns")
-    cumulative_ns = policy.get("cumulative_shadow_overhead_ns")
+    cumulative_ns = policy.get("cumulative_callback_shadow_cpu_ns")
     callbacks = policy.get("callback_count")
     events = policy.get("events") if isinstance(policy.get("events"), list) else []
-    source_admitted = bool(events) and all(
-        isinstance(event.get("source_shape"), list)
-        and len(event["source_shape"]) == 5
-        and event.get("source_dtype") == "torch.bfloat16"
-        and event.get("source_device_type") == "cuda"
-        and event.get("signal_adapter") == "h3_nested_video_v1"
-        for event in events
+    async_state = policy.get("async_pipeline") if isinstance(policy.get("async_pipeline"), Mapping) else {}
+    signal_contract = (
+        policy.get("strict_signal_contract")
+        if isinstance(policy.get("strict_signal_contract"), Mapping)
+        else {}
     )
+    source_admitted = bool(events) and all(
+        event.get("source_shape") == list(H3_VIDEO_SHAPE)
+        and event.get("source_dtype") == H3_CALLBACK_VIDEO_DTYPE
+        and event.get("source_device_type") == H3_CALLBACK_DEVICE_TYPE
+        and event.get("signal_adapter") == H3_SIGNAL_ADAPTER
+        for event in events
+    ) and signal_contract == {
+        "container_type": "comfy.nested_tensor.NestedTensor",
+        "tensor_count": 2,
+        "video_path": "x0.tensors[0]",
+        "audio_path": "x0.tensors[1]",
+        "video_shape": list(H3_VIDEO_SHAPE),
+        "audio_shape": list(H3_AUDIO_SHAPE),
+        "video_dtype": H3_CALLBACK_VIDEO_DTYPE,
+        "audio_dtype": H3_CALLBACK_VIDEO_DTYPE,
+        "device_type": H3_CALLBACK_DEVICE_TYPE,
+        "axis_contract": "B,C,T,H,W",
+        "admission_before_cuda_or_rust": True,
+    }
     actual_zero = all(
         policy.get(name) == 0
         for name in (
@@ -167,21 +200,41 @@ def _shadow_gate(policy: Mapping[str, Any], submit_seconds: float | None) -> dic
         )
     )
     checks = {
-        "callback_count_positive": isinstance(callbacks, int) and callbacks > 0,
-        "rust_call_count_matches": callbacks == policy.get("rust_call_count"),
+        "callback_count_exact": callbacks == 20,
+        "rust_call_count_matches": policy.get("rust_call_count") == async_state.get("sketch_consume_count"),
         "full_compute_only": callbacks == policy.get("full_compute_count"),
         "escalate_zero": policy.get("escalate_full_compute_count") == 0,
         "fallback_zero": policy.get("fallback_count") == 0,
         "source_x0_admitted": source_admitted,
+        "signal_rejection_zero": async_state.get("signal_rejection_count") == 0
+        and async_state.get("processing_failure_count") == 0
+        and async_state.get("dtype_rejection_count") == 0
+        and async_state.get("rejected_dtype_rust_call_count") == 0
+        and async_state.get("structural_admission_count") == callbacks
+        and async_state.get("dtype_admission_count") == callbacks,
         "overlap_2x2_five_eyes": policy.get("topology") == "overlap_2x2" and policy.get("eye_count") == 5,
         "actual_selective_compute_zero": actual_zero,
-        "full_tensor_host_copy_zero": policy.get("max_host_transfers_per_callback") == 1
+        "bounded_async_pipeline": async_state.get("ring_size") == ASYNC_RING_SIZE
+        and async_state.get("pinned_buffer_count") == ASYNC_RING_SIZE
+        and async_state.get("sketch_enqueue_count") == callbacks
+        and async_state.get("non_blocking_copy_count") == callbacks
+        and async_state.get("ring_overflow_count") == 0,
+        "callback_synchronization_zero": async_state.get("callback_synchronization_count") == 0,
+        "event_readiness_complete": async_state.get("next_callback_verifiable_count") == 19
+        and async_state.get("next_callback_event_ready_count") == 19
+        and async_state.get("next_callback_event_ready_rate") == 1.0
+        and async_state.get("deadline_miss_count") == 0,
+        "drain_complete": async_state.get("drain_timeout_count") == 0,
+        "full_tensor_host_copy_zero": policy.get("full_tensor_host_copy_bytes") == 0
+        and policy.get("max_host_transfers_per_callback") == 1
         and policy.get("sketch", {}).get("value_count") == 48,
-        "stable_candidates_at_least_two": int(policy.get("stable_candidate_count", 0)) >= 2,
-        "validated_stable_at_least_two": int(policy.get("validated_stable_count", 0)) >= 2,
-        "contradicted_stable_zero": policy.get("contradicted_stable_count") == 0,
+        "stable_candidates_at_least_two": int(policy.get("lagged_stable_candidate_count", 0)) >= 2,
+        "validated_stable_at_least_two": int(policy.get("lagged_validated_stable_count", 0)) >= 2,
+        "contradicted_stable_zero": policy.get("lagged_contradicted_stable_count") == 0,
         "shadow_p95_within_limit": isinstance(total_p95_ns, int)
         and total_p95_ns / 1_000_000_000 <= SHADOW_P95_LIMIT_SECONDS,
+        "cuda_sketch_p95_within_limit": isinstance(cuda_p95_ns, int)
+        and cuda_p95_ns / 1_000_000_000 <= CUDA_SKETCH_P95_LIMIT_SECONDS,
         "boundary_p95_within_limit": isinstance(boundary_p95_ns, int)
         and boundary_p95_ns / 1_000_000_000 <= BOUNDARY_P95_LIMIT_SECONDS,
         "cumulative_shadow_within_limit": isinstance(cumulative_ns, int)
@@ -190,35 +243,17 @@ def _shadow_gate(policy: Mapping[str, Any], submit_seconds: float | None) -> dic
         and submit_seconds <= SUBMIT_TO_TERMINAL_LIMIT_SECONDS,
         "persistent_state_within_limit": int(policy.get("persistent_host_state_estimate_bytes", 65_537)) <= 65_536
         and policy.get("persistent_rust_state_bytes") == 0
-        and policy.get("persistent_gpu_state_bytes") == 0,
+        and policy.get("persistent_gpu_state_bytes") == 0
+        and int(policy.get("max_in_flight_gpu_bytes", 65_537)) <= ASYNC_RING_SIZE * 48 * 4,
     }
-    if not checks["source_x0_admitted"] or not checks["callback_count_positive"]:
-        decision = "C2_SHADOW_SIGNAL_NOT_ADMITTED"
-    elif int(policy.get("contradicted_stable_count", 0)) > 0:
-        decision = "C2_SHADOW_FALSE_STABLE_DETECTED"
-    elif int(policy.get("stable_candidate_count", 0)) < 2 or int(policy.get("validated_stable_count", 0)) < 2:
-        decision = "C2_SHADOW_NO_STABLE_ADMISSION"
-    elif not all(
-        checks[name]
-        for name in (
-            "shadow_p95_within_limit",
-            "boundary_p95_within_limit",
-            "cumulative_shadow_within_limit",
-            "submit_to_terminal_within_limit",
-            "persistent_state_within_limit",
-        )
-    ):
-        decision = "C2_SHADOW_OVERHEAD_TOO_HIGH"
-    elif all(checks.values()):
-        decision = "C2_COMPOUND_EYE_SHADOW_READY"
-    else:
-        decision = "C2_SHADOW_REVISE_ONCE"
+    decision = "C2_COMPOUND_EYE_SHADOW_READY" if all(checks.values()) else "C2_SHADOW_FALLBACK_ONLY"
     return {
         "checks": checks,
         "passed": decision == "C2_COMPOUND_EYE_SHADOW_READY",
         "decision": decision,
         "limits": {
             "shadow_p95_seconds": SHADOW_P95_LIMIT_SECONDS,
+            "cuda_sketch_p95_seconds": CUDA_SKETCH_P95_LIMIT_SECONDS,
             "boundary_p95_seconds": BOUNDARY_P95_LIMIT_SECONDS,
             "cumulative_shadow_seconds": CUMULATIVE_SHADOW_LIMIT_SECONDS,
             "submit_to_terminal_seconds": SUBMIT_TO_TERMINAL_LIMIT_SECONDS,
@@ -227,34 +262,32 @@ def _shadow_gate(policy: Mapping[str, Any], submit_seconds: float | None) -> dic
     }
 
 
-def select_c3_hook(policy: Mapping[str, Any]) -> dict[str, Any]:
-    events = policy.get("events") if isinstance(policy.get("events"), list) else []
-    all_regional_stable = any(
-        event.get("stable_regional_eyes") == [1, 2, 3, 4]
-        and event.get("validation_of_previous", {}).get("status") == "validated_stable"
-        for event in events
-    )
-    has_stable = int(policy.get("validated_stable_count", 0)) >= 2
-    contradicted = int(policy.get("contradicted_stable_count", 0)) > 0
-    if all_regional_stable:
-        return {
-            "selection": "sampler.pre_step_model_call_gate",
-            "candidate": "A",
-            "status": "candidate_only",
-            "reason": "all four regional eyes have a validated next-step stable candidate",
-        }
-    if has_stable and not contradicted:
+def select_c3_hook(
+    policy: Mapping[str, Any], gate: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
+    if gate is not None and bool(gate.get("passed")):
         return {
             "selection": "h3.transformer_block_wrapper",
             "candidate": "B",
             "status": "candidate_only",
-            "reason": "regional stability exists without an all-region stable admission",
+            "prediction_horizon_steps": PREDICTION_HORIZON_STEPS,
+            "decision_ready_at": "after lagged sketch consumption and Full Compute validation",
+            "reducible_compute_unit": "H3 transformer block execution",
+            "block_cache_source": "prior Full Compute transformer block output candidate",
+            "cache_key": ["workflow_revision", "settings", "step", "block", "region"],
+            "invalidation": "global invalidation, overlap conflict, uncertainty, or contract mismatch",
+            "full_compute_fallback": True,
+            "tensor_ownership": "backend-owned; Rust receives metadata only",
+            "rollback": "remove adapter wrapper and use unmodified Standard H3 workflow",
+            "rtx_3060_fit": "candidate must remain bounded and preserve Full Compute fallback",
+            "backend_adapter_isolation": True,
+            "reason": "all C2-R2 lagged shadow and overhead gates passed",
         }
     return {
         "selection": "no_c3_admission",
         "candidate": "C",
         "status": "not_admitted",
-        "reason": "stable evidence is absent or contradicted",
+        "reason": "C2-R2 Gate did not admit a C3 hook",
     }
 
 
@@ -457,7 +490,7 @@ def run_probe(*, run_id: str, p0_database: Path, private_run_root: Path) -> dict
         submit_seconds = receipt.get("phase_attribution", {}).get("submit_to_terminal_seconds")
         policy = receipt.get("shadow_policy") if isinstance(receipt.get("shadow_policy"), Mapping) else {}
         receipt["c2_gate"] = _shadow_gate(policy, submit_seconds)
-        receipt["c3_hook_admission"] = select_c3_hook(policy)
+        receipt["c3_hook_admission"] = select_c3_hook(policy, receipt["c2_gate"])
         if exit_code == 0 and not receipt["c2_gate"]["passed"]:
             exit_code = 2
         receipt["exit_code"] = exit_code

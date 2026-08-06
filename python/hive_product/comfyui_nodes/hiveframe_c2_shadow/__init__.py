@@ -12,9 +12,10 @@ from comfy_extras.nodes_custom_sampler import SamplerCustomAdvanced
 import latent_preview
 
 from hive_product.compound_eye_shadow import (
+    AsyncCompoundEyeShadowPipeline,
     CompoundEyeShadowBridge,
     ShadowContext,
-    wrap_shadow_callback,
+    wrap_async_shadow_callback,
 )
 
 
@@ -23,14 +24,14 @@ _ACTIVE = False
 
 
 def _write_receipt(
-    bridge: CompoundEyeShadowBridge, sampler_succeeded: bool, error: str | None
+    pipeline: AsyncCompoundEyeShadowPipeline, sampler_succeeded: bool, error: str | None
 ) -> None:
     target_value = os.environ.get(POLICY_RECEIPT_ENV)
     if not target_value:
         return
     target = Path(target_value)
     target.parent.mkdir(parents=True, exist_ok=True)
-    payload = bridge.receipt()
+    payload = pipeline.receipt()
     payload["sampler_succeeded"] = sampler_succeeded
     payload["error_type"] = error
     temporary = target.with_suffix(target.suffix + ".partial")
@@ -84,21 +85,24 @@ class HIVEFRAMECompoundEyeShadowSampler(io.ComfyNode):
                 settings_digest=settings_digest,
             )
         )
+        pipeline = AsyncCompoundEyeShadowPipeline(bridge)
         original_prepare_callback = latent_preview.prepare_callback
 
         def prepare_callback(model: Any, steps: int, x0_output_dict: Any = None):
             original_callback = original_prepare_callback(model, steps, x0_output_dict)
-            return wrap_shadow_callback(original_callback, bridge)
+            return wrap_async_shadow_callback(original_callback, pipeline)
 
         _ACTIVE = True
         latent_preview.prepare_callback = prepare_callback
         try:
             result = SamplerCustomAdvanced.execute(noise, guider, sampler, sigmas, latent_image)
         except BaseException as error:
-            _write_receipt(bridge, False, type(error).__name__)
+            pipeline.drain()
+            _write_receipt(pipeline, False, type(error).__name__)
             raise
         else:
-            _write_receipt(bridge, True, None)
+            pipeline.drain()
+            _write_receipt(pipeline, True, None)
             return result
         finally:
             latent_preview.prepare_callback = original_prepare_callback
