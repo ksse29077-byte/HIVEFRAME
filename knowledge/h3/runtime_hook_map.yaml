@@ -207,3 +207,20 @@ selected_target:
     tensor_bytes_transferred: 0
     third_generation_run: false
     promoted: false
+  c2_follow_up:
+    state: verified_once
+    issue: 61
+    decision: C2_SHADOW_SIGNAL_NOT_ADMITTED
+    topology: overlap_2x2
+    configured_eye_count: 5
+    actual_submissions: 1
+    callbacks_observed: 20
+    admitted_x0_tensor_callbacks: 0
+    rust_calls_observed: 0
+    full_compute_fallback_callbacks: 20
+    stable_candidates: 0
+    validated_stable: 0
+    contradicted_stable: 0
+    source_substitution_count: 0
+    selected_c3_hook: no_c3_admission
+    promoted: false

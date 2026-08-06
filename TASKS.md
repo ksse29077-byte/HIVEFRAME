@@ -308,12 +308,12 @@ outside Git.
 
 ## C1 — Rust Sampler Step Policy Bridge
 
-Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+Overall status: `verified_once`; publication status: `published`. Bounded
 decision: `C1_RUST_POLICY_BRIDGE_READY`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated C1 work | `in_progress` | [Issue #59](https://github.com/ksse29077-byte/HIVEFRAME/issues/59); [Draft PR #60](https://github.com/ksse29077-byte/HIVEFRAME/pull/60); branch `core/c1-rust-sampler-policy-bridge` |
+| Track isolated C1 work | `published` | Issue #59 completed; [PR #60](https://github.com/ksse29077-byte/HIVEFRAME/pull/60) merged as `4635f47...`; branch preserved |
 | Reuse existing Rust workspace and PyO3 bridge | `implemented` | `hive-retina-runtime` plus `hive-retina-python`, ABI v1, PyO3 0.29 `abi3-py312` |
 | Define fixed metadata contracts | `verified` | 184-byte `StepObservation`, 76-byte `StepDirective`, fixed digests/enums, no tensors or private payloads |
 | Enforce full-compute-only policy | `verified` | `FULL_COMPUTE` / `ESCALATE_FULL_COMPUTE`; every skip/reuse/partial counter fixed at zero; panic and malformed-response fail-open tests |
@@ -329,6 +329,27 @@ The failed 34.44-second first attempt remains diagnostic history. The single
 approved regression validates metadata-only full-compute parity; it is not a
 speedup claim or product-default promotion. See the detailed
 [C1 worklog](docs/worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
+
+## C2 — Local H3 Compound Eye Shadow Policy
+
+Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+decision: `C2_SHADOW_SIGNAL_NOT_ADMITTED`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C2 work | `in_progress` | [Issue #61](https://github.com/ksse29077-byte/HIVEFRAME/issues/61); [Draft PR #62](https://github.com/ksse29077-byte/HIVEFRAME/pull/62); branch `core/c2-h3-compound-eye-shadow` |
+| Predeclare five-eye topology and thresholds | `verified` | `overlap_2x2`, x0-only 4x4x3 sketch, fixed scale 4096 and immutable ppm thresholds |
+| Implement separate C2 Rust/PyO3 ABI | `verified` | 536-byte observation, 232-byte directive, one fixed-sketch call maximum, actual decisions limited to Full Compute/escalation |
+| Pass focused model-free validation | `verified` | seven C2 Rust tests, workspace check, 20 C2+C1 Python tests, real ABI roundtrip, compile/fmt/diff checks |
+| Execute approved Standard shadow run | `verified_once` | one submission, retry 0, video 124/124; all 20 callbacks fail open because x0 is not a `torch.Tensor` |
+| Admit stable shadow candidates | `unsupported` | no sketch or Rust call admitted; stable/validated/contradicted counts 0/0/0 |
+| Select C3 execution hook | `not_admitted` | exact selection `no_c3_admission`; alternate tensor source and threshold adjustment prohibited |
+
+C2 preserved Standard Full Compute and produced a valid H.264 video, but that
+does not make the shadow policy successful. Actual skip, cache reuse, partial
+compute, tensor FFI, speedup, and product promotion remain zero. No second
+generation or C3 implementation is authorized. See the detailed
+[C2 worklog](docs/worklogs/2026-08-06-c2-h3-compound-eye-shadow.md).
 
 ## Maintenance checklist
 

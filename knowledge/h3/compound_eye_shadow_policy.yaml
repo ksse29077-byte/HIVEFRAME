@@ -1,9 +1,9 @@
 schema_version: "0.1.0"
 knowledge_id: "h3-c2-compound-eye-shadow-policy-2026-08-06"
-state: observed
+state: verified_once
 workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
-decision: C2_PREDECLARED_PENDING_RUNTIME_EVIDENCE
-claim_boundary: "Predeclared shadow-only policy and model-free implementation. No selective compute, cache reuse, speedup, or product-default claim is made."
+decision: C2_SHADOW_SIGNAL_NOT_ADMITTED
+claim_boundary: "One Standard H3 full-compute run reached all 20 callbacks, but the callback x0 object was not a torch.Tensor and therefore the fixed sketch and Rust shadow policy were not admitted. No source substitution, selective compute, cache reuse, speedup, or product-default claim is made."
 
 source_contract:
   callback: sampler.progress_callback
@@ -94,10 +94,59 @@ performance_gates:
   persistent_gpu_state_bytes: 0
 
 runtime_evidence:
-  state: pending
+  state: verified_once
   approved_generation_count: 1
-  completed_generation_count: 0
+  completed_generation_count: 1
   retry_count: 0
+  terminal_state: execution_success
+  output_integrity:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frame_count: 124
+    fps: 24.0
+    audio_stream_count: 1
+    black_frame_count: 0
+    corrupted_frame_count: 0
+    size_bytes: 262853
+    sha256: "1ae93b511a7998a25f4984850192e6ae11ed1bafadcdfc1f2d4a6a8954227534"
+  callback_count: 20
+  rust_call_count: 0
+  actual_full_compute_callback_count: 20
+  rust_full_compute_directive_count: 0
+  fail_open_count: 20
+  signal_failure: x0_not_tensor
+  x0_shape:
+    value: null
+    support_status: not_collected
+    reason: "The callback object failed the torch.Tensor admission check before tensor metadata could be read."
+  x0_dtype:
+    value: null
+    support_status: not_collected
+    reason: "The callback object failed the torch.Tensor admission check before tensor metadata could be read."
+  x0_device:
+    value: null
+    support_status: not_collected
+    reason: "The callback object failed the torch.Tensor admission check before tensor metadata could be read."
+  stable_candidate_count: 0
+  validated_stable_count: 0
+  contradicted_stable_count: 0
+  sketch_host_transfer_count: 0
+  full_tensor_host_copy_count: 0
+  tensor_bytes_to_rust: 0
+  actual_skip_cache_partial_count: 0
+  submit_to_terminal_seconds: 585.3626930
+  runner_total_seconds: 600.3827576
+  sampler_node_seconds: 486.5280568
+  peak_nvidia_system_sampled_vram_bytes: 11923357696
+  peak_process_tree_rss_bytes: 46995505152
+  peak_system_wide_used_ram_bytes: 62728011776
+  gpu_kernel_seconds:
+    value: null
+    support_status: not_collected
+    reason: "No profiler run was authorized."
+  private_artifact_root: C2_ARTIFACT_ROOT
+  selected_c3_hook: no_c3_admission
   promoted: false
 
 automatic_product_application: false

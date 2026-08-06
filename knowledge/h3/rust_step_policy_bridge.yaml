@@ -189,3 +189,22 @@ gates:
 automatic_product_application: false
 promotion_required: true
 rollback: "Remove the repository custom-node path and restore the unchanged SamplerCustomAdvanced API copy."
+
+c2_follow_up:
+  state: verified_once
+  separate_abi: true
+  c1_abi_changed: false
+  decision: C2_SHADOW_SIGNAL_NOT_ADMITTED
+  topology: overlap_2x2
+  configured_eye_count: 5
+  callback_count: 20
+  rust_call_count: 0
+  failure_signature: x0_not_tensor
+  actual_full_compute_preserved: true
+  skipped_compute_count: 0
+  reused_cache_count: 0
+  partial_compute_count: 0
+  tensor_bytes_transferred_to_rust: 0
+  selected_c3_hook: no_c3_admission
+  promoted: false
+  claim_boundary: "C2 did not alter C1. It used a separate ABI and failed open before Rust because the x0 callback object was not a torch.Tensor."

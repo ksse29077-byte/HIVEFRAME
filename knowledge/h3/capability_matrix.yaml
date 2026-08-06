@@ -99,19 +99,37 @@ capabilities:
     semantic: observed_progress_interval
     exact_gpu_step_duration: false
   rust_sampler_policy_handoff:
-    state: observed
-    available: false
+    state: verified_once
+    available: true
     boundary: metadata_only_coarse_ffi
-    implementation_state: model_free_verified_runtime_parity_pending
+    implementation_state: full_compute_parity_verified_once
     full_compute_fallback_required: true
     abi_version: 1
     model_free_roundtrip: verified_once
     comfyui_custom_node_registration: verified_once
-    actual_callback_count: 0
-    actual_rust_call_count: 0
-    runtime_attempt_result: wrapper_entry_error
-    decision: C1_RUST_POLICY_BRIDGE_REVISE_ONCE
+    actual_callback_count: 20
+    actual_rust_call_count: 20
+    runtime_attempt_result: full_compute_parity_success
+    decision: C1_RUST_POLICY_BRIDGE_READY
     selective_compute_available: false
+  compound_eye_shadow_signal:
+    state: verified_once
+    available: false
+    topology: overlap_2x2
+    configured_eye_count: 5
+    sketch_source: x0
+    runtime_callback_count: 20
+    admitted_sketch_count: 0
+    rust_call_count: 0
+    failure_signature: x0_not_tensor
+    stable_candidate_count: 0
+    validated_stable_count: 0
+    contradicted_stable_count: 0
+    full_compute_fallback_succeeded: true
+    decision: C2_SHADOW_SIGNAL_NOT_ADMITTED
+    selected_c3_hook: no_c3_admission
+    selective_compute_available: false
+    promoted: false
   cache_node:
     state: observed
     available: false
@@ -146,3 +164,8 @@ candidate_rules:
     promotion_required: true
     rule: "Enable SageAttention KJ auto as an optional product Fast mode."
     reason: "The one paired run reached only 1.207x submit speedup, below the fixed 1.3x candidate threshold."
+  - candidate_id: "c2-alternate-callback-signal"
+    state: observed
+    promotion_required: true
+    rule: "Define a new separately approved fixed-size view for the actual non-tensor callback object."
+    reason: "C2 prohibited source substitution after all callbacks failed the plain torch.Tensor admission rule."

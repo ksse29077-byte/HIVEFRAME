@@ -1229,6 +1229,47 @@ zero. `REVISE_ONCE` is consumed; the next separate approval would be C2
 Compound Eye Shadow Policy with actual H3 computation still full compute. See
 the detailed [C1 worklog](worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
 
+## 2026-08-06 — C2 Local H3 Compound Eye shadow policy
+
+Issue #61, branch `core/c2-h3-compound-eye-shadow`, and Draft PR #62 isolate
+the first real-H3 Compound Eye shadow attempt. PR #60 was first verified as
+merged at main commit `4635f4750553a24037793e6ebbfa077f06d2474a`; C1's
+full-compute ABI and evidence were reused without another run.
+
+Before runtime work, C2 fixed one `overlap_2x2` topology (one global and four
+overlapping regional eyes), one x0-only 4x4x3 sketch, int32 scale 4096, five
+ppm thresholds, ABI v1, one-Rust-call maximum, next-callback validation, and
+Full Compute fail-open. Seven focused Rust tests and 20 C2+C1 Python tests,
+including a real PyO3 ABI roundtrip, passed. The first commit was
+`cd4e5cd8a8016c599657bf5ab967a31d53086390`; thresholds were not changed after
+the actual result.
+
+Exactly one Standard H3 workflow then ran with zero Sage nodes and zero retry.
+It generated a valid H.264 864x480 output with 124/124 frames, 24 FPS, one
+audio stream, no black or corrupted frame, and SHA-256
+`1ae93b511a7998a25f4984850192e6ae11ed1bafadcdfc1f2d4a6a8954227534`.
+Submit-to-terminal was 585.362693 seconds, runner total 600.382758 seconds,
+peak NVIDIA sampled VRAM 11,923,357,696 bytes, and peak process-tree RSS
+46,995,505,152 bytes.
+
+All 20 callbacks reported `x0_not_tensor`. C2 therefore made zero sketches,
+zero host transfers, zero Rust calls, zero stable candidates, zero validated
+stable candidates, and zero contradictions. The wrapper failed open and the
+actual workflow remained Full Compute for all steps. It did not switch to
+`x`, nested members, RGB, previews, QKV, or another source. Actual skip, cache
+reuse, partial compute, raw tensor transfer, profiler, and repeat counts were
+zero. Shape, dtype, device, Rust timing, and exact GPU kernel time remain
+`null/not_collected` with reasons rather than fabricated zeros.
+
+The bounded decision is `C2_SHADOW_SIGNAL_NOT_ADMITTED`; the exact C3
+selection is `no_c3_admission`. No sampler gate or transformer wrapper is
+authorized from this evidence, and no speedup or product-default claim exists.
+Public evidence is aggregate-only; prompt, video, callbacks, logs, receipts,
+machine paths, and build artifacts remain under the repository-external
+logical root `C2_ARTIFACT_ROOT`. See the detailed
+[C2 worklog](worklogs/2026-08-06-c2-h3-compound-eye-shadow.md) and
+[C3 handoff](design/h3-c3-selective-compute-handoff.md).
+
 ---
 
 ## Entry template
