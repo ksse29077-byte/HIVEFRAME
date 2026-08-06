@@ -1,0 +1,105 @@
+schema_version: "0.1.0"
+knowledge_id: "h3-c2-compound-eye-shadow-policy-2026-08-06"
+state: observed
+workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+decision: C2_PREDECLARED_PENDING_RUNTIME_EVIDENCE
+claim_boundary: "Predeclared shadow-only policy and model-free implementation. No selective compute, cache reuse, speedup, or product-default claim is made."
+
+source_contract:
+  callback: sampler.progress_callback
+  allowed_source: x0
+  provenance: sampler_callback_denoised_argument
+  rejected_sources:
+    - x
+    - rgb_preview
+    - vae_preview
+    - prompt_embedding
+    - qkv
+    - model_weight
+    - input_image
+  source_layout: "[batch, channel, temporal, height, width]"
+  spatial_axes: last_two_only_after_exact_rank_5_check
+
+topology:
+  logical_id: overlap_2x2
+  global_eye_count: 1
+  regional_eye_count: 4
+  total_eye_count: 5
+  global_eye_write_scope: none
+  regional_write_scopes: fixed_quadrants
+  overlap_halo: one_sketch_cell
+
+sketch:
+  grid: [4, 4]
+  metrics: [mean, mean_abs, rms]
+  fixed_value_count: 48
+  quantization:
+    representation: signed_int32
+    scale: 4096
+    fixed_before_runtime_measurement: true
+  gpu_reduction: one_bounded_sequence
+  max_gpu_to_host_transfers_per_callback: 1
+  host_transfer_bytes_per_admitted_callback: 192
+  tensor_bytes_to_rust: 0
+  raw_sketch_persisted_publicly: false
+  raw_tensor_persisted: false
+
+thresholds:
+  unit: parts_per_million_of_previous_quantized_magnitude
+  stable_delta_limit: 20000
+  active_delta_limit: 80000
+  global_invalidation_limit: 150000
+  stable_validation_limit: 30000
+  local_to_global_limit: 950000
+  warmup_callbacks_without_stable: 2
+  immutable_after_runtime_result: true
+
+abi:
+  version: 1
+  observation: CompoundEyeShadowObservation
+  directive: CompoundEyeShadowDirective
+  function: evaluate_compound_eye_shadow_policy
+  runtime_wrapper: HIVEFRAMECompoundEyeShadowSampler
+  max_rust_calls_per_callback: 1
+  actual_decisions: [FULL_COMPUTE, ESCALATE_FULL_COMPUTE]
+  counterfactual_states: [STABLE, ACTIVE, UNCERTAIN]
+
+validation:
+  prediction_direction: "callback N predicts callback N+1"
+  last_callback_prediction_eligible: false
+  first_callback_all_regional_uncertain: true
+  minimum_stable_candidates: 2
+  minimum_validated_stable: 2
+  maximum_contradicted_stable: 0
+  missing_observation: not_validated
+  conflict_policy: stable_active_overlap_to_uncertain
+
+actual_execution:
+  standard_full_compute: true
+  skipped_step_count: 0
+  skipped_block_count: 0
+  skipped_token_count: 0
+  skipped_latent_count: 0
+  reused_cache_count: 0
+  partial_compute_count: 0
+  selective_compute_enabled: false
+  product_promotion: false
+
+performance_gates:
+  shadow_p95_seconds: 0.1118
+  rust_boundary_p95_seconds: 0.001
+  cumulative_shadow_seconds: 4.866
+  submit_to_terminal_seconds: 616.336
+  persistent_host_and_rust_state_bytes: 65536
+  persistent_gpu_state_bytes: 0
+
+runtime_evidence:
+  state: pending
+  approved_generation_count: 1
+  completed_generation_count: 0
+  retry_count: 0
+  promoted: false
+
+automatic_product_application: false
+promotion_required: true
+rollback: "Remove the C2 workflow wrapper and retain the unchanged Standard H3 SamplerCustomAdvanced path."
