@@ -2,8 +2,9 @@ schema_version: "0.1.0"
 knowledge_id: "h3-c2-compound-eye-shadow-policy-2026-08-06"
 state: verified_once
 workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
-decision: C2_SHADOW_REVISE_ONCE
-claim_boundary: "The initial run rejected plain x0. One approved R1 run structurally admitted only x0.tensors[0] and validated stable candidates, but the actual float32 signal contradicted the committed BF16 gate and the blocking 48-scalar host transfer exceeded overhead limits. No selective compute, cache reuse, speedup, or product-default claim is made."
+decision: C2_COMPOUND_EYE_SHADOW_READY
+claim_boundary: "C2-R2 admitted the exact float32 CUDA video tensor, moved only a fixed sketch through a bounded non-blocking pinned ring, and validated lagged stable candidates while actual execution remained Full Compute. No selective compute, cache reuse, speedup, C3 implementation, or product-default claim is made."
+current_runtime_evidence_ref: r2_runtime_evidence
 
 source_contract:
   callback: sampler.progress_callback
@@ -65,8 +66,9 @@ abi:
   counterfactual_states: [STABLE, ACTIVE, UNCERTAIN]
 
 validation:
-  prediction_direction: "callback N predicts callback N+1"
-  last_callback_prediction_eligible: false
+  prediction_direction: "callback N sketch is consumed at N+1 and predicts callback N+2"
+  prediction_horizon_callbacks: 2
+  final_two_callback_predictions_eligible: false
   first_callback_all_regional_uncertain: true
   minimum_stable_candidates: 2
   minimum_validated_stable: 2
@@ -86,6 +88,7 @@ actual_execution:
   product_promotion: false
 
 performance_gates:
+  scope: initial_c2_historical
   shadow_p95_seconds: 0.1118
   rust_boundary_p95_seconds: 0.001
   cumulative_shadow_seconds: 4.866
@@ -94,6 +97,7 @@ performance_gates:
   persistent_gpu_state_bytes: 0
 
 runtime_evidence:
+  scope: initial_c2_historical
   state: verified_once
   approved_generation_count: 1
   completed_generation_count: 1
@@ -219,3 +223,114 @@ r1_runtime_evidence:
     sha256: "41bfa11d705f4352417810aa2dc36edad522bd0acd47b2f37804c3be1785bfef"
   selected_c3_hook: no_c3_admission
   promoted: false
+
+r2_runtime_evidence:
+  state: verified_once
+  code_commit: fccaa9f366c0c9a1210eef041a82f551e98d84a1
+  approved_generation_count: 1
+  completed_generation_count: 1
+  retry_count: 0
+  terminal_state: execution_success
+  signal_adapter: h3_nested_video_v1
+  container_type: comfy.nested_tensor.NestedTensor
+  tensor_path: x0.tensors[0]
+  container_tensor_count: 2
+  video_shape: [1, 24, 37, 30, 54]
+  video_dtype: torch.float32
+  audio_shape: [1, 32, 2, 207]
+  audio_dtype: torch.float32
+  same_cuda_device_required: true
+  callback_count: 20
+  structural_admission_count: 20
+  dtype_admission_count: 20
+  dtype_rejection_count: 0
+  signal_rejection_count: 0
+  enqueue_count: 20
+  consume_count: 20
+  event_ready_count: 20
+  event_not_ready_count: 0
+  rust_call_count: 20
+  full_compute_count: 20
+  escalate_count: 0
+  fallback_count: 0
+  ring_overflow_count: 0
+  callback_synchronize_count: 0
+  drain_count: 1
+  drain_timeout_count: 0
+  drain_seconds: 0.0001573999907122925
+  pinned_slot_count: 3
+  persistent_pinned_host_bytes: 576
+  maximum_in_flight_reduced_gpu_bytes: 576
+  nonblocking_copy_count: 20
+  source_tensor_retained: false
+  full_tensor_host_copy_count: 0
+  tensor_bytes_to_rust: 0
+  sketch_host_transfer_count: 20
+  sketch_host_transfer_bytes: 3840
+  rust_metadata_bytes: 10720
+  lag_contract:
+    horizon_callbacks: 2
+    enqueue_at: N
+    consume_at: N_plus_1
+    prediction_target: N_plus_2
+    eligible_eye_step_count: 72
+    stable_candidate_count: 23
+    active_candidate_count: 4
+    uncertain_candidate_count: 45
+    validated_stable_count: 23
+    contradicted_stable_count: 0
+    unvalidated_stable_count: 0
+    stable_validation_coverage: 1.0
+    contradiction_rate: 0.0
+  timing:
+    callback_cpu_p50_seconds: 0.0005508
+    callback_cpu_p95_seconds: 0.0015082
+    callback_cpu_max_seconds: 0.0608647
+    callback_cpu_sum_seconds: 0.0730815
+    cuda_sketch_p50_seconds: 0.000202432
+    cuda_sketch_p95_seconds: 0.000217248
+    cuda_sketch_max_seconds: 0.02856896
+    cuda_sketch_sum_seconds: 0.032419712
+    rust_boundary_p50_seconds: 0.0000261
+    rust_boundary_p95_seconds: 0.0000376
+    rust_boundary_max_seconds: 0.000711
+    submit_to_terminal_seconds: 588.0906099999993
+    runner_total_seconds: 599.9545467999997
+    sampler_node_seconds: 486.32184340000094
+  resources:
+    peak_comfyui_system_sampled_vram_bytes: 12481828788
+    peak_nvidia_system_sampled_vram_bytes: 11923357696
+    peak_process_tree_rss_bytes: 46949625856
+    peak_system_wide_used_ram_bytes: 60783919104
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frame_count: 124
+    fps: 24.0
+    audio_stream_count: 1
+    black_frame_count: 0
+    corrupted_frame_count: 0
+    size_bytes: 262853
+    sha256: "0b1cf9f6d95808ce5eed3b4b77c4a94562173abe400e3dad6b41b6fa188531cb"
+  skipped_compute_count: 0
+  cache_reuse_count: 0
+  partial_compute_count: 0
+  region_skip_count: 0
+  selected_c3_hook: h3.transformer_block_wrapper
+  c3_implemented: false
+  promoted: false
+
+r2_performance_gates:
+  callback_cpu_p95_limit_seconds: 0.005
+  callback_cpu_cumulative_limit_seconds: 0.250
+  cuda_sketch_p95_limit_seconds: 0.100
+  rust_boundary_p95_limit_seconds: 0.001
+  next_callback_readiness_required: "19/19"
+  ring_overflow_limit: 0
+  drain_timeout_limit: 0
+  submit_to_terminal_limit_seconds: 616.336
+  minimum_stable_candidates: 2
+  minimum_validated_stable_candidates: 2
+  maximum_contradicted_stable_candidates: 0
+  all_passed: true

@@ -148,6 +148,27 @@ capabilities:
     selected_c3_hook: no_c3_admission
     selective_compute_available: false
     promoted: false
+  compound_eye_shadow_async_r2:
+    state: verified_once
+    available: true
+    exact_signal_path: x0.tensors[0]
+    exact_video_dtype: torch.float32
+    nonblocking_pinned_ring: true
+    pinned_ring_slots: 3
+    callback_count: 20
+    rust_call_count: 20
+    full_compute_count: 20
+    next_callback_readiness: "19/19"
+    stable_candidate_count: 23
+    validated_stable_count: 23
+    contradicted_stable_count: 0
+    full_tensor_host_copy_count: 0
+    tensor_bytes_to_rust: 0
+    decision: C2_COMPOUND_EYE_SHADOW_READY
+    selected_c3_hook: h3.transformer_block_wrapper
+    selective_compute_available: false
+    speedup_verified: false
+    promoted: false
   cache_node:
     state: observed
     available: false
@@ -183,7 +204,12 @@ candidate_rules:
     rule: "Enable SageAttention KJ auto as an optional product Fast mode."
     reason: "The one paired run reached only 1.207x submit speedup, below the fixed 1.3x candidate threshold."
   - candidate_id: "c2-alternate-callback-signal"
-    state: observed
+    state: superseded
     promotion_required: true
     rule: "Define a new separately approved fixed-size view for the actual non-tensor callback object."
-    reason: "C2 prohibited source substitution after all callbacks failed the plain torch.Tensor admission rule."
+    reason: "C2-S0 and C2-R2 established and admitted the exact x0.tensors[0] float32 video path; alternate-signal exploration is no longer the active rule."
+  - candidate_id: "c3-transformer-block-wrapper"
+    state: observed
+    promotion_required: true
+    rule: "Design a backend-owned transformer-block wrapper with Full Compute fallback using only the admitted fixed-size Rust metadata boundary."
+    reason: "C2-R2 passed shadow admission and counterfactual validation, but performed no actual skip, cache reuse, or partial compute."

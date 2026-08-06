@@ -332,9 +332,10 @@ speedup claim or product-default promotion. See the detailed
 
 ## C2 — Local H3 Compound Eye Shadow Policy
 
-Overall status: `revise_once`; publication status: `draft_pr`. Latest bounded
-decision: `C2_SHADOW_REVISE_ONCE`; the initial run remains
-`C2_SHADOW_SIGNAL_NOT_ADMITTED` evidence.
+Overall status: `verified_once`; publication status: `draft_pr`. Latest bounded
+decision: `C2_COMPOUND_EYE_SHADOW_READY`; the initial
+`C2_SHADOW_SIGNAL_NOT_ADMITTED` and R1 `C2_SHADOW_REVISE_ONCE` results remain
+immutable chronological evidence.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
@@ -347,14 +348,17 @@ decision: `C2_SHADOW_REVISE_ONCE`; the initial run remains
 | Execute the one approved C2-R1 regression | `verified_once` | one submission, retry 0; adapter 20/20, Rust 20/20, Full Compute 20/20, video 124/124 |
 | Validate stable candidates counterfactually | `verified_once` | 76 eligible eye-steps; stable/active/uncertain 25/4/47; validated/contradicted/unvalidated 25/0/0 |
 | Pass C2-R1 admission and overhead gates | `revise_once` | actual signal dtype was `torch.float32` while the committed gate required BF16; 48-scalar blocking transfer made total-shadow p95 7.147 s and cumulative span 135.699 s |
-| Select C3 execution hook | `not_admitted` | transformer wrapper remained a counterfactual candidate only; no C3 implementation is admitted from a failed R1 gate |
+| Fix strict FP32 pre-Rust admission and async sketch path | `verified` | exact float32 CUDA contract, three pinned slots, current-stream non-blocking 192-byte copies, callback synchronization 0 |
+| Execute the one approved C2-R2 regression | `verified_once` | one submission, retry 0; callback/admission/enqueue/consume/Rust/Full Compute all 20; event ready 20, not-ready/overflow/timeout 0 |
+| Validate lagged stable candidates | `verified_once` | 72 eligible eye-steps; stable/active/uncertain 23/4/45; validated/contradicted/unvalidated 23/0/0; two-step horizon |
+| Pass C2-R2 admission and overhead gates | `verified_once` | callback CPU p95 1.5082 ms and cumulative 73.0815 ms; CUDA sketch p95 0.217248 ms; Rust boundary p95 37.6 us |
+| Select C3 execution hook | `candidate_admitted` | `h3.transformer_block_wrapper` is the one separately approved C3 candidate; it is not implemented or product-promoted |
 
-C2-R1 preserved Standard Full Compute and produced a valid H.264 video, but
-that does not make the shadow policy successful. The structural adapter and
-next-step stable validation worked once; the dtype admission contract and
-blocking GPU-to-host sketch path did not. Actual skip, cache reuse, partial
-compute, raw-tensor FFI, speedup, and product promotion remain zero. No second
-generation, post-result code fix, or C3 implementation is authorized. See the detailed
+C2-R2 preserved Standard Full Compute and produced a valid H.264 video while
+removing the R1 contract mismatch and blocking callback transfer. This admits
+one C3 *candidate contract*, not selective execution: actual skip, cache reuse,
+partial compute, raw-tensor FFI, speedup, and product promotion remain zero.
+C3 implementation requires separate approval. See the detailed
 [C2 worklog](docs/worklogs/2026-08-06-c2-h3-compound-eye-shadow.md).
 
 ## Maintenance checklist

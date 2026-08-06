@@ -1,8 +1,8 @@
 # C2 Local H3 Compound Eye Shadow Policy
 
 Date: 2026-08-06
-Status: Draft PR C2-R1 evidence recorded; Issue remains open
-Final decision: `C2_SHADOW_REVISE_ONCE`
+Status: Draft PR C2-R2 evidence recorded; Issue remains open
+Final decision: `C2_COMPOUND_EYE_SHADOW_READY`
 
 ## Product question
 
@@ -232,3 +232,99 @@ nonblocking/device-resident sketch path before any further generation.
 Actual skip, cache reuse, partial compute, speedup claim, product promotion,
 Ready transition, merge, and Issue closure remain zero. Private prompt, media,
 receipts, raw events, complete logs, and machine paths remain outside Git.
+
+## C2-R2 final REVISE_ONCE
+
+The one approved final revision fixed only the two R1 defects. Code commit
+`fccaa9f366c0c9a1210eef041a82f551e98d84a1` derives adapter, Gate, and receipt
+dtype from the single exact value `torch.float32`; video and audio members must
+both match their source-proven shapes and CUDA device before any sketch enqueue
+or Rust call. No BF16/FP16 cast, CPU admission, widened shape, alternate signal,
+or post-result threshold change exists.
+
+The blocking R1 transfer was replaced by a fixed three-slot ring. Each slot owns
+one 48-float pinned host buffer, one fixed device sketch, and completion-event
+metadata; it never owns the source tensor. Reduction, a 192-byte non-blocking
+D2H copy, and event recording use the current CUDA stream. This is the shortest
+safe source-lifetime contract because the sampler and sketch operations share
+the producing stream; no `record_stream` handoff is required. Callback code
+uses event query only and contains no CPU/tensor conversion, synchronize, wait,
+join, or busy-loop operation. The only bounded wait is a sampler-postlude drain
+with a fixed 15-second ceiling.
+
+Model-free validation compiled the four changed Python files and passed 16/16
+focused tests in the actual ComfyUI Python, including the real PyO3 ABI
+roundtrip. The WSL Python run passed 15 tests with that Windows PyO3 binary
+explicitly unavailable and skipped. `git diff --check`, path/secret scanning,
+and binary scanning passed. The full Python and Rust suites were intentionally
+not repeated under the approved focused-test budget. No model was loaded and no
+CUDA work occurred during these pre-run tests.
+
+### Single approved runtime result
+
+After the code commit was pushed, exactly one owned-runtime submission used the
+unchanged private prompt and fixed Standard H3 profile. There was no retry or
+second generation. All strict and async counts passed:
+
+- callback / structural admission / dtype admission: 20 / 20 / 20
+- dtype or structural rejection: 0
+- sketch enqueue / consume: 20 / 20
+- event ready / not ready: 20 / 0
+- next-callback verifiable / ready: 19 / 19 (100%)
+- ring overflow / deadline miss / callback synchronization: 0 / 0 / 0
+- drained slots / drain timeout: 1 / 0
+- Rust / Full Compute / escalation / fallback: 20 / 20 / 0 / 0
+- raw tensor bytes to Rust / full-tensor host copy: 0 / 0
+- sketch transfers: 20 x 192 bytes = 3,840 bytes
+- actual skip / cache reuse / partial compute / regional skip: 0 / 0 / 0 / 0
+
+Callback N enqueued sketch N. Callback N+1 consumed it when the completion
+event was ready. Change N-1 to N predicted regional state for execution N+2,
+and actual Full Compute change N+1 to N+2 validated that prediction. The first
+18 prediction-eligible observations yielded 72 regional eye-steps: 23 stable,
+4 active, and 45 uncertain. All 23 lagged stable candidates validated; zero
+contradicted and zero remained unvalidated. Stable validation coverage was
+100% and contradiction rate was 0%. The final sketch was consumed by the
+post-sampler drain in 0.0001574 seconds.
+
+### C2-R2 timing and bounded state
+
+| Metric | p50 | p95 | max | cumulative |
+|---|---:|---:|---:|---:|
+| Callback shadow CPU | 0.000551 s | 0.001508 s | 0.060865 s | 0.073082 s |
+| CUDA reduction + 192-byte D2H event span | 0.000202 s | 0.000217 s | 0.028569 s | 0.032420 s |
+| Rust boundary | 0.000026 s | 0.000038 s | 0.000711 s | 0.001228 s |
+
+All predeclared p95 and cumulative limits passed. The callback maximum includes
+one-time first-use setup and does not override the p95 Gate. The event span is
+not GPU-kernel-only time; exact kernel duration remains `null/not_collected`
+because no profiler run was authorized. Pinned persistent host state was 576
+bytes, maximum in-flight fixed-sketch GPU state was 576 bytes, and no persistent
+full latent was retained. The system observer sampled peak NVIDIA VRAM at
+11,923,357,696 bytes and process-tree RSS at 46,949,625,856 bytes; allocator
+peak remains unavailable from the external process.
+
+Sampler time was 486.321843 seconds, submit-to-terminal 588.090610 seconds, and
+runner total 599.954547 seconds. These are one-run Full Compute spans and are
+not a speedup comparison. The private H.264 artifact is 864x480, 124/124 decoded
+frames, 24 FPS, one audio stream, zero black or corrupted frames, and 262,853
+bytes. Its SHA-256 is
+`0b1cf9f6d95808ce5eed3b4b77c4a94562173abe400e3dad6b41b6fa188531cb`.
+Runtime-log checks found zero OOM, CUDA-error, traceback, execution-error, or
+NaN signatures.
+
+### Gate, C3 candidate, and claim boundary
+
+Every fixed C2-R2 Gate passed, so the bounded decision is
+`C2_COMPOUND_EYE_SHADOW_READY`. The sole C3 candidate is
+`h3.transformer_block_wrapper` with a two-step policy horizon, backend-owned
+tensor lifetime, metadata-only Rust policy, global/overlap/uncertainty/contract
+invalidation, and immediate Standard Full Compute fallback. Rollback removes
+the adapter wrapper and restores the unmodified Standard workflow copy.
+
+This is candidate admission only. C3 is not implemented, no block output is
+cached, and no computation is skipped. Actual speedup, VRAM reduction, partial
+repair, product promotion, Ready transition, merge, and Issue closure remain
+zero. Private prompt, video, raw events, receipts, resource samples, complete
+logs, executable paths, and model assets remain outside Git under the logical
+root `C2_ARTIFACT_ROOT`. No code changed after the single runtime result.

@@ -2,7 +2,10 @@
 
 ## Selected hook
 
-`no_c3_admission` (candidate C). No C3 execution hook is selected for implementation.
+`h3.transformer_block_wrapper` is the sole C3 design candidate after C2-R2.
+It is not implemented or authorized for execution. The initial C2 and C2-R1
+sections below remain chronological evidence; the C2-R2 update is the current
+handoff contract.
 
 ## Actual source call location
 
@@ -80,3 +83,55 @@ The selector's `h3.transformer_block_wrapper` result is retained as a
 counterfactual candidate only. It is not a C3 authorization because the signal
 contract and overhead gates failed. The effective C3 selection remains
 `no_c3_admission`; Full Compute fallback and wrapper removal are the rollback.
+
+## C2-R2 current handoff
+
+C2-R2 fixed the source contract at the exact float32 CUDA video tensor
+`x0.tensors[0]` and passed all predeclared admission, bounded-transfer,
+readiness, overhead, integrity, and lagged counterfactual-validation gates.
+This supersedes `no_c3_admission` as the current design-selection result, but
+does not supersede or rewrite the initial and R1 evidence above.
+
+### Candidate execution hook
+
+The sole candidate is `h3.transformer_block_wrapper`. The prospective compute
+unit is one H3 transformer-block invocation, controlled by backend-owned
+metadata while raw tensors and CUDA pointers remain in the Python/PyTorch
+backend. Rust receives only fixed-size observation metadata and returns a
+bounded directive. This is a C3 design input, not an implemented hook.
+
+### Lag and evidence contract
+
+The fixed shadow horizon is 2. Callback N enqueues sketch N, callback N+1
+consumes it, and the delta from N-1 to N predicts the state at callback N+2.
+The prediction is validated only against the later unchanged Full Compute
+observation. C2-R2 produced 23 validated stable candidates from 72 eligible
+eye-steps, with zero contradiction and zero unvalidated stable candidates.
+These facts establish shadow-signal viability only; they do not establish safe
+compute omission.
+
+### Prospective cache and invalidation contract
+
+If separately approved, the cache source is the prior Full Compute output of
+the same transformer block. A cache key must include workflow and model logical
+revision, fixed generation settings, sampler step, transformer-block identity,
+and region identity. Any global-eye invalidation, overlap conflict, uncertainty,
+contract mismatch, missing cache entry, non-finite observation, ABI failure, or
+backend error must select Full Compute. No cache is created or reused by C2-R2.
+
+### Ownership, bounds, and rollback
+
+The proven C2 boundary uses three fixed pinned slots, 576 bytes of persistent
+host sketch storage, and at most 576 bytes of in-flight reduced GPU state. It
+retains no source tensor and copies no full latent to host. A future C3 wrapper
+must preserve these coarse ownership and bounded-state properties on the RTX
+3060 12 GB target. Rollback is removal of the repository transformer-block
+wrapper and immediate restoration of the unchanged Standard Full Compute path;
+no model asset, source workflow, or ComfyUI core change is required.
+
+### Authorization boundary
+
+C2-R2 performed zero skip, cache reuse, partial compute, regional compute
+omission, speedup measurement, or product promotion. Implementing or executing
+the candidate hook requires a separate C3 approval with predeclared parity,
+quality, safety, memory, and rollback gates.

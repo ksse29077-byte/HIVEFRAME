@@ -208,3 +208,27 @@ c2_follow_up:
   selected_c3_hook: no_c3_admission
   promoted: false
   claim_boundary: "C2 did not alter C1. It used a separate ABI and failed open before Rust because the x0 callback object was not a torch.Tensor."
+
+c2_r2_follow_up:
+  state: verified_once
+  separate_abi: true
+  c1_abi_changed: false
+  decision: C2_COMPOUND_EYE_SHADOW_READY
+  exact_signal_path: x0.tensors[0]
+  admitted_dtype: torch.float32
+  callback_count: 20
+  rust_call_count: 20
+  full_compute_count: 20
+  tensor_bytes_transferred_to_rust: 0
+  fixed_sketch_values_per_callback: 48
+  nonblocking_pinned_ring_slots: 3
+  callback_cpu_p95_seconds: 0.0015082
+  rust_boundary_p95_seconds: 0.0000376
+  actual_full_compute_preserved: true
+  skipped_compute_count: 0
+  reused_cache_count: 0
+  partial_compute_count: 0
+  selected_c3_hook: h3.transformer_block_wrapper
+  c3_implemented: false
+  promoted: false
+  claim_boundary: "C2-R2 did not alter the C1 ABI. A separate bounded shadow ABI passed one Full Compute run; it does not prove acceleration or authorize selective execution."
