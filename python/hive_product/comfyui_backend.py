@@ -84,6 +84,7 @@ class ComfyUIH3Config:
     base_url: str
     workflow: Path | None
     output_root: Path | None
+    custom_nodes_root: Path | None = None
     poll_interval_seconds: float = 0.5
     timeout_seconds: float = 3_600.0
 
@@ -95,6 +96,7 @@ class ComfyUIH3Config:
             base_url=os.environ.get("HIVEFRAME_COMFYUI_BASE_URL", "http://127.0.0.1:8188").rstrip("/"),
             workflow=_path_from_env("HIVEFRAME_H3_WORKFLOW"),
             output_root=_path_from_env("HIVEFRAME_H3_OUTPUT_ROOT"),
+            custom_nodes_root=_path_from_env("HIVEFRAME_COMFYUI_CUSTOM_NODES_ROOT"),
             poll_interval_seconds=_env_float("HIVEFRAME_COMFYUI_POLL_SECONDS", 0.5, 0.1, 10.0),
             timeout_seconds=_env_float("HIVEFRAME_COMFYUI_TIMEOUT_SECONDS", 3_600.0, 10.0, 14_400.0),
         )
@@ -118,6 +120,10 @@ class ComfyUIH3Config:
                 raise BackendFailure("runtime_incompatible", f"{label} must be outside the repository.")
         if self.workflow is not None and self.asset_root is not None and not _inside(self.workflow, self.asset_root):
             raise BackendFailure("runtime_incompatible", "The workflow must be inside the approved asset root.")
+        if self.custom_nodes_root is not None and not _inside(self.custom_nodes_root, repository_root):
+            raise BackendFailure(
+                "runtime_incompatible", "Repository-owned custom nodes must stay inside the repository."
+            )
 
     def public_status(self) -> dict[str, Any]:
         return {
@@ -126,6 +132,7 @@ class ComfyUIH3Config:
             "base_url": "loopback_configured",
             "workflow": "configured" if self.workflow else "not_configured",
             "output_root": "configured" if self.output_root else "not_configured",
+            "custom_nodes_root": "configured" if self.custom_nodes_root else "not_configured",
             "poll_interval_seconds": self.poll_interval_seconds,
             "timeout_seconds": self.timeout_seconds,
         }
@@ -378,14 +385,17 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             (output_root / child).mkdir(exist_ok=True)
         extra_paths = runtime_root / "h3-extra-model-paths.yaml"
         quoted_root = str(asset_root).replace("'", "''")
-        extra_paths.write_text(
+        extra_config = (
             "hiveframe.h3:\n"
             f"  base_path: '{quoted_root}'\n"
             "  diffusion_models: '.'\n"
             "  text_encoders: '.'\n"
-            "  vae: '.'\n",
-            encoding="utf-8",
+            "  vae: '.'\n"
         )
+        if self.config.custom_nodes_root is not None:
+            quoted_nodes = str(self.config.custom_nodes_root).replace("'", "''")
+            extra_config += "hiveframe.c1:\n" f"  custom_nodes: '{quoted_nodes}'\n"
+        extra_paths.write_text(extra_config, encoding="utf-8")
         log_path = runtime_root / "comfyui-runtime.log"
         self._log_handle = log_path.open("ab")
         parsed = urlparse(self.config.base_url)
