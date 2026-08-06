@@ -269,12 +269,12 @@ quality, speed, cost, cache, selective compute, or production-default settings.
 
 ## F0-SAGE — External SageAttention KJ paired validation
 
-Overall status: `verified_once`; publication status: `draft`; decision:
+Overall status: `verified_once`; publication status: `published`; decision:
 `F0_SAGE_NO_GAIN`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated F0 review | `in_progress` | [Issue #55](https://github.com/ksse29077-byte/HIVEFRAME/issues/55); branch `accel/f0-h3-sageattention` |
+| Track isolated F0 review | `published` | [Issue #55](https://github.com/ksse29077-byte/HIVEFRAME/issues/55) completed; [PR #56](https://github.com/ksse29077-byte/HIVEFRAME/pull/56) merged at `2faa8a7...`; branch preserved |
 | Pin compatible external components | `verified_once` | KJNodes `6edfa765...`, SageAttention 2.2.0 post6, Triton Windows 3.7.1 post27 |
 | Preserve Standard workflow | `verified_once` | Sage node count 0; new Standard output hash equals P0 |
 | Patch Sage API copy | `verified_once` | one `PathchSageAttentionKJ` node in `auto`; two MODEL consumers rewired |
@@ -285,6 +285,26 @@ Overall status: `verified_once`; publication status: `draft`; decision:
 This is external F0 acceleration, not HIVEFRAME Core acceleration. Standard
 full compute remains the fallback. No other mode, accelerator, Rust runtime,
 selective compute, or model training is authorized automatically.
+
+## C0-H3 — Execution phase and Runtime Hook Map
+
+Overall status: `verified_once`; publication status: `ready_for_draft_pr`.
+Bounded decision: `C0_H3_PHASE_MAP_READY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C0 work | `in_progress` | [Issue #57](https://github.com/ksse29077-byte/HIVEFRAME/issues/57); branch `core/c0-h3-execution-phase-map` |
+| Add model-free telemetry fixtures | `verified` | WebSocket lifecycle, progress semantics, phase union, resource context, sanitizer, collision, and fixed-profile tests |
+| Execute one Standard instrumented run | `verified_once` | 864x480, 124/124 frames, 20 steps, audio, retry 0, Sage nodes 0 |
+| Attribute execution phases | `verified_once` | sampler 486.604 s (81.196% runner); video VAE 63.162 s (10.539%); exact kernel time remains unavailable |
+| Map runtime hooks | `verified_once` | observable, controllable, wrapper/custom-node/core-patch, not-found, and unsafe states recorded |
+| Select first Rust handoff target | `contract_only` | sampler progress/callback metadata boundary; initial directive remains `FULL_COMPUTE` |
+| Implement Rust acceleration | `not_started` | separate approval and issue required |
+
+C0 does not implement Rust, Compound Eye execution, selective compute, cache
+reuse, a product Fast Mode, or training. The unchanged Standard H3 path is the
+mandatory fallback. Raw events, media, logs, prompt, and private receipt remain
+outside Git.
 
 ## Maintenance checklist
 
