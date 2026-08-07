@@ -1609,6 +1609,57 @@ no next stage was started. Diagram impact is `updated` because the published
 C3-R4 state and bounded C4 candidate change the evidence progression. See the
 detailed [C4-S0 worklog](worklogs/2026-08-07-c4-s0-h3-subblock-cost-coupling.md).
 
+## 2026-08-08 — C4-S1 H3 FF positionwise token-selective CONTROL shadow
+
+C4-S1 isolated one mechanism,
+`FF_POSITIONWISE_LOW_IMPACT_TOKEN_SKIP_V1`, on Issue #76, branch
+`accel/c4-s1-h3-ff-token-selective`, and Draft PR #77. Commit `6c21862...`
+froze the causal actual-history-only selector, P0/P1/P2 thresholds, anchor
+steps, no-consecutive-skip rule, 10% block efficiency guard, source/layout and
+memory admission, Quality Gate, and +/-5% CONTROL comparison before runtime.
+Global attention and non-video rows remained Full Compute. Existing C4-S0 and
+earlier evidence were not modified.
+
+Fifteen focused model-free tests plus compile/import/config/diff/security checks
+passed. One initial invocation stopped before runtime, model load, GPU work, or
+Generation because it used the wrong output-root environment-variable name;
+it is preserved as ineligible evidence with Generation 0 and retry 0. No code,
+threshold, or schedule changed. The corrected invocation completed exactly one
+eligible CONTROL Generation and no retry.
+
+CONTROL ran 20 model forwards and 1,000 full MLP calls over 15,424,000 rows.
+The fixed H3 layout contained 14,985 contiguous video rows and 439 non-video
+rows per block at hidden width 5,376. Actual omission, attention omission,
+mapping error, wrapper failure, full-tensor cache, host full-tensor copy, and
+tensor-to-Rust bytes were all zero. Scalar metadata used 11,238,750 of the
+67,108,864-byte budget. The H.264 output decoded 124/124 frames at 864x480 and
+24 FPS with one audio stream; OOM, retry, CUDA-fatal, black, and corrupt counts
+were zero.
+
+Sampler, submit-to-terminal, and runner spans were 519.822272, 619.667309, and
+628.411549 seconds. The sampler was +30.974952 seconds or +6.336324% relative
+to the immutable 488.847320-second C4-S0 comparator, exceeding the fixed 5%
+limit. CUDA-event spans were 107.224084 seconds for the full FF group,
+91.207117 seconds for actual MLP, 5.670098 seconds for gather/mask, and
+1.601064 seconds for scatter/residual. They are event spans, not kernel sums;
+the disabled profiler leaves GPU kernel duration `null`/`not_collected`.
+
+Shadow observations predicted only 8/78/1,000 skipped rows for P0/P1/P2. P2,
+the largest, represented 0.0066733% of video rows and 0.0064834% of all MLP
+rows, affecting nine blocks. These data did not receive execution authority:
+the earlier CONTROL-comparability Gate stopped policy selection and SELECTIVE
+Generation. Paired runtime and quality metrics are therefore `not_collected`,
+visual equivalence is not proven, and actual backend work reduction, speedup
+claim, quality promotion, and product promotion remain zero.
+
+The technical decision is `C4_S1_INSTRUMENTATION_OVERHEAD_TOO_HIGH` with
+constitution disposition `REVISE_ONCE`. It is not a rejection of the entire
+feed-forward surface or the cumulative quality-preserving 2.0x objective. Full
+Compute remains the safe default, no C4-S2 or other next stage started, and any
+instrumentation refinement requires separate approval. Diagram impact is
+`updated`. See the detailed
+[C4-S1 worklog](worklogs/2026-08-08-c4-s1-h3-ff-token-selective.md).
+
 ---
 
 ## Entry template

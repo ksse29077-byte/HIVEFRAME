@@ -4,7 +4,7 @@ Status: living architecture map
 
 Snapshot date: 2026-08-07
 
-Verified source `main`: `e78416691f115710a00e4735c0dc981a8bcfee42`
+Verified source `main`: `f2d79ac5492a123818d691b875075ae191fa5b88`
 
 This document visualizes the current product path, Core/adapter ownership,
 selective-execution safety flow, and published H3 mechanism evidence. It must
@@ -212,7 +212,9 @@ flowchart LR
     R4G["Residual predictor family\nfallback-only"]
     C4["C4-S0 Sub-block Cost Surface\nFull Compute measurement"]
     C4A["Global attention 70.22%\nkeep Full Compute"]
-    C4F["Feed-forward positionwise 19.49%\nnext bounded candidate"]
+    C4F["Feed-forward positionwise 19.49%\nbounded candidate"]
+    C4S1["C4-S1 FF token CONTROL shadow\nFull Compute output valid"]
+    C4S1G["Instrumentation comparison failed\n+6.34%; SELECTIVE not run"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -228,19 +230,21 @@ flowchart LR
     R4G -. "separate approved measurement" .-> C4
     C4 --> C4A
     C4 --> C4F
+    C4F -. "separately approved C4-S1" .-> C4S1
+    C4S1 --> C4S1G
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
     R4G --> DEFAULT
     C4A --> DEFAULT
-    C4F -. "not implemented" .-> DEFAULT
+    C4S1G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4 verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G rejected;
+    class C0,C1,C2,R1,R2,C4,C4S1 verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G rejected;
     class C4A,C4F planned;
     class DEFAULT safe;
 ```
@@ -251,6 +255,13 @@ remains Full Compute because it is dominant but globally coupled. The selected
 future bounded lever is a mixed strategy that preserves attention and examines
 the positionwise feed-forward surface only after separate approval and a new
 Quality-First admission contract.
+
+C4-S1 implemented that bounded adapter contract and completed one Full Compute
+CONTROL shadow, but its 519.822272-second sampler was 6.336324% slower than the
+immutable C4-S0 comparator and exceeded the fixed +/-5% band. No policy
+received compute authority and SELECTIVE did not run. This is an
+instrumentation-comparability stop with `REVISE_ONCE`, not a rejection of the
+entire feed-forward surface. Full Compute remains the current default.
 
 ## 5. Module ownership
 

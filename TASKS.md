@@ -464,12 +464,12 @@ research are prohibited. See the detailed
 
 ## C4-S0 — H3 Sub-Block Cost & Coupling Surface
 
-Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+Overall status: `verified_once`; publication status: `published`. Bounded
 decision: `C4_S0_SUBBLOCK_COST_SURFACE_MAPPED`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated C4-S0 work | `draft_pr` | [Issue #74](https://github.com/ksse29077-byte/HIVEFRAME/issues/74); branch `accel/c4-s0-h3-subblock-cost-coupling`; Draft PR [#75](https://github.com/ksse29077-byte/HIVEFRAME/pull/75) |
+| Track isolated C4-S0 work | `published` | [Issue #74](https://github.com/ksse29077-byte/HIVEFRAME/issues/74) completed; branch `accel/c4-s0-h3-subblock-cost-coupling`; [PR #75](https://github.com/ksse29077-byte/HIVEFRAME/pull/75) merged as `f2d79ac...` |
 | Freeze source map and instrumentation before runtime | `verified` | six source-order groups, coupling classes, deferred CUDA-event accounting, +/-5% comparison Gate, and ranking rules; commit `d1ffa3e...` |
 | Execute fixed Full Compute profile | `verified_once` | one submission, retry 0; 20 model forwards, 1,000 block calls, all six groups observed 1,000 times; 124/124 H.264 frames with audio |
 | Preserve unchanged execution | `verified_once` | skip/reuse/prediction/regional/token/attention omission all zero; mapping and wrapper failures zero; Full Compute fallback preserved |
@@ -482,6 +482,32 @@ no selective execution and makes no quality, speedup, combined-speedup, or
 product-promotion claim. Exact GPU kernel duration was not collected because
 profilers were disabled. See the detailed
 [C4-S0 worklog](docs/worklogs/2026-08-07-c4-s0-h3-subblock-cost-coupling.md).
+
+## C4-S1 — H3 Feed-Forward Positionwise Token Selective Compute
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`C4_S1_INSTRUMENTATION_OVERHEAD_TOO_HIGH`; constitution disposition:
+`REVISE_ONCE`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C4-S1 work | `draft_pr` | [Issue #76](https://github.com/ksse29077-byte/HIVEFRAME/issues/76); branch `accel/c4-s1-h3-ff-token-selective`; Draft PR [#77](https://github.com/ksse29077-byte/HIVEFRAME/pull/77) |
+| Freeze causal selector and Gates before runtime | `verified` | P0/P1/P2, anchors 0/1/18/19, actual-history-only features, no consecutive skip, 10% block guard, fixed quality/comparison Gates; commit `6c21862...` |
+| Validate source, segment, execution, and memory contracts | `verified` | exact H3 source digest; final contiguous 14,985-row video segment; 5,376 hidden width; 15 focused model-free tests |
+| Execute fixed CONTROL shadow | `verified_once` | one eligible Generation, retry 0; 20 forwards, 1,000 full MLP calls, 15,424,000 rows, attention and FF both Full Compute; 124/124 H.264 frames with audio |
+| Pass instrumentation comparison | `stopped` | sampler 519.822272 s versus immutable C4-S0 488.847320 s; +6.336324% exceeds fixed +/-5% band |
+| Select a causal FF policy | `stopped` | selection was blocked by the earlier comparison Gate; no policy received execution authority |
+| Execute SELECTIVE | `stopped` | prohibited by the predeclared Gate; SELECTIVE Generation count 0 and paired quality/runtime not collected |
+| Preserve safety and claim boundary | `verified_once` | Full Compute output valid; OOM/retry/CUDA-fatal 0; tensor-to-Rust and full tensor cache 0; speedup, quality, and product promotion 0 |
+
+The CONTROL shadow observed only 8, 78, and 1,000 predicted skipped rows for
+P0, P1, and P2 respectively; even P2 represented 0.0064834% of all MLP rows
+and affected nine blocks. These observations are not an official downstream
+admission because CONTROL comparability failed first. This result rejects
+neither the entire feed-forward cost surface nor the cumulative 2.0x product
+goal. It requires one separately approved instrumentation refinement before
+this exact selector can be tested further. See the detailed
+[C4-S1 worklog](docs/worklogs/2026-08-08-c4-s1-h3-ff-token-selective.md).
 
 ## Maintenance checklist
 
