@@ -1336,6 +1336,29 @@ candidate for a separately approved C3 design. This is shadow evidence only:
 actual execution remained Full Compute, so speedup, safe skip, cache reuse,
 partial compute, product promotion, and C3 implementation all remain zero.
 
+## 2026-08-07 — C3 Transformer Block Selective Compute pre-gate
+
+Issue #63 and branch `accel/c3-h3-transformer-block-selective-compute` isolate
+the first proposed actual-compute-reduction experiment. Read-only inspection of
+ComfyUI 0.30.2 established a structurally valid repository-owned replacement
+hook for the 50 ordered H3 `DiTBlock` entries. The hook can either call the
+original block or return the packed residual input unchanged, without editing
+installed source, cloning a tensor, caching block output, or sending a tensor
+to Rust.
+
+The required opportunity check stopped the experiment before implementation.
+The immutable C2-R2 receipt produced no G4 or G3 target. G2 produced raw target
+steps 5, 6, 8, 13, 16, 17, 18, and 19; first/last anchors and the two-step
+Full Compute cooldown reduced them to steps 5, 8, 13, and 16. Candidate block
+indices 12 through 48 give 37 bypass calls per selected step, or 148 of 1,000
+theoretical calls: 14.8 percent, below the fixed 18 percent floor.
+
+The bounded decision is `C3_POLICY_OPPORTUNITY_TOO_LOW`. No C3 Rust ABI,
+PyO3 bridge, Python runtime wrapper, CONTROL/SELECTIVE generation, model load,
+CUDA execution, speedup claim, quality result, or product promotion was made.
+The C1/C2 ABIs and all prior evidence remain unchanged. See the detailed
+[C3 worklog](worklogs/2026-08-07-c3-h3-transformer-block-selective-compute.md).
+
 ---
 
 ## Entry template

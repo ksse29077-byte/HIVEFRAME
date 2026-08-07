@@ -334,3 +334,17 @@ r2_performance_gates:
   minimum_validated_stable_candidates: 2
   maximum_contradicted_stable_candidates: 0
   all_passed: true
+
+c3_pre_gate_follow_up:
+  state: rejected
+  decision: C3_POLICY_OPPORTUNITY_TOO_LOW
+  source_hook_admitted: true
+  c2_receipt_reused_without_generation: true
+  g4_theoretical_reduction: 0.0
+  g3_theoretical_reduction: 0.0
+  g2_selected_steps: [5, 8, 13, 16]
+  g2_theoretical_reduction: 0.148
+  required_theoretical_reduction: 0.18
+  rust_c3_abi_implemented: false
+  actual_generation_count: 0
+  promoted: false
