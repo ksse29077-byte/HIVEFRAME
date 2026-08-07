@@ -1491,6 +1491,40 @@ the execution context link the map into the required reading path. Diagram
 impact for this change is `updated`. Runtime code, model, Generation, CUDA,
 benchmark, threshold, Backend, and evidence changes are zero.
 
+## 2026-08-07 — C3-R3 Compact Residual Correction / Prediction
+
+Issue #70, branch `accel/c3-r3-h3-compact-residual-correction`, and Draft PR
+#71 isolate a quality-first test of `CHANNEL_AFFINE_RESIDUAL_PREDICTION_V1`.
+The formula, channel-standard-deviation statistic, epsilon `1e-6`, gain clip
+`0.90..1.10`, 64 KiB metadata limit, two-seed/re-seed rules, unchanged C3-R2
+0.99 cosine and 0.20 normalized-L2 thresholds, and raw-non-regression Gate
+were frozen before runtime in commit `b48022e...`.
+
+Model-free tests and the PyO3 roundtrip passed. The installed H3 source hash
+and Standard workflow revision matched C3-R2. One CONTROL Generation then
+completed with retry/OOM/CUDA-error count zero, 1,000 original block calls,
+20 captures, 19 finite compact predictors, zero replay, and an H.264 result
+decoding 124/124 frames with audio. Predictor metadata was 43,264 bytes for
+the observed 5,376 channels; persistent full residual count was at most one,
+persistent predicted residual count zero, concurrent residual-sized buffers
+at most two, full FP32 activation materializations zero, and tensor bytes to
+Rust zero.
+
+None of the six frozen candidates passed both unchanged similarity thresholds
+and the raw-non-regression rule. The calibrated target list was empty, so the
+predeclared minimum of two was not met and SELECTIVE was not run. The final
+decision is `C3_R3_PREDICTOR_SIMILARITY_TOO_LOW`. Paired quality, block
+omission, runtime ratios, and visual equivalence are uncollected. Speedup
+claim, quality guarantee, product promotion, and product acceleration remain
+zero or false; Full Compute remains the safe default. Total Generation count
+was one, SELECTIVE count zero, retry count zero, external API/model download
+counts zero, and third Generation count zero.
+
+Diagram impact is `updated`: the Living System Map now records C3-R3 as a
+bounded rejected mechanism and removes the former not-started marker. Private
+prompt, media, receipts, logs, tensors, and paths remain outside Git. See the
+detailed [C3-R3 worklog](worklogs/2026-08-07-c3-r3-compact-residual-correction.md).
+
 ---
 
 ## Entry template

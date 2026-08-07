@@ -11,6 +11,25 @@ source:
   retry_count: 0
   profiler_enabled: false
 
+c3_r3_follow_up:
+  state: verified_once
+  decision: C3_R3_PREDICTOR_SIMILARITY_TOO_LOW
+  control_generation_count: 1
+  selective_generation_count: 0
+  sampler_seconds: 488.7102649000008
+  submit_to_terminal_seconds: 589.3710954000126
+  runner_total_seconds: 600.2153170999954
+  channel_stats_cumulative_seconds: 0.1038859
+  gain_bias_creation_cumulative_seconds: 0.1777855
+  similarity_diagnostics_cumulative_seconds: 0.2242108
+  c3_r3_rust_boundary_cumulative_seconds: 0.000151
+  actual_compute_reduction:
+    value: null
+    support_status: not_collected
+    reason: "SELECTIVE was prohibited because zero candidates passed admission."
+  speedup_claim: false
+  product_promotion: false
+
 fixed_profile:
   width: 864
   height: 480

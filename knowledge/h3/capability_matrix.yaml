@@ -265,3 +265,26 @@ c3_r2_segment_residual_replay:
   decision: C3_R2_RESIDUAL_SIMILARITY_TOO_LOW
   automatic_product_application: false
   promoted: false
+
+c3_r3_compact_residual_correction:
+  state: rejected
+  source_hook_available: true
+  runtime_implemented: true
+  control_generation_count: 1
+  selective_generation_count: 0
+  compact_predictor_available: true
+  calibrated_target_count: 0
+  actual_corrected_replay_available: false
+  actual_compute_reduction:
+    value: null
+    support_status: not_collected
+    reason: "SELECTIVE was prohibited because zero candidates passed admission."
+  persistent_residual_count_max: 1
+  persistent_predicted_residual_count_max: 0
+  tensor_bytes_to_rust: 0
+  full_tensor_host_copy_count: 0
+  speedup_verified: false
+  quality_verified: false
+  decision: C3_R3_PREDICTOR_SIMILARITY_TOO_LOW
+  automatic_product_application: false
+  promoted: false

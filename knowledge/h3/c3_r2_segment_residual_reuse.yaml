@@ -146,3 +146,14 @@ product:
   product_promotion: false
   automatic_product_application: false
   next_action: separate_approval_required
+
+c3_r3_follow_up:
+  state: rejected
+  decision: C3_R3_PREDICTOR_SIMILARITY_TOO_LOW
+  c3_r2_evidence_changed: false
+  c3_r2_thresholds_changed: false
+  mechanism: CHANNEL_AFFINE_RESIDUAL_PREDICTION_V1
+  control_generation_count: 1
+  selective_generation_count: 0
+  calibrated_targets: []
+  claim_boundary: "C3-R3 improved some scalar components but no candidate passed the unchanged C3-R2 thresholds plus raw-non-regression Gate. C3-R2 remains immutable."
