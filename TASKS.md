@@ -378,6 +378,27 @@ The H3 source admits the proposed identity-bypass hook, but source admission
 does not override the opportunity Gate. See the detailed
 [C3 worklog](docs/worklogs/2026-08-07-c3-h3-transformer-block-selective-compute.md).
 
+## C3-R1 — Frozen Replay Selective Block Experiment
+
+Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+decision: `C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C3-R1 work | `draft_pr` | [Issue #65](https://github.com/ksse29077-byte/HIVEFRAME/issues/65); branch `accel/c3-r1-frozen-replay-block-selective`; Draft PR [#66](https://github.com/ksse29077-byte/HIVEFRAME/pull/66) |
+| Freeze schedule and implementation before runtime | `verified` | steps 5/6/8/13/16/17, anchors 0/1/18/19, blocks 12..48, separate 208/80-byte C3 ABI; commit `a1a369a...` |
+| Execute matched CONTROL | `verified_once` | one submission, retry 0; 1,000 original and 0 bypass calls; 124/124 H.264 frames |
+| Execute matched SELECTIVE | `verified_once` | one submission, retry 0; 852 original and 148 bypass calls; exact call accounting; 124/124 H.264 frames |
+| Meet actual opportunity floor | `stopped` | live safety vetoed steps 8 and 16; actual 148/1,000 = 14.8%, below fixed 18% |
+| Meet performance targets | `stopped` | sampler 1.153991x below 1.20x; submit-to-terminal 1.125478x below 1.15x |
+| Meet quality Gate | `stopped` | mean/p05 SSIM 0.805245/0.764500 and motion ratio 1.834976; visual equivalence not proven |
+
+C3-R1 verifies once that the repository-owned identity wrapper can omit real
+H3 `DiTBlock` forwards and fail open on a live veto. It does not admit a
+dynamic product policy, cross-prompt quality, speedup, cache reuse, partial
+repair, or product promotion. The existing C3 rejected evidence is unchanged.
+See the detailed [C3-R1 worklog](docs/worklogs/2026-08-07-c3-r1-frozen-block-bypass.md).
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.

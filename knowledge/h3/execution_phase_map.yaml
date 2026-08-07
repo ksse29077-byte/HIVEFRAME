@@ -222,3 +222,37 @@ c3_block_selective_pre_gate:
   actual_compute_reduction: false
   speedup_verified: false
   promoted: false
+
+c3_r1_frozen_replay_follow_up:
+  state: verified_once
+  decision: C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW
+  fixed_profile_pair_count: 1
+  control_generation_count: 1
+  selective_generation_count: 1
+  retry_count: 0
+  fresh_process_each: true
+  control:
+    sampler_seconds: 488.375941300008
+    submit_to_terminal_seconds: 590.0593429
+    runner_total_seconds: 604.9507319999975
+    original_block_calls: 1000
+    bypass_block_calls: 0
+  selective:
+    sampler_seconds: 423.206032600021
+    submit_to_terminal_seconds: 524.2744335999887
+    runner_total_seconds: 537.1151700000046
+    original_block_calls: 852
+    bypass_block_calls: 148
+  sampler_speedup: 1.1539909729
+  submit_to_terminal_speedup: 1.1254780037
+  runner_speedup: 1.1262961201
+  sampler_target_passed: false
+  submit_target_passed: false
+  actual_reduction: 0.148
+  opportunity_target_passed: false
+  exact_gpu_kernel_time:
+    value: null
+    support_status: not_collected
+    reason: "No profiler run was authorized; runner and sampler wall spans are not GPU-kernel duration."
+  claim_boundary: "The paired wall spans are one-run evidence only. Fixed opportunity, performance, and quality gates prevent a speedup or product claim."
+  promoted: false

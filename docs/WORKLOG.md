@@ -1359,6 +1359,44 @@ CUDA execution, speedup claim, quality result, or product promotion was made.
 The C1/C2 ABIs and all prior evidence remain unchanged. See the detailed
 [C3 worklog](worklogs/2026-08-07-c3-h3-transformer-block-selective-compute.md).
 
+## 2026-08-07 — C3-R1 Frozen Replay Selective Block Experiment
+
+Issue #65, branch `accel/c3-r1-frozen-replay-block-selective`, and Draft PR
+#66 isolate a separate frozen-replay mechanism test without rewriting the
+prior C3 rejection. Before runtime work, commit `a1a369a...` fixed the six
+steps 5/6/8/13/16/17, Full Compute anchors 0/1/18/19, candidate blocks 12..48,
+the 18 percent actual-opportunity floor, a separate 208/80-byte metadata ABI,
+and one-Rust-call-per-callback maximum. Focused pre-run validation passed four
+Rust tests, nine Python tests, Python compilation, PyO3 build/roundtrip, format,
+and diff checks. C1/C2 ABI sizes remained unchanged.
+
+Exactly two fresh-process Local H3 generations were run: one CONTROL and one
+SELECTIVE, each with one submission and zero retry under the unchanged private
+prompt, seed 101, 864x480, 124-frame, 24 FPS, 20-step Standard profile. CONTROL
+observed 1,000 original block calls and zero bypass. SELECTIVE observed 852
+original calls and 148 bypasses, satisfying the exact identity
+`1000 - 852 = 148`. Live safety admitted steps 5/6/13/17 and vetoed steps 8
+and 16, so actual reduction was 14.8 percent rather than the 22.2 percent
+frozen ceiling and remained below the fixed 18 percent Gate.
+
+Sampler, submit-to-terminal, and runner ratios were 1.153991x, 1.125478x, and
+1.126296x. The sampler and submit targets were 1.20x and 1.15x, so neither
+passed and no speedup is claimed. Frame-aligned quality also failed: mean SSIM
+0.805245, p05 SSIM 0.764500, low-SSIM rate 1.612903 percent, normalized MAE
+0.055380, and motion-energy ratio 1.834976. Both outputs decoded 124/124 H.264
+frames with native audio, and recorded OOM, retry, CUDA-error, NaN, black, and
+corruption counts were zero.
+
+C3 moved zero tensor bytes to Rust, made zero full-tensor host copies, and used
+zero persistent GPU cache. Cache/reuse, residual cache, attention/token/latent
+or whole-step skip, regional compute, partial repair, Fast Mode, SageAttention,
+and training remained unused. There was no third generation or post-result
+code change. The bounded decision is
+`C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW`; the experiment verifies actual block
+omission once but does not admit a dynamic product policy, quality equivalence,
+speedup, or product promotion. See the detailed
+[C3-R1 worklog](worklogs/2026-08-07-c3-r1-frozen-block-bypass.md).
+
 ---
 
 ## Entry template
