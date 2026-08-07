@@ -33,6 +33,38 @@ pub const C1_REASON_UNSUPPORTED_METADATA: u32 = 8;
 pub const C1_REASON_FALLBACK_UNSUPPORTED: u32 = 9;
 pub const C1_REASON_RUST_PANIC: u32 = 10;
 
+pub const C2_COMPOUND_EYE_SHADOW_ABI_VERSION: u32 = 1;
+pub const C2_TOPOLOGY_OVERLAP_2X2: u32 = 1;
+pub const C2_SKETCH_SOURCE_X0: u32 = 1;
+pub const C2_SKETCH_VALUE_COUNT: usize = 48;
+pub const C2_EYE_COUNT: usize = 5;
+pub const C2_EYE_STATE_STABLE: u32 = 0;
+pub const C2_EYE_STATE_ACTIVE: u32 = 1;
+pub const C2_EYE_STATE_UNCERTAIN: u32 = 2;
+pub const C2_DECISION_FULL_COMPUTE: u32 = 0;
+pub const C2_DECISION_ESCALATE_FULL_COMPUTE: u32 = 1;
+pub const C2_REASON_NONE: u32 = 0;
+pub const C2_REASON_ABI_MISMATCH: u32 = 1;
+pub const C2_REASON_STRUCT_SIZE_MISMATCH: u32 = 2;
+pub const C2_REASON_STEP_RANGE_INVALID: u32 = 3;
+pub const C2_REASON_DIGEST_MISSING: u32 = 4;
+pub const C2_REASON_TOPOLOGY_UNSUPPORTED: u32 = 5;
+pub const C2_REASON_SKETCH_UNSUPPORTED: u32 = 6;
+pub const C2_REASON_QUANTIZATION_INVALID: u32 = 7;
+pub const C2_REASON_FULL_COMPUTE_UNSUPPORTED: u32 = 8;
+pub const C2_REASON_FALLBACK_UNSUPPORTED: u32 = 9;
+pub const C2_REASON_UNSUPPORTED_METADATA: u32 = 10;
+pub const C2_REASON_RUST_PANIC: u32 = 11;
+
+/// Predeclared fixed-point thresholds. Values are parts per million of the
+/// previous quantized sketch magnitude and are not adjusted after a run.
+pub const C2_STABLE_DELTA_LIMIT_PPM: u32 = 20_000;
+pub const C2_ACTIVE_DELTA_LIMIT_PPM: u32 = 80_000;
+pub const C2_GLOBAL_INVALIDATION_LIMIT_PPM: u32 = 150_000;
+pub const C2_STABLE_VALIDATION_LIMIT_PPM: u32 = 30_000;
+pub const C2_LOCAL_TO_GLOBAL_LIMIT_PPM: u32 = 950_000;
+pub const C2_MIN_WARMUP_CALLBACKS: u32 = 2;
+
 /// Fixed-size, metadata-only callback observation for the C1 full-compute gate.
 ///
 /// No tensor, prompt, filesystem path, media payload, CUDA pointer, model
@@ -174,6 +206,377 @@ pub fn evaluate_step_policy(observation: &StepObservation) -> StepDirective {
         StepDirective::new(C1_DECISION_FULL_COMPUTE, reason, digest)
     } else {
         StepDirective::fail_open(reason, digest)
+    }
+}
+
+/// Fixed-size C2 shadow observation. The only data-derived payload is two
+/// 48-value fixed-point sketches; raw tensors and variable-length data are not
+/// admitted by this ABI.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CompoundEyeShadowObservation {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub run_digest: [u8; 32],
+    pub workflow_revision_digest: [u8; 32],
+    pub settings_digest: [u8; 32],
+    pub step_index: u32,
+    pub total_steps: u32,
+    pub topology_id: u32,
+    pub sketch_source_id: u32,
+    pub quantization_scale: u32,
+    pub previous_available: u32,
+    pub uncertainty_flags: u32,
+    pub invalidation_flags: u32,
+    pub full_compute_supported: u32,
+    pub fallback_supported: u32,
+    pub receipt_required: u32,
+    pub unsupported_flags: u32,
+    pub current_sketch_q: [i32; C2_SKETCH_VALUE_COUNT],
+    pub previous_sketch_q: [i32; C2_SKETCH_VALUE_COUNT],
+}
+
+impl CompoundEyeShadowObservation {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+}
+
+/// Fixed-size C2 directive. Candidate fields are counterfactual only; all
+/// fields that could represent actual selective execution remain zero.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CompoundEyeShadowDirective {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub decision_code: u32,
+    pub reason_code: u32,
+    pub unsupported_flags: u32,
+    pub eye_state: [u32; C2_EYE_COUNT],
+    pub eye_confidence_ppm: [u32; C2_EYE_COUNT],
+    pub eye_change_ppm: [u32; C2_EYE_COUNT],
+    pub stable_eye_count: u32,
+    pub active_eye_count: u32,
+    pub uncertain_eye_count: u32,
+    pub candidate_generate_count: u32,
+    pub candidate_reuse_count: u32,
+    pub candidate_reconcile_count: u32,
+    pub global_invalidation: u32,
+    pub overlap_conflict_mask: u32,
+    pub shared_visual_state_digest: [u8; 32],
+    pub compute_plan_digest: [u8; 32],
+    pub decision_digest: [u8; 32],
+    pub skipped_step_count: u32,
+    pub skipped_block_count: u32,
+    pub skipped_token_count: u32,
+    pub skipped_latent_count: u32,
+    pub reused_cache_count: u32,
+    pub partial_compute_count: u32,
+}
+
+impl CompoundEyeShadowDirective {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+
+    pub fn fail_open(reason_code: u32) -> Self {
+        let mut directive = evaluate_compound_eye_shadow_policy(&CompoundEyeShadowObservation {
+            abi_version: C2_COMPOUND_EYE_SHADOW_ABI_VERSION,
+            struct_size: CompoundEyeShadowObservation::contract_size(),
+            run_digest: [1; 32],
+            workflow_revision_digest: [1; 32],
+            settings_digest: [1; 32],
+            step_index: 0,
+            total_steps: 1,
+            topology_id: C2_TOPOLOGY_OVERLAP_2X2,
+            sketch_source_id: C2_SKETCH_SOURCE_X0,
+            quantization_scale: 1,
+            previous_available: 0,
+            uncertainty_flags: 1,
+            invalidation_flags: 0,
+            full_compute_supported: 1,
+            fallback_supported: 1,
+            receipt_required: 1,
+            unsupported_flags: 0,
+            current_sketch_q: [0; C2_SKETCH_VALUE_COUNT],
+            previous_sketch_q: [0; C2_SKETCH_VALUE_COUNT],
+        });
+        directive.decision_code = C2_DECISION_ESCALATE_FULL_COMPUTE;
+        directive.reason_code = reason_code;
+        directive.decision_digest = c2_digest_parts(&[
+            &directive.compute_plan_digest,
+            &directive.decision_code.to_le_bytes(),
+            &directive.reason_code.to_le_bytes(),
+        ]);
+        directive
+    }
+}
+
+fn c2_observation_digest(observation: &CompoundEyeShadowObservation) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(observation.abi_version.to_le_bytes());
+    hasher.update(observation.struct_size.to_le_bytes());
+    hasher.update(observation.run_digest);
+    hasher.update(observation.workflow_revision_digest);
+    hasher.update(observation.settings_digest);
+    for value in [
+        observation.step_index,
+        observation.total_steps,
+        observation.topology_id,
+        observation.sketch_source_id,
+        observation.quantization_scale,
+        observation.previous_available,
+        observation.uncertainty_flags,
+        observation.invalidation_flags,
+        observation.full_compute_supported,
+        observation.fallback_supported,
+        observation.receipt_required,
+        observation.unsupported_flags,
+    ] {
+        hasher.update(value.to_le_bytes());
+    }
+    for value in observation.current_sketch_q {
+        hasher.update(value.to_le_bytes());
+    }
+    for value in observation.previous_sketch_q {
+        hasher.update(value.to_le_bytes());
+    }
+    hasher.finalize().into()
+}
+
+const C2_REGIONAL_CELLS: [[usize; 9]; 4] = [
+    [0, 1, 2, 4, 5, 6, 8, 9, 10],
+    [1, 2, 3, 5, 6, 7, 9, 10, 11],
+    [4, 5, 6, 8, 9, 10, 12, 13, 14],
+    [5, 6, 7, 9, 10, 11, 13, 14, 15],
+];
+
+const C2_NEIGHBORS: [(usize, usize); 4] = [(0, 1), (0, 2), (1, 3), (2, 3)];
+
+fn c2_delta_ppm(
+    current: &[i32; C2_SKETCH_VALUE_COUNT],
+    previous: &[i32; C2_SKETCH_VALUE_COUNT],
+    cells: &[usize],
+    quantization_scale: u32,
+) -> u32 {
+    let mut difference = 0_u128;
+    let mut baseline = 0_u128;
+    for cell in cells {
+        for metric in 0..3 {
+            let index = cell * 3 + metric;
+            difference += i64::from(current[index])
+                .saturating_sub(i64::from(previous[index]))
+                .unsigned_abs() as u128;
+            baseline += i64::from(previous[index])
+                .unsigned_abs()
+                .max(u64::from(quantization_scale)) as u128;
+        }
+    }
+    if baseline == 0 {
+        return if difference == 0 { 0 } else { u32::MAX };
+    }
+    ((difference.saturating_mul(1_000_000) / baseline).min(u128::from(u32::MAX))) as u32
+}
+
+fn c2_digest_parts(parts: &[&[u8]]) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    for part in parts {
+        hasher.update(part);
+    }
+    hasher.finalize().into()
+}
+
+fn c2_invalid_reason(observation: &CompoundEyeShadowObservation) -> u32 {
+    if observation.abi_version != C2_COMPOUND_EYE_SHADOW_ABI_VERSION {
+        C2_REASON_ABI_MISMATCH
+    } else if observation.struct_size != CompoundEyeShadowObservation::contract_size() {
+        C2_REASON_STRUCT_SIZE_MISMATCH
+    } else if observation.total_steps == 0 || observation.step_index >= observation.total_steps {
+        C2_REASON_STEP_RANGE_INVALID
+    } else if observation.run_digest == [0; 32]
+        || observation.workflow_revision_digest == [0; 32]
+        || observation.settings_digest == [0; 32]
+    {
+        C2_REASON_DIGEST_MISSING
+    } else if observation.topology_id != C2_TOPOLOGY_OVERLAP_2X2 {
+        C2_REASON_TOPOLOGY_UNSUPPORTED
+    } else if observation.sketch_source_id != C2_SKETCH_SOURCE_X0 {
+        C2_REASON_SKETCH_UNSUPPORTED
+    } else if observation.quantization_scale == 0 {
+        C2_REASON_QUANTIZATION_INVALID
+    } else if observation.full_compute_supported != 1 {
+        C2_REASON_FULL_COMPUTE_UNSUPPORTED
+    } else if observation.fallback_supported != 1 {
+        C2_REASON_FALLBACK_UNSUPPORTED
+    } else if observation.unsupported_flags != 0 {
+        C2_REASON_UNSUPPORTED_METADATA
+    } else {
+        C2_REASON_NONE
+    }
+}
+
+/// Deterministic C2 shadow policy. It produces counterfactual regional states
+/// and candidate counts but can only command full compute or full-compute
+/// escalation.
+pub fn evaluate_compound_eye_shadow_policy(
+    observation: &CompoundEyeShadowObservation,
+) -> CompoundEyeShadowDirective {
+    let observation_digest = c2_observation_digest(observation);
+    let reason_code = c2_invalid_reason(observation);
+    let fail_open = reason_code != C2_REASON_NONE
+        || observation.uncertainty_flags != 0
+        || observation.invalidation_flags != 0;
+    let mut eye_state = [C2_EYE_STATE_UNCERTAIN; C2_EYE_COUNT];
+    let mut eye_confidence_ppm = [500_000; C2_EYE_COUNT];
+    let mut eye_change_ppm = [0; C2_EYE_COUNT];
+    let mut global_invalidation = 0;
+    let mut overlap_conflict_mask = 0;
+
+    if reason_code == C2_REASON_NONE && observation.previous_available == 1 {
+        let all_cells = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        let global_delta = c2_delta_ppm(
+            &observation.current_sketch_q,
+            &observation.previous_sketch_q,
+            &all_cells,
+            observation.quantization_scale,
+        );
+        eye_change_ppm[0] = global_delta;
+        global_invalidation = u32::from(
+            global_delta >= C2_GLOBAL_INVALIDATION_LIMIT_PPM || observation.invalidation_flags != 0,
+        );
+        eye_state[0] = if global_invalidation == 1 {
+            C2_EYE_STATE_ACTIVE
+        } else {
+            C2_EYE_STATE_UNCERTAIN
+        };
+        eye_confidence_ppm[0] = if global_invalidation == 1 {
+            1_000_000
+        } else {
+            500_000
+        };
+
+        for (regional, cells) in C2_REGIONAL_CELLS.iter().enumerate() {
+            let eye = regional + 1;
+            let delta = c2_delta_ppm(
+                &observation.current_sketch_q,
+                &observation.previous_sketch_q,
+                cells,
+                observation.quantization_scale,
+            );
+            eye_change_ppm[eye] = delta;
+            let locally_below_global = (global_delta == 0 && delta == 0)
+                || u128::from(delta).saturating_mul(1_000_000)
+                    <= u128::from(global_delta)
+                        .saturating_mul(u128::from(C2_LOCAL_TO_GLOBAL_LIMIT_PPM));
+            if global_invalidation == 1 || delta >= C2_ACTIVE_DELTA_LIMIT_PPM {
+                eye_state[eye] = C2_EYE_STATE_ACTIVE;
+                eye_confidence_ppm[eye] = ((u128::from(delta) * 1_000_000
+                    / u128::from(C2_ACTIVE_DELTA_LIMIT_PPM))
+                .min(1_000_000)) as u32;
+            } else if observation.step_index >= C2_MIN_WARMUP_CALLBACKS
+                && delta <= C2_STABLE_DELTA_LIMIT_PPM
+                && locally_below_global
+                && !fail_open
+            {
+                eye_state[eye] = C2_EYE_STATE_STABLE;
+                eye_confidence_ppm[eye] = 1_000_000_u32.saturating_sub(
+                    ((u128::from(delta) * 500_000 / u128::from(C2_STABLE_DELTA_LIMIT_PPM))
+                        .min(500_000)) as u32,
+                );
+            }
+        }
+
+        for (left, right) in C2_NEIGHBORS {
+            let left_eye = left + 1;
+            let right_eye = right + 1;
+            if eye_state[left_eye] == C2_EYE_STATE_STABLE
+                && eye_state[right_eye] == C2_EYE_STATE_ACTIVE
+            {
+                eye_state[left_eye] = C2_EYE_STATE_UNCERTAIN;
+                overlap_conflict_mask |= 1 << left;
+            }
+            if eye_state[right_eye] == C2_EYE_STATE_STABLE
+                && eye_state[left_eye] == C2_EYE_STATE_ACTIVE
+            {
+                eye_state[right_eye] = C2_EYE_STATE_UNCERTAIN;
+                overlap_conflict_mask |= 1 << right;
+            }
+        }
+    }
+
+    if fail_open {
+        eye_state = [C2_EYE_STATE_UNCERTAIN; C2_EYE_COUNT];
+        eye_confidence_ppm = [0; C2_EYE_COUNT];
+    }
+    let regional = &eye_state[1..];
+    let stable_eye_count = regional
+        .iter()
+        .filter(|&&state| state == C2_EYE_STATE_STABLE)
+        .count() as u32;
+    let active_eye_count = regional
+        .iter()
+        .filter(|&&state| state == C2_EYE_STATE_ACTIVE)
+        .count() as u32;
+    let uncertain_eye_count = regional
+        .iter()
+        .filter(|&&state| state == C2_EYE_STATE_UNCERTAIN)
+        .count() as u32;
+
+    let mut state_bytes = Vec::with_capacity(C2_EYE_COUNT * 12);
+    for index in 0..C2_EYE_COUNT {
+        state_bytes.extend_from_slice(&eye_state[index].to_le_bytes());
+        state_bytes.extend_from_slice(&eye_confidence_ppm[index].to_le_bytes());
+        state_bytes.extend_from_slice(&eye_change_ppm[index].to_le_bytes());
+    }
+    let shared_visual_state_digest = c2_digest_parts(&[&observation_digest, &state_bytes]);
+    let counts = [
+        active_eye_count,
+        stable_eye_count,
+        uncertain_eye_count,
+        global_invalidation,
+        overlap_conflict_mask,
+    ];
+    let mut count_bytes = Vec::with_capacity(counts.len() * 4);
+    for count in counts {
+        count_bytes.extend_from_slice(&count.to_le_bytes());
+    }
+    let compute_plan_digest = c2_digest_parts(&[&shared_visual_state_digest, &count_bytes]);
+    let decision_code = if fail_open {
+        C2_DECISION_ESCALATE_FULL_COMPUTE
+    } else {
+        C2_DECISION_FULL_COMPUTE
+    };
+    let decision_digest = c2_digest_parts(&[
+        &compute_plan_digest,
+        &decision_code.to_le_bytes(),
+        &reason_code.to_le_bytes(),
+    ]);
+    CompoundEyeShadowDirective {
+        abi_version: C2_COMPOUND_EYE_SHADOW_ABI_VERSION,
+        struct_size: CompoundEyeShadowDirective::contract_size(),
+        decision_code,
+        reason_code,
+        unsupported_flags: 0,
+        eye_state,
+        eye_confidence_ppm,
+        eye_change_ppm,
+        stable_eye_count,
+        active_eye_count,
+        uncertain_eye_count,
+        candidate_generate_count: active_eye_count,
+        candidate_reuse_count: stable_eye_count,
+        candidate_reconcile_count: uncertain_eye_count,
+        global_invalidation,
+        overlap_conflict_mask,
+        shared_visual_state_digest,
+        compute_plan_digest,
+        decision_digest,
+        skipped_step_count: 0,
+        skipped_block_count: 0,
+        skipped_token_count: 0,
+        skipped_latent_count: 0,
+        reused_cache_count: 0,
+        partial_compute_count: 0,
     }
 }
 
@@ -1642,6 +2045,158 @@ mod tests {
         );
         assert!(StepObservation::contract_size() >= 128);
         assert!(StepDirective::contract_size() >= 64);
+    }
+
+    fn c2_observation() -> CompoundEyeShadowObservation {
+        let mut previous = [4_096; C2_SKETCH_VALUE_COUNT];
+        let mut current = previous;
+        // Bottom-right receptive field changes clearly while the other three
+        // regional views remain at or below the stable threshold.
+        for metric in 0..3 {
+            current[15 * 3 + metric] = 8_192;
+        }
+        previous[0] = 4_096;
+        CompoundEyeShadowObservation {
+            abi_version: C2_COMPOUND_EYE_SHADOW_ABI_VERSION,
+            struct_size: CompoundEyeShadowObservation::contract_size(),
+            run_digest: [4; 32],
+            workflow_revision_digest: [5; 32],
+            settings_digest: [6; 32],
+            step_index: 7,
+            total_steps: 20,
+            topology_id: C2_TOPOLOGY_OVERLAP_2X2,
+            sketch_source_id: C2_SKETCH_SOURCE_X0,
+            quantization_scale: 4_096,
+            previous_available: 1,
+            uncertainty_flags: 0,
+            invalidation_flags: 0,
+            full_compute_supported: 1,
+            fallback_supported: 1,
+            receipt_required: 1,
+            unsupported_flags: 0,
+            current_sketch_q: current,
+            previous_sketch_q: previous,
+        }
+    }
+
+    #[test]
+    fn c2_contract_is_fixed_and_distinct_from_c1() {
+        assert_eq!(
+            CompoundEyeShadowObservation::contract_size() as usize,
+            std::mem::size_of::<CompoundEyeShadowObservation>()
+        );
+        assert_eq!(
+            CompoundEyeShadowDirective::contract_size() as usize,
+            std::mem::size_of::<CompoundEyeShadowDirective>()
+        );
+        assert_ne!(
+            CompoundEyeShadowObservation::contract_size(),
+            StepObservation::contract_size()
+        );
+        assert_ne!(
+            CompoundEyeShadowDirective::contract_size(),
+            StepDirective::contract_size()
+        );
+        assert_eq!(C2_SKETCH_VALUE_COUNT, 48);
+        assert_eq!(C2_EYE_COUNT, 5);
+    }
+
+    #[test]
+    fn c2_shadow_policy_is_deterministic_and_never_skips() {
+        let observation = c2_observation();
+        let first = evaluate_compound_eye_shadow_policy(&observation);
+        let second = evaluate_compound_eye_shadow_policy(&observation);
+        assert_eq!(first, second);
+        assert_eq!(first.decision_code, C2_DECISION_FULL_COMPUTE);
+        assert_eq!(first.skipped_step_count, 0);
+        assert_eq!(first.skipped_block_count, 0);
+        assert_eq!(first.skipped_token_count, 0);
+        assert_eq!(first.skipped_latent_count, 0);
+        assert_eq!(first.reused_cache_count, 0);
+        assert_eq!(first.partial_compute_count, 0);
+        assert_eq!(
+            first.stable_eye_count + first.active_eye_count + first.uncertain_eye_count,
+            4
+        );
+    }
+
+    #[test]
+    fn c2_first_and_warmup_callbacks_have_no_stable_eye() {
+        let mut observation = c2_observation();
+        observation.previous_available = 0;
+        observation.step_index = 0;
+        let first = evaluate_compound_eye_shadow_policy(&observation);
+        assert_eq!(first.stable_eye_count, 0);
+        assert_eq!(first.uncertain_eye_count, 4);
+
+        observation.previous_available = 1;
+        observation.step_index = 1;
+        let warmup = evaluate_compound_eye_shadow_policy(&observation);
+        assert_eq!(warmup.stable_eye_count, 0);
+    }
+
+    #[test]
+    fn c2_synthetic_stable_active_and_uncertain_states_are_bounded() {
+        let directive = evaluate_compound_eye_shadow_policy(&c2_observation());
+        assert!(directive.eye_state[1..].iter().all(|state| matches!(
+            *state,
+            C2_EYE_STATE_STABLE | C2_EYE_STATE_ACTIVE | C2_EYE_STATE_UNCERTAIN
+        )));
+        assert_eq!(directive.eye_state[0], C2_EYE_STATE_UNCERTAIN);
+        assert!(directive.stable_eye_count >= 1);
+        assert!(directive.active_eye_count >= 1);
+        assert!(directive.uncertain_eye_count >= 1);
+        assert_eq!(directive.candidate_reuse_count, directive.stable_eye_count);
+        assert_eq!(
+            directive.candidate_generate_count,
+            directive.active_eye_count
+        );
+        assert_eq!(
+            directive.candidate_reconcile_count,
+            directive.uncertain_eye_count
+        );
+    }
+
+    #[test]
+    fn c2_global_invalidation_disallows_stable_candidates() {
+        let mut observation = c2_observation();
+        observation.current_sketch_q.fill(16_384);
+        let directive = evaluate_compound_eye_shadow_policy(&observation);
+        assert_eq!(directive.global_invalidation, 1);
+        assert_eq!(directive.stable_eye_count, 0);
+        assert_eq!(directive.active_eye_count, 4);
+    }
+
+    #[test]
+    fn c2_overlap_stable_active_conflict_escalates_stable_to_uncertain() {
+        let mut observation = c2_observation();
+        observation.current_sketch_q = observation.previous_sketch_q;
+        // Drive only the top-right edge high enough that an adjacent low-change
+        // regional candidate conflicts across its halo.
+        for cell in [3, 7, 11] {
+            for metric in 0..3 {
+                observation.current_sketch_q[cell * 3 + metric] = 16_384;
+            }
+        }
+        let directive = evaluate_compound_eye_shadow_policy(&observation);
+        assert!(directive.overlap_conflict_mask != 0 || directive.stable_eye_count == 0);
+        assert_eq!(directive.skipped_step_count, 0);
+    }
+
+    #[test]
+    fn c2_invalid_metadata_and_nonfinite_flag_fail_open() {
+        let mut invalid_abi = c2_observation();
+        invalid_abi.abi_version = 99;
+        let directive = evaluate_compound_eye_shadow_policy(&invalid_abi);
+        assert_eq!(directive.decision_code, C2_DECISION_ESCALATE_FULL_COMPUTE);
+        assert_eq!(directive.reason_code, C2_REASON_ABI_MISMATCH);
+
+        let mut nonfinite = c2_observation();
+        nonfinite.uncertainty_flags = 1;
+        let directive = evaluate_compound_eye_shadow_policy(&nonfinite);
+        assert_eq!(directive.decision_code, C2_DECISION_ESCALATE_FULL_COMPUTE);
+        assert_eq!(directive.stable_eye_count, 0);
+        assert_eq!(directive.skipped_step_count, 0);
     }
 
     fn semantic(profile: &str, topology: Topology) -> SemanticResult {

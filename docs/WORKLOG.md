@@ -1229,6 +1229,113 @@ zero. `REVISE_ONCE` is consumed; the next separate approval would be C2
 Compound Eye Shadow Policy with actual H3 computation still full compute. See
 the detailed [C1 worklog](worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
 
+## 2026-08-06 — C2 Local H3 Compound Eye shadow policy
+
+Issue #61, branch `core/c2-h3-compound-eye-shadow`, and Draft PR #62 isolate
+the first real-H3 Compound Eye shadow attempt. PR #60 was first verified as
+merged at main commit `4635f4750553a24037793e6ebbfa077f06d2474a`; C1's
+full-compute ABI and evidence were reused without another run.
+
+Before runtime work, C2 fixed one `overlap_2x2` topology (one global and four
+overlapping regional eyes), one x0-only 4x4x3 sketch, int32 scale 4096, five
+ppm thresholds, ABI v1, one-Rust-call maximum, next-callback validation, and
+Full Compute fail-open. Seven focused Rust tests and 20 C2+C1 Python tests,
+including a real PyO3 ABI roundtrip, passed. The first commit was
+`cd4e5cd8a8016c599657bf5ab967a31d53086390`; thresholds were not changed after
+the actual result.
+
+Exactly one Standard H3 workflow then ran with zero Sage nodes and zero retry.
+It generated a valid H.264 864x480 output with 124/124 frames, 24 FPS, one
+audio stream, no black or corrupted frame, and SHA-256
+`1ae93b511a7998a25f4984850192e6ae11ed1bafadcdfc1f2d4a6a8954227534`.
+Submit-to-terminal was 585.362693 seconds, runner total 600.382758 seconds,
+peak NVIDIA sampled VRAM 11,923,357,696 bytes, and peak process-tree RSS
+46,995,505,152 bytes.
+
+All 20 callbacks reported `x0_not_tensor`. C2 therefore made zero sketches,
+zero host transfers, zero Rust calls, zero stable candidates, zero validated
+stable candidates, and zero contradictions. The wrapper failed open and the
+actual workflow remained Full Compute for all steps. It did not switch to
+`x`, nested members, RGB, previews, QKV, or another source. Actual skip, cache
+reuse, partial compute, raw tensor transfer, profiler, and repeat counts were
+zero. Shape, dtype, device, Rust timing, and exact GPU kernel time remain
+`null/not_collected` with reasons rather than fabricated zeros.
+
+The bounded decision is `C2_SHADOW_SIGNAL_NOT_ADMITTED`; the exact C3
+selection is `no_c3_admission`. No sampler gate or transformer wrapper is
+authorized from this evidence, and no speedup or product-default claim exists.
+Public evidence is aggregate-only; prompt, video, callbacks, logs, receipts,
+machine paths, and build artifacts remain under the repository-external
+logical root `C2_ARTIFACT_ROOT`. See the detailed
+[C2 worklog](worklogs/2026-08-06-c2-h3-compound-eye-shadow.md) and
+[C3 handoff](design/h3-c3-selective-compute-handoff.md).
+
+C2-R1 then fixed only the source-proven `x0.tensors[0]` container path. The
+adapter commit passed 14/14 focused model-free tests and was pushed before the
+single approved regression. That one owned-runtime submission completed with
+20 callbacks, 20 Rust calls, 20 `FULL_COMPUTE` directives, zero escalation or
+fallback, and zero actual skip, cache reuse, partial compute, or raw-tensor
+Rust transfer. The H.264 output decoded 124/124 frames at 864x480 and 24 FPS
+with native audio; retry, OOM, CUDA-error, NaN, black-frame, and corrupted-frame
+counts were zero under the recorded checks.
+
+The observed container was `comfy.nested_tensor.NestedTensor`; its approved
+video slot was `[1,24,37,30,54]` on CUDA. The actual dtype was
+`torch.float32`, contradicting the committed BF16 admission check. The code
+therefore allowed Rust evaluation through its structural adapter but the
+post-run source gate rejected the signal. This is a wrapper/admission-contract
+defect, not successful runtime admission. In addition, each 48-float host
+transfer blocked for about 7.14 seconds: total-shadow p95 was 7.147004 seconds
+and cumulative shadow span was 135.699001 seconds, both above fixed limits.
+
+Counterfactual evidence remains useful but is not promoted: 76 eligible
+regional eye-steps yielded 25 stable, 4 active, and 47 uncertain candidates;
+all 25 stable candidates were validated by the next Full Compute callback,
+with zero contradiction and zero unvalidated candidates. One global
+invalidation and zero overlap conflicts were observed. Because the dtype and
+overhead gates failed, the final bounded decision is `C2_SHADOW_REVISE_ONCE`.
+The runtime's transformer-block candidate remains candidate-only; C3 admission
+is `no_c3_admission`. No second generation or post-result code change was made.
+
+## 2026-08-06 — C2-R2 async FP32 shadow admission
+
+The final C2 `REVISE_ONCE` used the predeclared exact callback contract rather
+than changing signal source after observation. Commit
+`fccaa9f366c0c9a1210eef041a82f551e98d84a1` requires the exact
+`x0.tensors[0]` float32 CUDA video tensor, keeps the paired audio tensor on the
+same device, reduces only to a fixed 48-value sketch, and moves that sketch
+through a bounded three-slot pinned-memory ring. The callback performs no
+blocking host conversion or explicit synchronization, retains no source
+tensor, and always delegates the original callback arguments unchanged.
+
+Model-free verification passed 16 focused tests in the Local H3 runtime,
+including the real PyO3 ABI roundtrip. One and only one approved fixed-profile
+H3 generation then completed without retry. All 20 callbacks passed structural
+and dtype admission; enqueue, consume, event-ready, Rust-call, and Full Compute
+counts were each 20. There were zero dtype rejections, signal rejections,
+not-ready events, ring overflows, drain timeouts, fallbacks, escalations,
+callback synchronizations, skips, cache reuses, or partial-compute operations.
+
+The lagged counterfactual contract used horizon 2: callback N enqueued sketch
+N, callback N+1 consumed it, and the delta from N-1 to N predicted callback
+N+2. Of 72 eligible regional eye-steps, 23 were stable, 4 active, and 45
+uncertain. All 23 stable candidates were validated by later unchanged Full
+Compute observations, with zero contradiction and zero unvalidated candidates.
+
+Callback CPU p95 was 1.5082 ms and cumulative callback CPU time was 73.0815 ms.
+CUDA sketch p95 was 0.217248 ms, Rust boundary p95 was 37.6 microseconds, and
+the bounded drain took 0.1574 ms. The run completed in 588.09061 seconds from
+submit to terminal and decoded all 124 H.264 frames at 864x480 and 24 FPS with
+one audio stream. The output SHA-256 was
+`0b1cf9f6d95808ce5eed3b4b77c4a94562173abe400e3dad6b41b6fa188531cb`.
+
+Every fixed C2-R2 admission, overhead, readiness, integrity, and
+counterfactual-validation Gate passed. The decision is therefore
+`C2_COMPOUND_EYE_SHADOW_READY`, and `h3.transformer_block_wrapper` is the sole
+candidate for a separately approved C3 design. This is shadow evidence only:
+actual execution remained Full Compute, so speedup, safe skip, cache reuse,
+partial compute, product promotion, and C3 implementation all remain zero.
+
 ---
 
 ## Entry template

@@ -1,8 +1,12 @@
 #![doc = "Bounded Python 3.12 shared-buffer adapter for the model-free R3 probe."]
 
 use hive_retina_runtime::{
-    evaluate_step_policy as evaluate_step_policy_core, InputProfile, PixelBox, R3CandidateSummary,
-    StepDirective, StepObservation, C1_REASON_RUST_PANIC, C1_STEP_POLICY_ABI_VERSION,
+    evaluate_compound_eye_shadow_policy as evaluate_compound_eye_shadow_policy_core,
+    evaluate_step_policy as evaluate_step_policy_core, CompoundEyeShadowDirective,
+    CompoundEyeShadowObservation, InputProfile, PixelBox, R3CandidateSummary, StepDirective,
+    StepObservation, C1_REASON_RUST_PANIC, C1_STEP_POLICY_ABI_VERSION,
+    C2_COMPOUND_EYE_SHADOW_ABI_VERSION, C2_EYE_COUNT, C2_REASON_RUST_PANIC, C2_SKETCH_VALUE_COUNT,
+    C2_STABLE_VALIDATION_LIMIT_PPM,
 };
 use pyo3::buffer::PyBuffer;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
@@ -169,6 +173,62 @@ fn set_directive(dict: &Bound<'_, PyDict>, directive: &StepDirective) -> PyResul
     Ok(())
 }
 
+fn fixed_sketch(values: Vec<i32>, name: &str) -> PyResult<[i32; C2_SKETCH_VALUE_COUNT]> {
+    values.try_into().map_err(|values: Vec<i32>| {
+        PyValueError::new_err(format!(
+            "{name} must contain exactly {C2_SKETCH_VALUE_COUNT} values; got {}.",
+            values.len()
+        ))
+    })
+}
+
+fn set_c2_directive(
+    dict: &Bound<'_, PyDict>,
+    directive: &CompoundEyeShadowDirective,
+) -> PyResult<()> {
+    dict.set_item("abi_version", directive.abi_version)?;
+    dict.set_item("struct_size", directive.struct_size)?;
+    dict.set_item("decision_code", directive.decision_code)?;
+    dict.set_item("reason_code", directive.reason_code)?;
+    dict.set_item("unsupported_flags", directive.unsupported_flags)?;
+    dict.set_item("eye_state", directive.eye_state.to_vec())?;
+    dict.set_item("eye_confidence_ppm", directive.eye_confidence_ppm.to_vec())?;
+    dict.set_item("eye_change_ppm", directive.eye_change_ppm.to_vec())?;
+    dict.set_item("stable_eye_count", directive.stable_eye_count)?;
+    dict.set_item("active_eye_count", directive.active_eye_count)?;
+    dict.set_item("uncertain_eye_count", directive.uncertain_eye_count)?;
+    dict.set_item(
+        "candidate_generate_count",
+        directive.candidate_generate_count,
+    )?;
+    dict.set_item("candidate_reuse_count", directive.candidate_reuse_count)?;
+    dict.set_item(
+        "candidate_reconcile_count",
+        directive.candidate_reconcile_count,
+    )?;
+    dict.set_item("global_invalidation", directive.global_invalidation)?;
+    dict.set_item("overlap_conflict_mask", directive.overlap_conflict_mask)?;
+    dict.set_item(
+        "shared_visual_state_digest",
+        PyBytes::new(dict.py(), &directive.shared_visual_state_digest),
+    )?;
+    dict.set_item(
+        "compute_plan_digest",
+        PyBytes::new(dict.py(), &directive.compute_plan_digest),
+    )?;
+    dict.set_item(
+        "decision_digest",
+        PyBytes::new(dict.py(), &directive.decision_digest),
+    )?;
+    dict.set_item("skipped_step_count", directive.skipped_step_count)?;
+    dict.set_item("skipped_block_count", directive.skipped_block_count)?;
+    dict.set_item("skipped_token_count", directive.skipped_token_count)?;
+    dict.set_item("skipped_latent_count", directive.skipped_latent_count)?;
+    dict.set_item("reused_cache_count", directive.reused_cache_count)?;
+    dict.set_item("partial_compute_count", directive.partial_compute_count)?;
+    Ok(())
+}
+
 /// One in-process, fixed-metadata policy call. No Python callback, file I/O,
 /// network I/O, lock, sleep, tensor, model state, or CUDA address crosses it.
 #[pyfunction]
@@ -259,6 +319,104 @@ fn step_policy_panic_boundary_probe() -> u32 {
     u32::from(result.is_err())
 }
 
+/// One in-process C2 shadow-policy call. Only two fixed 48-value sketches and
+/// fixed metadata cross the boundary; tensors and CUDA pointers are rejected
+/// by construction.
+#[pyfunction]
+#[allow(clippy::too_many_arguments)]
+fn evaluate_compound_eye_shadow_policy<'py>(
+    py: Python<'py>,
+    abi_version: u32,
+    struct_size: u32,
+    run_digest: &Bound<'py, PyBytes>,
+    workflow_revision_digest: &Bound<'py, PyBytes>,
+    settings_digest: &Bound<'py, PyBytes>,
+    step_index: u32,
+    total_steps: u32,
+    topology_id: u32,
+    sketch_source_id: u32,
+    quantization_scale: u32,
+    previous_available: bool,
+    uncertainty_flags: u32,
+    invalidation_flags: u32,
+    full_compute_supported: bool,
+    fallback_supported: bool,
+    receipt_required: bool,
+    unsupported_flags: u32,
+    current_sketch_q: Vec<i32>,
+    previous_sketch_q: Vec<i32>,
+) -> PyResult<Bound<'py, PyDict>> {
+    let observation = CompoundEyeShadowObservation {
+        abi_version,
+        struct_size,
+        run_digest: fixed_digest(run_digest, "run_digest")?,
+        workflow_revision_digest: fixed_digest(
+            workflow_revision_digest,
+            "workflow_revision_digest",
+        )?,
+        settings_digest: fixed_digest(settings_digest, "settings_digest")?,
+        step_index,
+        total_steps,
+        topology_id,
+        sketch_source_id,
+        quantization_scale,
+        previous_available: u32::from(previous_available),
+        uncertainty_flags,
+        invalidation_flags,
+        full_compute_supported: u32::from(full_compute_supported),
+        fallback_supported: u32::from(fallback_supported),
+        receipt_required: u32::from(receipt_required),
+        unsupported_flags,
+        current_sketch_q: fixed_sketch(current_sketch_q, "current_sketch_q")?,
+        previous_sketch_q: fixed_sketch(previous_sketch_q, "previous_sketch_q")?,
+    };
+    let started = Instant::now();
+    let evaluated = catch_unwind(AssertUnwindSafe(|| {
+        evaluate_compound_eye_shadow_policy_core(&observation)
+    }));
+    let rust_policy_ns = started.elapsed().as_nanos();
+    let result = PyDict::new(py);
+    match evaluated {
+        Ok(directive) => {
+            result.set_item("ffi_status", 0)?;
+            set_c2_directive(&result, &directive)?;
+        }
+        Err(_) => {
+            result.set_item("ffi_status", 1)?;
+            set_c2_directive(
+                &result,
+                &CompoundEyeShadowDirective::fail_open(C2_REASON_RUST_PANIC),
+            )?;
+        }
+    }
+    result.set_item("rust_policy_ns", rust_policy_ns)?;
+    Ok(result)
+}
+
+#[pyfunction]
+fn compound_eye_shadow_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    result.set_item("abi_version", C2_COMPOUND_EYE_SHADOW_ABI_VERSION)?;
+    result.set_item(
+        "observation_struct_size",
+        CompoundEyeShadowObservation::contract_size(),
+    )?;
+    result.set_item(
+        "directive_struct_size",
+        CompoundEyeShadowDirective::contract_size(),
+    )?;
+    result.set_item("eye_count", C2_EYE_COUNT)?;
+    result.set_item("sketch_value_count", C2_SKETCH_VALUE_COUNT)?;
+    result.set_item("max_rust_calls_per_callback", 1)?;
+    result.set_item("host_scalar_bytes_per_callback", C2_SKETCH_VALUE_COUNT * 4)?;
+    result.set_item(
+        "stable_validation_limit_ppm",
+        C2_STABLE_VALIDATION_LIMIT_PPM,
+    )?;
+    result.set_item("tensor_bytes_per_callback", 0)?;
+    Ok(result)
+}
+
 #[pymodule]
 fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(run_candidate, module)?)?;
@@ -266,6 +424,11 @@ fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(evaluate_step_policy, module)?)?;
     module.add_function(wrap_pyfunction!(step_policy_contract, module)?)?;
     module.add_function(wrap_pyfunction!(step_policy_panic_boundary_probe, module)?)?;
+    module.add_function(wrap_pyfunction!(
+        evaluate_compound_eye_shadow_policy,
+        module
+    )?)?;
+    module.add_function(wrap_pyfunction!(compound_eye_shadow_contract, module)?)?;
     module.add("__version__", env!("CARGO_PKG_VERSION"))?;
     module.add("pyo3_version", "0.29.0")?;
     module.add("python_abi", "abi3-py312")?;

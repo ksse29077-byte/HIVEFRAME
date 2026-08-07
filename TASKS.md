@@ -308,12 +308,12 @@ outside Git.
 
 ## C1 — Rust Sampler Step Policy Bridge
 
-Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+Overall status: `verified_once`; publication status: `published`. Bounded
 decision: `C1_RUST_POLICY_BRIDGE_READY`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated C1 work | `in_progress` | [Issue #59](https://github.com/ksse29077-byte/HIVEFRAME/issues/59); [Draft PR #60](https://github.com/ksse29077-byte/HIVEFRAME/pull/60); branch `core/c1-rust-sampler-policy-bridge` |
+| Track isolated C1 work | `published` | Issue #59 completed; [PR #60](https://github.com/ksse29077-byte/HIVEFRAME/pull/60) merged as `4635f47...`; branch preserved |
 | Reuse existing Rust workspace and PyO3 bridge | `implemented` | `hive-retina-runtime` plus `hive-retina-python`, ABI v1, PyO3 0.29 `abi3-py312` |
 | Define fixed metadata contracts | `verified` | 184-byte `StepObservation`, 76-byte `StepDirective`, fixed digests/enums, no tensors or private payloads |
 | Enforce full-compute-only policy | `verified` | `FULL_COMPUTE` / `ESCALATE_FULL_COMPUTE`; every skip/reuse/partial counter fixed at zero; panic and malformed-response fail-open tests |
@@ -329,6 +329,37 @@ The failed 34.44-second first attempt remains diagnostic history. The single
 approved regression validates metadata-only full-compute parity; it is not a
 speedup claim or product-default promotion. See the detailed
 [C1 worklog](docs/worklogs/2026-08-06-c1-rust-sampler-policy-bridge.md).
+
+## C2 — Local H3 Compound Eye Shadow Policy
+
+Overall status: `verified_once`; publication status: `draft_pr`. Latest bounded
+decision: `C2_COMPOUND_EYE_SHADOW_READY`; the initial
+`C2_SHADOW_SIGNAL_NOT_ADMITTED` and R1 `C2_SHADOW_REVISE_ONCE` results remain
+immutable chronological evidence.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C2 work | `in_progress` | [Issue #61](https://github.com/ksse29077-byte/HIVEFRAME/issues/61); [Draft PR #62](https://github.com/ksse29077-byte/HIVEFRAME/pull/62); branch `core/c2-h3-compound-eye-shadow` |
+| Predeclare five-eye topology and thresholds | `verified` | `overlap_2x2`, x0-only 4x4x3 sketch, fixed scale 4096 and immutable ppm thresholds |
+| Implement separate C2 Rust/PyO3 ABI | `verified` | 536-byte observation, 232-byte directive, one fixed-sketch call maximum, actual decisions limited to Full Compute/escalation |
+| Pass focused model-free validation | `verified` | seven C2 Rust tests, workspace check, 20 C2+C1 Python tests, real ABI roundtrip, compile/fmt/diff checks |
+| Execute approved Standard shadow run | `verified_once` | one submission, retry 0, video 124/124; all 20 callbacks fail open because x0 is not a `torch.Tensor` |
+| Identify and fix one exact container path | `model_free_verified` | source-backed `x0.tensors[0]`; fixed video/audio container contract; 14/14 focused tests |
+| Execute the one approved C2-R1 regression | `verified_once` | one submission, retry 0; adapter 20/20, Rust 20/20, Full Compute 20/20, video 124/124 |
+| Validate stable candidates counterfactually | `verified_once` | 76 eligible eye-steps; stable/active/uncertain 25/4/47; validated/contradicted/unvalidated 25/0/0 |
+| Pass C2-R1 admission and overhead gates | `revise_once` | actual signal dtype was `torch.float32` while the committed gate required BF16; 48-scalar blocking transfer made total-shadow p95 7.147 s and cumulative span 135.699 s |
+| Fix strict FP32 pre-Rust admission and async sketch path | `verified` | exact float32 CUDA contract, three pinned slots, current-stream non-blocking 192-byte copies, callback synchronization 0 |
+| Execute the one approved C2-R2 regression | `verified_once` | one submission, retry 0; callback/admission/enqueue/consume/Rust/Full Compute all 20; event ready 20, not-ready/overflow/timeout 0 |
+| Validate lagged stable candidates | `verified_once` | 72 eligible eye-steps; stable/active/uncertain 23/4/45; validated/contradicted/unvalidated 23/0/0; two-step horizon |
+| Pass C2-R2 admission and overhead gates | `verified_once` | callback CPU p95 1.5082 ms and cumulative 73.0815 ms; CUDA sketch p95 0.217248 ms; Rust boundary p95 37.6 us |
+| Select C3 execution hook | `candidate_admitted` | `h3.transformer_block_wrapper` is the one separately approved C3 candidate; it is not implemented or product-promoted |
+
+C2-R2 preserved Standard Full Compute and produced a valid H.264 video while
+removing the R1 contract mismatch and blocking callback transfer. This admits
+one C3 *candidate contract*, not selective execution: actual skip, cache reuse,
+partial compute, raw-tensor FFI, speedup, and product promotion remain zero.
+C3 implementation requires separate approval. See the detailed
+[C2 worklog](docs/worklogs/2026-08-06-c2-h3-compound-eye-shadow.md).
 
 ## Maintenance checklist
 

@@ -207,3 +207,60 @@ selected_target:
     tensor_bytes_transferred: 0
     third_generation_run: false
     promoted: false
+  c2_follow_up:
+    state: verified_once
+    issue: 61
+    decision: C2_SHADOW_SIGNAL_NOT_ADMITTED
+    topology: overlap_2x2
+    configured_eye_count: 5
+    actual_submissions: 1
+    callbacks_observed: 20
+    admitted_x0_tensor_callbacks: 0
+    rust_calls_observed: 0
+    full_compute_fallback_callbacks: 20
+    stable_candidates: 0
+    validated_stable: 0
+    contradicted_stable: 0
+    source_substitution_count: 0
+    selected_c3_hook: no_c3_admission
+    promoted: false
+  c2_r1_follow_up:
+    state: verified_once
+    decision: C2_SHADOW_REVISE_ONCE
+    exact_signal_path: x0.tensors[0]
+    structural_adapter_admissions: 20
+    actual_signal_dtype: torch.float32
+    committed_gate_dtype: torch.bfloat16
+    rust_calls_observed: 20
+    full_compute_decisions: 20
+    stable_candidates: 25
+    validated_stable: 25
+    contradicted_stable: 0
+    total_shadow_p95_seconds: 7.1470038
+    cumulative_shadow_seconds: 135.6990011
+    counterfactual_candidate: h3.transformer_block_wrapper
+    selected_c3_hook: no_c3_admission
+    reason: "The dtype contract and blocking host-transfer overhead gates failed."
+    promoted: false
+  c2_r2_follow_up:
+    state: verified_once
+    decision: C2_COMPOUND_EYE_SHADOW_READY
+    exact_signal_path: x0.tensors[0]
+    admitted_dtype: torch.float32
+    callback_count: 20
+    rust_call_count: 20
+    full_compute_count: 20
+    pinned_ring_slots: 3
+    next_callback_readiness: "19/19"
+    ring_overflow_count: 0
+    drain_timeout_count: 0
+    callback_cpu_p95_seconds: 0.0015082
+    cuda_sketch_p95_seconds: 0.000217248
+    rust_boundary_p95_seconds: 0.0000376
+    stable_candidates: 23
+    validated_stable: 23
+    contradicted_stable: 0
+    selected_c3_hook: h3.transformer_block_wrapper
+    c3_implemented: false
+    actual_selective_compute: false
+    promoted: false
