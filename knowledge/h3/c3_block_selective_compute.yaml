@@ -1,0 +1,95 @@
+schema_version: h3.c3.block-selective-compute.1
+recorded_date: "2026-08-07"
+status: rejected
+decision: C3_POLICY_OPPORTUNITY_TOO_LOW
+issue: 63
+source_main_sha: e7bae9070318872f535f2351f6942ccb40cfa75c
+workflow_revision: video_minimax_h3_t2v@31ab33fdb053
+claim_boundary: >-
+  The installed H3 source admits a repository-owned identity-bypass wrapper,
+  but the immutable C2-R2 signal does not meet the predeclared 18 percent
+  theoretical opportunity floor after anchors and cooldown. No C3 runtime,
+  Rust ABI, block bypass, generation, speedup, quality, or product promotion
+  was implemented or executed.
+
+source_admission:
+  comfyui_version: 0.30.2
+  comfyui_commit: dec5d9450a5290bcf63430409ea41018e67f41c3
+  model_source: <COMFYUI_ROOT>/comfy/ldm/minimax/model.py
+  model_source_sha256: 882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024
+  model_class: MiniMaxH3Model
+  block_class: DiTBlock
+  block_collection: self.blocks
+  block_count: 50
+  block_count_source: checkpoint-key-derived num_layers with source default 50
+  block_order: deterministic ModuleList enumeration from index 0 through 49
+  forward_signature: "forward(self, x, t_emb, mod_segments, rope_freqs, transformer_options={})"
+  input_output_contract: "one packed video/audio/text residual tensor in; the same tensor structure out"
+  video_audio_joint_processing: true
+  residual_update: in_place_addcmul
+  required_non_residual_side_effects: false
+  wrapper_hook: "transformer_options.patches_replace['dit'][('double_block', index)]"
+  identity_return: "{'img': args['img']}"
+  original_forward_omitted_when_bypassed: true
+  installed_source_modified: false
+  raw_tensor_to_rust_required: false
+  admission: admitted
+
+predeclared_policy:
+  mechanism: SELECTIVE_BLOCK_BYPASS_IDENTITY
+  gate_order: [G4, G3, G2]
+  theoretical_reduction_floor: 0.18
+  total_execution_steps: 20
+  first_full_compute_steps: 2
+  last_full_compute_steps: 2
+  full_compute_steps_after_selective: 2
+  transformer_block_count: 50
+  candidate_block_start: 12
+  candidate_block_end_inclusive: 48
+  candidate_block_count: 37
+  total_theoretical_block_calls: 1000
+  cache_reuse: false
+  tensor_transfer_to_rust: false
+
+c2_r2_replay:
+  source: C2_ARTIFACT_ROOT/c2-private-receipt.json
+  source_sha256: d54693ab2fa10717e1aaa22c56bb4c3aaa17f9d4579c9b1f4a3ffb67734b46df
+  receipt_modified: false
+  generation_repeated: false
+  g4:
+    raw_eligible_steps: []
+    selected_steps: []
+    bypass_block_calls: 0
+    theoretical_reduction: 0.0
+  g3:
+    raw_eligible_steps: []
+    selected_steps: []
+    bypass_block_calls: 0
+    theoretical_reduction: 0.0
+  g2:
+    raw_eligible_steps: [5, 6, 8, 13, 16, 17, 18, 19]
+    selected_steps_after_anchor_and_cooldown: [5, 8, 13, 16]
+    bypass_block_calls: 148
+    theoretical_reduction: 0.148
+  selected_gate: null
+  rejection_reason: "G2 reaches only 14.8 percent, below the fixed 18 percent floor."
+
+execution:
+  rust_c3_abi_implemented: false
+  python_wrapper_implemented: false
+  control_generation_count: 0
+  selective_generation_count: 0
+  total_generation_count: 0
+  actual_block_bypass_count: 0
+  actual_compute_reduction_claim: false
+  speedup_claim: false
+  quality_comparison: null
+  product_promotion: false
+
+next_action:
+  state: separate_approval_required
+  rule: >-
+    Do not relax the 18 percent floor, anchors, cooldown, block set, or C2
+    signal after seeing this result. A later experiment needs a separately
+    approved source of greater opportunity or a different predeclared product
+    question.

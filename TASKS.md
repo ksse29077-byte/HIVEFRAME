@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-06
+Status date: 2026-08-07
 
 ## Status legend
 
@@ -339,7 +339,7 @@ immutable chronological evidence.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated C2 work | `in_progress` | [Issue #61](https://github.com/ksse29077-byte/HIVEFRAME/issues/61); [Draft PR #62](https://github.com/ksse29077-byte/HIVEFRAME/pull/62); branch `core/c2-h3-compound-eye-shadow` |
+| Track isolated C2 work | `published` | [Issue #61](https://github.com/ksse29077-byte/HIVEFRAME/issues/61) completed; [PR #62](https://github.com/ksse29077-byte/HIVEFRAME/pull/62) merged as `e7bae90...`; branch preserved |
 | Predeclare five-eye topology and thresholds | `verified` | `overlap_2x2`, x0-only 4x4x3 sketch, fixed scale 4096 and immutable ppm thresholds |
 | Implement separate C2 Rust/PyO3 ABI | `verified` | 536-byte observation, 232-byte directive, one fixed-sketch call maximum, actual decisions limited to Full Compute/escalation |
 | Pass focused model-free validation | `verified` | seven C2 Rust tests, workspace check, 20 C2+C1 Python tests, real ABI roundtrip, compile/fmt/diff checks |
@@ -360,6 +360,23 @@ one C3 *candidate contract*, not selective execution: actual skip, cache reuse,
 partial compute, raw-tensor FFI, speedup, and product promotion remain zero.
 C3 implementation requires separate approval. See the detailed
 [C2 worklog](docs/worklogs/2026-08-06-c2-h3-compound-eye-shadow.md).
+
+## C3 — H3 Transformer Block Selective Compute pre-gate
+
+Overall status: `stopped`; decision `C3_POLICY_OPPORTUNITY_TOO_LOW`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C3 work | `in_progress` | [Issue #63](https://github.com/ksse29077-byte/HIVEFRAME/issues/63); branch `accel/c3-h3-transformer-block-selective-compute`; Draft review only |
+| Inspect installed H3 block source | `verified` | 50 ordered `DiTBlock` entries; repository-owned `patches_replace` identity wrapper is structurally admitted without installed-source changes |
+| Replay immutable C2-R2 signal | `verified` | G4/G3: 0%; G2: selected steps 5, 8, 13, 16 and 148/1000 theoretical bypass calls |
+| Pass predeclared opportunity floor | `stopped` | G2 reaches 14.8%, below the fixed 18% minimum |
+| Implement C3 Rust/PyO3/runtime path | `stopped` | prohibited after opportunity rejection; C1/C2 ABIs remain unchanged |
+| Execute CONTROL and SELECTIVE pair | `stopped` | generation count 0; no runtime mapping, speed, quality, or product claim |
+
+The H3 source admits the proposed identity-bypass hook, but source admission
+does not override the opportunity Gate. See the detailed
+[C3 worklog](docs/worklogs/2026-08-07-c3-h3-transformer-block-selective-compute.md).
 
 ## Maintenance checklist
 

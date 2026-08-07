@@ -209,7 +209,18 @@ candidate_rules:
     rule: "Define a new separately approved fixed-size view for the actual non-tensor callback object."
     reason: "C2-S0 and C2-R2 established and admitted the exact x0.tensors[0] float32 video path; alternate-signal exploration is no longer the active rule."
   - candidate_id: "c3-transformer-block-wrapper"
-    state: observed
+    state: rejected
     promotion_required: true
     rule: "Design a backend-owned transformer-block wrapper with Full Compute fallback using only the admitted fixed-size Rust metadata boundary."
-    reason: "C2-R2 passed shadow admission and counterfactual validation, but performed no actual skip, cache reuse, or partial compute."
+    reason: "The source hook is structurally admitted, but immutable C2-R2 replay reaches only 14.8 percent theoretical reduction after fixed anchors and cooldown, below the predeclared 18 percent C3 floor."
+
+c3_block_selective_compute:
+  state: rejected
+  source_hook_available: true
+  runtime_implemented: false
+  actual_generation_count: 0
+  actual_block_bypass_available: false
+  speedup_verified: false
+  quality_verified: false
+  decision: C3_POLICY_OPPORTUNITY_TOO_LOW
+  automatic_product_application: false

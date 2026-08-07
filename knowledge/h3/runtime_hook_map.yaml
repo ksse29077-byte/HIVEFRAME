@@ -264,3 +264,20 @@ selected_target:
     c3_implemented: false
     actual_selective_compute: false
     promoted: false
+
+c3_block_wrapper_pre_gate:
+  state: rejected
+  decision: C3_POLICY_OPPORTUNITY_TOO_LOW
+  hook_id: h3.transformer_block_wrapper
+  source_contract: admitted
+  logical_source: <COMFYUI_ROOT>/comfy/ldm/minimax/model.py
+  replacement_key: "patches_replace.dit.('double_block', block_index)"
+  mechanism: SELECTIVE_BLOCK_BYPASS_IDENTITY
+  block_count: 50
+  candidate_block_range: [12, 48]
+  selected_gate: null
+  maximum_predeclared_opportunity: 0.148
+  required_opportunity: 0.18
+  runtime_installed: false
+  generation_count: 0
+  promoted: false

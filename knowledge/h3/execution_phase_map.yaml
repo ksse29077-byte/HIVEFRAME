@@ -207,3 +207,18 @@ c2_r2_compound_eye_shadow_follow_up:
   c3_implemented: false
   promoted: false
   claim_boundary: "One fixed-profile Full Compute run verified a bounded asynchronous shadow path and lagged counterfactual signal. No compute was skipped or reused, and no acceleration or product-default claim is made."
+
+c3_block_selective_pre_gate:
+  state: rejected
+  decision: C3_POLICY_OPPORTUNITY_TOO_LOW
+  phase_target: sampler_model_transformer_blocks
+  block_count: 50
+  total_theoretical_block_calls: 1000
+  maximum_candidate_bypass_calls: 148
+  maximum_predeclared_reduction: 0.148
+  required_reduction: 0.18
+  control_generation_count: 0
+  selective_generation_count: 0
+  actual_compute_reduction: false
+  speedup_verified: false
+  promoted: false
