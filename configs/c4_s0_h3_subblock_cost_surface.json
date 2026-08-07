@@ -1,0 +1,95 @@
+{
+  "schema_version": "c4-s0.h3.subblock-cost-surface.config.1",
+  "product_question": "Which source-backed H3 DiTBlock sub-block component is the strongest next quality-preserving compute lever?",
+  "base_main": "e78416691f115710a00e4735c0dc981a8bcfee42",
+  "run_kind": "FULL_COMPUTE_SUBBLOCK_PROFILE",
+  "generation_budget": 1,
+  "retry_budget": 0,
+  "source": {
+    "logical_path": "<comfyui-root>/comfy/ldm/minimax/model.py",
+    "sha256": "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024",
+    "class": "DiTBlock",
+    "block_count": 50
+  },
+  "profile": {
+    "workflow_revision": "video_minimax_h3_t2v@31ab33fdb053",
+    "workflow_sha256": "31ab33fdb053a7834cc866bd7aa08b887518fc656e4a796c89779c6b5e1786e6",
+    "seed": 101,
+    "width": 864,
+    "height": 480,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "scheduler": "simple",
+    "sampler": "res_multistep",
+    "denoise": 1.0,
+    "native_audio": true,
+    "codec": "h264",
+    "sage": false,
+    "fresh_owned_comfyui_process": true
+  },
+  "execution_contract": {
+    "full_compute_only": true,
+    "skip": 0,
+    "reuse": 0,
+    "prediction": 0,
+    "regional_execution": 0,
+    "token_omission": 0,
+    "attention_omission": 0,
+    "selective_generation": 0
+  },
+  "timing": {
+    "method": "deferred torch.cuda.Event pairs on the active CUDA stream",
+    "logical_group_count": 6,
+    "entire_block_pair": true,
+    "sampler_pair": true,
+    "maximum_event_pairs": 7001,
+    "maximum_event_objects": 14002,
+    "synchronization_count": 1,
+    "synchronization_point": "after sampler completion",
+    "profiler_enabled": false,
+    "nsight_enabled": false,
+    "kernel_profiler_enabled": false,
+    "kernel_duration_sum": null,
+    "kernel_duration_support_status": "not_collected"
+  },
+  "block_buckets": [
+    {"id": "early", "first": 0, "last": 16},
+    {"id": "middle", "first": 17, "last": 33},
+    {"id": "late", "first": 34, "last": 49}
+  ],
+  "step_buckets": [
+    {"id": "early", "first": 0, "last": 6},
+    {"id": "middle", "first": 7, "last": 13},
+    {"id": "late", "first": 14, "last": 19}
+  ],
+  "comparability": {
+    "reference_sampler_seconds": 488.584958,
+    "reference_values_seconds": [486.603692, 488.459651, 488.710265, 488.86538],
+    "reference_statistic": "median",
+    "maximum_absolute_relative_delta": 0.05,
+    "failure_decision": "C4_S0_INSTRUMENTATION_OVERHEAD_TOO_HIGH"
+  },
+  "ranking": {
+    "primary_order": [
+      "measured_sampler_event_share_descending",
+      "structural_subset_execution",
+      "observation_compatibility",
+      "adapter_isolation",
+      "full_compute_fallback"
+    ],
+    "global_mixing_rule": "If a global-mixing group dominates but a lower-cost structurally local group is eligible, select MIXED_SUBBLOCK_SELECTIVE and keep global mixing Full Compute.",
+    "isolated_two_x_required": false,
+    "ideal_elimination_ceiling_status": "THEORETICAL_ONLY",
+    "combined_speedup_calculation": false
+  },
+  "decisions": [
+    "C4_S0_START_STATE_CHANGED",
+    "C4_S0_SOURCE_CONTRACT_CHANGED",
+    "C4_S0_RUST_BOUNDARY_CHANGE_REQUIRED",
+    "C4_S0_INSTRUMENTATION_NOT_ADMITTED",
+    "C4_S0_INSTRUMENTATION_OVERHEAD_TOO_HIGH",
+    "C4_S0_OUTPUT_PARITY_FAILED",
+    "C4_S0_SUBBLOCK_COST_SURFACE_MAPPED"
+  ]
+}

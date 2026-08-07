@@ -1,0 +1,268 @@
+schema_version: "0.1.0"
+knowledge_id: "h3-c4-s0-subblock-cost-coupling-surface-2026-08-07"
+state: verified_once
+decision: C4_S0_SUBBLOCK_COST_SURFACE_MAPPED
+
+source:
+  issue: 74
+  draft_pr: 75
+  base_main_commit: "e78416691f115710a00e4735c0dc981a8bcfee42"
+  instrumentation_commit: "d1ffa3e8b6f975e32ef2be4509f0e41f1129237d"
+  installed_source_logical_path: "<comfyui-root>/comfy/ldm/minimax/model.py"
+  installed_source_sha256: "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024"
+  workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+  class_name: DiTBlock
+  block_count: 50
+  source_modified: false
+
+fixed_profile:
+  width: 864
+  height: 480
+  frame_count: 124
+  fps: 24
+  steps: 20
+  scheduler: simple
+  sampler: res_multistep
+  denoise: 1.0
+  seed: 101
+  native_audio: true
+  sage_nodes: 0
+  standard_full_compute: true
+
+instrumentation:
+  method: "deferred torch.cuda.Event pairs on the active CUDA stream"
+  measurement_scope: "CUDA event spans, not profiler kernel-duration sums"
+  logical_group_count: 6
+  event_pair_count: 7001
+  event_object_count: 14002
+  synchronization_count: 1
+  synchronization_wall_seconds: 0.0000392000074498355
+  profiler_enabled: false
+  gpu_kernel_seconds:
+    value: null
+    support_status: not_collected
+    reason: "PyTorch profiler, CUPTI, Nsight, and kernel-by-kernel profiling were disabled by contract."
+  mapping_error_count: 0
+  wrapper_failure_count: 0
+  unattributed_within_dit_block_ms: 22.027773842215538
+  nested_accounting: "The six source-order groups are sequential children of the enclosing DiTBlock span; their sum is not added to the parent."
+
+runtime:
+  run_kind: FULL_COMPUTE_SUBBLOCK_PROFILE
+  generation_count: 1
+  retry_count: 0
+  model_forward_count: 20
+  dit_block_call_count: 1000
+  skip_count: 0
+  reuse_count: 0
+  prediction_count: 0
+  regional_execution_count: 0
+  token_omission_count: 0
+  attention_omission_count: 0
+  sampler_wall_seconds: 488.8473196999985
+  sampler_cuda_event_span_ms: 488759.34375
+  submit_to_terminal_seconds: 589.9130159000051
+  runner_total_seconds: 599.2601834000088
+  instrumentation_comparability:
+    reference_sampler_seconds: 488.584958
+    measured_sampler_seconds: 488.8473196999985
+    relative_delta: 0.0005369827615497476
+    allowed_relative_delta: 0.05
+    passed: true
+  sampled_resources:
+    peak_nvidia_system_sampled_vram_bytes: 11589910528
+    peak_comfyui_process_sampled_vram_bytes: 12464555956
+    peak_process_tree_rss_bytes: 46921318400
+    sample_interval_seconds: 1.0
+    exact_allocator_peak:
+      value: null
+      support_status: unavailable
+      reason: "The runner is outside the ComfyUI process and cannot safely read its PyTorch allocator peak."
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frame_count: 124
+    fps: 24.0
+    audio_stream_count: 1
+    decode_succeeded: true
+    corrupted_frame_count: 0
+    black_output_detected: false
+    size_bytes: 262946
+    sha256: "2786d894e8027b75f8d2e45f1aba365b41c9a338a916838aadd0159e52789192"
+  runtime_stop_note: "The owned runtime was explicitly terminated after a successful terminal result; its child return code is not a Generation failure."
+
+entire_dit_block:
+  count: 1000
+  total_ms: 446077.0343322754
+  mean_ms: 446.0770343322754
+  p50_ms: 446.4158630371094
+  p95_ms: 447.4910583496094
+
+logical_groups:
+  - group_id: modulation_parameter_projection
+    source_boundary: "shift/scale/gate = self.adaln_proj(t_emb)"
+    coupling_class: REDUCTION_OR_BROADCAST
+    can_observe: true
+    can_wrap_without_source_patch: true
+    can_execute_subset_structurally: unknown
+    requires_all_tokens: false
+    requires_global_context: false
+    output_shape_preserving: false
+    fallback_to_original_possible: true
+    adapter_isolation_possible: true
+    overlap_classes: [overlaps_runtime_control, independent_from_VAE]
+    call_count: 1000
+    total_ms: 108.43136014044285
+    mean_ms: 0.10843136014044284
+    p50_ms: 0.08908800035715103
+    p95_ms: 0.11366400122642517
+    measured_dit_block_share: 0.0002430776565369517
+    measured_sampler_share: 0.00022185020404623794
+    ideal_elimination_ceiling:
+      value: 0.00022185020404623794
+      status: THEORETICAL_ONLY
+  - group_id: attention_norm_modulation
+    source_boundary: "self.norm1(x) followed by _mod_scale_shift(..., mod_segments)"
+    coupling_class: POSITIONWISE_OR_LOCAL
+    can_observe: true
+    can_wrap_without_source_patch: true
+    can_execute_subset_structurally: true
+    requires_all_tokens: false
+    requires_global_context: false
+    output_shape_preserving: true
+    fallback_to_original_possible: true
+    adapter_isolation_possible: true
+    overlap_classes: [overlaps_regional_compute, independent_from_VAE]
+    call_count: 1000
+    total_ms: 4255.81763625145
+    mean_ms: 4.255817636251449
+    p50_ms: 4.274176120758057
+    p95_ms: 4.287487983703613
+    measured_dit_block_share: 0.009540544140816183
+    measured_sampler_share: 0.008707388801201716
+    ideal_elimination_ceiling:
+      value: 0.008707388801201716
+      status: THEORETICAL_ONLY
+  - group_id: attention_global_mixing
+    source_boundary: "self.attn(h, rope_freqs, transformer_options), including QKV, RoPE, optimized attention, and output projection"
+    coupling_class: GLOBAL_MIXING
+    can_observe: true
+    can_wrap_without_source_patch: true
+    can_execute_subset_structurally: false
+    requires_all_tokens: true
+    requires_global_context: true
+    output_shape_preserving: true
+    fallback_to_original_possible: true
+    adapter_isolation_possible: true
+    overlap_classes: [overlaps_attention_kernel, overlaps_regional_compute, independent_from_VAE]
+    call_count: 1000
+    total_ms: 343228.5699157715
+    mean_ms: 343.22856991577146
+    p50_ms: 343.5550842285156
+    p95_ms: 344.195068359375
+    measured_dit_block_share: 0.769437885161571
+    measured_sampler_share: 0.7022445182988309
+    ideal_elimination_ceiling:
+      value: 0.7022445182988309
+      status: THEORETICAL_ONLY
+  - group_id: attention_residual_update
+    source_boundary: "_mod_gate(x, gate_msa, attention_output, mod_segments)"
+    coupling_class: POSITIONWISE_OR_LOCAL
+    can_observe: true
+    can_wrap_without_source_patch: true
+    can_execute_subset_structurally: true
+    requires_all_tokens: false
+    requires_global_context: false
+    output_shape_preserving: true
+    fallback_to_original_possible: true
+    adapter_isolation_possible: true
+    overlap_classes: [overlaps_residual_family, overlaps_regional_compute, independent_from_VAE]
+    call_count: 1000
+    total_ms: 1584.2816220521927
+    mean_ms: 1.5842816220521927
+    p50_ms: 1.5841280221939087
+    p95_ms: 1.5872000455856323
+    measured_dit_block_share: 0.003551587506457657
+    measured_sampler_share: 0.0032414349563055136
+    ideal_elimination_ceiling:
+      value: 0.0032414349563055136
+      status: THEORETICAL_ONLY
+  - group_id: feed_forward_positionwise
+    source_boundary: "self.norm2(x), _mod_scale_shift(...), then self.mlp(h)"
+    coupling_class: POSITIONWISE_OR_LOCAL
+    can_observe: true
+    can_wrap_without_source_patch: true
+    can_execute_subset_structurally: true
+    requires_all_tokens: false
+    requires_global_context: false
+    output_shape_preserving: true
+    fallback_to_original_possible: true
+    adapter_isolation_possible: true
+    overlap_classes: [overlaps_regional_compute, independent_from_attention_kernel, independent_from_VAE]
+    call_count: 1000
+    total_ms: 95276.47136688232
+    mean_ms: 95.27647136688232
+    p50_ms: 95.27859497070312
+    p95_ms: 96.22220611572266
+    measured_dit_block_share: 0.21358748385130372
+    measured_sampler_share: 0.19493534514527083
+    ideal_elimination_ceiling:
+      value: 0.19493534514527083
+      status: THEORETICAL_ONLY
+  - group_id: feed_forward_residual_update
+    source_boundary: "_mod_gate(x, gate_mlp, mlp_output, mod_segments)"
+    coupling_class: POSITIONWISE_OR_LOCAL
+    can_observe: true
+    can_wrap_without_source_patch: true
+    can_execute_subset_structurally: true
+    requires_all_tokens: false
+    requires_global_context: false
+    output_shape_preserving: true
+    fallback_to_original_possible: true
+    adapter_isolation_possible: true
+    overlap_classes: [overlaps_residual_family, overlaps_regional_compute, independent_from_VAE]
+    call_count: 1000
+    total_ms: 1601.4346573352814
+    mean_ms: 1.6014346573352813
+    p50_ms: 1.6015360355377197
+    p95_ms: 1.6046080589294434
+    measured_dit_block_share: 0.0035900405851030637
+    measured_sampler_share: 0.0032765300097350445
+    ideal_elimination_ceiling:
+      value: 0.0032765300097350445
+      status: THEORETICAL_ONLY
+
+block_distribution:
+  buckets:
+    - {bucket: early, first: 0, last: 16, count: 340, total_ms: 151644.29620361328, mean_ms: 446.01263589298026, p50_ms: 446.3918151855469, p95_ms: 447.4408874511719}
+    - {bucket: middle, first: 17, last: 33, count: 340, total_ms: 151682.09106445312, mean_ms: 446.12379724839155, p50_ms: 446.5223693847656, p95_ms: 447.5555725097656}
+    - {bucket: late, first: 34, last: 49, count: 320, total_ms: 142750.64706420898, mean_ms: 446.0957720756531, p50_ms: 446.3749084472656, p95_ms: 447.4439697265625}
+
+step_distribution:
+  buckets:
+    - {bucket: early, first: 0, last: 6, count: 350, total_ms: 155781.8868408203, mean_ms: 445.0911052594866, p50_ms: 446.0006408691406, p95_ms: 447.3487243652344}
+    - {bucket: middle, first: 7, last: 13, count: 350, total_ms: 156306.57443237305, mean_ms: 446.590212663923, p50_ms: 446.5566711425781, p95_ms: 447.5340881347656}
+    - {bucket: late, first: 14, last: 19, count: 300, total_ms: 133988.57305908203, mean_ms: 446.6285768636068, p50_ms: 446.6017303466797, p95_ms: 447.5740051269531}
+
+candidate_ranking:
+  next_primary_compute_lever: MIXED_SUBBLOCK_SELECTIVE
+  selected_group_id: feed_forward_positionwise
+  reason: "Global attention is dominant but structurally global. Preserve it as Full Compute and investigate the highest-cost positionwise group as a separately approved quality-first candidate."
+  secondary_candidates:
+    - {group_id: attention_global_mixing, coupling_class: GLOBAL_MIXING, measured_sampler_share: 0.7022445182988309}
+    - {group_id: attention_norm_modulation, coupling_class: POSITIONWISE_OR_LOCAL, measured_sampler_share: 0.008707388801201716}
+    - {group_id: feed_forward_residual_update, coupling_class: POSITIONWISE_OR_LOCAL, measured_sampler_share: 0.0032765300097350445}
+    - {group_id: attention_residual_update, coupling_class: POSITIONWISE_OR_LOCAL, measured_sampler_share: 0.0032414349563055136}
+    - {group_id: modulation_parameter_projection, coupling_class: REDUCTION_OR_BROADCAST, measured_sampler_share: 0.00022185020404623794}
+  claim_boundary: "This ranking selects one bounded future research candidate. It is not safe-skip authority, attainable reduction, combined speedup, or product admission."
+
+claims:
+  actual_selective_work_reduction: 0
+  speedup_claim: 0
+  quality_promotion: 0
+  product_promotion: 0
+  quality_speed_comparison: not_applicable
+  full_compute_fallback: preserved
+  next_stage_started: false
+  training_eligibility: evaluation_only

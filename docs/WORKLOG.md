@@ -1562,6 +1562,53 @@ is not attributed and no prior evidence was rewritten. Diagram impact is
 `none`. See the detailed
 [C3-R4 worklog](worklogs/2026-08-07-c3-r4-two-residual-directional-prediction.md).
 
+## 2026-08-07 — C4-S0 H3 Sub-Block Cost & Coupling Surface
+
+Issue #74, branch `accel/c4-s0-h3-subblock-cost-coupling`, and Draft PR #75
+isolate one read-only Full Compute cost decomposition. Commit `d1ffa3e...`
+froze the installed-source admission, six source-order logical groups,
+coupling classes, deferred CUDA-event method, event bounds, deterministic
+block/step buckets, +/-5% instrumentation comparison, and candidate ranking
+before runtime. The Generic Core and Rust ABI were unchanged.
+
+Focused model-free validation passed 11 tests plus compile, changed-package
+import, JSON parse, and diff checks. One import-only preflight initially omitted
+the ComfyUI package root; the corrected import passed without model or GPU work
+and without a code change. The approved runtime budget was then consumed by
+exactly one fresh-process Full Compute Generation with retry zero.
+
+The run observed 20 model forwards, 1,000 H3 `DiTBlock` calls, and 1,000 calls
+for each of six groups. Mapping and wrapper failures were zero. Skip, reuse,
+prediction, regional execution, token omission, and attention omission were all
+zero. The event collector created 7,001 pairs/14,002 objects and performed one
+post-sampler synchronization. Profiler and kernel-duration collection remained
+disabled; these values are CUDA event spans, not kernel-time sums.
+
+Global attention accounted for 343,228.570 ms, 76.9438% of measured block span
+and 70.2245% of sampler event span. The positionwise feed-forward group
+accounted for 95,276.471 ms, 21.3587% of block span and 19.4935% of sampler
+event span. The four other groups were each below 1% of sampler span. Early,
+middle, and late block means were 446.012636/446.123797/446.095772 ms; the
+corresponding step-bucket means were 445.091105/446.590213/446.628577 ms.
+
+Sampler, submit-to-terminal, and runner spans were 488.847320, 589.913016, and
+599.260183 seconds. The sampler differed by +0.053698% from the frozen
+488.584958-second reference, so instrumentation comparability passed. The
+H.264 output decoded 124/124 frames at 864x480 and 24 FPS with one audio
+stream; OOM, CUDA error, retry, corruption, and black-output indicators were
+zero. Private media, prompt, full receipts, runtime logs, and paths remain
+outside Git.
+
+The decision is `C4_S0_SUBBLOCK_COST_SURFACE_MAPPED`. The selected
+`NEXT_PRIMARY_COMPUTE_LEVER` is `MIXED_SUBBLOCK_SELECTIVE`: keep globally
+coupled attention in Full Compute and treat the highest-cost structurally local
+`feed_forward_positionwise` group as a future separately approved candidate.
+All ideal-elimination ceilings are `THEORETICAL_ONLY`. Actual selective work
+reduction, speedup claim, quality promotion, and product promotion remain zero;
+no next stage was started. Diagram impact is `updated` because the published
+C3-R4 state and bounded C4 candidate change the evidence progression. See the
+detailed [C4-S0 worklog](worklogs/2026-08-07-c4-s0-h3-subblock-cost-coupling.md).
+
 ---
 
 ## Entry template

@@ -329,3 +329,28 @@ c3_r4_directional_prediction_follow_up:
     reason: "SELECTIVE was prohibited because zero targets passed admission."
   claim_boundary: "CONTROL timing includes directional diagnostics. No paired SELECTIVE timing, compute-reduction, quality, or speedup evidence exists."
   promoted: false
+
+c4_s0_subblock_cost_surface_follow_up:
+  state: verified_once
+  decision: C4_S0_SUBBLOCK_COST_SURFACE_MAPPED
+  full_compute_generation_count: 1
+  retry_count: 0
+  model_forward_count: 20
+  dit_block_call_count: 1000
+  sampler_wall_seconds: 488.8473196999985
+  sampler_cuda_event_span_seconds: 488.75934375
+  submit_to_terminal_seconds: 589.9130159000051
+  runner_total_seconds: 599.2601834000088
+  dominant_group:
+    group_id: attention_global_mixing
+    coupling_class: GLOBAL_MIXING
+    sampler_event_share: 0.7022445182988309
+  selected_future_group:
+    group_id: feed_forward_positionwise
+    coupling_class: POSITIONWISE_OR_LOCAL
+    sampler_event_share: 0.19493534514527083
+  next_primary_compute_lever: MIXED_SUBBLOCK_SELECTIVE
+  actual_selective_compute: false
+  speedup_claim: false
+  product_promotion: false
+  claim_boundary: "One unchanged Full Compute run mapped six source-backed CUDA event spans. The selected lever is a candidate only; no partial execution, quality claim, or speedup exists."

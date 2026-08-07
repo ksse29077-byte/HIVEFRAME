@@ -82,7 +82,20 @@ hooks:
     full_compute_fallback: true
     rust_ffi_fit: policy_only
     compound_eye_connection: future_block_activity_plan
-    evidence: "MiniMax H3 transformer blocks expose Python forward methods, but the approved workflow has no control hook."
+    evidence: "The repository-owned wrapper has omitted real block forwards in immutable C3-R1 evidence. C4-S0 additionally observed all 1,000 Full Compute calls without omission and restored the original class method."
+  - hook_id: h3.ditblock.logical_groups
+    status: observable_now
+    h3_specific: true
+    backend_independent: false
+    expected_overhead: low_when_deferred_events
+    data_copied: false
+    gpu_synchronization: one_after_sampler
+    cache_candidate: false
+    invalidation_required: true
+    full_compute_fallback: true
+    rust_ffi_fit: no_rust_boundary_required_for_timing
+    compound_eye_connection: future_positionwise_activity_candidate
+    evidence: "C4-S0 mapped six source-order groups across 1,000 Full Compute block calls with deferred CUDA events, one synchronization, zero mapping failures, and no selective execution."
   - hook_id: h3.attention_forward
     status: requires_custom_node
     h3_specific: true
