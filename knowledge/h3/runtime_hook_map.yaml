@@ -281,3 +281,31 @@ c3_block_wrapper_pre_gate:
   runtime_installed: false
   generation_count: 0
   promoted: false
+
+c3_r1_frozen_replay_follow_up:
+  state: verified_once
+  decision: C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW
+  issue: 65
+  draft_pr: 66
+  mechanism: SELECTIVE_BLOCK_BYPASS_IDENTITY
+  hook_id: h3.transformer_block
+  replacement_key: "patches_replace.dit.('double_block', block_index)"
+  frozen_schedule: [5, 6, 8, 13, 16, 17]
+  actual_selective_steps: [5, 6, 13, 17]
+  vetoed_steps: [8, 16]
+  candidate_block_range: [12, 48]
+  original_block_calls_control: 1000
+  original_block_calls_selective: 852
+  actual_bypass_block_calls: 148
+  actual_reduction: 0.148
+  required_reduction: 0.18
+  identity_bypass_verified: true
+  live_full_compute_fallback_verified: true
+  rust_calls_per_callback_maximum: 1
+  rust_calls_per_block: 0
+  tensor_bytes_to_rust: 0
+  cache_reuse: false
+  speedup_claim: false
+  quality_equivalence: not_proven
+  product_promotion: false
+  claim_boundary: "One frozen-schedule pair verified actual block omission, but live veto reduced opportunity below the fixed floor and quality/performance gates failed. The result is not a dynamic policy or product default."

@@ -224,3 +224,25 @@ c3_block_selective_compute:
   quality_verified: false
   decision: C3_POLICY_OPPORTUNITY_TOO_LOW
   automatic_product_application: false
+
+c3_r1_frozen_block_bypass:
+  state: verified_once
+  source_hook_available: true
+  runtime_implemented: true
+  fixed_profile_pair_count: 1
+  actual_generation_count: 2
+  actual_block_bypass_available: true
+  actual_bypass_block_calls: 148
+  actual_reduction: 0.148
+  required_reduction: 0.18
+  live_veto_observed: true
+  full_compute_fallback_verified: true
+  tensor_bytes_to_rust: 0
+  full_tensor_host_copy_count: 0
+  persistent_gpu_cache_count: 0
+  speedup_verified: false
+  quality_verified: false
+  dynamic_policy_verified: false
+  decision: C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW
+  automatic_product_application: false
+  promoted: false

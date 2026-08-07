@@ -1,0 +1,220 @@
+schema_version: h3.c3-r1.frozen-block-bypass.1
+recorded_date: "2026-08-07"
+state: verified_once
+decision: C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW
+issue: 65
+draft_pr: 66
+source_main_sha: b9618049cd33693154f4570b7a8f21734e5fa33d
+implementation_commit: a1a369abffcb6a61896bc22e5cbe46a55d22f537
+workflow_revision: video_minimax_h3_t2v@31ab33fdb053
+claim_boundary: >-
+  One fixed-profile CONTROL/SELECTIVE pair verified actual omission of 148
+  H3 DiTBlock forward calls through an identity bypass. Live safety vetoed two
+  of six frozen steps, leaving 14.8 percent actual reduction below the fixed
+  18 percent opportunity floor. Quality and performance targets also failed.
+  This is not a speedup claim, a dynamic product policy, or a product-default
+  promotion.
+
+preserved_c3_pre_gate:
+  decision: C3_POLICY_OPPORTUNITY_TOO_LOW
+  immutable: true
+  changed_by_follow_up: false
+  note: >-
+    C3-R1 uses a separate issue, branch, product question, schedule, ABI, and
+    evidence record. It does not rewrite the prior C3 rejected result.
+
+fixed_profile:
+  backend: local_minimax_h3
+  sage_nodes: 0
+  prompt: private_unchanged
+  seed: 101
+  width: 864
+  height: 480
+  frame_count: 124
+  fps: 24
+  steps: 20
+  scheduler: simple
+  sampler: res_multistep
+  denoise: 1.0
+  native_audio: true
+  output_codec: h264
+
+policy:
+  mechanism: SELECTIVE_BLOCK_BYPASS_IDENTITY
+  frozen_schedule: [5, 6, 8, 13, 16, 17]
+  full_compute_anchors: [0, 1, 18, 19]
+  prior_c3_cooldown_applied: false
+  candidate_block_start: 12
+  candidate_block_end_inclusive: 48
+  candidate_block_count: 37
+  transformer_block_count: 50
+  total_execution_steps: 20
+  total_block_calls_per_run: 1000
+  theoretical_bypass_calls: 222
+  theoretical_reduction: 0.222
+  required_actual_reduction: 0.18
+  live_safety_may_veto: true
+  live_safety_may_add_steps: false
+  cache_reuse: false
+  full_tensor_host_copy: false
+  persistent_c3_gpu_cache: false
+
+rust_contract:
+  abi_version: 1
+  observation: C3FrozenBlockPlanObservation
+  observation_size_bytes: 208
+  directive: C3FrozenBlockPlanDirective
+  directive_size_bytes: 80
+  maximum_calls_per_callback: 1
+  per_block_rust_calls: 0
+  tensor_bytes_to_rust: 0
+  c1_observation_size_bytes: 184
+  c1_directive_size_bytes: 76
+  c2_observation_size_bytes: 536
+  c2_directive_size_bytes: 232
+  prior_abi_changed: false
+
+control:
+  state: verified_once
+  logical_artifact_root: C3_R1_CONTROL_ARTIFACT_ROOT
+  run_id: control-a1a369a-001
+  submissions: 1
+  retries: 0
+  fresh_comfyui_process: true
+  prompt_id: 554e5139-3caa-479c-b9e5-93896a3cbea1
+  callback_count: 20
+  c2_rust_call_count: 20
+  c3_rust_call_count: 18
+  model_forward_count: 20
+  observed_block_call_count: 1000
+  original_block_call_count: 1000
+  bypass_block_call_count: 0
+  frozen_live_admitted_steps: [5, 6, 8, 13, 16, 17]
+  frozen_live_vetoed_steps: []
+  mapping_error_count: 0
+  wrapper_failure_count: 0
+  sampler_seconds: 488.375941300008
+  submit_to_terminal_seconds: 590.0593429
+  runner_total_seconds: 604.9507319999975
+  runtime_startup_seconds: 13.6581772
+  model_encoder_boundary_seconds: 0.7598709
+  prompt_conditioning_seconds: 33.9575279
+  video_vae_decode_seconds: 63.8870627
+  audio_vae_decode_seconds: 1.2719641
+  encoding_seconds: 1.7817419
+  result_collection_seconds: 0.5713703
+  shutdown_seconds: 0.0016421
+  unattributed_seconds: 0.6854336
+  peak_comfyui_system_sampled_vram_bytes: 12461735860
+  peak_nvidia_system_sampled_vram_bytes: 12024020992
+  peak_process_tree_rss_bytes: 47291817984
+  peak_system_wide_used_ram_bytes: 62304276480
+  peak_gpu_utilization_percent: 100
+  output_size_bytes: 263000
+  output_sha256: a18645e8e0bd8942b023781d58edad2d19419e6a0b5402751c0cd296f1d67b8a
+  private_receipt_sha256: d868cce9ed40c75817fa2f93aff00d1233b0d8a0d281ee00e920ec86afba7226
+  c3_boundary_p95_seconds: 0.0000114
+
+selective:
+  state: verified_once
+  logical_artifact_root: C3_R1_SELECTIVE_ARTIFACT_ROOT
+  run_id: selective-a1a369a-001
+  submissions: 1
+  retries: 0
+  fresh_comfyui_process: true
+  prompt_id: 23eaae97-d460-45f6-b553-da8410be3c85
+  callback_count: 20
+  c2_rust_call_count: 20
+  c3_rust_call_count: 18
+  model_forward_count: 20
+  observed_block_call_count: 1000
+  original_block_call_count: 852
+  bypass_block_call_count: 148
+  actual_reduction: 0.148
+  actual_selective_steps: [5, 6, 13, 17]
+  frozen_live_vetoed_steps: [8, 16]
+  veto_reasons:
+    - step: 8
+      reason: stable_count_low
+      stable_count: 1
+      active_count: 0
+    - step: 16
+      reason: stable_count_low
+      stable_count: 0
+      active_count: 2
+  mapping_error_count: 0
+  wrapper_failure_count: 0
+  sampler_seconds: 423.206032600021
+  submit_to_terminal_seconds: 524.2744335999887
+  runner_total_seconds: 537.1151700000046
+  runtime_startup_seconds: 9.6229977
+  model_encoder_boundary_seconds: 0.7281646
+  prompt_conditioning_seconds: 33.7058882
+  video_vae_decode_seconds: 63.313335
+  audio_vae_decode_seconds: 1.2938058
+  encoding_seconds: 2.0023165
+  result_collection_seconds: 0.7298278
+  shutdown_seconds: 0.0019514
+  unattributed_seconds: 2.5108504
+  peak_comfyui_system_sampled_vram_bytes: 12461735860
+  peak_nvidia_system_sampled_vram_bytes: 11923357696
+  peak_process_tree_rss_bytes: 47041257472
+  peak_system_wide_used_ram_bytes: 61718671360
+  peak_gpu_utilization_percent: 100
+  output_size_bytes: 492252
+  output_sha256: 25790f8ce91b035de5adbd2d70371cf6f034c8226a799005970088c94a6b0270
+  private_receipt_sha256: 8783c3ba63e163034c1da7cf40b259ac305dc923b0a083be5d45ccf1b0b20aae
+  c3_boundary_p95_seconds: 0.0000104
+  identity_bypass_timing_seconds:
+    p50: 0.0000002
+    p95: 0.0000003
+    max: 0.0000009
+    sum: 0.0000291
+
+paired_result:
+  block_accounting_exact: true
+  block_accounting_equation: "1000 - 852 = 148"
+  sampler_speedup: 1.1539909729
+  submit_to_terminal_speedup: 1.1254780037
+  runner_speedup: 1.1262961201
+  sampler_target: 1.20
+  submit_to_terminal_target: 1.15
+  sampler_target_passed: false
+  submit_to_terminal_target_passed: false
+  quality:
+    frame_pairs: 124
+    mean_ssim: 0.8052450251
+    p05_ssim: 0.7645002870
+    min_ssim: 0.7420226514
+    low_ssim_threshold: 0.75
+    low_ssim_frame_rate: 0.0161290323
+    normalized_mae: 0.0553798011
+    control_motion_energy: 0.7860396945
+    selective_motion_energy: 1.4423636204
+    motion_energy_ratio: 1.8349755495
+    visual_equivalence: not_proven
+    gate_passed: false
+
+safety:
+  oom_count: 0
+  retry_count: 0
+  cuda_error_signature_count: 0
+  traceback_signature_count: 0
+  nan_signature_count: 0
+  black_frame_count: 0
+  corrupted_frame_count: 0
+  decoded_frames_each: 124
+  audio_streams_each: 1
+  tensor_bytes_to_rust: 0
+  full_tensor_host_copy_count: 0
+  persistent_c3_gpu_cache_count: 0
+  selective_peak_vram_within_control_plus_256_mib: true
+
+product:
+  actual_block_reduction_verified_once: true
+  speedup_claim: false
+  quality_equivalence_claim: false
+  dynamic_policy_verified: false
+  product_promotion: false
+  automatic_product_application: false
+  next_action: separate_approval_required

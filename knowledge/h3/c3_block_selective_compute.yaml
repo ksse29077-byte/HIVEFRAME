@@ -93,3 +93,31 @@ next_action:
     signal after seeing this result. A later experiment needs a separately
     approved source of greater opportunity or a different predeclared product
     question.
+
+c3_r1_follow_up:
+  record: c3_r1_frozen_block_bypass.yaml
+  state: verified_once
+  decision: C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW
+  separate_issue: 65
+  separate_draft_pr: 66
+  prior_record_immutable: true
+  prior_threshold_changed: false
+  frozen_schedule: [5, 6, 8, 13, 16, 17]
+  theoretical_bypass_calls: 222
+  theoretical_reduction: 0.222
+  actual_selective_steps: [5, 6, 13, 17]
+  live_vetoed_steps: [8, 16]
+  actual_bypass_calls: 148
+  actual_reduction: 0.148
+  required_actual_reduction: 0.18
+  control_generation_count: 1
+  selective_generation_count: 1
+  retry_count: 0
+  actual_block_omission_verified_once: true
+  quality_equivalence: not_proven
+  speedup_claim: false
+  product_promotion: false
+  note: >-
+    This follow-up verified the identity-bypass mechanism under a separately
+    approved frozen schedule. It does not replace or reinterpret the original
+    C3 pre-gate decision.
