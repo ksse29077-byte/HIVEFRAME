@@ -293,7 +293,7 @@ post-sampler drain in 0.0001574 seconds.
 |---|---:|---:|---:|---:|
 | Callback shadow CPU | 0.000551 s | 0.001508 s | 0.060865 s | 0.073082 s |
 | CUDA reduction + 192-byte D2H event span | 0.000202 s | 0.000217 s | 0.028569 s | 0.032420 s |
-| Rust boundary | 0.000026 s | 0.000038 s | 0.000711 s | 0.001228 s |
+| Rust boundary | 0.000026 s | 0.000038 s | 0.000711 s | 0.0012441 s |
 
 All predeclared p95 and cumulative limits passed. The callback maximum includes
 one-time first-use setup and does not override the p95 Gate. The event span is
