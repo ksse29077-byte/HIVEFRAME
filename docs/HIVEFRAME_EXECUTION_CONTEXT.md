@@ -4,7 +4,7 @@ Status: non-normative retrieval index
 
 Snapshot date: 2026-08-07
 
-Verified source `main`: `90ee5e7b6530afd8da286040c40d167c1ade017d`
+Verified source `main`: `d9371aa3e009d446299ebb5cb95fd53f159b978d`
 
 This file is the compact context that an agent must retrieve before starting
 HIVEFRAME work. It does not duplicate or replace the constitution, roadmap,
