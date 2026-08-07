@@ -65,6 +65,38 @@ pub const C2_STABLE_VALIDATION_LIMIT_PPM: u32 = 30_000;
 pub const C2_LOCAL_TO_GLOBAL_LIMIT_PPM: u32 = 950_000;
 pub const C2_MIN_WARMUP_CALLBACKS: u32 = 2;
 
+pub const C3_R1_BLOCK_PLAN_ABI_VERSION: u32 = 1;
+pub const C3_R1_TOTAL_STEPS: u32 = 20;
+pub const C3_R1_BLOCK_COUNT: u32 = 50;
+pub const C3_R1_FROZEN_SCHEDULE: [u32; 6] = [5, 6, 8, 13, 16, 17];
+pub const C3_R1_CANDIDATE_BLOCK_START: u32 = 12;
+pub const C3_R1_CANDIDATE_BLOCK_END: u32 = 48;
+pub const C3_R1_CANDIDATE_BLOCK_COUNT: u32 = 37;
+pub const C3_R1_CANDIDATE_BLOCK_MASK: u64 = (1_u64 << 49) - (1_u64 << 12);
+pub const C3_R1_DECISION_FULL_COMPUTE: u32 = 0;
+pub const C3_R1_DECISION_SELECTIVE_BLOCK_BYPASS: u32 = 1;
+pub const C3_R1_DECISION_ESCALATE_FULL_COMPUTE: u32 = 2;
+pub const C3_R1_REASON_NONE: u32 = 0;
+pub const C3_R1_REASON_ABI_MISMATCH: u32 = 1;
+pub const C3_R1_REASON_STRUCT_SIZE_MISMATCH: u32 = 2;
+pub const C3_R1_REASON_STEP_RANGE_INVALID: u32 = 3;
+pub const C3_R1_REASON_DIGEST_MISSING: u32 = 4;
+pub const C3_R1_REASON_EXECUTION_CONTRACT_MISMATCH: u32 = 5;
+pub const C3_R1_REASON_EYE_METADATA_INVALID: u32 = 6;
+pub const C3_R1_REASON_SELECTIVE_UNSUPPORTED: u32 = 7;
+pub const C3_R1_REASON_FALLBACK_UNSUPPORTED: u32 = 8;
+pub const C3_R1_REASON_UNSUPPORTED_METADATA: u32 = 9;
+pub const C3_R1_REASON_SCHEDULE_FLAG_MISMATCH: u32 = 10;
+pub const C3_R1_REASON_NOT_FROZEN_TARGET: u32 = 11;
+pub const C3_R1_REASON_SOURCE_INVALID: u32 = 12;
+pub const C3_R1_REASON_PREDICTION_INVALID: u32 = 13;
+pub const C3_R1_REASON_STABLE_COUNT_LOW: u32 = 14;
+pub const C3_R1_REASON_ACTIVE_PRESENT: u32 = 15;
+pub const C3_R1_REASON_GLOBAL_INVALIDATION: u32 = 16;
+pub const C3_R1_REASON_OVERLAP_CONFLICT: u32 = 17;
+pub const C3_R1_REASON_FATAL_FLAG: u32 = 18;
+pub const C3_R1_REASON_RUST_PANIC: u32 = 19;
+
 /// Fixed-size, metadata-only callback observation for the C1 full-compute gate.
 ///
 /// No tensor, prompt, filesystem path, media payload, CUDA pointer, model
@@ -577,6 +609,231 @@ pub fn evaluate_compound_eye_shadow_policy(
         skipped_latent_count: 0,
         reused_cache_count: 0,
         partial_compute_count: 0,
+    }
+}
+
+/// Fixed-size C3-R1 frozen-replay observation.
+///
+/// This contract admits only scalar metadata and SHA-256 digests. It contains
+/// no tensor, pointer, path, prompt, variable-length payload, or CUDA address.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct C3FrozenBlockPlanObservation {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub run_digest: [u8; 32],
+    pub workflow_revision_digest: [u8; 32],
+    pub settings_digest: [u8; 32],
+    pub model_revision_digest: [u8; 32],
+    pub predicted_execution_step: u32,
+    pub total_steps: u32,
+    pub block_count: u32,
+    pub frozen_schedule_member: u32,
+    pub stable_mask: u32,
+    pub stable_count: u32,
+    pub active_mask: u32,
+    pub active_count: u32,
+    pub uncertain_mask: u32,
+    pub uncertain_count: u32,
+    pub global_invalidation: u32,
+    pub overlap_conflict_mask: u32,
+    pub prediction_valid: u32,
+    pub source_valid: u32,
+    pub selective_supported: u32,
+    pub fallback_supported: u32,
+    pub fatal_flags: u32,
+    pub unsupported_flags: u32,
+}
+
+impl C3FrozenBlockPlanObservation {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+}
+
+/// Fixed-size C3-R1 directive. The mask is block metadata, not tensor data.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct C3FrozenBlockPlanDirective {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub decision_code: u32,
+    pub reason_code: u32,
+    pub target_step: u32,
+    pub bypass_mask: u64,
+    pub bypass_count: u32,
+    pub fallback_required: u32,
+    pub unsupported_flags: u32,
+    pub decision_digest: [u8; 32],
+}
+
+impl C3FrozenBlockPlanDirective {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+
+    pub fn fail_open(reason_code: u32, target_step: u32, digest: [u8; 32]) -> Self {
+        Self {
+            abi_version: C3_R1_BLOCK_PLAN_ABI_VERSION,
+            struct_size: Self::contract_size(),
+            decision_code: C3_R1_DECISION_ESCALATE_FULL_COMPUTE,
+            reason_code,
+            target_step,
+            bypass_mask: 0,
+            bypass_count: 0,
+            fallback_required: 1,
+            unsupported_flags: 0,
+            decision_digest: digest,
+        }
+    }
+}
+
+fn c3_r1_observation_digest(observation: &C3FrozenBlockPlanObservation) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(observation.abi_version.to_le_bytes());
+    hasher.update(observation.struct_size.to_le_bytes());
+    hasher.update(observation.run_digest);
+    hasher.update(observation.workflow_revision_digest);
+    hasher.update(observation.settings_digest);
+    hasher.update(observation.model_revision_digest);
+    for value in [
+        observation.predicted_execution_step,
+        observation.total_steps,
+        observation.block_count,
+        observation.frozen_schedule_member,
+        observation.stable_mask,
+        observation.stable_count,
+        observation.active_mask,
+        observation.active_count,
+        observation.uncertain_mask,
+        observation.uncertain_count,
+        observation.global_invalidation,
+        observation.overlap_conflict_mask,
+        observation.prediction_valid,
+        observation.source_valid,
+        observation.selective_supported,
+        observation.fallback_supported,
+        observation.fatal_flags,
+        observation.unsupported_flags,
+    ] {
+        hasher.update(value.to_le_bytes());
+    }
+    hasher.finalize().into()
+}
+
+fn c3_r1_directive(
+    observation: &C3FrozenBlockPlanObservation,
+    decision_code: u32,
+    reason_code: u32,
+    bypass_mask: u64,
+) -> C3FrozenBlockPlanDirective {
+    let observation_digest = c3_r1_observation_digest(observation);
+    let decision_digest = c2_digest_parts(&[
+        &observation_digest,
+        &decision_code.to_le_bytes(),
+        &reason_code.to_le_bytes(),
+        &bypass_mask.to_le_bytes(),
+    ]);
+    C3FrozenBlockPlanDirective {
+        abi_version: C3_R1_BLOCK_PLAN_ABI_VERSION,
+        struct_size: C3FrozenBlockPlanDirective::contract_size(),
+        decision_code,
+        reason_code,
+        target_step: observation.predicted_execution_step,
+        bypass_mask,
+        bypass_count: bypass_mask.count_ones(),
+        fallback_required: u32::from(decision_code != C3_R1_DECISION_SELECTIVE_BLOCK_BYPASS),
+        unsupported_flags: 0,
+        decision_digest,
+    }
+}
+
+fn c3_r1_contract_reason(observation: &C3FrozenBlockPlanObservation) -> u32 {
+    let expected_schedule_member =
+        u32::from(C3_R1_FROZEN_SCHEDULE.contains(&observation.predicted_execution_step));
+    let eye_mask_union =
+        observation.stable_mask | observation.active_mask | observation.uncertain_mask;
+    if observation.abi_version != C3_R1_BLOCK_PLAN_ABI_VERSION {
+        C3_R1_REASON_ABI_MISMATCH
+    } else if observation.struct_size != C3FrozenBlockPlanObservation::contract_size() {
+        C3_R1_REASON_STRUCT_SIZE_MISMATCH
+    } else if observation.predicted_execution_step >= observation.total_steps {
+        C3_R1_REASON_STEP_RANGE_INVALID
+    } else if observation.run_digest == [0; 32]
+        || observation.workflow_revision_digest == [0; 32]
+        || observation.settings_digest == [0; 32]
+        || observation.model_revision_digest == [0; 32]
+    {
+        C3_R1_REASON_DIGEST_MISSING
+    } else if observation.total_steps != C3_R1_TOTAL_STEPS
+        || observation.block_count != C3_R1_BLOCK_COUNT
+    {
+        C3_R1_REASON_EXECUTION_CONTRACT_MISMATCH
+    } else if eye_mask_union & !0x0f != 0
+        || (observation.stable_mask & observation.active_mask) != 0
+        || (observation.stable_mask & observation.uncertain_mask) != 0
+        || (observation.active_mask & observation.uncertain_mask) != 0
+        || observation.stable_count != observation.stable_mask.count_ones()
+        || observation.active_count != observation.active_mask.count_ones()
+        || observation.uncertain_count != observation.uncertain_mask.count_ones()
+    {
+        C3_R1_REASON_EYE_METADATA_INVALID
+    } else if observation.selective_supported != 1 {
+        C3_R1_REASON_SELECTIVE_UNSUPPORTED
+    } else if observation.fallback_supported != 1 {
+        C3_R1_REASON_FALLBACK_UNSUPPORTED
+    } else if observation.unsupported_flags != 0 {
+        C3_R1_REASON_UNSUPPORTED_METADATA
+    } else if observation.frozen_schedule_member != expected_schedule_member {
+        C3_R1_REASON_SCHEDULE_FLAG_MISMATCH
+    } else {
+        C3_R1_REASON_NONE
+    }
+}
+
+/// Deterministic C3-R1 frozen-replay policy. It never adds a target step: the
+/// immutable schedule is the maximum ceiling and live metadata may only veto
+/// a member back to ordinary full compute.
+pub fn evaluate_c3_frozen_block_plan(
+    observation: &C3FrozenBlockPlanObservation,
+) -> C3FrozenBlockPlanDirective {
+    let contract_reason = c3_r1_contract_reason(observation);
+    if contract_reason != C3_R1_REASON_NONE {
+        return c3_r1_directive(
+            observation,
+            C3_R1_DECISION_ESCALATE_FULL_COMPUTE,
+            contract_reason,
+            0,
+        );
+    }
+    let veto_reason = if observation.frozen_schedule_member != 1 {
+        C3_R1_REASON_NOT_FROZEN_TARGET
+    } else if observation.source_valid != 1 {
+        C3_R1_REASON_SOURCE_INVALID
+    } else if observation.prediction_valid != 1 {
+        C3_R1_REASON_PREDICTION_INVALID
+    } else if observation.stable_count < 2 {
+        C3_R1_REASON_STABLE_COUNT_LOW
+    } else if observation.active_count != 0 {
+        C3_R1_REASON_ACTIVE_PRESENT
+    } else if observation.global_invalidation != 0 {
+        C3_R1_REASON_GLOBAL_INVALIDATION
+    } else if observation.overlap_conflict_mask != 0 {
+        C3_R1_REASON_OVERLAP_CONFLICT
+    } else if observation.fatal_flags != 0 {
+        C3_R1_REASON_FATAL_FLAG
+    } else {
+        C3_R1_REASON_NONE
+    };
+    if veto_reason == C3_R1_REASON_NONE {
+        c3_r1_directive(
+            observation,
+            C3_R1_DECISION_SELECTIVE_BLOCK_BYPASS,
+            C3_R1_REASON_NONE,
+            C3_R1_CANDIDATE_BLOCK_MASK,
+        )
+    } else {
+        c3_r1_directive(observation, C3_R1_DECISION_FULL_COMPUTE, veto_reason, 0)
     }
 }
 
@@ -2197,6 +2454,143 @@ mod tests {
         assert_eq!(directive.decision_code, C2_DECISION_ESCALATE_FULL_COMPUTE);
         assert_eq!(directive.stable_eye_count, 0);
         assert_eq!(directive.skipped_step_count, 0);
+    }
+
+    fn c3_r1_observation(step: u32) -> C3FrozenBlockPlanObservation {
+        C3FrozenBlockPlanObservation {
+            abi_version: C3_R1_BLOCK_PLAN_ABI_VERSION,
+            struct_size: C3FrozenBlockPlanObservation::contract_size(),
+            run_digest: [7; 32],
+            workflow_revision_digest: [8; 32],
+            settings_digest: [9; 32],
+            model_revision_digest: [10; 32],
+            predicted_execution_step: step,
+            total_steps: C3_R1_TOTAL_STEPS,
+            block_count: C3_R1_BLOCK_COUNT,
+            frozen_schedule_member: u32::from(C3_R1_FROZEN_SCHEDULE.contains(&step)),
+            stable_mask: 0b0011,
+            stable_count: 2,
+            active_mask: 0,
+            active_count: 0,
+            uncertain_mask: 0b1100,
+            uncertain_count: 2,
+            global_invalidation: 0,
+            overlap_conflict_mask: 0,
+            prediction_valid: 1,
+            source_valid: 1,
+            selective_supported: 1,
+            fallback_supported: 1,
+            fatal_flags: 0,
+            unsupported_flags: 0,
+        }
+    }
+
+    #[test]
+    fn c3_r1_contract_is_fixed_metadata_only_and_distinct() {
+        assert_eq!(C3_R1_FROZEN_SCHEDULE, [5, 6, 8, 13, 16, 17]);
+        assert_eq!(C3_R1_CANDIDATE_BLOCK_COUNT, 37);
+        assert_eq!(C3_R1_CANDIDATE_BLOCK_MASK.count_ones(), 37);
+        assert_eq!(
+            C3FrozenBlockPlanObservation::contract_size() as usize,
+            std::mem::size_of::<C3FrozenBlockPlanObservation>()
+        );
+        assert_eq!(
+            C3FrozenBlockPlanDirective::contract_size() as usize,
+            std::mem::size_of::<C3FrozenBlockPlanDirective>()
+        );
+        assert_ne!(
+            C3FrozenBlockPlanObservation::contract_size(),
+            CompoundEyeShadowObservation::contract_size()
+        );
+    }
+
+    #[test]
+    fn c3_r1_frozen_plan_is_deterministic_and_mask_is_bounded() {
+        let observation = c3_r1_observation(5);
+        let first = evaluate_c3_frozen_block_plan(&observation);
+        let second = evaluate_c3_frozen_block_plan(&observation);
+        assert_eq!(first, second);
+        assert_eq!(first.decision_code, C3_R1_DECISION_SELECTIVE_BLOCK_BYPASS);
+        assert_eq!(first.bypass_mask, C3_R1_CANDIDATE_BLOCK_MASK);
+        assert_eq!(first.bypass_count, 37);
+        assert_eq!(first.bypass_mask & ((1_u64 << 12) - 1), 0);
+        assert_eq!(first.bypass_mask >> 49, 0);
+    }
+
+    #[test]
+    fn c3_r1_nonmember_and_live_safety_only_veto_to_full_compute() {
+        let nonmember = evaluate_c3_frozen_block_plan(&c3_r1_observation(7));
+        assert_eq!(nonmember.decision_code, C3_R1_DECISION_FULL_COMPUTE);
+        assert_eq!(nonmember.reason_code, C3_R1_REASON_NOT_FROZEN_TARGET);
+        assert_eq!(nonmember.bypass_count, 0);
+
+        let mut cases = Vec::new();
+        let mut source = c3_r1_observation(5);
+        source.source_valid = 0;
+        cases.push((source, C3_R1_REASON_SOURCE_INVALID));
+        let mut prediction = c3_r1_observation(5);
+        prediction.prediction_valid = 0;
+        cases.push((prediction, C3_R1_REASON_PREDICTION_INVALID));
+        let mut stable = c3_r1_observation(5);
+        stable.stable_mask = 1;
+        stable.stable_count = 1;
+        stable.uncertain_mask = 0b1110;
+        stable.uncertain_count = 3;
+        cases.push((stable, C3_R1_REASON_STABLE_COUNT_LOW));
+        let mut active = c3_r1_observation(5);
+        active.active_mask = 0b0100;
+        active.active_count = 1;
+        active.uncertain_mask = 0b1000;
+        active.uncertain_count = 1;
+        cases.push((active, C3_R1_REASON_ACTIVE_PRESENT));
+        let mut global = c3_r1_observation(5);
+        global.global_invalidation = 1;
+        cases.push((global, C3_R1_REASON_GLOBAL_INVALIDATION));
+        let mut overlap = c3_r1_observation(5);
+        overlap.overlap_conflict_mask = 1;
+        cases.push((overlap, C3_R1_REASON_OVERLAP_CONFLICT));
+        let mut fatal = c3_r1_observation(5);
+        fatal.fatal_flags = 1;
+        cases.push((fatal, C3_R1_REASON_FATAL_FLAG));
+        for (observation, reason) in cases {
+            let directive = evaluate_c3_frozen_block_plan(&observation);
+            assert_eq!(directive.decision_code, C3_R1_DECISION_FULL_COMPUTE);
+            assert_eq!(directive.reason_code, reason);
+            assert_eq!(directive.bypass_mask, 0);
+        }
+    }
+
+    #[test]
+    fn c3_r1_invalid_contract_escalates_and_panic_boundary_is_fail_open() {
+        let mut invalid_abi = c3_r1_observation(5);
+        invalid_abi.abi_version = 99;
+        let directive = evaluate_c3_frozen_block_plan(&invalid_abi);
+        assert_eq!(
+            directive.decision_code,
+            C3_R1_DECISION_ESCALATE_FULL_COMPUTE
+        );
+        assert_eq!(directive.reason_code, C3_R1_REASON_ABI_MISMATCH);
+        assert_eq!(directive.bypass_count, 0);
+
+        let mut invalid_blocks = c3_r1_observation(5);
+        invalid_blocks.block_count = 49;
+        let directive = evaluate_c3_frozen_block_plan(&invalid_blocks);
+        assert_eq!(
+            directive.decision_code,
+            C3_R1_DECISION_ESCALATE_FULL_COMPUTE
+        );
+        assert_eq!(
+            directive.reason_code,
+            C3_R1_REASON_EXECUTION_CONTRACT_MISMATCH
+        );
+
+        let fail_open = C3FrozenBlockPlanDirective::fail_open(C3_R1_REASON_RUST_PANIC, 5, [11; 32]);
+        assert_eq!(
+            fail_open.decision_code,
+            C3_R1_DECISION_ESCALATE_FULL_COMPUTE
+        );
+        assert_eq!(fail_open.bypass_count, 0);
+        assert_eq!(fail_open.fallback_required, 1);
     }
 
     fn semantic(profile: &str, topology: Topology) -> SemanticResult {
