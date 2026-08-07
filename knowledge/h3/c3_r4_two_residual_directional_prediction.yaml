@@ -1,0 +1,257 @@
+schema_version: h3.c3-r4.two-residual-directional-prediction.1
+recorded_date: "2026-08-07"
+state: verified_once
+decision: C3_R4_DIRECTIONAL_SIMILARITY_TOO_LOW
+family_disposition: RESIDUAL_PREDICTOR_FAMILY_FALLBACK_ONLY
+issue: 72
+draft_pr: 73
+source_main_sha: d9371aa3e009d446299ebb5cb95fd53f159b978d
+implementation_commit: 6ff07264b65279f716c9bb36d65b58e74396ce13
+workflow_revision: video_minimax_h3_t2v@31ab33fdb053
+mechanism: TWO_RESIDUAL_LINEAR_DIRECTION_PREDICTION_V1
+claim_boundary: >-
+  One fixed-profile Full Compute CONTROL run verified two-actual-residual
+  history, exact sufficient-statistic diagnostics, one frozen global-alpha
+  decision, tensor-free Rust admission metadata, bounded ownership, and Full
+  Compute fallback. No candidate passed the unchanged similarity and raw
+  non-regression Gates, so SELECTIVE was prohibited. Replay, paired quality,
+  compute reduction, speedup, visual equivalence, and product promotion were
+  not verified.
+
+preserved_evidence:
+  c3_r2_immutable: true
+  c3_r3_immutable: true
+  thresholds_changed: false
+  cosine_minimum: 0.99
+  normalized_l2_maximum: 0.20
+  raw_non_regression_required: true
+
+predictor_contract:
+  prediction: "R_hat_t(alpha)=R_(t-1)+alpha*(R_(t-1)-R_(t-2))"
+  source_kind: actual_full_compute_residual
+  prediction_chaining: false
+  raw_baseline_alpha: 0.0
+  candidate_alpha_grid: [-0.50, -0.25, -0.125, 0.125, 0.25, 0.50, 0.75, 1.00]
+  global_alpha_count: 1
+  selected_global_alpha: -0.125
+  selected_global_alpha_execution_authority: false
+  candidate_steps: [5, 6, 8, 13, 16, 17]
+  anchors: [0, 1, 18, 19]
+  minimum_target_spacing: 3
+  minimum_targets_for_selective: 2
+  calibrated_targets: []
+  exact_metric_method: >-
+    Six scalar sufficient statistics evaluate cosine and the unchanged C3-R2
+    normalized residual L2 for P=B+alpha(B-A); no alpha-specific full
+    prediction tensor is allocated during CONTROL shadow diagnostics.
+  exact_equivalence_test_tolerance: 1.0e-12
+  statistic_chunk_rows: 256
+  full_size_fp32_materialization_count: 0
+
+global_alpha_selection:
+  order:
+    - maximum_spaced_admitted_count
+    - maximum_selected_minimum_cosine
+    - minimum_selected_maximum_normalized_l2
+    - minimum_absolute_alpha
+    - minimum_numeric_alpha
+  summaries:
+    - {alpha: -0.50, threshold_pass_count: 0, raw_non_regression_pass_count: 0, spaced_admitted_count: 0, spaced_targets: []}
+    - {alpha: -0.25, threshold_pass_count: 0, raw_non_regression_pass_count: 1, spaced_admitted_count: 0, spaced_targets: []}
+    - {alpha: -0.125, threshold_pass_count: 0, raw_non_regression_pass_count: 1, spaced_admitted_count: 0, spaced_targets: []}
+    - {alpha: 0.125, threshold_pass_count: 0, raw_non_regression_pass_count: 0, spaced_admitted_count: 0, spaced_targets: []}
+    - {alpha: 0.25, threshold_pass_count: 0, raw_non_regression_pass_count: 0, spaced_admitted_count: 0, spaced_targets: []}
+    - {alpha: 0.50, threshold_pass_count: 0, raw_non_regression_pass_count: 0, spaced_admitted_count: 0, spaced_targets: []}
+    - {alpha: 0.75, threshold_pass_count: 0, raw_non_regression_pass_count: 0, spaced_admitted_count: 0, spaced_targets: []}
+    - {alpha: 1.00, threshold_pass_count: 0, raw_non_regression_pass_count: 0, spaced_admitted_count: 0, spaced_targets: []}
+
+control_calibration:
+  metric_order: [raw, alpha_-0.50, alpha_-0.25, alpha_-0.125, alpha_0.125, alpha_0.25, alpha_0.50, alpha_0.75, alpha_1.00]
+  samples:
+    - target: 5
+      sources: [3, 4]
+      cosine: [0.978682046440570, 0.971246287154257, 0.976596057370906, 0.978029533403547, 0.978593160009628, 0.977805145562660, 0.974309776363624, 0.968560189452396, 0.960920312666422]
+      normalized_l2: [0.215554927812818, 0.260909852495908, 0.231600408139594, 0.221754602217547, 0.213133562757012, 0.214409142605810, 0.226748321985457, 0.248906981074765, 0.276988873565925]
+      admitted_nonzero_alpha: []
+    - target: 6
+      sources: [4, 5]
+      cosine: [0.953834904065230, 0.948598080220388, 0.952469982075357, 0.953454339747773, 0.953637610200167, 0.952890271592504, 0.949863607944935, 0.944999500393423, 0.938547899202050]
+      normalized_l2: [0.310716917563521, 0.336010123165619, 0.319452188098618, 0.314083338594251, 0.309338753566867, 0.309885214655857, 0.316282832140449, 0.328676804386439, 0.345605131281746]
+      admitted_nonzero_alpha: []
+    - target: 8
+      sources: [6, 7]
+      cosine: [0.963325214458351, 0.960880738496330, 0.965159775115435, 0.964968944323910, 0.960323488581184, 0.956069862492130, 0.944265605130508, 0.928852600157211, 0.910747625022740]
+      normalized_l2: [0.278478634491314, 0.298342566984257, 0.277592010450232, 0.275347643959112, 0.286471233792452, 0.298554483320390, 0.331532167787912, 0.371163781955972, 0.413034067306016]
+      raw_non_regression_nonzero_alpha: [-0.25, -0.125]
+      admitted_nonzero_alpha: []
+    - target: 13
+      sources: [11, 12]
+      cosine: [0.970222808155315, 0.966968674779186, 0.969325875385741, 0.969953143838441, 0.970143567981548, 0.969725005871220, 0.967912097616154, 0.964874803941812, 0.960711867631709]
+      normalized_l2: [0.244210862538106, 0.259650331608828, 0.249057249365550, 0.245898322923693, 0.243991160471223, 0.245203740630468, 0.251641998915672, 0.262751469441580, 0.277573591163307]
+      admitted_nonzero_alpha: []
+    - target: 16
+      sources: [14, 15]
+      cosine: [0.987685134021437, 0.985374406023742, 0.987434013927780, 0.987779006618764, 0.987167292778364, 0.986241482299613, 0.983234408894656, 0.978807327076805, 0.973110401407727]
+      normalized_l2: [0.158645334984544, 0.177409194202794, 0.162474643277708, 0.159107917282281, 0.161015524392423, 0.165993154737520, 0.182391374980810, 0.204889434218300, 0.230958663532639]
+      admitted_nonzero_alpha: []
+    - target: 17
+      sources: [15, 16]
+      cosine: [0.986640462017398, 0.983317969565416, 0.985737144241535, 0.986375778990854, 0.986537676984599, 0.986074999954372, 0.984105252286449, 0.980810505736140, 0.976281906515287]
+      normalized_l2: [0.169627673011278, 0.191838828567490, 0.176778702584550, 0.172138638659091, 0.169305515498720, 0.171140859622974, 0.180740257028122, 0.196810836245969, 0.217451971435872]
+      admitted_nonzero_alpha: []
+
+cross_run_metric_note:
+  prior_raw_metrics_rewritten: false
+  bitwise_equal_to_prior_c3_r2_r3: false
+  metric_definition_changed: false
+  source_hash_changed: false
+  workflow_hash_changed: false
+  cause: not_attributed
+  interpretation: >-
+    This CONTROL is independent evidence. Exact formula equivalence is locked
+    by model-free tests; cross-run tensor-value variation is not used to alter
+    prior evidence or the frozen Gate.
+
+memory_contract:
+  residual_bytes: 165838848
+  predictor_owned_persistent_residual_count_max: 2
+  persistent_direction_count_max: 0
+  persistent_predicted_residual_count_max: 0
+  transient_predicted_residual_count_max: 1
+  control_observed_transient_predicted_residual_count_max: 0
+  predictor_owned_max_live_residual_sized_buffers: 3
+  observed_max_additional_gpu_bytes: 497516544
+  per_block_cache_count: 0
+  full_tensor_host_copy_bytes: 0
+  tensor_bytes_to_rust: 0
+  pre_run_admission:
+    prior_c3_r3_peak_comfyui_vram_bytes: 12458721204
+    device_total_memory_bytes: 12884377600
+    prior_headroom_bytes: 425656396
+    expected_incremental_bytes: 165838848
+    projected_headroom_bytes: 259817548
+    admitted: true
+    claim_boundary: one-run estimate, not a general OOM guarantee
+
+architecture:
+  rust_core_abi: c3-r3.correction-plan.1
+  abi_changed: false
+  rust_owns:
+    - predictor availability and source validity metadata
+    - calibrated-target admission and quality-first veto
+    - invalidation and Full Compute fallback directive
+  h3_adapter_owns:
+    - H3 packed residual tensors and layout
+    - DiTBlock indices 12 through 48
+    - CUDA scalar reductions and directional application
+    - residual history rotation and replay lifecycle
+  h3_specific_core_leakage: false
+
+control:
+  generation_count: 1
+  retry_count: 0
+  callback_count: 20
+  c2_rust_call_count: 20
+  c2_full_compute_count: 20
+  c3_r4_rust_call_count: 18
+  c3_r4_fallback_count: 0
+  model_forward_count: 20
+  original_block_calls: 1000
+  residual_capture_count: 20
+  residual_replay_count: 0
+  sampler_seconds: 488.8653798000014
+  submit_to_terminal_seconds: 589.3750468999788
+  runner_total_seconds: 600.2563708999951
+  phases_seconds:
+    runtime_startup: 9.626010000007227
+    model_and_encoder_loading: 0.7580879000015557
+    prompt_conditioning: 33.75054119998822
+    denoising: 488.8653798000014
+    vae_video_decode: 63.20644939999329
+    vae_audio_decode: 1.2768215000105556
+    encoding: 1.4954689999867696
+    result_collection: 0.5792977999954019
+    runtime_shutdown: 0.0014734000142198056
+    unattributed: 0.6968408999964595
+  predictor_overhead:
+    history_rotation_sum_seconds: 0.0002464
+    scalar_statistics_sum_seconds: 0.5454729
+    alpha_evaluation_sum_seconds: 0.0001638
+    residual_capture_span_sum_seconds: 144.6763844
+    residual_capture_span_note: >-
+      Synchronizing capture spans overlap asynchronous model work and are not
+      additive with sampler or block-wrapper spans.
+    prediction_application_seconds: null
+  rust_boundary:
+    call_count: 18
+    p95_seconds: 0.0000116
+    sum_seconds: 0.0001539
+    rust_policy_p95_seconds: 0.0000020
+    rust_policy_sum_seconds: 0.0000182
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    frame_count: 124
+    decoded_frame_count: 124
+    fps: 24
+    audio_stream_count: 1
+    size_bytes: 263075
+    sha256: a06b7b667234220f8f7555abbf895709f4ccea002c0e0114c83d5567417c2a77
+  evidence_digests:
+    private_receipt_sha256: 98b464ecd7475935ebc5827ba4c7eebb5d29af7591882f2b076d43bbd9f096fa
+    callback_receipt_sha256: 4c2d78ed081bd5a07fc7dd59fb8f39004c04c3d527819e90d73241a3b857cbe5
+  resources:
+    peak_comfyui_system_sampled_vram_bytes: 12457869236
+    peak_nvidia_system_sampled_vram_bytes: 12024020992
+    peak_process_tree_rss_bytes: 46721306624
+    peak_system_wide_used_ram_bytes: 62626402304
+    peak_gpu_utilization_percent: 100
+    sample_count: 533
+    torch_allocator_peak:
+      value: null
+      support_status: unavailable
+      reason: "The external runner cannot safely read the ComfyUI process allocator peak."
+
+selective:
+  generation_count: 0
+  state: prohibited
+  reason: "Zero spaced calibrated targets; at least two were required."
+  replay_steps: null
+  vetoed_targets: null
+  original_block_calls: null
+  omitted_block_calls: null
+  quality_metrics: null
+  runtime_ratios: null
+
+safety:
+  oom_count: 0
+  retry_count: 0
+  cuda_error_signature_count: 0
+  activation_nan_or_inf_scan:
+    value: null
+    support_status: not_collected
+    reason: "No full activation scan was authorized; output decode and runtime error gates passed."
+  black_frame_count: 0
+  corrupted_frame_count: 0
+  external_api_calls: 0
+  model_downloads: 0
+  third_generation_count: 0
+  full_compute_fallback_preserved: true
+
+product:
+  actual_compute_reduction:
+    value: null
+    support_status: not_collected
+    reason: "SELECTIVE was prohibited before replay."
+  quality_metrics:
+    value: null
+    support_status: not_collected
+    reason: "No SELECTIVE output exists for a paired quality comparison."
+  speedup_claim: false
+  quality_guarantee: false
+  visual_equivalence: not_proven
+  product_promotion: false
+  product_acceleration_ready: false
+  automatic_product_application: false
+  c3_r5_allowed: false

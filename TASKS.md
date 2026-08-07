@@ -440,6 +440,28 @@ predictor did not clear the immutable quality-first admission threshold. Full
 Compute remains the default and safe fallback. See the detailed
 [C3-R3 worklog](docs/worklogs/2026-08-07-c3-r3-compact-residual-correction.md).
 
+## C3-R4 — Two-Residual Directional Prediction
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`C3_R4_DIRECTIONAL_SIMILARITY_TOO_LOW`. Residual-predictor family disposition:
+`RESIDUAL_PREDICTOR_FAMILY_FALLBACK_ONLY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C3-R4 work | `draft_pr` | [Issue #72](https://github.com/ksse29077-byte/HIVEFRAME/issues/72); branch `accel/c3-r4-h3-two-residual-directional-prediction`; Draft PR [#73](https://github.com/ksse29077-byte/HIVEFRAME/pull/73) |
+| Freeze directional predictor before runtime | `verified` | exact two-residual formula, eight non-zero alpha values, one global-alpha rule, unchanged C3-R2 thresholds, raw non-regression, memory Gate; commit `6ff0726...` |
+| Validate metrics, Core/Adapter boundary, and ABI | `verified` | exact sufficient-stat equivalence; existing tensor-free C3-R3 Rust ABI reused; H3 tensor/block logic remains adapter-owned |
+| Execute CONTROL directional shadow | `verified_once` | one submission, retry 0; 1,000 original calls, 20 actual residual captures, 48 finite candidate diagnostics, 124/124 H.264 frames |
+| Admit SELECTIVE schedule | `stopped` | selected diagnostic alpha `-0.125`, but zero spaced calibrated targets; minimum was two |
+| Execute directional replay | `stopped` | prohibited by the predeclared Gate; SELECTIVE and third Generation counts 0 |
+| Claim quality, compute reduction, or speedup | `stopped` | no paired output exists; metrics remain uncollected and product promotion remains zero |
+
+C3-R4 verified bounded two-residual diagnostics and fallback once, but no
+directional candidate cleared the immutable Quality Gate. The bounded
+residual-predictor family is now fallback-only; C3-R5 and automatic next-stage
+research are prohibited. See the detailed
+[C3-R4 worklog](docs/worklogs/2026-08-07-c3-r4-two-residual-directional-prediction.md).
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.

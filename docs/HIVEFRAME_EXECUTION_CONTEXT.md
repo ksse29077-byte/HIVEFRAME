@@ -4,7 +4,7 @@ Status: non-normative retrieval index
 
 Snapshot date: 2026-08-07
 
-Verified source `main`: `90ee5e7b6530afd8da286040c40d167c1ade017d`
+Verified source `main`: `d9371aa3e009d446299ebb5cb95fd53f159b978d`
 
 This file is the compact context that an agent must retrieve before starting
 HIVEFRAME work. It does not duplicate or replace the constitution, roadmap,
@@ -164,18 +164,24 @@ The Product-First launch line has priority:
 | C3 | `C3_POLICY_OPPORTUNITY_TOO_LOW` | Predeclared policy opportunity was below its Gate | Runtime selective execution |
 | C3-R1 | `C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW` | 148 actual H3 block forwards were omitted and runtime decreased once | Quality preservation, admitted speedup, dynamic product policy |
 | C3-R2 | `C3_R2_RESIDUAL_SIMILARITY_TOO_LOW` | Residual capture, provenance, bounded cache, diagnostics, and fallback verified once | Residual replay, paired quality/speed, or block reduction |
+| C3-R3 | `C3_R3_PREDICTOR_SIMILARITY_TOO_LOW` | Bounded compact predictor construction and diagnostics verified once | Corrected replay, paired quality/speed, or compute reduction |
 
-The current verified `main` ends with C3-R2 merge commit
-`90ee5e7b6530afd8da286040c40d167c1ade017d`. In C3-R2, all six frozen
-similarity candidates failed the unchanged cosine/L2 admission Gate,
-calibrated targets were zero, and SELECTIVE generation count was zero. The
-correct interpretation is admission failure before replay, not replay-induced
-quality failure.
+The current verified `main` ends with C3-R3 merge commit
+`d9371aa3e009d446299ebb5cb95fd53f159b978d`. C3-R2 and C3-R3 both stopped
+before SELECTIVE because their frozen similarity admissions produced zero
+calibrated targets. The correct interpretation is admission failure before
+replay, not replay-induced quality failure.
+
+The current Draft C3-R4 branch adds one Full Compute directional-predictor
+CONTROL. It also produced zero calibrated targets under the unchanged Gate,
+so SELECTIVE remained prohibited and the residual-predictor family disposition
+is `RESIDUAL_PREDICTOR_FAMILY_FALLBACK_ONLY`. This Draft evidence is not
+published on `main` until its PR is separately reviewed and merged.
 
 No current HIVEFRAME Core mechanism has a product speedup claim. C3-R1 proved
 real block omission once but failed quality/opportunity/performance Gates.
-C3-R2 never entered selective execution. Product promotion remains zero and
-Full Compute is the safe fallback.
+C3-R2, C3-R3, and the current C3-R4 Draft never entered selective execution.
+Product promotion remains zero and Full Compute is the safe fallback.
 
 The current product speedup claim is exactly zero. A `verified_once` mechanism
 does not become the default path without a separate Quality/Product Promotion
@@ -202,13 +208,16 @@ Each of the following requires separate explicit approval:
 
 - P1 one-click Local H3 launcher;
 - M1-B1 backend capability admission or M1-B2 formal selective probe;
-- C3-R3 Compact Residual Correction / Prediction;
+- any compute lever outside the now fallback-only bounded residual-predictor
+  family;
 - any model training, new backend, cache strategy, threshold change, or
   additional generation/benchmark.
 
-C3-R3, if approved later, is a distinct correction/prediction strategy. It may
-not lower C3-R2's immutable cosine 0.99 or normalized-L2 0.20 thresholds and
-must not reinterpret raw residual replay as already admitted.
+C3-R5, alpha-grid expansion, threshold relaxation, per-step fitting,
+polynomial prediction, and learned residual prediction are not authorized.
+Any different compute lever requires a separate product question and explicit
+approval and may not reinterpret C3-R2/R3/R4 admission failures as replay
+quality failures.
 
 ## 8. Retrieval checklist for every new task
 

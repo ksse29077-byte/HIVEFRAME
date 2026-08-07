@@ -93,9 +93,10 @@ bypass, weaken, or silently rerun it.
 
 No next implementation stage is automatically authorized. P0 Local H3
 implementation, verification, and `main` integration are complete; external
-end-user release is not claimed. The latest Core evidence on `main` is C3-R2 decision
-`C3_R2_RESIDUAL_SIMILARITY_TOO_LOW`. P1 one-click Local H3, M1-B1/B2, and
-C3-R3 Compact Residual Correction / Prediction each require a separate
-explicit approval. See `docs/HIVEFRAME_EXECUTION_CONTEXT.md` before selecting
-work; do not lower C3-R2 thresholds or claim a product speedup from the current
-evidence.
+end-user release is not claimed. The latest published Core evidence on `main`
+is C3-R3 decision `C3_R3_PREDICTOR_SIMILARITY_TOO_LOW`; the current C3-R4 Draft
+also stopped before SELECTIVE and records the residual-predictor family as
+fallback-only. P1 one-click Local H3, M1-B1/B2, and any different compute lever
+each require separate explicit approval. See
+`docs/HIVEFRAME_EXECUTION_CONTEXT.md` before selecting work; do not lower the
+immutable C3-R2 thresholds or claim product speedup from the current evidence.
