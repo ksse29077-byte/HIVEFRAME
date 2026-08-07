@@ -97,6 +97,33 @@ pub const C3_R1_REASON_OVERLAP_CONFLICT: u32 = 17;
 pub const C3_R1_REASON_FATAL_FLAG: u32 = 18;
 pub const C3_R1_REASON_RUST_PANIC: u32 = 19;
 
+pub const C3_R2_REUSE_PLAN_ABI_VERSION: u32 = 1;
+pub const C3_R2_DECISION_FULL_COMPUTE: u32 = 0;
+pub const C3_R2_DECISION_REUSE_TRANSFORM: u32 = 1;
+pub const C3_R2_DECISION_ESCALATE_FULL_COMPUTE: u32 = 2;
+pub const C3_R2_REASON_NONE: u32 = 0;
+pub const C3_R2_REASON_ABI_MISMATCH: u32 = 1;
+pub const C3_R2_REASON_STRUCT_SIZE_MISMATCH: u32 = 2;
+pub const C3_R2_REASON_STEP_RANGE_INVALID: u32 = 3;
+pub const C3_R2_REASON_DIGEST_MISSING: u32 = 4;
+pub const C3_R2_REASON_METADATA_INVALID: u32 = 5;
+pub const C3_R2_REASON_NOT_CALIBRATED: u32 = 6;
+pub const C3_R2_REASON_CACHE_MISSING: u32 = 7;
+pub const C3_R2_REASON_CACHE_AGE_INVALID: u32 = 8;
+pub const C3_R2_REASON_PROVENANCE_INVALID: u32 = 9;
+pub const C3_R2_REASON_SIMILARITY_REJECTED: u32 = 10;
+pub const C3_R2_REASON_SOURCE_INVALID: u32 = 11;
+pub const C3_R2_REASON_PREDICTION_INVALID: u32 = 12;
+pub const C3_R2_REASON_STABLE_COUNT_LOW: u32 = 13;
+pub const C3_R2_REASON_ACTIVE_PRESENT: u32 = 14;
+pub const C3_R2_REASON_GLOBAL_INVALIDATION: u32 = 15;
+pub const C3_R2_REASON_OVERLAP_CONFLICT: u32 = 16;
+pub const C3_R2_REASON_FATAL_FLAG: u32 = 17;
+pub const C3_R2_REASON_CONSECUTIVE_REUSE: u32 = 18;
+pub const C3_R2_REASON_FALLBACK_UNSUPPORTED: u32 = 19;
+pub const C3_R2_REASON_UNSUPPORTED_METADATA: u32 = 20;
+pub const C3_R2_REASON_RUST_PANIC: u32 = 21;
+
 /// Fixed-size, metadata-only callback observation for the C1 full-compute gate.
 ///
 /// No tensor, prompt, filesystem path, media payload, CUDA pointer, model
@@ -834,6 +861,244 @@ pub fn evaluate_c3_frozen_block_plan(
         )
     } else {
         c3_r1_directive(observation, C3_R1_DECISION_FULL_COMPUTE, veto_reason, 0)
+    }
+}
+
+/// Generic, metadata-only transform-reuse observation for C3-R2.
+///
+/// Model adapters own tensors and model-specific block ranges. Core receives
+/// only fixed-width policy metadata and digests; no tensor, pointer, path,
+/// prompt, CUDA address, or variable-length payload crosses this boundary.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ReusePlanObservation {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub run_digest: [u8; 32],
+    pub workflow_revision_digest: [u8; 32],
+    pub settings_digest: [u8; 32],
+    pub model_revision_digest: [u8; 32],
+    pub segment_logical_digest: [u8; 32],
+    pub target_execution_step: u32,
+    pub source_execution_step: u32,
+    pub total_steps: u32,
+    pub cache_age: u32,
+    pub cache_available: u32,
+    pub cache_provenance_valid: u32,
+    pub residual_similarity_admitted: u32,
+    pub calibrated_target: u32,
+    pub prior_step_reused: u32,
+    pub stable_mask: u32,
+    pub stable_count: u32,
+    pub active_mask: u32,
+    pub active_count: u32,
+    pub uncertain_mask: u32,
+    pub uncertain_count: u32,
+    pub global_invalidation: u32,
+    pub overlap_conflict_mask: u32,
+    pub prediction_valid: u32,
+    pub source_valid: u32,
+    pub finite: u32,
+    pub fallback_supported: u32,
+    pub fatal_flags: u32,
+    pub unsupported_flags: u32,
+}
+
+impl ReusePlanObservation {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ReusePlanDirective {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub decision_code: u32,
+    pub reason_code: u32,
+    pub target_execution_step: u32,
+    pub source_execution_step: u32,
+    pub fallback_required: u32,
+    pub unsupported_flags: u32,
+    pub decision_digest: [u8; 32],
+}
+
+impl ReusePlanDirective {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+
+    pub fn fail_open(
+        reason_code: u32,
+        target_execution_step: u32,
+        source_execution_step: u32,
+        digest: [u8; 32],
+    ) -> Self {
+        Self {
+            abi_version: C3_R2_REUSE_PLAN_ABI_VERSION,
+            struct_size: Self::contract_size(),
+            decision_code: C3_R2_DECISION_ESCALATE_FULL_COMPUTE,
+            reason_code,
+            target_execution_step,
+            source_execution_step,
+            fallback_required: 1,
+            unsupported_flags: 0,
+            decision_digest: digest,
+        }
+    }
+}
+
+fn c3_r2_observation_digest(observation: &ReusePlanObservation) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(observation.abi_version.to_le_bytes());
+    hasher.update(observation.struct_size.to_le_bytes());
+    hasher.update(observation.run_digest);
+    hasher.update(observation.workflow_revision_digest);
+    hasher.update(observation.settings_digest);
+    hasher.update(observation.model_revision_digest);
+    hasher.update(observation.segment_logical_digest);
+    for value in [
+        observation.target_execution_step,
+        observation.source_execution_step,
+        observation.total_steps,
+        observation.cache_age,
+        observation.cache_available,
+        observation.cache_provenance_valid,
+        observation.residual_similarity_admitted,
+        observation.calibrated_target,
+        observation.prior_step_reused,
+        observation.stable_mask,
+        observation.stable_count,
+        observation.active_mask,
+        observation.active_count,
+        observation.uncertain_mask,
+        observation.uncertain_count,
+        observation.global_invalidation,
+        observation.overlap_conflict_mask,
+        observation.prediction_valid,
+        observation.source_valid,
+        observation.finite,
+        observation.fallback_supported,
+        observation.fatal_flags,
+        observation.unsupported_flags,
+    ] {
+        hasher.update(value.to_le_bytes());
+    }
+    hasher.finalize().into()
+}
+
+fn c3_r2_directive(
+    observation: &ReusePlanObservation,
+    decision_code: u32,
+    reason_code: u32,
+) -> ReusePlanDirective {
+    let observation_digest = c3_r2_observation_digest(observation);
+    let decision_digest = c2_digest_parts(&[
+        &observation_digest,
+        &decision_code.to_le_bytes(),
+        &reason_code.to_le_bytes(),
+    ]);
+    ReusePlanDirective {
+        abi_version: C3_R2_REUSE_PLAN_ABI_VERSION,
+        struct_size: ReusePlanDirective::contract_size(),
+        decision_code,
+        reason_code,
+        target_execution_step: observation.target_execution_step,
+        source_execution_step: observation.source_execution_step,
+        fallback_required: u32::from(decision_code != C3_R2_DECISION_REUSE_TRANSFORM),
+        unsupported_flags: 0,
+        decision_digest,
+    }
+}
+
+fn c3_r2_contract_reason(observation: &ReusePlanObservation) -> u32 {
+    let eye_mask_union =
+        observation.stable_mask | observation.active_mask | observation.uncertain_mask;
+    if observation.abi_version != C3_R2_REUSE_PLAN_ABI_VERSION {
+        C3_R2_REASON_ABI_MISMATCH
+    } else if observation.struct_size != ReusePlanObservation::contract_size() {
+        C3_R2_REASON_STRUCT_SIZE_MISMATCH
+    } else if observation.target_execution_step >= observation.total_steps
+        || observation.source_execution_step >= observation.total_steps
+    {
+        C3_R2_REASON_STEP_RANGE_INVALID
+    } else if observation.run_digest == [0; 32]
+        || observation.workflow_revision_digest == [0; 32]
+        || observation.settings_digest == [0; 32]
+        || observation.model_revision_digest == [0; 32]
+        || observation.segment_logical_digest == [0; 32]
+    {
+        C3_R2_REASON_DIGEST_MISSING
+    } else if eye_mask_union & !0x0f != 0
+        || (observation.stable_mask & observation.active_mask) != 0
+        || (observation.stable_mask & observation.uncertain_mask) != 0
+        || (observation.active_mask & observation.uncertain_mask) != 0
+        || observation.stable_count != observation.stable_mask.count_ones()
+        || observation.active_count != observation.active_mask.count_ones()
+        || observation.uncertain_count != observation.uncertain_mask.count_ones()
+    {
+        C3_R2_REASON_METADATA_INVALID
+    } else if observation.fallback_supported != 1 {
+        C3_R2_REASON_FALLBACK_UNSUPPORTED
+    } else if observation.unsupported_flags != 0 {
+        C3_R2_REASON_UNSUPPORTED_METADATA
+    } else {
+        C3_R2_REASON_NONE
+    }
+}
+
+/// Deterministic transform-reuse decision. A model adapter may execute reuse
+/// only when this directive admits it and must otherwise fail open to its
+/// ordinary Full Compute path.
+pub fn evaluate_reuse_plan(observation: &ReusePlanObservation) -> ReusePlanDirective {
+    let contract_reason = c3_r2_contract_reason(observation);
+    if contract_reason != C3_R2_REASON_NONE {
+        return c3_r2_directive(
+            observation,
+            C3_R2_DECISION_ESCALATE_FULL_COMPUTE,
+            contract_reason,
+        );
+    }
+    let veto_reason = if observation.calibrated_target != 1 {
+        C3_R2_REASON_NOT_CALIBRATED
+    } else if observation.cache_available != 1 {
+        C3_R2_REASON_CACHE_MISSING
+    } else if observation.cache_age != 1
+        || observation.source_execution_step + 1 != observation.target_execution_step
+    {
+        C3_R2_REASON_CACHE_AGE_INVALID
+    } else if observation.cache_provenance_valid != 1 || observation.finite != 1 {
+        C3_R2_REASON_PROVENANCE_INVALID
+    } else if observation.residual_similarity_admitted != 1 {
+        C3_R2_REASON_SIMILARITY_REJECTED
+    } else if observation.source_valid != 1 {
+        C3_R2_REASON_SOURCE_INVALID
+    } else if observation.prediction_valid != 1 {
+        C3_R2_REASON_PREDICTION_INVALID
+    } else if observation.stable_count < 2 {
+        C3_R2_REASON_STABLE_COUNT_LOW
+    } else if observation.active_count != 0 {
+        C3_R2_REASON_ACTIVE_PRESENT
+    } else if observation.global_invalidation != 0 {
+        C3_R2_REASON_GLOBAL_INVALIDATION
+    } else if observation.overlap_conflict_mask != 0 {
+        C3_R2_REASON_OVERLAP_CONFLICT
+    } else if observation.fatal_flags != 0 {
+        C3_R2_REASON_FATAL_FLAG
+    } else if observation.prior_step_reused != 0 {
+        C3_R2_REASON_CONSECUTIVE_REUSE
+    } else {
+        C3_R2_REASON_NONE
+    };
+    if veto_reason == C3_R2_REASON_NONE {
+        c3_r2_directive(
+            observation,
+            C3_R2_DECISION_REUSE_TRANSFORM,
+            C3_R2_REASON_NONE,
+        )
+    } else {
+        c3_r2_directive(observation, C3_R2_DECISION_FULL_COMPUTE, veto_reason)
     }
 }
 
@@ -2590,6 +2855,126 @@ mod tests {
             C3_R1_DECISION_ESCALATE_FULL_COMPUTE
         );
         assert_eq!(fail_open.bypass_count, 0);
+        assert_eq!(fail_open.fallback_required, 1);
+    }
+
+    fn c3_r2_observation() -> ReusePlanObservation {
+        ReusePlanObservation {
+            abi_version: C3_R2_REUSE_PLAN_ABI_VERSION,
+            struct_size: ReusePlanObservation::contract_size(),
+            run_digest: [1; 32],
+            workflow_revision_digest: [2; 32],
+            settings_digest: [3; 32],
+            model_revision_digest: [4; 32],
+            segment_logical_digest: [5; 32],
+            target_execution_step: 5,
+            source_execution_step: 4,
+            total_steps: 20,
+            cache_age: 1,
+            cache_available: 1,
+            cache_provenance_valid: 1,
+            residual_similarity_admitted: 1,
+            calibrated_target: 1,
+            prior_step_reused: 0,
+            stable_mask: 0b0011,
+            stable_count: 2,
+            active_mask: 0,
+            active_count: 0,
+            uncertain_mask: 0b1100,
+            uncertain_count: 2,
+            global_invalidation: 0,
+            overlap_conflict_mask: 0,
+            prediction_valid: 1,
+            source_valid: 1,
+            finite: 1,
+            fallback_supported: 1,
+            fatal_flags: 0,
+            unsupported_flags: 0,
+        }
+    }
+
+    #[test]
+    fn c3_r2_contract_is_metadata_only_deterministic_and_admits_age_one() {
+        let observation = c3_r2_observation();
+        let first = evaluate_reuse_plan(&observation);
+        let second = evaluate_reuse_plan(&observation);
+        assert_eq!(first, second);
+        assert_eq!(first.decision_code, C3_R2_DECISION_REUSE_TRANSFORM);
+        assert_eq!(first.reason_code, C3_R2_REASON_NONE);
+        assert_eq!(first.source_execution_step, 4);
+        assert_ne!(
+            ReusePlanObservation::contract_size(),
+            C3FrozenBlockPlanObservation::contract_size()
+        );
+    }
+
+    #[test]
+    fn c3_r2_cache_age_missing_provenance_and_similarity_fail_open() {
+        let mut cases = Vec::new();
+        let mut age_zero = c3_r2_observation();
+        age_zero.cache_age = 0;
+        cases.push((age_zero, C3_R2_REASON_CACHE_AGE_INVALID));
+        let mut age_two = c3_r2_observation();
+        age_two.cache_age = 2;
+        age_two.source_execution_step = 3;
+        cases.push((age_two, C3_R2_REASON_CACHE_AGE_INVALID));
+        let mut missing = c3_r2_observation();
+        missing.cache_available = 0;
+        cases.push((missing, C3_R2_REASON_CACHE_MISSING));
+        let mut provenance = c3_r2_observation();
+        provenance.cache_provenance_valid = 0;
+        cases.push((provenance, C3_R2_REASON_PROVENANCE_INVALID));
+        let mut similarity = c3_r2_observation();
+        similarity.residual_similarity_admitted = 0;
+        cases.push((similarity, C3_R2_REASON_SIMILARITY_REJECTED));
+        for (observation, reason) in cases {
+            let directive = evaluate_reuse_plan(&observation);
+            assert_eq!(directive.decision_code, C3_R2_DECISION_FULL_COMPUTE);
+            assert_eq!(directive.reason_code, reason);
+            assert_eq!(directive.fallback_required, 1);
+        }
+    }
+
+    #[test]
+    fn c3_r2_live_safety_and_consecutive_reuse_only_veto() {
+        let mut cases = Vec::new();
+        let mut active = c3_r2_observation();
+        active.active_mask = 0b0100;
+        active.active_count = 1;
+        active.uncertain_mask = 0b1000;
+        active.uncertain_count = 1;
+        cases.push((active, C3_R2_REASON_ACTIVE_PRESENT));
+        let mut global = c3_r2_observation();
+        global.global_invalidation = 1;
+        cases.push((global, C3_R2_REASON_GLOBAL_INVALIDATION));
+        let mut overlap = c3_r2_observation();
+        overlap.overlap_conflict_mask = 1;
+        cases.push((overlap, C3_R2_REASON_OVERLAP_CONFLICT));
+        let mut consecutive = c3_r2_observation();
+        consecutive.prior_step_reused = 1;
+        cases.push((consecutive, C3_R2_REASON_CONSECUTIVE_REUSE));
+        for (observation, reason) in cases {
+            let directive = evaluate_reuse_plan(&observation);
+            assert_eq!(directive.decision_code, C3_R2_DECISION_FULL_COMPUTE);
+            assert_eq!(directive.reason_code, reason);
+        }
+    }
+
+    #[test]
+    fn c3_r2_invalid_contract_and_panic_boundary_escalate() {
+        let mut invalid = c3_r2_observation();
+        invalid.abi_version = 99;
+        let directive = evaluate_reuse_plan(&invalid);
+        assert_eq!(
+            directive.decision_code,
+            C3_R2_DECISION_ESCALATE_FULL_COMPUTE
+        );
+        assert_eq!(directive.reason_code, C3_R2_REASON_ABI_MISMATCH);
+        let fail_open = ReusePlanDirective::fail_open(C3_R2_REASON_RUST_PANIC, 5, 4, [9; 32]);
+        assert_eq!(
+            fail_open.decision_code,
+            C3_R2_DECISION_ESCALATE_FULL_COMPUTE
+        );
         assert_eq!(fail_open.fallback_required, 1);
     }
 
