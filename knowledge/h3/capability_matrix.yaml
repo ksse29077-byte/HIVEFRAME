@@ -312,3 +312,25 @@ c3_r4_two_residual_directional_prediction:
   decision: C3_R4_DIRECTIONAL_SIMILARITY_TOO_LOW
   automatic_product_application: false
   promoted: false
+
+c4_s0_subblock_cost_surface:
+  state: verified_once
+  source_group_map_available: true
+  source_group_count: 6
+  full_compute_generation_count: 1
+  retry_count: 0
+  group_cuda_event_timing_available: true
+  exact_gpu_kernel_time_available: false
+  profiler_enabled: false
+  dominant_group: attention_global_mixing
+  dominant_group_sampler_share: 0.7022445182988309
+  selected_candidate_group: feed_forward_positionwise
+  selected_candidate_sampler_share: 0.19493534514527083
+  next_primary_compute_lever: MIXED_SUBBLOCK_SELECTIVE
+  actual_selective_compute_available: false
+  actual_compute_reduction: 0
+  speedup_verified: false
+  quality_verified: not_applicable
+  decision: C4_S0_SUBBLOCK_COST_SURFACE_MAPPED
+  automatic_product_application: false
+  promoted: false

@@ -4,7 +4,7 @@ Status: living architecture map
 
 Snapshot date: 2026-08-07
 
-Verified source `main`: `90ee5e7b6530afd8da286040c40d167c1ade017d`
+Verified source `main`: `e78416691f115710a00e4735c0dc981a8bcfee42`
 
 This document visualizes the current product path, Core/adapter ownership,
 selective-execution safety flow, and published H3 mechanism evidence. It must
@@ -208,6 +208,11 @@ flowchart LR
     R2G["0 calibrated targets\nSELECTIVE not run"]
     R3["C3-R3 Compact Correction\n0 calibrated targets"]
     R3G["Predictor similarity Gate failed\nSELECTIVE not run"]
+    R4["C3-R4 Directional Prediction\n0 calibrated targets"]
+    R4G["Residual predictor family\nfallback-only"]
+    C4["C4-S0 Sub-block Cost Surface\nFull Compute measurement"]
+    C4A["Global attention 70.22%\nkeep Full Compute"]
+    C4F["Feed-forward positionwise 19.49%\nnext bounded candidate"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -218,18 +223,34 @@ flowchart LR
     R2 --> R2G
     R2G -. "separate approval" .-> R3
     R3 --> R3G
+    R3G -. "separate approval" .-> R4
+    R4 --> R4G
+    R4G -. "separate approved measurement" .-> C4
+    C4 --> C4A
+    C4 --> C4F
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
+    R4G --> DEFAULT
+    C4A --> DEFAULT
+    C4F -. "not implemented" .-> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2 verified;
-    class C3,R1Q,R2G,R3,R3G rejected;
+    class C0,C1,C2,R1,R2,C4 verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G rejected;
+    class C4A,C4F planned;
     class DEFAULT safe;
 ```
+
+C4-S0 decomposes one unchanged Full Compute run into six source-backed H3
+adapter timing groups. It does not admit selective execution. Global attention
+remains Full Compute because it is dominant but globally coupled. The selected
+future bounded lever is a mixed strategy that preserves attention and examines
+the positionwise feed-forward surface only after separate approval and a new
+Quality-First admission contract.
 
 ## 5. Module ownership
 

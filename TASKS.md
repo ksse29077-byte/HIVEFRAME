@@ -442,13 +442,13 @@ Compute remains the default and safe fallback. See the detailed
 
 ## C3-R4 — Two-Residual Directional Prediction
 
-Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+Overall status: `stopped`; publication status: `published`. Bounded decision:
 `C3_R4_DIRECTIONAL_SIMILARITY_TOO_LOW`. Residual-predictor family disposition:
 `RESIDUAL_PREDICTOR_FAMILY_FALLBACK_ONLY`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated C3-R4 work | `draft_pr` | [Issue #72](https://github.com/ksse29077-byte/HIVEFRAME/issues/72); branch `accel/c3-r4-h3-two-residual-directional-prediction`; Draft PR [#73](https://github.com/ksse29077-byte/HIVEFRAME/pull/73) |
+| Track isolated C3-R4 work | `published` | [Issue #72](https://github.com/ksse29077-byte/HIVEFRAME/issues/72) completed; branch `accel/c3-r4-h3-two-residual-directional-prediction`; PR [#73](https://github.com/ksse29077-byte/HIVEFRAME/pull/73) merged as `e784166...` |
 | Freeze directional predictor before runtime | `verified` | exact two-residual formula, eight non-zero alpha values, one global-alpha rule, unchanged C3-R2 thresholds, raw non-regression, memory Gate; commit `6ff0726...` |
 | Validate metrics, Core/Adapter boundary, and ABI | `verified` | exact sufficient-stat equivalence; existing tensor-free C3-R3 Rust ABI reused; H3 tensor/block logic remains adapter-owned |
 | Execute CONTROL directional shadow | `verified_once` | one submission, retry 0; 1,000 original calls, 20 actual residual captures, 48 finite candidate diagnostics, 124/124 H.264 frames |
@@ -461,6 +461,27 @@ directional candidate cleared the immutable Quality Gate. The bounded
 residual-predictor family is now fallback-only; C3-R5 and automatic next-stage
 research are prohibited. See the detailed
 [C3-R4 worklog](docs/worklogs/2026-08-07-c3-r4-two-residual-directional-prediction.md).
+
+## C4-S0 — H3 Sub-Block Cost & Coupling Surface
+
+Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+decision: `C4_S0_SUBBLOCK_COST_SURFACE_MAPPED`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C4-S0 work | `draft_pr` | [Issue #74](https://github.com/ksse29077-byte/HIVEFRAME/issues/74); branch `accel/c4-s0-h3-subblock-cost-coupling`; Draft PR [#75](https://github.com/ksse29077-byte/HIVEFRAME/pull/75) |
+| Freeze source map and instrumentation before runtime | `verified` | six source-order groups, coupling classes, deferred CUDA-event accounting, +/-5% comparison Gate, and ranking rules; commit `d1ffa3e...` |
+| Execute fixed Full Compute profile | `verified_once` | one submission, retry 0; 20 model forwards, 1,000 block calls, all six groups observed 1,000 times; 124/124 H.264 frames with audio |
+| Preserve unchanged execution | `verified_once` | skip/reuse/prediction/regional/token/attention omission all zero; mapping and wrapper failures zero; Full Compute fallback preserved |
+| Pass instrumentation comparison | `verified_once` | sampler 488.847320 s versus 488.584958 s frozen reference; +0.053698%, inside +/-5% |
+| Map dominant costs | `verified_once` | global attention 70.2245% and positionwise feed-forward 19.4935% of sampler CUDA event span |
+| Select next bounded lever | `candidate_only` | `MIXED_SUBBLOCK_SELECTIVE`: keep global attention Full Compute and examine feed-forward positionwise work under a separate Quality-First approval |
+
+The ideal group elimination ceilings are theoretical only. C4-S0 implemented
+no selective execution and makes no quality, speedup, combined-speedup, or
+product-promotion claim. Exact GPU kernel duration was not collected because
+profilers were disabled. See the detailed
+[C4-S0 worklog](docs/worklogs/2026-08-07-c4-s0-h3-subblock-cost-coupling.md).
 
 ## Maintenance checklist
 

@@ -307,4 +307,3 @@ class C4S0SubBlockCostSurfaceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
