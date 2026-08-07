@@ -1437,6 +1437,23 @@ model download counts zero. Private media, prompt, raw residuals, detailed
 logs, and paths remain outside Git. See the detailed
 [C3-R2 worklog](worklogs/2026-08-07-c3-r2-segment-residual-reuse.md).
 
+## 2026-08-07 — Persistent execution-context retrieval index
+
+Added `docs/HIVEFRAME_EXECUTION_CONTEXT.md` as a non-normative retrieval index
+for future HIVEFRAME tasks. It links rather than duplicates the Product-First
+Constitution, official roadmap, execution rules, task ledger, worklog, and
+evidence. The index records the verified `main` snapshot at C3-R2 merge commit
+`90ee5e7b6530afd8da286040c40d167c1ade017d`, separates the product launch and
+selective-recompute evidence tracks, preserves Core/H3-adapter ownership, and
+states that no next stage is automatically authorized.
+
+`AGENTS.md` and `README_FIRST.md` now require reading the index near the start
+of every task. `README_FIRST.md` no longer presents completed P0-LR work as the
+immediate action. Known older status drift is recorded rather than silently
+rewriting historical evidence. This was a documentation-only context change:
+model load, Generation, CUDA, benchmark, threshold change, source change, and
+remote publication counts are zero.
+
 ---
 
 ## Entry template

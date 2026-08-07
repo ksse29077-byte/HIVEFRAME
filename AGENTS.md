@@ -656,10 +656,11 @@ If they conflict with the constitution, the constitution governs.
 Before changing the repository, read:
 
 1. `README_FIRST.md`
-2. `TASKS.md`
-3. `docs/WORKLOG.md`
-4. `HIVEFRAME_MASTER_WORK_ORDER.md`
-5. the architecture or M0 document relevant to the requested task
+2. `docs/HIVEFRAME_EXECUTION_CONTEXT.md`
+3. `TASKS.md`
+4. `docs/WORKLOG.md`
+5. `HIVEFRAME_MASTER_WORK_ORDER.md`
+6. the architecture or M0 document relevant to the requested task
 
 Do not infer completion from plans. Verify the current Git state and the
 evidence linked from the worklog.
