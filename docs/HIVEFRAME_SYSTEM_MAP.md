@@ -206,7 +206,8 @@ flowchart LR
     R1Q["Quality Gate failed\nnot product-admitted"]
     R2["C3-R2 Residual Capture\n20 captures"]
     R2G["0 calibrated targets\nSELECTIVE not run"]
-    NEXT["C3-R3 Compact Correction\nseparate approval required"]
+    R3["C3-R3 Compact Correction\n0 calibrated targets"]
+    R3G["Predictor similarity Gate failed\nSELECTIVE not run"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -215,18 +216,19 @@ flowchart LR
     R1 --> R1Q
     R1Q -. "separate approval" .-> R2
     R2 --> R2G
-    R2G -. "not started" .-> NEXT
+    R2G -. "separate approval" .-> R3
+    R3 --> R3G
     R1Q --> DEFAULT
     R2G --> DEFAULT
+    R3G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
     class C0,C1,C2,R1,R2 verified;
-    class C3,R1Q,R2G rejected;
+    class C3,R1Q,R2G,R3,R3G rejected;
     class DEFAULT safe;
-    class NEXT planned;
 ```
 
 ## 5. Module ownership

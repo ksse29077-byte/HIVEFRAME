@@ -420,6 +420,26 @@ calls, paired quality, runtime speedup, visual equivalence, and product
 promotion remain unverified. C3-R1 evidence is unchanged. See the detailed
 [C3-R2 worklog](docs/worklogs/2026-08-07-c3-r2-segment-residual-reuse.md).
 
+## C3-R3 — Compact Residual Correction / Prediction
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`C3_R3_PREDICTOR_SIMILARITY_TOO_LOW`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C3-R3 work | `draft_pr` | [Issue #70](https://github.com/ksse29077-byte/HIVEFRAME/issues/70); branch `accel/c3-r3-h3-compact-residual-correction`; Draft PR [#71](https://github.com/ksse29077-byte/HIVEFRAME/pull/71) |
+| Freeze compact predictor before runtime | `verified` | channel standard deviation, epsilon `1e-6`, gain clip `0.90..1.10`, 64 KiB metadata limit, unchanged C3-R2 thresholds; commit `b48022e...` |
+| Validate Core/Adapter and memory boundary | `verified` | generic tensor-free Rust correction ABI; H3 owns channel layout, block 12..48 mapping and CUDA correction; one persistent residual, zero persistent predictions |
+| Execute CONTROL correction shadow | `verified_once` | one fresh-process submission, retry 0; 1,000 original calls, 20 captures, 19 finite predictors, 124/124 H.264 frames |
+| Admit SELECTIVE schedule | `stopped` | zero of six candidates passed fixed corrected similarity plus raw-non-regression Gates; minimum was two |
+| Execute corrected replay | `stopped` | prohibited by the predeclared Gate; SELECTIVE and third Generation counts 0 |
+| Claim quality, compute reduction, or speedup | `stopped` | no paired output exists; metrics remain uncollected and product promotion remains zero |
+
+The compact metadata and bounded predictor path were verified once, but the
+predictor did not clear the immutable quality-first admission threshold. Full
+Compute remains the default and safe fallback. See the detailed
+[C3-R3 worklog](docs/worklogs/2026-08-07-c3-r3-compact-residual-correction.md).
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.

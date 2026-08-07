@@ -332,3 +332,28 @@ c3_r2_segment_residual_follow_up:
   quality_equivalence: not_proven
   product_promotion: false
   claim_boundary: "The block wrapper captured bounded Full Compute residuals, but zero frozen candidates passed both fixed similarity thresholds. SELECTIVE was not run."
+
+c3_r3_compact_correction_follow_up:
+  state: verified_once
+  decision: C3_R3_PREDICTOR_SIMILARITY_TOO_LOW
+  mechanism: CHANNEL_AFFINE_RESIDUAL_PREDICTION_V1
+  hook_id: h3.transformer_block
+  candidate_block_range: [12, 48]
+  control_generation_count: 1
+  selective_generation_count: 0
+  original_block_calls_control: 1000
+  residual_capture_count: 20
+  predictor_count: 19
+  compact_metadata_bytes: 43264
+  calibrated_targets: []
+  corrected_replay_count: 0
+  persistent_residual_count_max: 1
+  persistent_predicted_residual_count_max: 0
+  per_block_cache_count: 0
+  tensor_bytes_to_rust: 0
+  full_tensor_host_copy_count: 0
+  full_compute_fallback_verified: true
+  speedup_claim: false
+  quality_equivalence: not_proven
+  product_promotion: false
+  claim_boundary: "The H3 adapter built bounded channel-affine predictors during one Full Compute CONTROL, but zero frozen candidates passed the unchanged corrected-similarity and raw-non-regression Gates. SELECTIVE was not run."

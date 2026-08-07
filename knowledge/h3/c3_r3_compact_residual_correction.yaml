@@ -1,0 +1,147 @@
+schema_version: h3.c3-r3.compact-residual-correction.1
+recorded_date: "2026-08-07"
+state: verified_once
+decision: C3_R3_PREDICTOR_SIMILARITY_TOO_LOW
+issue: 70
+draft_pr: 71
+source_main_sha: eaa2f73e4e3246cda546b6a550ccf73824ec7b46
+implementation_commit: b48022e29641183972f34b740ea512b2b6764d1b
+workflow_revision: video_minimax_h3_t2v@31ab33fdb053
+mechanism: CHANNEL_AFFINE_RESIDUAL_PREDICTION_V1
+claim_boundary: >-
+  One fixed-profile Full Compute CONTROL run verified bounded channel-affine
+  predictor construction, raw/corrected scalar diagnostics, generic Rust
+  admission metadata, and Full Compute fallback. Zero candidates passed the
+  unchanged quality-first similarity and raw-non-regression Gates, so
+  SELECTIVE was prohibited. No replay, compute reduction, paired quality,
+  speedup, quality guarantee, or product promotion was verified.
+
+preserved_evidence:
+  c3_r1_immutable: true
+  c3_r2_immutable: true
+  c3_r2_thresholds_changed: false
+  c3_r2_cosine_minimum: 0.99
+  c3_r2_normalized_l2_maximum: 0.20
+
+predictor_contract:
+  statistic_type: channel_standard_deviation
+  epsilon: 0.000001
+  statistic_chunk_rows: 256
+  formula: "gain=clip(scale_curr/max(scale_prev,epsilon),0.90,1.10); bias=mean_curr-gain*mean_prev"
+  prediction: "R_hat_next=gain*R_curr+bias"
+  gain_minimum: 0.90
+  gain_maximum: 1.10
+  channel_count_observed: 5376
+  metadata_bytes: 43264
+  metadata_max_bytes: 65536
+  predictor_instances_created: 19
+  invalid_predictor_count: 0
+  observed_gain_minimum: 0.8999999761581421
+  observed_gain_maximum: 1.100000023841858
+  clipped_low_channel_instances: 185
+  clipped_high_channel_instances: 12655
+
+memory_contract:
+  residual_bytes: 165838848
+  persistent_full_residual_count_max: 1
+  persistent_predicted_residual_count_max: 0
+  persistent_residual_history_count_max: 1
+  transient_residual_sized_buffers_max: 2
+  maximum_additional_residual_sized_gpu_bytes: 331677696
+  per_block_cache_count: 0
+  full_size_fp32_materialization_count: 0
+  full_tensor_host_copy_bytes: 0
+  tensor_bytes_to_rust: 0
+
+control_calibration:
+  candidates: [5, 6, 8, 13, 16, 17]
+  anchors: [0, 1, 18, 19]
+  minimum_target_spacing: 3
+  minimum_targets_for_selective: 2
+  selected_targets: []
+  samples:
+    - {target: 5, sources: [3, 4], raw_l2: 0.21053783283617983, raw_cosine: 0.9799084010296527, corrected_l2: 0.20451385346392253, corrected_cosine: 0.9789470740041545, admitted: false}
+    - {target: 6, sources: [4, 5], raw_l2: 0.3156771761513897, raw_cosine: 0.9523633107962088, corrected_l2: 0.3055354840134079, corrected_cosine: 0.9528054397389562, admitted: false}
+    - {target: 8, sources: [6, 7], raw_l2: 0.27434131641941367, raw_cosine: 0.9643601389259951, corrected_l2: 0.2711034949760113, corrected_cosine: 0.9631118363066734, admitted: false}
+    - {target: 13, sources: [11, 12], raw_l2: 0.23893105848312565, raw_cosine: 0.9714559746460666, corrected_l2: 0.24175738015435733, corrected_cosine: 0.9703608045610906, admitted: false}
+    - {target: 16, sources: [14, 15], raw_l2: 0.16292062571761637, raw_cosine: 0.9869789772313959, corrected_l2: 0.16004488038502573, corrected_cosine: 0.9871097400110015, admitted: false}
+    - {target: 17, sources: [15, 16], raw_l2: 0.16778804977307907, raw_cosine: 0.9869408168935816, corrected_l2: 0.1719367022550416, corrected_cosine: 0.9855862910521646, admitted: false}
+
+control:
+  generation_count: 1
+  retry_count: 0
+  callback_count: 20
+  c2_rust_call_count: 20
+  c3_r3_rust_call_count: 18
+  c3_r3_fallback_count: 0
+  model_forward_count: 20
+  original_block_calls: 1000
+  residual_capture_count: 20
+  corrected_replay_count: 0
+  sampler_seconds: 488.7102649000008
+  submit_to_terminal_seconds: 589.3710954000126
+  runner_total_seconds: 600.2153170999954
+  rust_boundary_p95_seconds: 0.0000117
+  rust_boundary_sum_seconds: 0.000151
+  predictor_overhead:
+    channel_stats_sum_seconds: 0.1038859
+    gain_bias_creation_sum_seconds: 0.1777855
+    similarity_diagnostics_sum_seconds: 0.2242108
+    correction_application_seconds: null
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    frame_count: 124
+    decoded_frame_count: 124
+    fps: 24
+    audio_stream_count: 1
+    output_size_bytes: 263057
+    output_sha256: 3b6d4e0d648d06fb9e63bff255cc0d4a7873a6927aeb727bad9b6335805b64b3
+    private_receipt_sha256: 2d84c2ec0853b46537028b69a2c61b8d02215e4282ff3a44fed578a5dc1faee8
+    callback_receipt_sha256: bcf6e3d00bd4039465a9e1f6aab99efca62c2a80b7e046e79c9c2f420ca5e36c
+  resources:
+    peak_comfyui_system_sampled_vram_bytes: 12458721204
+    peak_nvidia_system_sampled_vram_bytes: 11856248832
+    device_total_memory_bytes: 12884377600
+    peak_process_tree_rss_bytes: 46984065024
+    peak_system_wide_used_ram_bytes: 62028685312
+    peak_gpu_utilization_percent: 100
+    resource_sample_count: 531
+    torch_allocator_peak:
+      value: null
+      support_status: unavailable
+      reason: "The external runner cannot safely read the ComfyUI process allocator peak."
+
+selective:
+  generation_count: 0
+  state: rejected
+  reason: "Zero calibrated targets; at least two were required before Run B."
+  replay_steps: null
+  omitted_block_calls: null
+  quality_metrics: null
+  runtime_ratios: null
+
+safety:
+  oom_count: 0
+  retry_count: 0
+  cuda_error_count: 0
+  nan_or_inf_count: 0
+  black_frame_count: 0
+  corrupted_frame_count: 0
+  external_api_calls: 0
+  model_downloads: 0
+  third_generation_count: 0
+  full_compute_fallback_preserved: true
+
+product:
+  actual_compute_reduction:
+    value: null
+    support_status: not_collected
+    reason: "SELECTIVE was prohibited because zero candidates passed admission."
+  speedup_claim: false
+  quality_guarantee: false
+  visual_equivalence: not_proven
+  product_promotion: false
+  product_acceleration_ready: false
+  automatic_product_application: false

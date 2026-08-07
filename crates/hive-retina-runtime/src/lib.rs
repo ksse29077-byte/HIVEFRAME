@@ -124,6 +124,33 @@ pub const C3_R2_REASON_FALLBACK_UNSUPPORTED: u32 = 19;
 pub const C3_R2_REASON_UNSUPPORTED_METADATA: u32 = 20;
 pub const C3_R2_REASON_RUST_PANIC: u32 = 21;
 
+pub const C3_R3_CORRECTION_PLAN_ABI_VERSION: u32 = 1;
+pub const C3_R3_DECISION_FULL_COMPUTE: u32 = 0;
+pub const C3_R3_DECISION_REUSE_CORRECTED_TRANSFORM: u32 = 1;
+pub const C3_R3_DECISION_ESCALATE_FULL_COMPUTE: u32 = 2;
+pub const C3_R3_REASON_NONE: u32 = 0;
+pub const C3_R3_REASON_ABI_MISMATCH: u32 = 1;
+pub const C3_R3_REASON_STRUCT_SIZE_MISMATCH: u32 = 2;
+pub const C3_R3_REASON_STEP_RANGE_INVALID: u32 = 3;
+pub const C3_R3_REASON_DIGEST_MISSING: u32 = 4;
+pub const C3_R3_REASON_METADATA_INVALID: u32 = 5;
+pub const C3_R3_REASON_NOT_CALIBRATED: u32 = 6;
+pub const C3_R3_REASON_CACHE_MISSING: u32 = 7;
+pub const C3_R3_REASON_PREDICTOR_MISSING: u32 = 8;
+pub const C3_R3_REASON_PROVENANCE_INVALID: u32 = 9;
+pub const C3_R3_REASON_SIMILARITY_REJECTED: u32 = 10;
+pub const C3_R3_REASON_SOURCE_INVALID: u32 = 11;
+pub const C3_R3_REASON_PREDICTION_INVALID: u32 = 12;
+pub const C3_R3_REASON_STABLE_COUNT_LOW: u32 = 13;
+pub const C3_R3_REASON_ACTIVE_PRESENT: u32 = 14;
+pub const C3_R3_REASON_GLOBAL_INVALIDATION: u32 = 15;
+pub const C3_R3_REASON_OVERLAP_CONFLICT: u32 = 16;
+pub const C3_R3_REASON_FATAL_FLAG: u32 = 17;
+pub const C3_R3_REASON_RESEED_REQUIRED: u32 = 18;
+pub const C3_R3_REASON_FALLBACK_UNSUPPORTED: u32 = 19;
+pub const C3_R3_REASON_UNSUPPORTED_METADATA: u32 = 20;
+pub const C3_R3_REASON_RUST_PANIC: u32 = 21;
+
 /// Fixed-size, metadata-only callback observation for the C1 full-compute gate.
 ///
 /// No tensor, prompt, filesystem path, media payload, CUDA pointer, model
@@ -1099,6 +1126,255 @@ pub fn evaluate_reuse_plan(observation: &ReusePlanObservation) -> ReusePlanDirec
         )
     } else {
         c3_r2_directive(observation, C3_R2_DECISION_FULL_COMPUTE, veto_reason)
+    }
+}
+
+/// Generic, metadata-only admission observation for compact correction reuse.
+/// Model adapters retain every tensor and all model-specific layout details.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CorrectionPlanObservation {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub run_digest: [u8; 32],
+    pub workflow_revision_digest: [u8; 32],
+    pub settings_digest: [u8; 32],
+    pub model_revision_digest: [u8; 32],
+    pub segment_logical_digest: [u8; 32],
+    pub target_execution_step: u32,
+    pub first_source_execution_step: u32,
+    pub second_source_execution_step: u32,
+    pub total_steps: u32,
+    pub cache_available: u32,
+    pub predictor_available: u32,
+    pub predictor_provenance_valid: u32,
+    pub corrected_similarity_admitted: u32,
+    pub correction_metadata_valid: u32,
+    pub calibrated_target: u32,
+    pub full_compute_seed_count: u32,
+    pub reseed_required: u32,
+    pub stable_mask: u32,
+    pub stable_count: u32,
+    pub active_mask: u32,
+    pub active_count: u32,
+    pub uncertain_mask: u32,
+    pub uncertain_count: u32,
+    pub global_invalidation: u32,
+    pub overlap_conflict_mask: u32,
+    pub prediction_valid: u32,
+    pub source_valid: u32,
+    pub finite: u32,
+    pub fallback_supported: u32,
+    pub fatal_flags: u32,
+    pub unsupported_flags: u32,
+}
+
+impl CorrectionPlanObservation {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CorrectionPlanDirective {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub decision_code: u32,
+    pub reason_code: u32,
+    pub target_execution_step: u32,
+    pub first_source_execution_step: u32,
+    pub second_source_execution_step: u32,
+    pub fallback_required: u32,
+    pub unsupported_flags: u32,
+    pub decision_digest: [u8; 32],
+}
+
+impl CorrectionPlanDirective {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+
+    pub fn fail_open(
+        reason_code: u32,
+        target_execution_step: u32,
+        first_source_execution_step: u32,
+        second_source_execution_step: u32,
+        digest: [u8; 32],
+    ) -> Self {
+        Self {
+            abi_version: C3_R3_CORRECTION_PLAN_ABI_VERSION,
+            struct_size: Self::contract_size(),
+            decision_code: C3_R3_DECISION_ESCALATE_FULL_COMPUTE,
+            reason_code,
+            target_execution_step,
+            first_source_execution_step,
+            second_source_execution_step,
+            fallback_required: 1,
+            unsupported_flags: 0,
+            decision_digest: digest,
+        }
+    }
+}
+
+fn c3_r3_observation_digest(observation: &CorrectionPlanObservation) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(observation.abi_version.to_le_bytes());
+    hasher.update(observation.struct_size.to_le_bytes());
+    hasher.update(observation.run_digest);
+    hasher.update(observation.workflow_revision_digest);
+    hasher.update(observation.settings_digest);
+    hasher.update(observation.model_revision_digest);
+    hasher.update(observation.segment_logical_digest);
+    for value in [
+        observation.target_execution_step,
+        observation.first_source_execution_step,
+        observation.second_source_execution_step,
+        observation.total_steps,
+        observation.cache_available,
+        observation.predictor_available,
+        observation.predictor_provenance_valid,
+        observation.corrected_similarity_admitted,
+        observation.correction_metadata_valid,
+        observation.calibrated_target,
+        observation.full_compute_seed_count,
+        observation.reseed_required,
+        observation.stable_mask,
+        observation.stable_count,
+        observation.active_mask,
+        observation.active_count,
+        observation.uncertain_mask,
+        observation.uncertain_count,
+        observation.global_invalidation,
+        observation.overlap_conflict_mask,
+        observation.prediction_valid,
+        observation.source_valid,
+        observation.finite,
+        observation.fallback_supported,
+        observation.fatal_flags,
+        observation.unsupported_flags,
+    ] {
+        hasher.update(value.to_le_bytes());
+    }
+    hasher.finalize().into()
+}
+
+fn c3_r3_directive(
+    observation: &CorrectionPlanObservation,
+    decision_code: u32,
+    reason_code: u32,
+) -> CorrectionPlanDirective {
+    let observation_digest = c3_r3_observation_digest(observation);
+    let decision_digest = c2_digest_parts(&[
+        &observation_digest,
+        &decision_code.to_le_bytes(),
+        &reason_code.to_le_bytes(),
+    ]);
+    CorrectionPlanDirective {
+        abi_version: C3_R3_CORRECTION_PLAN_ABI_VERSION,
+        struct_size: CorrectionPlanDirective::contract_size(),
+        decision_code,
+        reason_code,
+        target_execution_step: observation.target_execution_step,
+        first_source_execution_step: observation.first_source_execution_step,
+        second_source_execution_step: observation.second_source_execution_step,
+        fallback_required: u32::from(decision_code != C3_R3_DECISION_REUSE_CORRECTED_TRANSFORM),
+        unsupported_flags: 0,
+        decision_digest,
+    }
+}
+
+fn c3_r3_contract_reason(observation: &CorrectionPlanObservation) -> u32 {
+    let eye_mask_union =
+        observation.stable_mask | observation.active_mask | observation.uncertain_mask;
+    if observation.abi_version != C3_R3_CORRECTION_PLAN_ABI_VERSION {
+        C3_R3_REASON_ABI_MISMATCH
+    } else if observation.struct_size != CorrectionPlanObservation::contract_size() {
+        C3_R3_REASON_STRUCT_SIZE_MISMATCH
+    } else if observation.target_execution_step >= observation.total_steps
+        || observation.first_source_execution_step >= observation.total_steps
+        || observation.second_source_execution_step >= observation.total_steps
+        || observation.first_source_execution_step + 1 != observation.second_source_execution_step
+        || observation.second_source_execution_step + 1 != observation.target_execution_step
+    {
+        C3_R3_REASON_STEP_RANGE_INVALID
+    } else if observation.run_digest == [0; 32]
+        || observation.workflow_revision_digest == [0; 32]
+        || observation.settings_digest == [0; 32]
+        || observation.model_revision_digest == [0; 32]
+        || observation.segment_logical_digest == [0; 32]
+    {
+        C3_R3_REASON_DIGEST_MISSING
+    } else if eye_mask_union & !0x0f != 0
+        || (observation.stable_mask & observation.active_mask) != 0
+        || (observation.stable_mask & observation.uncertain_mask) != 0
+        || (observation.active_mask & observation.uncertain_mask) != 0
+        || observation.stable_count != observation.stable_mask.count_ones()
+        || observation.active_count != observation.active_mask.count_ones()
+        || observation.uncertain_count != observation.uncertain_mask.count_ones()
+    {
+        C3_R3_REASON_METADATA_INVALID
+    } else if observation.fallback_supported != 1 {
+        C3_R3_REASON_FALLBACK_UNSUPPORTED
+    } else if observation.unsupported_flags != 0 {
+        C3_R3_REASON_UNSUPPORTED_METADATA
+    } else {
+        C3_R3_REASON_NONE
+    }
+}
+
+/// Admit compact correction reuse only after two consecutive Full Compute
+/// seeds and every quality/safety predicate pass. Otherwise fail open.
+pub fn evaluate_correction_plan(
+    observation: &CorrectionPlanObservation,
+) -> CorrectionPlanDirective {
+    let contract_reason = c3_r3_contract_reason(observation);
+    if contract_reason != C3_R3_REASON_NONE {
+        return c3_r3_directive(
+            observation,
+            C3_R3_DECISION_ESCALATE_FULL_COMPUTE,
+            contract_reason,
+        );
+    }
+    let veto_reason = if observation.calibrated_target != 1 {
+        C3_R3_REASON_NOT_CALIBRATED
+    } else if observation.cache_available != 1 {
+        C3_R3_REASON_CACHE_MISSING
+    } else if observation.predictor_available != 1 {
+        C3_R3_REASON_PREDICTOR_MISSING
+    } else if observation.predictor_provenance_valid != 1 || observation.finite != 1 {
+        C3_R3_REASON_PROVENANCE_INVALID
+    } else if observation.corrected_similarity_admitted != 1 {
+        C3_R3_REASON_SIMILARITY_REJECTED
+    } else if observation.correction_metadata_valid != 1 {
+        C3_R3_REASON_METADATA_INVALID
+    } else if observation.source_valid != 1 {
+        C3_R3_REASON_SOURCE_INVALID
+    } else if observation.prediction_valid != 1 {
+        C3_R3_REASON_PREDICTION_INVALID
+    } else if observation.full_compute_seed_count < 2 || observation.reseed_required != 0 {
+        C3_R3_REASON_RESEED_REQUIRED
+    } else if observation.stable_count < 2 {
+        C3_R3_REASON_STABLE_COUNT_LOW
+    } else if observation.active_count != 0 {
+        C3_R3_REASON_ACTIVE_PRESENT
+    } else if observation.global_invalidation != 0 {
+        C3_R3_REASON_GLOBAL_INVALIDATION
+    } else if observation.overlap_conflict_mask != 0 {
+        C3_R3_REASON_OVERLAP_CONFLICT
+    } else if observation.fatal_flags != 0 {
+        C3_R3_REASON_FATAL_FLAG
+    } else {
+        C3_R3_REASON_NONE
+    };
+    if veto_reason == C3_R3_REASON_NONE {
+        c3_r3_directive(
+            observation,
+            C3_R3_DECISION_REUSE_CORRECTED_TRANSFORM,
+            C3_R3_REASON_NONE,
+        )
+    } else {
+        c3_r3_directive(observation, C3_R3_DECISION_FULL_COMPUTE, veto_reason)
     }
 }
 
@@ -2974,6 +3250,114 @@ mod tests {
         assert_eq!(
             fail_open.decision_code,
             C3_R2_DECISION_ESCALATE_FULL_COMPUTE
+        );
+        assert_eq!(fail_open.fallback_required, 1);
+    }
+
+    fn c3_r3_observation() -> CorrectionPlanObservation {
+        CorrectionPlanObservation {
+            abi_version: C3_R3_CORRECTION_PLAN_ABI_VERSION,
+            struct_size: CorrectionPlanObservation::contract_size(),
+            run_digest: [1; 32],
+            workflow_revision_digest: [2; 32],
+            settings_digest: [3; 32],
+            model_revision_digest: [4; 32],
+            segment_logical_digest: [5; 32],
+            target_execution_step: 5,
+            first_source_execution_step: 3,
+            second_source_execution_step: 4,
+            total_steps: 20,
+            cache_available: 1,
+            predictor_available: 1,
+            predictor_provenance_valid: 1,
+            corrected_similarity_admitted: 1,
+            correction_metadata_valid: 1,
+            calibrated_target: 1,
+            full_compute_seed_count: 2,
+            reseed_required: 0,
+            stable_mask: 0b0011,
+            stable_count: 2,
+            active_mask: 0,
+            active_count: 0,
+            uncertain_mask: 0b1100,
+            uncertain_count: 2,
+            global_invalidation: 0,
+            overlap_conflict_mask: 0,
+            prediction_valid: 1,
+            source_valid: 1,
+            finite: 1,
+            fallback_supported: 1,
+            fatal_flags: 0,
+            unsupported_flags: 0,
+        }
+    }
+
+    #[test]
+    fn c3_r3_correction_plan_is_deterministic_and_tensor_free() {
+        let observation = c3_r3_observation();
+        let first = evaluate_correction_plan(&observation);
+        let second = evaluate_correction_plan(&observation);
+        assert_eq!(first, second);
+        assert_eq!(
+            first.decision_code,
+            C3_R3_DECISION_REUSE_CORRECTED_TRANSFORM
+        );
+        assert_eq!(first.reason_code, C3_R3_REASON_NONE);
+        assert_eq!(first.fallback_required, 0);
+        assert!(CorrectionPlanObservation::contract_size() < 512);
+        assert!(CorrectionPlanDirective::contract_size() < 128);
+    }
+
+    #[test]
+    fn c3_r3_invalid_predictor_and_live_vetoes_fail_open() {
+        let mut cases = Vec::new();
+        let mut missing = c3_r3_observation();
+        missing.predictor_available = 0;
+        cases.push((missing, C3_R3_REASON_PREDICTOR_MISSING));
+        let mut invalid = c3_r3_observation();
+        invalid.correction_metadata_valid = 0;
+        cases.push((invalid, C3_R3_REASON_METADATA_INVALID));
+        let mut reseed = c3_r3_observation();
+        reseed.full_compute_seed_count = 1;
+        reseed.reseed_required = 1;
+        cases.push((reseed, C3_R3_REASON_RESEED_REQUIRED));
+        let mut active = c3_r3_observation();
+        active.stable_mask = 0b0011;
+        active.stable_count = 2;
+        active.active_mask = 0b0100;
+        active.active_count = 1;
+        active.uncertain_mask = 0b1000;
+        active.uncertain_count = 1;
+        cases.push((active, C3_R3_REASON_ACTIVE_PRESENT));
+        let mut global = c3_r3_observation();
+        global.global_invalidation = 1;
+        cases.push((global, C3_R3_REASON_GLOBAL_INVALIDATION));
+        let mut overlap = c3_r3_observation();
+        overlap.overlap_conflict_mask = 1;
+        cases.push((overlap, C3_R3_REASON_OVERLAP_CONFLICT));
+        for (observation, reason) in cases {
+            let directive = evaluate_correction_plan(&observation);
+            assert_eq!(directive.decision_code, C3_R3_DECISION_FULL_COMPUTE);
+            assert_eq!(directive.reason_code, reason);
+            assert_eq!(directive.fallback_required, 1);
+        }
+    }
+
+    #[test]
+    fn c3_r3_invalid_contract_and_panic_boundary_escalate() {
+        let mut invalid = c3_r3_observation();
+        invalid.abi_version = 99;
+        let directive = evaluate_correction_plan(&invalid);
+        assert_eq!(
+            directive.decision_code,
+            C3_R3_DECISION_ESCALATE_FULL_COMPUTE
+        );
+        assert_eq!(directive.reason_code, C3_R3_REASON_ABI_MISMATCH);
+        let fail_open =
+            CorrectionPlanDirective::fail_open(C3_R3_REASON_RUST_PANIC, 5, 3, 4, [9; 32]);
+        assert_eq!(
+            fail_open.decision_code,
+            C3_R3_DECISION_ESCALATE_FULL_COMPUTE
         );
         assert_eq!(fail_open.fallback_required, 1);
     }
