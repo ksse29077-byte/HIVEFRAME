@@ -89,8 +89,9 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-No next implementation stage is automatically authorized. P0 Local H3 has
-been published, and the latest Core evidence on `main` is C3-R2 decision
+No next implementation stage is automatically authorized. P0 Local H3
+implementation, verification, and `main` integration are complete; external
+end-user release is not claimed. The latest Core evidence on `main` is C3-R2 decision
 `C3_R2_RESIDUAL_SIMILARITY_TOO_LOW`. P1 one-click Local H3, M1-B1/B2, and
 C3-R3 Compact Residual Correction / Prediction each require a separate
 explicit approval. See `docs/HIVEFRAME_EXECUTION_CONTEXT.md` before selecting

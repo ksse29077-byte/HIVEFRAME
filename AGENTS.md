@@ -320,8 +320,11 @@ Release Candidate:
 3. 생성·저장·피드백 흐름 완성
 4. 실패 시 Full Compute 또는 H3 fallback
 5. 가장 간단한 선택적 계산 기능 1개 적용
-6. 속도 또는 VRAM 이득이 있으면 제품에 통합
-7. 이득이 없으면 해당 최적화를 출시조건에서 제외
+6. 품질·안전 Gate를 통과하고 실제 backend work와 accepted-result 전체
+   비용에서 제품적으로 의미 있는 이득이 확인된 경우에만 제품 가속
+   후보로 통합
+7. 위 조건을 충족하지 못하면 mechanism evidence로만 보존하고 해당
+   최적화를 제품 기본경로와 출시조건에서 제외
 8. 실제 사용자 데이터로 후속 개선
 9. 자체 모델 학습과 고급 최적화는 출시 이후 확장
 
@@ -645,6 +648,199 @@ HIVEFRAME 저장소 안에서 작업지시를 해석할 때 다음 순서를 적
 
 영구 개정은 헌법 본문을 실제로 변경하고 commit한 이후에만
 다음 작업부터 적용합니다.
+
+## 제18조 — Quality-First Acceleration
+
+HIVEFRAME에서 속도 또는 VRAM 개선은 품질 보존을 전제로 할 때만
+유효한 제품 가속으로 인정합니다. 판단 순서는 항상 다음과 같습니다.
+
+1. Output correctness
+2. Visual / temporal quality
+3. Semantic / structural stability
+4. Full Compute fallback
+5. Actual backend work reduction
+6. Runtime / VRAM improvement
+
+`QUALITY FAILURE OVERRIDES SPEEDUP`을 적용합니다. 품질 Gate가 실패하면
+1.5x, 2.0x, 3.0x 이상의 속도 또는 큰 Block/Step 감소가 관찰되어도
+해당 execution strategy를 제품 기본 가속으로 승격하지 않습니다.
+
+## 제19조 — Quality >= Standard
+
+제품 목표는 더 빠르지만 품질이 낮은 결과가 아니라
+`Quality >= Standard Full Compute`를 유지하면서 accepted-result 비용을
+줄이는 것입니다.
+
+품질은 단일 SSIM이나 단일 자동 metric으로 보장하지 않습니다. 공간,
+시간, 구조, 의미 안정성과 함께 temporal coherence, identity persistence,
+geometry stability, static-region stability, flicker, artifact를 판단합니다.
+Stable 상태의 불필요한 재변형을 줄여 Standard보다 안정적인 결과를
+만드는 것은 장기 목표가 될 수 있지만 별도 증거 없이 주장하지 않습니다.
+
+## 제20조 — Mechanism Evidence와 Product Acceleration
+
+다음을 구분합니다.
+
+- Mechanism Evidence: 실제 backend work 감소, runtime 감소 또는 execution
+  control 작동을 증명하는 제한된 기술 증거
+- Product Acceleration: 품질과 안전을 지키며 사용자가 체감할 수 있는
+  accepted-result 전체 비용 개선
+
+`Mechanism success != Product acceleration success`입니다. 품질과 Full
+Compute fallback을 전제로 한 장기 기준은 다음과 같습니다.
+
+- 작은 이득은 mechanism evidence로 보존할 수 있음
+- 1.08x와 품질 유지: mechanism evidence 가능
+- 1.20x와 품질 유지: strong technical evidence 가능
+- End-to-End 1.5x 이상은 minimum meaningful product candidate
+- End-to-End 2.0x 이상은 Core product target candidate
+- 3.0x라도 품질 Gate 실패: reject
+
+이 목표를 개별 실험 결과에 맞추어 사후 완화하지 않습니다. 변경은
+별도의 명시적 사용자 승인과 헌법 또는 제품목표 개정을 요구합니다.
+
+## 제21조 — 실제 Backend Work와 전체 비용 증거
+
+속도 차이만으로 HIVEFRAME selective-compute speedup을 주장하지 않습니다.
+제품 가속 주장에는 최소한 다음이 필요합니다.
+
+- 동일하거나 비교 가능한 실행조건
+- 실제 backend work 감소
+- 전체 accepted-result 비용
+- 품질 Gate 통과
+- retry, repair, fallback 비용 포함
+- 결과 무결성
+
+단일 kernel, wrapper, callback 또는 부분 phase 개선을 제품 전체
+speedup으로 표현하지 않습니다. Full Compute보다 빨라도 실제 backend
+work 감소가 증명되지 않으면 selective-compute 제품 주장으로 승격하지
+않습니다.
+
+## 제22조 — Model-Replaceable HIVEFRAME Core
+
+HIVEFRAME은 특정 영상 생성 모델을 위한 일회성 가속기가 아닙니다.
+MiniMax H3는 최초 Production Backend이지 HIVEFRAME Core의 정체성이
+아닙니다.
+
+장기 구조는 다음과 같습니다.
+
+```text
+HIVEFRAME Core
+  -> Generic Execution / Observation Contract
+  -> Model Adapter
+  -> current MiniMax H3 or future Model X / Model Y / owned model
+```
+
+모델 교체 시 핵심 목적, 상태 의미, 품질정책, 안전정책과 비용계약을
+다시 구현하지 않는 것을 목표로 합니다.
+
+## 제23조 — Core와 Model Adapter 소유권
+
+가능한 한 HIVEFRAME Core는 다음을 소유합니다.
+
+- Compound Eye observation semantics
+- STABLE / ACTIVE / UNCERTAIN과 change/uncertainty interpretation
+- Compute Plan과 generic selective/reuse/prediction decision semantics
+- invalidation, dependency closure, Full Compute fallback semantics
+- Quality-First policy와 Rust metadata policy
+- telemetry, verification, repair planning, accepted-result cost accounting
+
+모델별 내부 구현은 Model Adapter/backend-specific layer에 격리합니다.
+MiniMax H3의 경우 packed/latent layout, `x0.tensors[0]`, `DiTBlock`, Block
+count/index, `patches_replace`, residual/cache representation, VAE/audio path,
+ComfyUI workflow, filenames, node names와 execution wrapper가 해당됩니다.
+
+신규 Generic Core 코드에 `MiniMax H3`, `x0.tensors[0]`, `DiTBlock`, block
+count 50, blocks 12..48, hidden width 3072, `patches_replace`, 특정 ComfyUI
+node/workflow ID 또는 model filename을 하드코딩하지 않습니다. Core는
+다음 capability 중심으로 판단하고 Adapter가 구체 구현을 번역합니다.
+
+- `observation_available`
+- `selective_execution_available`
+- `block_control_available`
+- `residual_reuse_available`
+- `regional_execution_available`
+- `fallback_available`
+
+## 제24조 — 출시를 지연하지 않는 Adapter 경계
+
+Model-Replaceable 원칙은 지금 대규모 범용 framework를 만들라는 뜻이
+아닙니다. 지금은 H3로 가장 짧은 제품경로를 완성하되, 새 H3-specific
+코드가 Generic Core를 더 H3 종속적으로 만들지 않게 합니다.
+
+현재 제품 질문과 무관한 추상화, 미래 모델을 가정한 framework, 대형
+refactor는 금지합니다. 신규 모델별 실행코드는 가능한 범위에서 Adapter
+경계에 두고, 완벽한 Backend 독립성을 기다리느라 출시를 지연하지
+않습니다.
+
+## 제25조 — Observation은 Compute Authority가 아님
+
+Eye, pixel change, dirty region, motion, residual similarity와 cache
+similarity는 `OBSERVATION EVIDENCE`이지 `COMPUTE SKIP AUTHORITY`가
+아닙니다. “안 변해 보인다”는 사실은 “계산을 생략해도 안전하다”는
+뜻이 아닙니다.
+
+실제 계산 생략은 backend execution contract, dependency closure,
+uncertainty, Quality Gate, invalidation과 fallback을 모두 만족해야 합니다.
+`UNCERTAIN`은 기본적으로 Full Compute이며, 별도 승인 증거 없이 속도를
+위해 skip/reuse를 강제하지 않습니다.
+
+## 제26조 — Full Compute 영구 안전경로
+
+Selective Compute, cache, reuse, prediction과 regional compute는 모두
+Full Compute fallback을 유지합니다.
+
+```text
+Optimization available and safe -> optimized execution
+Optimization unavailable / uncertain / failed -> Full Compute
+```
+
+가속기능 실패가 기본 생성기능 실패로 전파되어서는 안 되며, 최적화
+기능 때문에 Standard 생성경로 출시를 막지 않습니다.
+
+## 제27조 — Immutable Evidence와 새 실험 분리
+
+기존 receipt, threshold, Gate, benchmark, source hash, policy, fixed
+schedule과 quality criterion은 결과를 본 뒤 수정하여 성공으로
+재해석하지 않습니다. 실패 결과도 그대로 보존합니다.
+
+새 threshold, schedule, mechanism 또는 product question은 별도 Issue,
+Branch, Draft PR과 사전 선언으로 진행합니다. 과거 evidence를 새 실험에
+맞추어 덮어쓰지 않습니다.
+
+## 제28조 — 연구단계 자동 확장 금지
+
+현재 결과를 기록하고 하나의 결정으로 종료한 뒤 중단합니다. 다음 R/C
+단계, 추가 Generation, Backend, 학습, LoRA/DoRA/DPO, distillation,
+dataset, benchmark를 자동으로 시작하지 않습니다. 다음 단계는 사용자
+별도 승인 후 시작합니다.
+
+## 제29조 — HIVEFRAME 제품 정의
+
+HIVEFRAME의 장기 제품 정의는 “특정 모델을 조금 빠르게 실행하는
+Wrapper”가 아닙니다.
+
+목표는 영상 생성 모델의 변화와 불확실성을 관찰하고, 필요한 계산만
+안전하게 수행하며, 불필요한 계산을 줄이고, 품질을 Standard 이상으로
+보호하면서, 전체 accepted-result 비용을 크게 줄이는 모델 교체 가능한
+로컬 실행 엔진입니다.
+
+장기적으로 faster generation, temporal stability, regional compute,
+selective regeneration, partial video regeneration/editing과 selective
+repair로 확장할 수 있지만, 이 정의가 현재 승인범위를 자동 확장하는
+근거는 아닙니다.
+
+## 제30조 — 실행 컨텍스트와 현재 안전상태
+
+`AGENTS.md`는 장기간 유지되는 최상위 헌법과 운영원칙만 보존합니다.
+`docs/HIVEFRAME_EXECUTION_CONTEXT.md`는 현재 완료·활성·rejected 단계,
+안전경로, 제품주장과 승인대기 작업을 요약합니다. `TASKS.md`와
+`docs/WORKLOG.md`는 상태와 evidence link 중심으로 유지하며 동일한 장문을
+여러 문서에 반복하지 않습니다.
+
+실험 mechanism이 `verified_once`여도 별도 Quality/Product Promotion Gate
+없이 제품 기본경로로 자동 승격하지 않습니다. 현재 제품 speedup claim과
+현재 기본 안전경로 같은 시점 의존 상태는 실행 컨텍스트에서 관리합니다.
 
 ## Subordinate repository safeguards
 

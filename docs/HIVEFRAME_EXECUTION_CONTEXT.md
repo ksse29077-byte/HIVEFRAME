@@ -37,6 +37,17 @@ a precise one-time exception or permanent amendment.
 
 - Ship the smallest safe user-visible path first. Research exists to unblock
   or improve that path, not to delay it until every hypothesis is complete.
+- Apply the immutable order: output correctness, visual/temporal quality,
+  semantic/structural stability, Full Compute fallback, actual backend work
+  reduction, and only then runtime/VRAM. `QUALITY FAILURE OVERRIDES SPEEDUP`.
+- The quality target is `Quality >= Standard Full Compute`; a single SSIM or
+  other automatic metric cannot establish spatial, temporal, structural, and
+  semantic quality by itself.
+- Separate mechanism evidence from product acceleration. The long-term minimum
+  meaningful product candidate is End-to-End 1.5x and the Core target candidate
+  is 2.0x, both requiring Quality >= Standard and Full Compute fallback.
+- A speed difference without actual backend work reduction and complete
+  accepted-result cost is not a HIVEFRAME selective-compute speedup claim.
 - One task answers one product question and ends with one bounded decision.
   Do not automatically begin the next R-stage, milestone, backend, benchmark,
   or architecture expansion.
@@ -100,15 +111,23 @@ Core/adapter ownership remains replaceable:
 - H3 tensor shapes, block counts, paths, and classes must not leak into generic
   Core contracts.
 
+Generic Core code must operate on capabilities such as observation,
+selective-execution, block-control, residual-reuse, regional-execution, and
+fallback availability. H3-specific paths, packed/latent layout, block ranges,
+hidden width, hooks, node/workflow IDs, and filenames remain in the adapter.
+This boundary does not authorize a speculative framework or broad refactor:
+ship through H3 now without making new Core code more H3-dependent.
+
 ## 4. Two coordinated tracks
 
 ### Product launch track
 
 The Product-First launch line has priority:
 
-- P0 Local H3 vertical slice: shipped and verified once through loopback
-  ComfyUI with product job states, result handling, feedback, and explicit Mock
-  provenance.
+- P0 Local H3 vertical slice: implementation, verification, and `main`
+  integration completed through loopback ComfyUI with product job states,
+  result handling, feedback, and explicit Mock provenance. External end-user
+  release is not claimed.
 - P1 one-click Local H3 launcher: not started; requires separate approval.
 - P2 hardened real local product flow: not started.
 - P3 selective runtime integration: only an admitted, quality-preserving,
@@ -155,6 +174,10 @@ No current HIVEFRAME Core mechanism has a product speedup claim. C3-R1 proved
 real block omission once but failed quality/opportunity/performance Gates.
 C3-R2 never entered selective execution. Product promotion remains zero and
 Full Compute is the safe fallback.
+
+The current product speedup claim is exactly zero. A `verified_once` mechanism
+does not become the default path without a separate Quality/Product Promotion
+Gate. Quality failure overrides any observed speed or VRAM improvement.
 
 ## 6. Backend and data policy
 
@@ -208,12 +231,18 @@ Before acting:
 10. finish with the bounded decision, evidence references, Git state, skipped
     checks and reasons, and the next separately approved stage.
 
+For any acceleration task, additionally verify that the execution strategy is
+model-adapter isolated, Full Compute remains independently usable, actual
+backend work is measured, Quality >= Standard is assessed across relevant
+dimensions, and product-level claims are withheld below their fixed targets.
+
 ## 9. Known documentation drift at this snapshot
 
 Some status prose predates later verified GitHub events:
 
-- `README_FIRST.md` still names P0-LR as the immediate action although P0 was
-  subsequently shipped.
+- the pre-context version of `README_FIRST.md` named P0-LR as the immediate
+  action although P0 implementation, verification, and `main` integration had
+  subsequently completed; the current file now points to this index instead.
 - `TASKS.md` contains pre-publication wording for some C2/C3 entries even
   though their PRs were later merged.
 - older H3 policy prose describes unreleased or unadmitted artifacts, while

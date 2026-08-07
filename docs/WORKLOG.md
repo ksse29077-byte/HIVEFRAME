@@ -1454,6 +1454,25 @@ rewriting historical evidence. This was a documentation-only context change:
 model load, Generation, CUDA, benchmark, threshold change, source change, and
 remote publication counts are zero.
 
+## 2026-08-07 — Quality-First and model-replaceable constitution amendment
+
+The existing Product-First Constitution remains intact. Article 13's former
+speed/VRAM-only integration wording was strengthened so product acceleration
+requires quality and safety Gates, actual backend-work reduction, and a
+market-meaningful accepted-result cost improvement. New Articles 18 through 30
+make Quality >= Standard, `QUALITY FAILURE OVERRIDES SPEEDUP`, mechanism versus
+product evidence, the 1.5x/2.0x long-term product targets, actual backend-work
+evidence, Model-Replaceable Core ownership, adapter isolation, conservative
+UNCERTAIN handling, permanent Full Compute fallback, immutable evidence, and
+no automatic research expansion constitutional rules.
+
+The execution context now summarizes those rules without copying the full
+constitution. P0 wording was corrected from a release implication to
+implementation, verification, and `main` integration complete; no external
+end-user release is claimed. This constitution-only change ran no model,
+Generation, CUDA, benchmark, threshold change, runtime code, or Python/Rust
+test suite.
+
 ---
 
 ## Entry template
