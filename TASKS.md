@@ -399,6 +399,27 @@ dynamic product policy, cross-prompt quality, speedup, cache reuse, partial
 repair, or product promotion. The existing C3 rejected evidence is unchanged.
 See the detailed [C3-R1 worklog](docs/worklogs/2026-08-07-c3-r1-frozen-block-bypass.md).
 
+## C3-R2 — Quality-Preserving Segment Residual Replay
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`C3_R2_RESIDUAL_SIMILARITY_TOO_LOW`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated C3-R2 work | `draft_pr` | [Issue #67](https://github.com/ksse29077-byte/HIVEFRAME/issues/67); branch `accel/c3-r2-h3-segment-residual-reuse`; Draft PR [#68](https://github.com/ksse29077-byte/HIVEFRAME/pull/68) |
+| Freeze residual-replay contract before runtime | `verified` | blocks 12..48, age-one Full Compute cache, fixed six candidates, 0.99 cosine/0.20 L2 thresholds, and quality-first Gate; commit `0ec5945...` |
+| Validate model-replaceable Core and H3 adapter | `verified` | generic metadata-only Rust contract; H3 owns packed tensor, residual cache, block mapping, and GPU lifecycle |
+| Execute CONTROL residual capture | `verified_once` | one fresh-process submission, retry 0; 1,000 original calls, 20 residual captures, 124/124 H.264 frames |
+| Admit SELECTIVE schedule | `stopped` | zero of six candidates passed both frozen similarity thresholds; minimum was two |
+| Execute SELECTIVE residual replay | `stopped` | prohibited by the predeclared admission Gate; generation count 0 |
+| Claim quality, compute reduction, or speedup | `stopped` | paired output does not exist; metrics are not collected rather than recorded as zero |
+
+CONTROL verified bounded one-residual ownership and fail-open behavior once,
+but it did not establish a usable replay schedule. Actual replay, omitted block
+calls, paired quality, runtime speedup, visual equivalence, and product
+promotion remain unverified. C3-R1 evidence is unchanged. See the detailed
+[C3-R2 worklog](docs/worklogs/2026-08-07-c3-r2-segment-residual-reuse.md).
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.

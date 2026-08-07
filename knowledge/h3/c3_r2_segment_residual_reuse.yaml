@@ -1,0 +1,148 @@
+schema_version: h3.c3-r2.segment-residual-reuse.1
+recorded_date: "2026-08-07"
+state: verified_once
+decision: C3_R2_RESIDUAL_SIMILARITY_TOO_LOW
+issue: 67
+draft_pr: 68
+source_main_sha: 5c9155cd0391e7067e540bad2e6e9ce57f31bbe9
+implementation_commit: 0ec5945539b3fb357710bc354ecce9260d90db6d
+workflow_revision: video_minimax_h3_t2v@31ab33fdb053
+mechanism: SEGMENT_RESIDUAL_REPLAY_V1
+claim_boundary: >-
+  One fixed-profile Full Compute CONTROL run verified residual capture,
+  bounded GPU ownership, provenance, scalar similarity diagnostics, and
+  fail-open execution. Zero candidate targets passed both frozen similarity
+  thresholds, so SELECTIVE was prohibited. No residual replay, compute
+  reduction, quality comparison, speedup, or product promotion was verified.
+
+preserved_evidence:
+  c3_r1_immutable: true
+  changed_by_c3_r2: false
+  c3_r1_decision: C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW
+  c3_r1_mechanism: SELECTIVE_BLOCK_BYPASS_IDENTITY
+
+source_admission:
+  state: verified_once
+  installed_source_sha256: 882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024
+  segment_block_start: 12
+  segment_block_end: 48
+  block_count: 37
+  packed_contract_preserved: true
+  in_place_mutation: true
+  block_49_receives_replay_contract: true
+  installed_source_modified: false
+  original_workflow_modified: false
+
+cache_contract:
+  source: full_compute_only
+  age_steps: 1
+  consecutive_reuse_allowed: false
+  reuse_creates_cache: false
+  dtype: torch.bfloat16
+  device: cuda:0
+  literal_shape:
+    value: null
+    support_status: not_collected
+    reason: "The receipt retained a shape digest and byte count, not the literal shape."
+  derived_shape: [26992, 3072]
+  derived_shape_method: "Residual bytes divided by BF16 element width and installed H3 hidden width; this is derived, not directly recorded."
+  shape_digest: 5bef4951a27aecd6bdfc02eaa7b795e77873f43a50270eca45a71b4b8f0288b7
+  residual_bytes: 165838848
+  persistent_residual_count_max: 1
+  transient_snapshot_count_max: 1
+  concurrent_residual_sized_buffers_max: 2
+  additional_gpu_bytes_max: 331677696
+  per_block_cache_count: 0
+  full_tensor_host_copy_count: 0
+  tensor_bytes_to_rust: 0
+
+frozen_calibration:
+  candidate_steps: [5, 6, 8, 13, 16, 17]
+  full_compute_anchors: [0, 1, 18, 19]
+  cosine_minimum: 0.99
+  normalized_l2_maximum: 0.20
+  minimum_targets_for_selective: 2
+  selected_targets: []
+  frozen_before_selective: true
+  samples:
+    - {target_step: 5, source_step: 4, normalized_l2: 0.21053783283617983, cosine: 0.9799084010296527, finite: true, admitted: false}
+    - {target_step: 6, source_step: 5, normalized_l2: 0.3156771761513897, cosine: 0.9523633107962088, finite: true, admitted: false}
+    - {target_step: 8, source_step: 7, normalized_l2: 0.27434131641941367, cosine: 0.9643601389259951, finite: true, admitted: false}
+    - {target_step: 13, source_step: 12, normalized_l2: 0.23893105848312565, cosine: 0.9714559746460666, finite: true, admitted: false}
+    - {target_step: 16, source_step: 15, normalized_l2: 0.16292062571761637, cosine: 0.9869789772313959, finite: true, admitted: false}
+    - {target_step: 17, source_step: 16, normalized_l2: 0.16778804977307907, cosine: 0.9869408168935816, finite: true, admitted: false}
+
+control:
+  state: verified_once
+  mode: CONTROL_RESIDUAL_CAPTURE
+  generation_count: 1
+  retry_count: 0
+  callback_count: 20
+  c2_rust_call_count: 20
+  c3_r2_rust_call_count: 18
+  model_forward_count: 20
+  original_block_calls: 1000
+  residual_capture_count: 20
+  cache_generation_count: 20
+  residual_replay_count: 0
+  mapping_error_count: 0
+  wrapper_failure_count: 0
+  sampler_seconds: 488.4596511000127
+  submit_to_terminal_seconds: 589.1816916000098
+  runner_total_seconds: 606.1648260999937
+  rust_boundary_p95_seconds: 0.0000116
+  rust_boundary_sum_seconds: 0.0001386
+  exact_gpu_kernel_time:
+    value: null
+    support_status: not_collected
+    reason: "No profiler run was authorized; wall spans are not GPU-kernel duration."
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    frame_count: 124
+    decoded_frame_count: 124
+    fps: 24
+    audio_stream_count: 1
+    output_size_bytes: 263051
+    output_sha256: 80d9a23a98a7ba8f2312e9c3d1d6d57bb2652aaacd8111c174cf3380d90b403f
+    private_receipt_sha256: b6d495c25bdeaa00b7a7c2491458662e4f7145a10a0126d50205ddc43097fff5
+    public_summary_sha256: c907519c86c76fa6d8662ba4964454d6ca8f7a453ba07dcacdc2d9dabb38ef77
+  resources:
+    peak_comfyui_system_sampled_vram_bytes: 12459802548
+    peak_nvidia_system_sampled_vram_bytes: 11990466560
+    device_total_memory_bytes: 12884377600
+    peak_process_tree_rss_bytes: 47340367872
+    peak_system_wide_used_ram_bytes: 62809526272
+    peak_gpu_utilization_percent: 100
+    resource_sample_count: 532
+    resource_query_overhead_seconds: 54.48092390020611
+
+selective:
+  state: rejected
+  generation_count: 0
+  reason: "Zero calibrated targets; the frozen Run B admission requires at least two."
+  actual_reuse_steps: null
+  actual_omitted_block_calls: null
+  paired_runtime_ratios: null
+  quality_metrics: null
+
+safety:
+  oom_count: 0
+  retry_count: 0
+  cuda_error_count: 0
+  nonfinite_residual_count: 0
+  black_frame_count: 0
+  corrupted_frame_count: 0
+  external_api_calls: 0
+  model_downloads: 0
+  full_compute_fallback_preserved: true
+
+product:
+  actual_compute_reduction: 0
+  speedup_claim: false
+  quality_guarantee: false
+  visual_equivalence: not_proven
+  product_promotion: false
+  automatic_product_application: false
+  next_action: separate_approval_required

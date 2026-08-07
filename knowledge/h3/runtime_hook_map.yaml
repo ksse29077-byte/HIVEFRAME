@@ -309,3 +309,26 @@ c3_r1_frozen_replay_follow_up:
   quality_equivalence: not_proven
   product_promotion: false
   claim_boundary: "One frozen-schedule pair verified actual block omission, but live veto reduced opportunity below the fixed floor and quality/performance gates failed. The result is not a dynamic policy or product default."
+
+c3_r2_segment_residual_follow_up:
+  state: verified_once
+  decision: C3_R2_RESIDUAL_SIMILARITY_TOO_LOW
+  mechanism: SEGMENT_RESIDUAL_REPLAY_V1
+  hook_id: h3.transformer_block
+  candidate_block_range: [12, 48]
+  control_generation_count: 1
+  selective_generation_count: 0
+  original_block_calls_control: 1000
+  residual_capture_count: 20
+  calibrated_targets: []
+  residual_replay_count: 0
+  persistent_residual_count_max: 1
+  transient_snapshot_count_max: 1
+  per_block_cache_count: 0
+  tensor_bytes_to_rust: 0
+  full_tensor_host_copy_count: 0
+  full_compute_fallback_verified: true
+  speedup_claim: false
+  quality_equivalence: not_proven
+  product_promotion: false
+  claim_boundary: "The block wrapper captured bounded Full Compute residuals, but zero frozen candidates passed both fixed similarity thresholds. SELECTIVE was not run."

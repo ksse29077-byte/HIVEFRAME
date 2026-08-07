@@ -246,3 +246,22 @@ c3_r1_frozen_block_bypass:
   decision: C3_R1_LIVE_VETO_OPPORTUNITY_TOO_LOW
   automatic_product_application: false
   promoted: false
+
+c3_r2_segment_residual_replay:
+  state: rejected
+  source_hook_available: true
+  runtime_implemented: true
+  control_generation_count: 1
+  selective_generation_count: 0
+  full_compute_residual_capture_available: true
+  one_shot_cache_lifecycle_verified: true
+  calibrated_target_count: 0
+  actual_residual_replay_available: false
+  actual_compute_reduction: 0
+  tensor_bytes_to_rust: 0
+  full_tensor_host_copy_count: 0
+  speedup_verified: false
+  quality_verified: false
+  decision: C3_R2_RESIDUAL_SIMILARITY_TOO_LOW
+  automatic_product_application: false
+  promoted: false

@@ -218,3 +218,16 @@ product:
   product_promotion: false
   automatic_product_application: false
   next_action: separate_approval_required
+
+c3_r2_follow_up:
+  state: verified_once
+  prior_evidence_immutable: true
+  c3_r1_values_changed: false
+  mechanism: SEGMENT_RESIDUAL_REPLAY_V1
+  control_generation_count: 1
+  selective_generation_count: 0
+  calibrated_target_count: 0
+  decision: C3_R2_RESIDUAL_SIMILARITY_TOO_LOW
+  comparison_status: not_available
+  reason: "C3-R2 SELECTIVE was prohibited, so no quality or runtime pair exists to compare with the immutable C3-R1 identity-bypass evidence."
+  product_promotion: false
