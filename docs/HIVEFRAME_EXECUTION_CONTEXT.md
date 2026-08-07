@@ -18,13 +18,15 @@ Apply these sources in this order:
 1. platform, legal, security, service, and execution-environment limits;
 2. the single normative Product-First Constitution in
    [`AGENTS.md`](../AGENTS.md);
-3. the user's current explicit product question, scope, stop conditions, and
+3. the current visual structure and state in
+   [`HIVEFRAME_SYSTEM_MAP.md`](HIVEFRAME_SYSTEM_MAP.md);
+4. the user's current explicit product question, scope, stop conditions, and
    any clearly bounded one-time exception;
-4. the current work order and task-specific predeclared Gate;
-5. [`ROADMAP.md`](../ROADMAP.md) and
+5. the current work order and task-specific predeclared Gate;
+6. [`ROADMAP.md`](../ROADMAP.md) and
    [`ROADMAP_EXECUTION_RULES.md`](ROADMAP_EXECUTION_RULES.md);
-6. current actionable state in [`TASKS.md`](../TASKS.md);
-7. chronological verified evidence in [`WORKLOG.md`](WORKLOG.md), dated
+7. current actionable state in [`TASKS.md`](../TASKS.md);
+8. chronological verified evidence in [`WORKLOG.md`](WORKLOG.md), dated
    worklogs, receipts, commits, Issues, PRs, and merge metadata.
 
 A plan, proposal, branch name, Draft PR, or successful component test is not
@@ -214,8 +216,8 @@ Before acting:
 
 1. run `git status -sb`, `git rev-parse HEAD`, and verify branch/base/remote
    state relevant to the task;
-2. read `AGENTS.md`, then this file, then `TASKS.md`, `docs/WORKLOG.md`, and the
-   relevant work order/roadmap/knowledge record;
+2. read `AGENTS.md`, then this file, `docs/HIVEFRAME_SYSTEM_MAP.md`, `TASKS.md`,
+   `docs/WORKLOG.md`, and the relevant work order/roadmap/knowledge record;
 3. identify exactly one product question, allowed mutations, forbidden work,
    maximum executions/retries, stop conditions, and required final decision;
 4. locate existing evidence and reuse it when code/input/environment are
@@ -230,6 +232,10 @@ Before acting:
    unless the current instruction authorizes that exact action;
 10. finish with the bounded decision, evidence references, Git state, skipped
     checks and reasons, and the next separately approved stage.
+
+Every task also records `diagram impact: updated`, `none`, or `blocked`.
+Structural/state-flow changes update the Living System Map in the same commit;
+unrelated changes record `none` rather than creating diagram churn.
 
 For any acceleration task, additionally verify that the execution strategy is
 model-adapter isolated, Full Compute remains independently usable, actual

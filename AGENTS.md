@@ -842,6 +842,23 @@ repair로 확장할 수 있지만, 이 정의가 현재 승인범위를 자동 �
 없이 제품 기본경로로 자동 승격하지 않습니다. 현재 제품 speedup claim과
 현재 기본 안전경로 같은 시점 의존 상태는 실행 컨텍스트에서 관리합니다.
 
+## 제31조 — Living System Map 유지
+
+`docs/HIVEFRAME_SYSTEM_MAP.md`를 HIVEFRAME의 현재 구조, 데이터 흐름,
+Core/Model Adapter 소유권, capability/fallback, 활성 단계와 bounded
+decision을 보여주는 Living System Map으로 유지합니다.
+
+모든 작업은 commit 전에 `diagram impact`를 판단합니다.
+
+- 구조, 실행 흐름, 모듈 소유권, capability, fallback, 활성 단계 또는
+  최종 decision이 바뀌면 같은 변경에서 구조도를 업데이트합니다.
+- 영향이 없으면 구조도를 억지로 다시 그리지 않고 작업일지나 완료보고에
+  `diagram impact: none`과 이유를 기록합니다.
+- 제안·planned·rejected·unsupported·verified 경로를 시각적으로 구분하고,
+  미검증 경로를 현재 작동 구조처럼 표시하지 않습니다.
+- 구조도 갱신은 Generation, benchmark, threshold 변경, Backend 연결 또는
+  다음 연구단계를 자동 승인하지 않습니다.
+
 ## Subordinate repository safeguards
 
 The remaining rules preserve existing evidence and repository discipline.
@@ -853,10 +870,11 @@ Before changing the repository, read:
 
 1. `README_FIRST.md`
 2. `docs/HIVEFRAME_EXECUTION_CONTEXT.md`
-3. `TASKS.md`
-4. `docs/WORKLOG.md`
-5. `HIVEFRAME_MASTER_WORK_ORDER.md`
-6. the architecture or M0 document relevant to the requested task
+3. `docs/HIVEFRAME_SYSTEM_MAP.md`
+4. `TASKS.md`
+5. `docs/WORKLOG.md`
+6. `HIVEFRAME_MASTER_WORK_ORDER.md`
+7. the architecture or M0 document relevant to the requested task
 
 Do not infer completion from plans. Verify the current Git state and the
 evidence linked from the worklog.

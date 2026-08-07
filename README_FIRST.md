@@ -73,13 +73,15 @@ bypass, weaken, or silently rerun it.
 1. Read `AGENTS.md` for the normative Product-First Constitution.
 2. Read `docs/HIVEFRAME_EXECUTION_CONTEXT.md` for the compact current-state
    retrieval index and known documentation drift.
-3. Read `TASKS.md` for current work and blockers.
-4. Read `docs/WORKLOG.md` for verified history.
-5. Read `HIVEFRAME_MASTER_WORK_ORDER.md` for project boundaries.
-6. Read `ARCHITECTURE.md` and
+3. Read `docs/HIVEFRAME_SYSTEM_MAP.md` for the current product/Core/adapter
+   structure, execution flow, fallback, and evidence state.
+4. Read `TASKS.md` for current work and blockers.
+5. Read `docs/WORKLOG.md` for verified history.
+6. Read `HIVEFRAME_MASTER_WORK_ORDER.md` for project boundaries.
+7. Read `ARCHITECTURE.md` and
    `docs/HIVEFRAME_COMPOUND_EYE_RUNTIME_ADDENDUM.md`.
-7. For M0 work, read `docs/M0_BASELINE.md`.
-8. For compound-eye experiments, read:
+8. For M0 work, read `docs/M0_BASELINE.md`.
+9. For compound-eye experiments, read:
    - `ROADMAP.md`
    - `docs/ROADMAP_EXECUTION_RULES.md`
    - `docs/COMPOUND_EYE_HYPOTHESIS.md`

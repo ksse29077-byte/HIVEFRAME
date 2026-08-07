@@ -1473,6 +1473,24 @@ end-user release is claimed. This constitution-only change ran no model,
 Generation, CUDA, benchmark, threshold change, runtime code, or Python/Rust
 test suite.
 
+## 2026-08-07 — Living HIVEFRAME system map
+
+Added `docs/HIVEFRAME_SYSTEM_MAP.md` with Mermaid diagrams for the verified
+Local H3 product path, Model-Replaceable Core versus H3 adapter ownership,
+Quality-First selective decision flow, Full Compute fallback, the bounded
+P0-P4 and M0-M5 roadmap, and the current C0 through C3-R2 evidence
+progression. Planned, verified, safe, and rejected paths are visually
+separated; no selective product path is shown as admitted and no roadmap arrow
+authorizes the next stage.
+
+Article 31 now requires every task to declare `diagram impact`. Architecture,
+data flow, ownership, capability/fallback, active-stage, or bounded-decision
+changes update the map in the same commit; unrelated tasks record `none`
+without diagram churn. `AGENTS.md`, `README_FIRST.md`, `ARCHITECTURE.md`, and
+the execution context link the map into the required reading path. Diagram
+impact for this change is `updated`. Runtime code, model, Generation, CUDA,
+benchmark, threshold, Backend, and evidence changes are zero.
+
 ---
 
 ## Entry template
