@@ -3,16 +3,18 @@
 use hive_retina_runtime::{
     evaluate_c3_frozen_block_plan as evaluate_c3_frozen_block_plan_core,
     evaluate_compound_eye_shadow_policy as evaluate_compound_eye_shadow_policy_core,
+    evaluate_correction_plan as evaluate_correction_plan_core,
     evaluate_reuse_plan as evaluate_reuse_plan_core,
     evaluate_step_policy as evaluate_step_policy_core, C3FrozenBlockPlanDirective,
     C3FrozenBlockPlanObservation, CompoundEyeShadowDirective, CompoundEyeShadowObservation,
-    InputProfile, PixelBox, R3CandidateSummary, ReusePlanDirective, ReusePlanObservation,
-    StepDirective, StepObservation, C1_REASON_RUST_PANIC, C1_STEP_POLICY_ABI_VERSION,
-    C2_COMPOUND_EYE_SHADOW_ABI_VERSION, C2_EYE_COUNT, C2_REASON_RUST_PANIC, C2_SKETCH_VALUE_COUNT,
-    C2_STABLE_VALIDATION_LIMIT_PPM, C3_R1_BLOCK_COUNT, C3_R1_BLOCK_PLAN_ABI_VERSION,
-    C3_R1_CANDIDATE_BLOCK_COUNT, C3_R1_CANDIDATE_BLOCK_END, C3_R1_CANDIDATE_BLOCK_START,
-    C3_R1_FROZEN_SCHEDULE, C3_R1_REASON_RUST_PANIC, C3_R1_TOTAL_STEPS, C3_R2_REASON_RUST_PANIC,
-    C3_R2_REUSE_PLAN_ABI_VERSION,
+    CorrectionPlanDirective, CorrectionPlanObservation, InputProfile, PixelBox, R3CandidateSummary,
+    ReusePlanDirective, ReusePlanObservation, StepDirective, StepObservation, C1_REASON_RUST_PANIC,
+    C1_STEP_POLICY_ABI_VERSION, C2_COMPOUND_EYE_SHADOW_ABI_VERSION, C2_EYE_COUNT,
+    C2_REASON_RUST_PANIC, C2_SKETCH_VALUE_COUNT, C2_STABLE_VALIDATION_LIMIT_PPM, C3_R1_BLOCK_COUNT,
+    C3_R1_BLOCK_PLAN_ABI_VERSION, C3_R1_CANDIDATE_BLOCK_COUNT, C3_R1_CANDIDATE_BLOCK_END,
+    C3_R1_CANDIDATE_BLOCK_START, C3_R1_FROZEN_SCHEDULE, C3_R1_REASON_RUST_PANIC, C3_R1_TOTAL_STEPS,
+    C3_R2_REASON_RUST_PANIC, C3_R2_REUSE_PLAN_ABI_VERSION, C3_R3_CORRECTION_PLAN_ABI_VERSION,
+    C3_R3_REASON_RUST_PANIC,
 };
 use pyo3::buffer::PyBuffer;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
@@ -688,6 +690,156 @@ fn reuse_plan_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
     Ok(result)
 }
 
+fn set_correction_plan_directive(
+    dict: &Bound<'_, PyDict>,
+    directive: &CorrectionPlanDirective,
+) -> PyResult<()> {
+    dict.set_item("abi_version", directive.abi_version)?;
+    dict.set_item("struct_size", directive.struct_size)?;
+    dict.set_item("decision_code", directive.decision_code)?;
+    dict.set_item("reason_code", directive.reason_code)?;
+    dict.set_item("target_execution_step", directive.target_execution_step)?;
+    dict.set_item(
+        "first_source_execution_step",
+        directive.first_source_execution_step,
+    )?;
+    dict.set_item(
+        "second_source_execution_step",
+        directive.second_source_execution_step,
+    )?;
+    dict.set_item("fallback_required", directive.fallback_required)?;
+    dict.set_item("unsupported_flags", directive.unsupported_flags)?;
+    dict.set_item(
+        "decision_digest",
+        PyBytes::new(dict.py(), &directive.decision_digest),
+    )?;
+    Ok(())
+}
+
+#[pyfunction]
+#[allow(clippy::too_many_arguments)]
+fn evaluate_correction_plan<'py>(
+    py: Python<'py>,
+    abi_version: u32,
+    struct_size: u32,
+    run_digest: &Bound<'py, PyBytes>,
+    workflow_revision_digest: &Bound<'py, PyBytes>,
+    settings_digest: &Bound<'py, PyBytes>,
+    model_revision_digest: &Bound<'py, PyBytes>,
+    segment_logical_digest: &Bound<'py, PyBytes>,
+    target_execution_step: u32,
+    first_source_execution_step: u32,
+    second_source_execution_step: u32,
+    total_steps: u32,
+    cache_available: bool,
+    predictor_available: bool,
+    predictor_provenance_valid: bool,
+    corrected_similarity_admitted: bool,
+    correction_metadata_valid: bool,
+    calibrated_target: bool,
+    full_compute_seed_count: u32,
+    reseed_required: bool,
+    stable_mask: u32,
+    stable_count: u32,
+    active_mask: u32,
+    active_count: u32,
+    uncertain_mask: u32,
+    uncertain_count: u32,
+    global_invalidation: bool,
+    overlap_conflict_mask: u32,
+    prediction_valid: bool,
+    source_valid: bool,
+    finite: bool,
+    fallback_supported: bool,
+    fatal_flags: u32,
+    unsupported_flags: u32,
+) -> PyResult<Bound<'py, PyDict>> {
+    let observation = CorrectionPlanObservation {
+        abi_version,
+        struct_size,
+        run_digest: fixed_digest(run_digest, "run_digest")?,
+        workflow_revision_digest: fixed_digest(
+            workflow_revision_digest,
+            "workflow_revision_digest",
+        )?,
+        settings_digest: fixed_digest(settings_digest, "settings_digest")?,
+        model_revision_digest: fixed_digest(model_revision_digest, "model_revision_digest")?,
+        segment_logical_digest: fixed_digest(segment_logical_digest, "segment_logical_digest")?,
+        target_execution_step,
+        first_source_execution_step,
+        second_source_execution_step,
+        total_steps,
+        cache_available: u32::from(cache_available),
+        predictor_available: u32::from(predictor_available),
+        predictor_provenance_valid: u32::from(predictor_provenance_valid),
+        corrected_similarity_admitted: u32::from(corrected_similarity_admitted),
+        correction_metadata_valid: u32::from(correction_metadata_valid),
+        calibrated_target: u32::from(calibrated_target),
+        full_compute_seed_count,
+        reseed_required: u32::from(reseed_required),
+        stable_mask,
+        stable_count,
+        active_mask,
+        active_count,
+        uncertain_mask,
+        uncertain_count,
+        global_invalidation: u32::from(global_invalidation),
+        overlap_conflict_mask,
+        prediction_valid: u32::from(prediction_valid),
+        source_valid: u32::from(source_valid),
+        finite: u32::from(finite),
+        fallback_supported: u32::from(fallback_supported),
+        fatal_flags,
+        unsupported_flags,
+    };
+    let started = Instant::now();
+    let evaluated = catch_unwind(AssertUnwindSafe(|| {
+        evaluate_correction_plan_core(&observation)
+    }));
+    let rust_policy_ns = started.elapsed().as_nanos();
+    let result = PyDict::new(py);
+    match evaluated {
+        Ok(directive) => {
+            result.set_item("ffi_status", 0)?;
+            set_correction_plan_directive(&result, &directive)?;
+        }
+        Err(_) => {
+            result.set_item("ffi_status", 1)?;
+            set_correction_plan_directive(
+                &result,
+                &CorrectionPlanDirective::fail_open(
+                    C3_R3_REASON_RUST_PANIC,
+                    target_execution_step,
+                    first_source_execution_step,
+                    second_source_execution_step,
+                    [0; 32],
+                ),
+            )?;
+        }
+    }
+    result.set_item("rust_policy_ns", rust_policy_ns)?;
+    Ok(result)
+}
+
+#[pyfunction]
+fn correction_plan_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    result.set_item("abi_version", C3_R3_CORRECTION_PLAN_ABI_VERSION)?;
+    result.set_item(
+        "observation_struct_size",
+        CorrectionPlanObservation::contract_size(),
+    )?;
+    result.set_item(
+        "directive_struct_size",
+        CorrectionPlanDirective::contract_size(),
+    )?;
+    result.set_item("max_rust_calls_per_callback", 1)?;
+    result.set_item("max_rust_calls_per_block", 0)?;
+    result.set_item("tensor_bytes_per_call", 0)?;
+    result.set_item("full_compute_seeds_required", 2)?;
+    Ok(result)
+}
+
 #[pymodule]
 fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(run_candidate, module)?)?;
@@ -704,6 +856,8 @@ fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(c3_frozen_block_plan_contract, module)?)?;
     module.add_function(wrap_pyfunction!(evaluate_reuse_plan, module)?)?;
     module.add_function(wrap_pyfunction!(reuse_plan_contract, module)?)?;
+    module.add_function(wrap_pyfunction!(evaluate_correction_plan, module)?)?;
+    module.add_function(wrap_pyfunction!(correction_plan_contract, module)?)?;
     module.add("__version__", env!("CARGO_PKG_VERSION"))?;
     module.add("pyo3_version", "0.29.0")?;
     module.add("python_abi", "abi3-py312")?;
