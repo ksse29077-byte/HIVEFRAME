@@ -1,5 +1,11 @@
 # Architecture
 
+The current visual product/Core/adapter structure, safety decision flow, and
+published H3 evidence progression are maintained in the
+[`HIVEFRAME Living System Map`](docs/HIVEFRAME_SYSTEM_MAP.md). Update that map
+in the same change whenever architecture, ownership, capability/fallback,
+active stage, or a bounded decision changes.
+
 ## Current architecture hypothesis
 
 HIVEFRAME is a selective-recompute runtime for pretrained video generation and

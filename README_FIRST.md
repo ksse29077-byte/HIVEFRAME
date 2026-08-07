@@ -70,13 +70,18 @@ bypass, weaken, or silently rerun it.
 
 ## Start in this order
 
-1. Read `TASKS.md` for current work and blockers.
-2. Read `docs/WORKLOG.md` for verified history.
-3. Read `HIVEFRAME_MASTER_WORK_ORDER.md` for project boundaries.
-4. Read `ARCHITECTURE.md` and
+1. Read `AGENTS.md` for the normative Product-First Constitution.
+2. Read `docs/HIVEFRAME_EXECUTION_CONTEXT.md` for the compact current-state
+   retrieval index and known documentation drift.
+3. Read `docs/HIVEFRAME_SYSTEM_MAP.md` for the current product/Core/adapter
+   structure, execution flow, fallback, and evidence state.
+4. Read `TASKS.md` for current work and blockers.
+5. Read `docs/WORKLOG.md` for verified history.
+6. Read `HIVEFRAME_MASTER_WORK_ORDER.md` for project boundaries.
+7. Read `ARCHITECTURE.md` and
    `docs/HIVEFRAME_COMPOUND_EYE_RUNTIME_ADDENDUM.md`.
-5. For M0 work, read `docs/M0_BASELINE.md`.
-6. For compound-eye experiments, read:
+8. For M0 work, read `docs/M0_BASELINE.md`.
+9. For compound-eye experiments, read:
    - `ROADMAP.md`
    - `docs/ROADMAP_EXECUTION_RULES.md`
    - `docs/COMPOUND_EYE_HYPOTHESIS.md`
@@ -86,10 +91,11 @@ bypass, weaken, or silently rerun it.
 
 ## Immediate next action
 
-Complete **P0-LR — Local-model-ready Product Vertical Slice**: one local screen
-for a bounded H3-shaped request, job state, saved result, user feedback, and an
-explicit `artifact_pending` Local H3 state. Do not download or load a model.
-P1-L begins only after an official source/revision, model card, execution docs,
-size/location report, and download approval exist. API integration is optional,
-not a mandatory next stage. Do not start M1-B1/B2, modify Wan hooks, or claim
-speedup from model-free evidence as part of P0-LR.
+No next implementation stage is automatically authorized. P0 Local H3
+implementation, verification, and `main` integration are complete; external
+end-user release is not claimed. The latest Core evidence on `main` is C3-R2 decision
+`C3_R2_RESIDUAL_SIMILARITY_TOO_LOW`. P1 one-click Local H3, M1-B1/B2, and
+C3-R3 Compact Residual Correction / Prediction each require a separate
+explicit approval. See `docs/HIVEFRAME_EXECUTION_CONTEXT.md` before selecting
+work; do not lower C3-R2 thresholds or claim a product speedup from the current
+evidence.

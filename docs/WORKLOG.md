@@ -1437,6 +1437,60 @@ model download counts zero. Private media, prompt, raw residuals, detailed
 logs, and paths remain outside Git. See the detailed
 [C3-R2 worklog](worklogs/2026-08-07-c3-r2-segment-residual-reuse.md).
 
+## 2026-08-07 — Persistent execution-context retrieval index
+
+Added `docs/HIVEFRAME_EXECUTION_CONTEXT.md` as a non-normative retrieval index
+for future HIVEFRAME tasks. It links rather than duplicates the Product-First
+Constitution, official roadmap, execution rules, task ledger, worklog, and
+evidence. The index records the verified `main` snapshot at C3-R2 merge commit
+`90ee5e7b6530afd8da286040c40d167c1ade017d`, separates the product launch and
+selective-recompute evidence tracks, preserves Core/H3-adapter ownership, and
+states that no next stage is automatically authorized.
+
+`AGENTS.md` and `README_FIRST.md` now require reading the index near the start
+of every task. `README_FIRST.md` no longer presents completed P0-LR work as the
+immediate action. Known older status drift is recorded rather than silently
+rewriting historical evidence. This was a documentation-only context change:
+model load, Generation, CUDA, benchmark, threshold change, source change, and
+remote publication counts are zero.
+
+## 2026-08-07 — Quality-First and model-replaceable constitution amendment
+
+The existing Product-First Constitution remains intact. Article 13's former
+speed/VRAM-only integration wording was strengthened so product acceleration
+requires quality and safety Gates, actual backend-work reduction, and a
+market-meaningful accepted-result cost improvement. New Articles 18 through 30
+make Quality >= Standard, `QUALITY FAILURE OVERRIDES SPEEDUP`, mechanism versus
+product evidence, the 1.5x/2.0x long-term product targets, actual backend-work
+evidence, Model-Replaceable Core ownership, adapter isolation, conservative
+UNCERTAIN handling, permanent Full Compute fallback, immutable evidence, and
+no automatic research expansion constitutional rules.
+
+The execution context now summarizes those rules without copying the full
+constitution. P0 wording was corrected from a release implication to
+implementation, verification, and `main` integration complete; no external
+end-user release is claimed. This constitution-only change ran no model,
+Generation, CUDA, benchmark, threshold change, runtime code, or Python/Rust
+test suite.
+
+## 2026-08-07 — Living HIVEFRAME system map
+
+Added `docs/HIVEFRAME_SYSTEM_MAP.md` with Mermaid diagrams for the verified
+Local H3 product path, Model-Replaceable Core versus H3 adapter ownership,
+Quality-First selective decision flow, Full Compute fallback, the bounded
+P0-P4 and M0-M5 roadmap, and the current C0 through C3-R2 evidence
+progression. Planned, verified, safe, and rejected paths are visually
+separated; no selective product path is shown as admitted and no roadmap arrow
+authorizes the next stage.
+
+Article 31 now requires every task to declare `diagram impact`. Architecture,
+data flow, ownership, capability/fallback, active-stage, or bounded-decision
+changes update the map in the same commit; unrelated tasks record `none`
+without diagram churn. `AGENTS.md`, `README_FIRST.md`, `ARCHITECTURE.md`, and
+the execution context link the map into the required reading path. Diagram
+impact for this change is `updated`. Runtime code, model, Generation, CUDA,
+benchmark, threshold, Backend, and evidence changes are zero.
+
 ---
 
 ## Entry template
