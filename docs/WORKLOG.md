@@ -1525,6 +1525,43 @@ bounded rejected mechanism and removes the former not-started marker. Private
 prompt, media, receipts, logs, tensors, and paths remain outside Git. See the
 detailed [C3-R3 worklog](worklogs/2026-08-07-c3-r3-compact-residual-correction.md).
 
+## 2026-08-07 — C3-R4 Two-Residual Directional Prediction
+
+Issue #72, branch `accel/c3-r4-h3-two-residual-directional-prediction`, and
+Draft PR #73 isolate the final bounded residual-predictor revision. Commit
+`6ff0726...` froze the two-actual-residual direction formula, raw baseline,
+eight non-zero alpha values, deterministic single-global-alpha selection,
+six candidates, spacing, minimum target count, unchanged 0.99 cosine and 0.20
+normalized-L2 thresholds, raw non-regression, memory ownership, and terminal
+family rule before runtime.
+
+Exact sufficient-statistic metrics matched direct vector calculations in
+focused tests. The existing tensor-free C3-R3 Rust ABI was reused without
+change; all H3 tensor, block, CUDA, and cache lifecycle details remained in
+the adapter. Source and workflow hashes matched prior evidence. One admitted
+fresh-process Full Compute CONTROL completed with retry/OOM/CUDA-error counts
+zero, 1,000 original calls, 20 residual captures, zero replay, and a 124/124
+H.264 result with audio. Tensor bytes to Rust, full-tensor host-copy bytes,
+full-sized FP32 materializations, and per-block Rust calls were zero.
+
+All 48 non-zero target/alpha diagnostics were finite, but none passed both
+the fixed thresholds and raw non-regression. The frozen tie-break selected
+diagnostic alpha `-0.125`; every alpha had zero spaced admitted targets, so
+the calibrated list was empty. SELECTIVE and third Generation counts are
+zero. Paired quality, replay, compute reduction, runtime ratios, and visual
+equivalence are uncollected rather than recorded as zero.
+
+The decision is `C3_R4_DIRECTIONAL_SIMILARITY_TOO_LOW`, with family
+disposition `RESIDUAL_PREDICTOR_FAMILY_FALLBACK_ONLY`. No C3-R5, threshold
+relaxation, alpha expansion, predictor chaining, or automatic next research
+stage is authorized. Speedup claim, quality guarantee, product promotion, and
+product acceleration readiness remain zero or false; Full Compute remains the
+safe path. Cross-run raw metric values were not bitwise identical to prior
+C3-R2/R3 evidence despite matching metric/source/workflow contracts; the cause
+is not attributed and no prior evidence was rewritten. Diagram impact is
+`none`. See the detailed
+[C3-R4 worklog](worklogs/2026-08-07-c3-r4-two-residual-directional-prediction.md).
+
 ---
 
 ## Entry template

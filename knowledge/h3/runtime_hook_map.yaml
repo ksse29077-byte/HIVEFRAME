@@ -357,3 +357,29 @@ c3_r3_compact_correction_follow_up:
   quality_equivalence: not_proven
   product_promotion: false
   claim_boundary: "The H3 adapter built bounded channel-affine predictors during one Full Compute CONTROL, but zero frozen candidates passed the unchanged corrected-similarity and raw-non-regression Gates. SELECTIVE was not run."
+
+c3_r4_directional_prediction_follow_up:
+  state: verified_once
+  decision: C3_R4_DIRECTIONAL_SIMILARITY_TOO_LOW
+  family_disposition: RESIDUAL_PREDICTOR_FAMILY_FALLBACK_ONLY
+  mechanism: TWO_RESIDUAL_LINEAR_DIRECTION_PREDICTION_V1
+  hook_id: h3.transformer_block
+  candidate_block_range: [12, 48]
+  control_generation_count: 1
+  selective_generation_count: 0
+  original_block_calls_control: 1000
+  residual_capture_count: 20
+  actual_full_compute_residual_history_count_max: 2
+  selected_global_alpha: -0.125
+  calibrated_targets: []
+  directional_replay_count: 0
+  persistent_direction_count_max: 0
+  persistent_predicted_residual_count_max: 0
+  per_block_cache_count: 0
+  tensor_bytes_to_rust: 0
+  full_tensor_host_copy_count: 0
+  full_compute_fallback_verified: true
+  speedup_claim: false
+  quality_equivalence: not_proven
+  product_promotion: false
+  claim_boundary: "The H3 adapter evaluated one fixed directional alpha grid using exact bounded scalar diagnostics during Full Compute CONTROL. Zero targets passed the unchanged admission Gate, so SELECTIVE was not run and the residual-predictor family remains fallback-only."
