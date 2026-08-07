@@ -256,3 +256,29 @@ c3_r1_frozen_replay_follow_up:
     reason: "No profiler run was authorized; runner and sampler wall spans are not GPU-kernel duration."
   claim_boundary: "The paired wall spans are one-run evidence only. Fixed opportunity, performance, and quality gates prevent a speedup or product claim."
   promoted: false
+
+c3_r2_segment_residual_follow_up:
+  state: verified_once
+  decision: C3_R2_RESIDUAL_SIMILARITY_TOO_LOW
+  control_generation_count: 1
+  selective_generation_count: 0
+  retry_count: 0
+  control:
+    sampler_seconds: 488.4596511000127
+    submit_to_terminal_seconds: 589.1816916000098
+    runner_total_seconds: 606.1648260999937
+    original_block_calls: 1000
+    residual_capture_count: 20
+    residual_replay_count: 0
+  calibrated_targets: []
+  rust_boundary_p95_seconds: 0.0000116
+  exact_gpu_kernel_time:
+    value: null
+    support_status: not_collected
+    reason: "No profiler run was authorized; runner and sampler wall spans are not GPU-kernel duration."
+  quality_metrics:
+    value: null
+    support_status: not_collected
+    reason: "SELECTIVE was prohibited because fewer than two targets passed the frozen residual-similarity Gate."
+  claim_boundary: "CONTROL timing includes the residual machinery. No paired SELECTIVE timing, compute-reduction, quality, or speedup evidence exists."
+  promoted: false

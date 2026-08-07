@@ -1397,6 +1397,46 @@ omission once but does not admit a dynamic product policy, quality equivalence,
 speedup, or product promotion. See the detailed
 [C3-R1 worklog](worklogs/2026-08-07-c3-r1-frozen-block-bypass.md).
 
+## 2026-08-07 — C3-R2 Quality-Preserving Segment Residual Replay
+
+Issue #67, branch `accel/c3-r2-h3-segment-residual-reuse`, and Draft PR #68
+isolate a transformation-preserving alternative to the rejected C3-R1
+identity bypass. Commit `0ec5945...` froze the generic metadata-only reuse
+contract, H3 adapter, blocks 12..48, age-one Full Compute cache, six candidate
+steps, 0.99 cosine and 0.20 normalized-L2 thresholds, maximum-safe selection,
+quality Gate, cache ownership, and focused tests before runtime. The installed
+H3 source hash remained identical to C3-R1; no installed source, original
+workflow, C1/C2/C3-R1 ABI, or prior evidence was changed.
+
+Exactly one fresh-process CONTROL generation ran under the unchanged fixed
+Local H3 profile. It completed with retry/OOM/CUDA-error count zero and
+produced an H.264 output decoding 124/124 frames with native audio. CONTROL
+observed 1,000 original block calls, 20 residual captures, zero replay calls,
+one persistent BF16 residual at most, one transient snapshot at most, zero
+per-block caches, zero tensor bytes to Rust, and zero full-tensor host copies.
+One residual occupied 165,838,848 bytes and the bounded two-buffer maximum was
+331,677,696 bytes. Peak ComfyUI system-sampled VRAM was 12,459,802,548 bytes
+on a 12,884,377,600-byte device, so the successful run had only a narrow
+one-run headroom and does not establish a general memory guarantee.
+
+All six CONTROL similarity diagnostics were finite, but none passed both
+frozen thresholds. Steps 16 and 17 passed L2 but missed cosine; the other four
+missed both or the L2 ceiling. The calibrated target list was frozen empty.
+Because Run B required at least two safe targets, SELECTIVE was not executed
+and the final decision is `C3_R2_RESIDUAL_SIMILARITY_TOO_LOW`. Paired quality,
+actual replay, omitted block calls, sampler/E2E ratios, and visual equivalence
+are uncollected, not zero. The single CONTROL sampler, submit-to-terminal, and
+runner spans were 488.459651, 589.181692, and 606.164826 seconds; exact GPU
+kernel duration was not collected because no profiler run was authorized.
+
+This result verifies residual capture, provenance, bounded cache ownership,
+and fail-open planning once, but it does not verify residual replay, quality
+preservation, actual compute reduction, speedup, or product promotion. Total
+Generation count was one, additional Generation count zero, external API and
+model download counts zero. Private media, prompt, raw residuals, detailed
+logs, and paths remain outside Git. See the detailed
+[C3-R2 worklog](worklogs/2026-08-07-c3-r2-segment-residual-reuse.md).
+
 ---
 
 ## Entry template
