@@ -22,7 +22,6 @@ from .c0_h3_phase_probe import (
     _safe_run_root,
     measured,
     sanitize_public,
-    unsupported,
 )
 from .c3_r2_h3_residual_probe import APPROVED_WORKFLOW_SHA256
 from .c4_s1_h3_ff_token_probe import compare_videos, _visual_review_package
@@ -418,9 +417,30 @@ def _run_generation(
             "result_collection_seconds": measured(collection_seconds, "seconds", "runner monotonic span", scope="terminal event to decoded local result"),
             "shutdown_seconds": measured(shutdown_seconds, "seconds", "runner monotonic span", scope="owned runtime stop"),
             "runner_total_seconds": measured(runner_total, "seconds", "runner monotonic span", scope="runner entry through runtime stop"),
-            "peak_vram": unsupported("The one-second ResourceSampler was disabled for C4-S1-R1.", "not collected", scope="process/system GPU memory"),
-            "peak_rss": unsupported("The one-second ResourceSampler was disabled for C4-S1-R1.", "not collected", scope="process tree host memory"),
-            "gpu_kernel_seconds": unsupported("PyTorch profiler, CUPTI, and Nsight were disabled for C4-S1-R1.", "not collected", scope="GPU kernel-duration sum"),
+            "peak_vram": {
+                "value": None,
+                "unit": "bytes",
+                "scope": "process/system GPU memory",
+                "support_status": "not_collected",
+                "unsupported_reason": "The one-second ResourceSampler was disabled for C4-S1-R1.",
+                "measurement_method": "not collected",
+            },
+            "peak_rss": {
+                "value": None,
+                "unit": "bytes",
+                "scope": "process tree host memory",
+                "support_status": "not_collected",
+                "unsupported_reason": "The one-second ResourceSampler was disabled for C4-S1-R1.",
+                "measurement_method": "not collected",
+            },
+            "gpu_kernel_seconds": {
+                "value": None,
+                "unit": "seconds",
+                "scope": "GPU kernel-duration sum",
+                "support_status": "not_collected",
+                "unsupported_reason": "PyTorch profiler, CUPTI, and Nsight were disabled for C4-S1-R1.",
+                "measurement_method": "not collected",
+            },
         }
         if timeline is not None:
             receipt["node_timeline"] = timeline.node_timeline()

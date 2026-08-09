@@ -1,0 +1,248 @@
+schema_version: "0.1.0"
+knowledge_id: "h3-c4-s1-r1-ff-minimal-telemetry-2026-08-09"
+state: verified_once
+decision: C4_S1_R1_MINIMAL_PATH_OVERHEAD_TOO_HIGH
+constitution_disposition: FALLBACK_ONLY
+
+source:
+  issue: 78
+  draft_pr: 79
+  base_main_commit: "fd6ea5b19c5b770afb7c47f162ab6d382c4ebd6b"
+  premeasurement_commit: "28c21dc0f4d0887aa72b250f03f090ed688cb122"
+  branch: "accel/c4-s1-r1-h3-ff-minimal-telemetry"
+  installed_source_logical_path: "<comfyui-root>/comfy/ldm/minimax/model.py"
+  installed_source_sha256: "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024"
+  workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+  source_modified: false
+  workflow_modified: false
+
+fixed_profile:
+  width: 864
+  height: 480
+  frame_count: 124
+  fps: 24
+  steps: 20
+  scheduler: simple
+  sampler: res_multistep
+  denoise: 1.0
+  seed: 101
+  native_audio: true
+  sage_nodes: 0
+
+revision_contract:
+  c4_s1_revise_once_consumed: true
+  product_question_changed: false
+  selector_id: FF_POSITIONWISE_LOW_IMPACT_TOKEN_SKIP_V1
+  selector_changed: false
+  policy_thresholds_changed: false
+  anchors: [0, 1, 18, 19]
+  minimum_block_video_skip_ratio: 0.10
+  attention_execution: ALWAYS_FULL_COMPUTE
+  eligible_rows: target_video_segment_only
+  non_video_rows: ALWAYS_FULL_COMPUTE
+  history_source: previous_actual_full_compute_only
+  consecutive_skip: prohibited_without_intervening_actual_full_compute
+  full_compute_fallback: preserved
+  exact_selector_disposition: FALLBACK_ONLY
+
+minimal_telemetry:
+  removed:
+    per_block_cuda_event_pairs: 0
+    explicit_hot_path_cuda_synchronizations: 0
+    control_hot_path_item_reads: 0
+    hot_path_host_tensor_transfers: 0
+    impact_histogram_bins: 0
+    resource_sampler_enabled: false
+  retained_selector_required_work:
+    - current_h_norm
+    - current_gate_norm
+    - previous_actual_full_compute_scalar_history
+    - P0_P1_P2_candidate_masks
+    - actual_full_compute_history_refresh
+    - source_layout_validation
+    - invalidation
+    - full_compute_fallback
+  detailed_timing:
+    full_ff_group: not_collected
+    actual_mlp: not_collected
+    gather_mask: not_collected
+    scatter_residual: not_collected
+  impact_aggregation:
+    method: fixed_shape_gpu_scalar_reductions_host_read_at_finalize_only
+    fields:
+      - candidate_count
+      - impact_sum
+      - impact_max
+      - impact_over_0_010_count
+      - nonfinite_count
+  p99:
+    value: null
+    support_status: derived_from_stricter_tail_gate
+    gate: "impact_over_0_010_rate <= 0.005"
+    interpretation: "At least 99.5% of finite candidate impacts are <=0.010, which conservatively implies nearest-rank p99 <=0.010."
+
+validation:
+  python_compile: passed
+  focused_tests:
+    passed: 27
+    skipped: 1
+    skip_reason: "installed-source test requires an explicit ComfyUI-root environment variable; source digest was independently verified before runtime"
+  config_parse: passed
+  git_diff_check: passed
+  rust_build_count: 0
+
+control:
+  generation_count: 1
+  retry_count: 0
+  mode: CONTROL_FF_TOKEN_MINIMAL
+  model_forward_count: 20
+  block_call_count: 1000
+  mlp_call_count: 1000
+  full_mlp_row_count: 15424000
+  actual_mlp_row_count: 15424000
+  omitted_video_row_count: 0
+  attention_omission_count: 0
+  non_video_omission_count: 0
+  fail_open_count: 0
+  mapping_error_count: 0
+  wrapper_failure_count: 0
+  instrumentation_gate_passed: true
+  sampler_wall_seconds: 520.4888703000033
+  submit_to_terminal_seconds: 626.2422419000068
+  runner_total_seconds: 645.1564394999878
+  c4_s0_comparison:
+    reference_sampler_seconds: 488.84732
+    delta_seconds: 31.641550300003303
+    relative_delta: 0.06472685643444522
+    allowed_relative_delta: 0.05
+    passed: false
+  previous_c4_s1_comparison:
+    reference_sampler_seconds: 519.822272
+    delta_seconds: 0.6665983000033293
+    relative_delta: 0.0012823580979680095
+    purpose: instrumentation_refinement_diagnostic_not_speedup
+
+shadow_observations:
+  status: diagnostic_only_official_admission_not_evaluated
+  blocked_by: control_comparability_gate
+  policy_rows:
+    P0:
+      predicted_skip_rows: 8
+      video_token_skip_ratio: 0.0000005338672005338672
+      all_token_mlp_row_reduction: 0.0000005186721991701245
+      affected_step_count: 5
+      affected_block_count: 1
+      actual_impact:
+        count: 8
+        impact_sum: 0.018406567396596074
+        mean: 0.0023008209245745093
+        p99: null
+        p99_gate_pass: true
+        max: 0.0027037346735596657
+        over_0_010_rate: 0.0
+        nonfinite_count: 0
+    P1:
+      predicted_skip_rows: 78
+      video_token_skip_ratio: 0.0000052052052052052055
+      all_token_mlp_row_reduction: 0.000005057053941908714
+      affected_step_count: 15
+      affected_block_count: 2
+      actual_impact:
+        count: 78
+        impact_sum: 0.3303835114929825
+        mean: 0.004235686044781827
+        p99: null
+        p99_gate_pass: true
+        max: 0.007571022491902113
+        over_0_010_rate: 0.0
+        nonfinite_count: 0
+    P2:
+      predicted_skip_rows: 1000
+      video_token_skip_ratio: 0.0000667334000667334
+      all_token_mlp_row_reduction: 0.00006483402489626556
+      affected_step_count: 16
+      affected_block_count: 9
+      actual_impact:
+        count: 1000
+        impact_sum: 8.143575369846076
+        mean: 0.008143575369846076
+        p99: null
+        p99_gate_pass: false
+        max: 0.016236428171396255
+        over_0_010_count: 74
+        over_0_010_rate: 0.074
+        nonfinite_count: 0
+
+selective:
+  generation_count: 0
+  retry_count: 0
+  selected_policy: null
+  reason: C4_S1_R1_MINIMAL_PATH_OVERHEAD_TOO_HIGH
+  actual_mlp_rows: null
+  omitted_video_rows: null
+  actual_backend_work_reduction: null
+  runtime: not_collected
+  quality: not_collected
+
+memory:
+  persistent_scalar_metadata_bytes: 11238750
+  persistent_scalar_metadata_budget_bytes: 67108864
+  budget_passed: true
+  full_tensor_cache_count: 0
+  host_full_tensor_copy_bytes: 0
+  tensor_bytes_to_rust: 0
+  peak_vram:
+    value: null
+    support_status: not_collected
+    reason: resource_sampler_disabled
+  peak_rss:
+    value: null
+    support_status: not_collected
+    reason: resource_sampler_disabled
+
+output:
+  logical_artifact_id: C4_S1_R1_CONTROL_FF_TOKEN_MINIMAL_VIDEO
+  codec: h264
+  width: 864
+  height: 480
+  decoded_frame_count: 124
+  fps: 24.0
+  audio_stream_count: 1
+  decode_succeeded: true
+  corrupted_frame_count: 0
+  black_frame_count: 0
+  size_bytes: 263031
+  sha256: "1ebc1eaeb6a597d5996d327c80b759207d16dc126611af19713d14dadc50d490"
+
+safety:
+  oom_count: 0
+  retry_count: 0
+  fatal_cuda_error_count: 0
+  black_frame_count: 0
+  corrupt_frame_count: 0
+  output_valid: true
+  full_compute_fallback: preserved
+
+claims:
+  actual_backend_work_reduction: 0
+  paired_runtime_observation: not_collected
+  quality_comparison: not_collected
+  visual_equivalence: not_proven
+  human_visual_review: not_started
+  speedup_claim: 0
+  quality_promotion: 0
+  product_promotion: 0
+  feed_forward_cost_surface_disposition: valid_separate_evidence
+  attention_surface_disposition: unchanged_full_compute
+  cumulative_product_goal: "Quality >= Standard Full Compute and accepted-result end-to-end >= 2.0x"
+  isolated_two_x_required: false
+  next_stage_started: false
+  training_eligibility: evaluation_only
+
+privacy:
+  prompt_in_public_repository: false
+  media_in_public_repository: false
+  private_receipt_in_public_repository: false
+  local_absolute_path_in_public_repository: false
+  model_binary_in_public_repository: false
+  credential_in_public_repository: false

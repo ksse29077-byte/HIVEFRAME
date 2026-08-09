@@ -1660,6 +1660,43 @@ instrumentation refinement requires separate approval. Diagram impact is
 `updated`. See the detailed
 [C4-S1 worklog](worklogs/2026-08-08-c4-s1-h3-ff-token-selective.md).
 
+## 2026-08-09 — C4-S1-R1 minimal telemetry and selector overhead truth
+
+Issue #78, branch `accel/c4-s1-r1-h3-ff-minimal-telemetry`, and Draft PR #79
+consume the single C4-S1 `REVISE_ONCE` without changing the product question,
+selector, P0/P1/P2 thresholds, anchors, history, 10% guard, Quality Gate,
+attention Full Compute rule, or fallback. Commit `28c21dc...` fixed the
+minimal path and Gates before runtime.
+
+The adapter removed per-block CUDA events, explicit hot-path synchronization,
+the impact histogram, CONTROL host scalar reads, host tensor transfers, and
+one-second resource polling. It retained every selector-required scalar and
+history update. Numeric p99 is `null`; the unchanged <=0.5% tail-rate Gate
+provides a conservative decision-equivalent p99 pass/fail. Twenty-seven
+focused C4-S1/R1 tests passed and one optional installed-source test skipped;
+compile, config, and diff checks passed. Rust change and build counts were zero.
+
+Exactly one CONTROL Generation completed with retry zero. It executed 20 model
+forwards, 1,000 full MLP calls, and 15,424,000 full/actual rows. The valid H.264
+output decoded 124/124 frames at 864x480 and 24 FPS with one audio stream.
+Sampler, submit-to-terminal, and runner spans were 520.488870, 626.242242, and
+645.156439 seconds. The sampler was +31.641550 seconds or +6.472686% versus
+the immutable 488.847320-second comparator, outside the fixed +/-5% band.
+
+P0/P1/P2 again produced 8/78/1,000 candidate rows, but they remain diagnostic:
+official admission was blocked by CONTROL comparability. SELECTIVE Generation,
+retry, actual omission, and actual backend work reduction were zero; paired
+quality/runtime and visual equivalence were not collected/proven. Peak VRAM
+and RSS were not sampled and remain null, not zero-filled. OOM, fatal CUDA,
+black, and corrupt counts were zero.
+
+The decision is `C4_S1_R1_MINIMAL_PATH_OVERHEAD_TOO_HIGH`; the exact selector
+is `FALLBACK_ONLY`, and no automatic R2 or next compute lever is authorized.
+The C4-S0 feed-forward and attention cost surfaces remain separate evidence.
+Speedup claim, quality promotion, and product promotion are zero. Diagram
+impact is `updated`. See the detailed
+[C4-S1-R1 worklog](worklogs/2026-08-09-c4-s1-r1-h3-ff-minimal-telemetry.md).
+
 ---
 
 ## Entry template
