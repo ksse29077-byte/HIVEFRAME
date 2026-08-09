@@ -151,6 +151,32 @@ pub const C3_R3_REASON_FALLBACK_UNSUPPORTED: u32 = 19;
 pub const C3_R3_REASON_UNSUPPORTED_METADATA: u32 = 20;
 pub const C3_R3_REASON_RUST_PANIC: u32 = 21;
 
+pub const A1_ATTENTION_REGION_PLAN_ABI_VERSION: u32 = 1;
+pub const A1_REGION_COUNT: usize = 4;
+pub const A1_EYE_COUNT: usize = 5;
+pub const A1_REGION_MASK: u32 = 0x0f;
+pub const A1_DECISION_FULL_COMPUTE: u32 = 0;
+pub const A1_DECISION_REGIONAL_ACTIVE_QUERY: u32 = 1;
+pub const A1_DECISION_ESCALATE_FULL_COMPUTE: u32 = 2;
+pub const A1_REASON_NONE: u32 = 0;
+pub const A1_REASON_ABI_MISMATCH: u32 = 1;
+pub const A1_REASON_STRUCT_SIZE_MISMATCH: u32 = 2;
+pub const A1_REASON_STEP_RANGE_INVALID: u32 = 3;
+pub const A1_REASON_DIGEST_MISSING: u32 = 4;
+pub const A1_REASON_EYE_METADATA_INVALID: u32 = 5;
+pub const A1_REASON_SOURCE_INVALID: u32 = 6;
+pub const A1_REASON_PREDICTION_INVALID: u32 = 7;
+pub const A1_REASON_GLOBAL_INVALIDATION: u32 = 8;
+pub const A1_REASON_OVERLAP_CONFLICT: u32 = 9;
+pub const A1_REASON_ANCHOR_STEP: u32 = 10;
+pub const A1_REASON_REFRESH_REQUIRED: u32 = 11;
+pub const A1_REASON_NO_STABLE_REGION: u32 = 12;
+pub const A1_REASON_SELECTIVE_UNSUPPORTED: u32 = 13;
+pub const A1_REASON_FALLBACK_UNSUPPORTED: u32 = 14;
+pub const A1_REASON_FATAL_FLAG: u32 = 15;
+pub const A1_REASON_UNSUPPORTED_METADATA: u32 = 16;
+pub const A1_REASON_RUST_PANIC: u32 = 17;
+
 /// Fixed-size, metadata-only callback observation for the C1 full-compute gate.
 ///
 /// No tensor, prompt, filesystem path, media payload, CUDA pointer, model
@@ -663,6 +689,299 @@ pub fn evaluate_compound_eye_shadow_policy(
         skipped_latent_count: 0,
         reused_cache_count: 0,
         partial_compute_count: 0,
+    }
+}
+
+/// Fixed-size A1 regional-attention observation.  Only C2-derived scalar
+/// metadata and immutable digests cross the Python/Rust boundary.  Token
+/// indices, tensors, CUDA pointers, prompts, and paths are intentionally not
+/// representable.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct AttentionRegionPlanObservation {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub run_digest: [u8; 32],
+    pub workflow_revision_digest: [u8; 32],
+    pub settings_digest: [u8; 32],
+    pub model_revision_digest: [u8; 32],
+    pub observed_step: u32,
+    pub predicted_execution_step: u32,
+    pub total_steps: u32,
+    pub topology_id: u32,
+    pub eye_state: [u32; A1_EYE_COUNT],
+    pub eye_confidence_ppm: [u32; A1_EYE_COUNT],
+    pub eye_change_ppm: [u32; A1_EYE_COUNT],
+    pub stable_mask: u32,
+    pub stable_count: u32,
+    pub active_mask: u32,
+    pub active_count: u32,
+    pub uncertain_mask: u32,
+    pub uncertain_count: u32,
+    pub global_invalidation: u32,
+    pub overlap_conflict_mask: u32,
+    pub anchor_step: u32,
+    pub cooldown_mask: u32,
+    pub refresh_required_mask: u32,
+    pub source_valid: u32,
+    pub prediction_valid: u32,
+    pub selective_supported: u32,
+    pub fallback_supported: u32,
+    pub fatal_flags: u32,
+    pub unsupported_flags: u32,
+}
+
+impl AttentionRegionPlanObservation {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct AttentionRegionPlanDirective {
+    pub abi_version: u32,
+    pub struct_size: u32,
+    pub decision_code: u32,
+    pub reason_code: u32,
+    pub target_step: u32,
+    pub stable_region_mask: u32,
+    pub full_compute_region_mask: u32,
+    pub refresh_region_mask: u32,
+    pub fallback_required: u32,
+    pub unsupported_flags: u32,
+    pub shared_visual_state_digest: [u8; 32],
+    pub compute_plan_digest: [u8; 32],
+    pub decision_digest: [u8; 32],
+}
+
+impl AttentionRegionPlanDirective {
+    pub fn contract_size() -> u32 {
+        std::mem::size_of::<Self>() as u32
+    }
+
+    pub fn fail_open(reason_code: u32, target_step: u32) -> Self {
+        let shared = a1_digest_parts(&[b"a1-rust-panic"]);
+        let plan = a1_digest_parts(&[&shared, &A1_REGION_MASK.to_le_bytes()]);
+        let decision = a1_digest_parts(&[
+            &plan,
+            &A1_DECISION_ESCALATE_FULL_COMPUTE.to_le_bytes(),
+            &reason_code.to_le_bytes(),
+        ]);
+        Self {
+            abi_version: A1_ATTENTION_REGION_PLAN_ABI_VERSION,
+            struct_size: Self::contract_size(),
+            decision_code: A1_DECISION_ESCALATE_FULL_COMPUTE,
+            reason_code,
+            target_step,
+            stable_region_mask: 0,
+            full_compute_region_mask: A1_REGION_MASK,
+            refresh_region_mask: 0,
+            fallback_required: 1,
+            unsupported_flags: 0,
+            shared_visual_state_digest: shared,
+            compute_plan_digest: plan,
+            decision_digest: decision,
+        }
+    }
+}
+
+fn a1_digest_parts(parts: &[&[u8]]) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    for part in parts {
+        hasher.update(part);
+    }
+    hasher.finalize().into()
+}
+
+fn a1_observation_digest(observation: &AttentionRegionPlanObservation) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(observation.abi_version.to_le_bytes());
+    hasher.update(observation.struct_size.to_le_bytes());
+    hasher.update(observation.run_digest);
+    hasher.update(observation.workflow_revision_digest);
+    hasher.update(observation.settings_digest);
+    hasher.update(observation.model_revision_digest);
+    for value in [
+        observation.observed_step,
+        observation.predicted_execution_step,
+        observation.total_steps,
+        observation.topology_id,
+    ] {
+        hasher.update(value.to_le_bytes());
+    }
+    for values in [
+        observation.eye_state,
+        observation.eye_confidence_ppm,
+        observation.eye_change_ppm,
+    ] {
+        for value in values {
+            hasher.update(value.to_le_bytes());
+        }
+    }
+    for value in [
+        observation.stable_mask,
+        observation.stable_count,
+        observation.active_mask,
+        observation.active_count,
+        observation.uncertain_mask,
+        observation.uncertain_count,
+        observation.global_invalidation,
+        observation.overlap_conflict_mask,
+        observation.anchor_step,
+        observation.cooldown_mask,
+        observation.refresh_required_mask,
+        observation.source_valid,
+        observation.prediction_valid,
+        observation.selective_supported,
+        observation.fallback_supported,
+        observation.fatal_flags,
+        observation.unsupported_flags,
+    ] {
+        hasher.update(value.to_le_bytes());
+    }
+    hasher.finalize().into()
+}
+
+fn a1_metadata_valid(observation: &AttentionRegionPlanObservation) -> bool {
+    let masks_in_range = [
+        observation.stable_mask,
+        observation.active_mask,
+        observation.uncertain_mask,
+        observation.overlap_conflict_mask,
+        observation.cooldown_mask,
+        observation.refresh_required_mask,
+    ]
+    .into_iter()
+    .all(|mask| mask & !A1_REGION_MASK == 0);
+    let masks_disjoint = observation.stable_mask & observation.active_mask == 0
+        && observation.stable_mask & observation.uncertain_mask == 0
+        && observation.active_mask & observation.uncertain_mask == 0;
+    let counts_match = observation.stable_count == observation.stable_mask.count_ones()
+        && observation.active_count == observation.active_mask.count_ones()
+        && observation.uncertain_count == observation.uncertain_mask.count_ones();
+    let state_values_valid = observation
+        .eye_state
+        .into_iter()
+        .all(|state| state <= C2_EYE_STATE_UNCERTAIN);
+    let confidence_valid = observation
+        .eye_confidence_ppm
+        .into_iter()
+        .all(|value| value <= 1_000_000);
+    masks_in_range && masks_disjoint && counts_match && state_values_valid && confidence_valid
+}
+
+/// Compile a C2-derived semantic region state into an A1 attention plan.
+/// Rust never maps regions to H3 token rows; that model-specific operation is
+/// owned by the adapter and must fail open independently.
+pub fn evaluate_attention_region_plan(
+    observation: &AttentionRegionPlanObservation,
+) -> AttentionRegionPlanDirective {
+    let observation_digest = a1_observation_digest(observation);
+    let structural_reason = if observation.abi_version != A1_ATTENTION_REGION_PLAN_ABI_VERSION {
+        A1_REASON_ABI_MISMATCH
+    } else if observation.struct_size != AttentionRegionPlanObservation::contract_size() {
+        A1_REASON_STRUCT_SIZE_MISMATCH
+    } else if observation.total_steps == 0
+        || observation.observed_step >= observation.total_steps
+        || observation.predicted_execution_step >= observation.total_steps
+    {
+        A1_REASON_STEP_RANGE_INVALID
+    } else if observation.run_digest == [0; 32]
+        || observation.workflow_revision_digest == [0; 32]
+        || observation.settings_digest == [0; 32]
+        || observation.model_revision_digest == [0; 32]
+    {
+        A1_REASON_DIGEST_MISSING
+    } else if !a1_metadata_valid(observation) {
+        A1_REASON_EYE_METADATA_INVALID
+    } else if observation.source_valid != 1 {
+        A1_REASON_SOURCE_INVALID
+    } else if observation.prediction_valid != 1
+        || observation.predicted_execution_step != observation.observed_step.saturating_add(2)
+    {
+        A1_REASON_PREDICTION_INVALID
+    } else if observation.selective_supported != 1 {
+        A1_REASON_SELECTIVE_UNSUPPORTED
+    } else if observation.fallback_supported != 1 {
+        A1_REASON_FALLBACK_UNSUPPORTED
+    } else if observation.fatal_flags != 0 {
+        A1_REASON_FATAL_FLAG
+    } else if observation.unsupported_flags != 0 {
+        A1_REASON_UNSUPPORTED_METADATA
+    } else {
+        A1_REASON_NONE
+    };
+
+    let unavailable = observation.active_mask
+        | observation.uncertain_mask
+        | observation.overlap_conflict_mask
+        | observation.cooldown_mask
+        | observation.refresh_required_mask;
+    let stable_region_mask = observation.stable_mask & !unavailable & A1_REGION_MASK;
+    let semantic_reason = if structural_reason != A1_REASON_NONE {
+        structural_reason
+    } else if observation.global_invalidation != 0 {
+        A1_REASON_GLOBAL_INVALIDATION
+    } else if observation.overlap_conflict_mask != 0 {
+        A1_REASON_OVERLAP_CONFLICT
+    } else if observation.anchor_step != 0 {
+        A1_REASON_ANCHOR_STEP
+    } else if observation.refresh_required_mask != 0 && stable_region_mask == 0 {
+        A1_REASON_REFRESH_REQUIRED
+    } else if stable_region_mask == 0 {
+        A1_REASON_NO_STABLE_REGION
+    } else {
+        A1_REASON_NONE
+    };
+    let structural_failure = structural_reason != A1_REASON_NONE;
+    let decision_code = if structural_failure {
+        A1_DECISION_ESCALATE_FULL_COMPUTE
+    } else if semantic_reason == A1_REASON_NONE {
+        A1_DECISION_REGIONAL_ACTIVE_QUERY
+    } else {
+        A1_DECISION_FULL_COMPUTE
+    };
+    let admitted_stable = if decision_code == A1_DECISION_REGIONAL_ACTIVE_QUERY {
+        stable_region_mask
+    } else {
+        0
+    };
+    let full_compute_region_mask = A1_REGION_MASK & !admitted_stable;
+
+    let mut eye_bytes = Vec::with_capacity(A1_EYE_COUNT * 12);
+    for index in 0..A1_EYE_COUNT {
+        eye_bytes.extend_from_slice(&observation.eye_state[index].to_le_bytes());
+        eye_bytes.extend_from_slice(&observation.eye_confidence_ppm[index].to_le_bytes());
+        eye_bytes.extend_from_slice(&observation.eye_change_ppm[index].to_le_bytes());
+    }
+    let shared_visual_state_digest = a1_digest_parts(&[&observation_digest, &eye_bytes]);
+    let compute_plan_digest = a1_digest_parts(&[
+        &shared_visual_state_digest,
+        &observation.predicted_execution_step.to_le_bytes(),
+        &admitted_stable.to_le_bytes(),
+        &full_compute_region_mask.to_le_bytes(),
+        &observation.refresh_required_mask.to_le_bytes(),
+    ]);
+    let decision_digest = a1_digest_parts(&[
+        &compute_plan_digest,
+        &decision_code.to_le_bytes(),
+        &semantic_reason.to_le_bytes(),
+    ]);
+    AttentionRegionPlanDirective {
+        abi_version: A1_ATTENTION_REGION_PLAN_ABI_VERSION,
+        struct_size: AttentionRegionPlanDirective::contract_size(),
+        decision_code,
+        reason_code: semantic_reason,
+        target_step: observation.predicted_execution_step,
+        stable_region_mask: admitted_stable,
+        full_compute_region_mask,
+        refresh_region_mask: observation.refresh_required_mask,
+        fallback_required: u32::from(structural_failure),
+        unsupported_flags: 0,
+        shared_visual_state_digest,
+        compute_plan_digest,
+        decision_digest,
     }
 }
 
@@ -2995,6 +3314,100 @@ mod tests {
         assert_eq!(directive.decision_code, C2_DECISION_ESCALATE_FULL_COMPUTE);
         assert_eq!(directive.stable_eye_count, 0);
         assert_eq!(directive.skipped_step_count, 0);
+    }
+
+    fn a1_observation() -> AttentionRegionPlanObservation {
+        AttentionRegionPlanObservation {
+            abi_version: A1_ATTENTION_REGION_PLAN_ABI_VERSION,
+            struct_size: AttentionRegionPlanObservation::contract_size(),
+            run_digest: [11; 32],
+            workflow_revision_digest: [12; 32],
+            settings_digest: [13; 32],
+            model_revision_digest: [14; 32],
+            observed_step: 3,
+            predicted_execution_step: 5,
+            total_steps: 20,
+            topology_id: C2_TOPOLOGY_OVERLAP_2X2,
+            eye_state: [
+                C2_EYE_STATE_UNCERTAIN,
+                C2_EYE_STATE_STABLE,
+                C2_EYE_STATE_ACTIVE,
+                C2_EYE_STATE_UNCERTAIN,
+                C2_EYE_STATE_STABLE,
+            ],
+            eye_confidence_ppm: [500_000, 900_000, 1_000_000, 500_000, 850_000],
+            eye_change_ppm: [40_000, 5_000, 90_000, 30_000, 7_000],
+            stable_mask: 0b1001,
+            stable_count: 2,
+            active_mask: 0b0010,
+            active_count: 1,
+            uncertain_mask: 0b0100,
+            uncertain_count: 1,
+            global_invalidation: 0,
+            overlap_conflict_mask: 0,
+            anchor_step: 0,
+            cooldown_mask: 0,
+            refresh_required_mask: 0,
+            source_valid: 1,
+            prediction_valid: 1,
+            selective_supported: 1,
+            fallback_supported: 1,
+            fatal_flags: 0,
+            unsupported_flags: 0,
+        }
+    }
+
+    #[test]
+    fn a1_region_plan_is_deterministic_and_metadata_only() {
+        let observation = a1_observation();
+        let first = evaluate_attention_region_plan(&observation);
+        let second = evaluate_attention_region_plan(&observation);
+        assert_eq!(first, second);
+        assert_eq!(first.decision_code, A1_DECISION_REGIONAL_ACTIVE_QUERY);
+        assert_eq!(first.stable_region_mask, 0b1001);
+        assert_eq!(first.full_compute_region_mask, 0b0110);
+        assert_eq!(first.fallback_required, 0);
+        assert_eq!(
+            AttentionRegionPlanObservation::contract_size() as usize,
+            std::mem::size_of::<AttentionRegionPlanObservation>()
+        );
+    }
+
+    #[test]
+    fn a1_uncertain_active_conflict_anchor_and_refresh_never_become_selective() {
+        let mut observation = a1_observation();
+        observation.overlap_conflict_mask = 0b0001;
+        let conflict = evaluate_attention_region_plan(&observation);
+        assert_eq!(conflict.decision_code, A1_DECISION_FULL_COMPUTE);
+        assert_eq!(conflict.stable_region_mask, 0);
+
+        observation.overlap_conflict_mask = 0;
+        observation.anchor_step = 1;
+        let anchor = evaluate_attention_region_plan(&observation);
+        assert_eq!(anchor.decision_code, A1_DECISION_FULL_COMPUTE);
+        assert_eq!(anchor.stable_region_mask, 0);
+
+        observation.anchor_step = 0;
+        observation.refresh_required_mask = observation.stable_mask;
+        let refresh = evaluate_attention_region_plan(&observation);
+        assert_eq!(refresh.decision_code, A1_DECISION_FULL_COMPUTE);
+        assert_eq!(refresh.full_compute_region_mask, A1_REGION_MASK);
+    }
+
+    #[test]
+    fn a1_malformed_or_late_metadata_escalates_full_compute() {
+        let mut observation = a1_observation();
+        observation.prediction_valid = 0;
+        let late = evaluate_attention_region_plan(&observation);
+        assert_eq!(late.decision_code, A1_DECISION_ESCALATE_FULL_COMPUTE);
+        assert_eq!(late.reason_code, A1_REASON_PREDICTION_INVALID);
+        assert_eq!(late.full_compute_region_mask, A1_REGION_MASK);
+
+        observation = a1_observation();
+        observation.stable_count = 3;
+        let malformed = evaluate_attention_region_plan(&observation);
+        assert_eq!(malformed.decision_code, A1_DECISION_ESCALATE_FULL_COMPUTE);
+        assert_eq!(malformed.reason_code, A1_REASON_EYE_METADATA_INVALID);
     }
 
     fn c3_r1_observation(step: u32) -> C3FrozenBlockPlanObservation {
