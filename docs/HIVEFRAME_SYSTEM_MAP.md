@@ -2,9 +2,9 @@
 
 Status: living architecture map
 
-Snapshot date: 2026-08-07
+Snapshot date: 2026-08-09
 
-Verified source `main`: `f2d79ac5492a123818d691b875075ae191fa5b88`
+Verified source `main`: `e8ba897033db6658d4114ffdf3a9060cf9a7d8a5`
 
 This document visualizes the current product path, Core/adapter ownership,
 selective-execution safety flow, and published H3 mechanism evidence. It must
@@ -47,12 +47,15 @@ flowchart TB
         WORKFLOW["Pinned logical H3 workflow"]
         LOADERS["Model / text encoder / VAE / audio loaders"]
         SAMPLER["Sampler + 20 progress callbacks"]
+        SAGE["Optional SageAttention kernel\nAVAILABLE_OPTIONAL; review pending"]
         DIT["H3 transformer blocks"]
         DECODE["Video/audio decode + H.264 encode"]
         H3HOOKS["H3-specific hook / tensor / cache adapter"]
 
         H3PRODUCT --> LOOPBACK --> WORKFLOW
         WORKFLOW --> LOADERS --> SAMPLER
+        WORKFLOW -. "optional; product default false" .-> SAGE
+        SAGE -. "external attention kernel" .-> SAMPLER
         SAMPLER <--> H3HOOKS
         DIT <--> H3HOOKS
     end
@@ -98,7 +101,7 @@ flowchart TB
     class UI,JOBS,RESULT,FEEDBACK,ROUTER,MOCK,H3PRODUCT,FULL,FALLBACK product;
     class CONTRACT,EYES,FUSION,STATE,PLAN,CAP,POLICY,AUDIT core;
     class LOOPBACK,WORKFLOW,LOADERS,SAMPLER,DIT,DECODE,H3HOOKS adapter;
-    class OPT planned;
+    class OPT,SAGE planned;
 ```
 
 The solid product path is Local UI -> explicit backend -> loopback ComfyUI ->
@@ -106,6 +109,12 @@ Full Compute H3 -> decoded/encoded video -> result and feedback. The selective
 path is not a product default. Generic Core exchanges only contracts,
 capabilities, digests, scalar/sketch metadata, and directives; H3 tensors and
 execution details remain in the adapter.
+
+SageAttention is an external optional H3 attention-kernel component. A0 reused
+the immutable F0 pair and passed a fixed automatic catastrophic-regression
+screen, but human visual review remains pending. It is therefore drawn as a
+dashed optional route, with product default false and no integrated speedup or
+quality-parity claim. The solid Standard Full Compute path is unchanged.
 
 ## 2. Quality-first selective decision flow
 
@@ -217,6 +226,8 @@ flowchart LR
     C4S1G["Instrumentation comparison failed\n+6.34%; SELECTIVE not run"]
     C4S1R1["C4-S1-R1 minimal telemetry\nFull Compute output valid"]
     C4S1R1G["Comparison still failed\n+6.47%; selector fallback-only"]
+    A0["A0 SageAttention component\nhistorical 1.207x; screen passed"]
+    A0G["KEEP_AS_OPTIONAL\nhuman review pending; default false"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -236,6 +247,8 @@ flowchart LR
     C4S1 --> C4S1G
     C4S1G -. "single approved REVISE_ONCE" .-> C4S1R1
     C4S1R1 --> C4S1R1G
+    C4A -. "separate external component review" .-> A0
+    A0 --> A0G
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
@@ -243,14 +256,15 @@ flowchart LR
     C4A --> DEFAULT
     C4S1G --> DEFAULT
     C4S1R1G --> DEFAULT
+    A0G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1 verified;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0 verified;
     class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G rejected;
-    class C4A,C4F planned;
+    class C4A,C4F,A0G planned;
     class DEFAULT safe;
 ```
 

@@ -1,0 +1,141 @@
+schema_version: a0.sage.stackable.knowledge.1
+knowledge_status: verified_once
+recorded_at: "2026-08-09"
+
+scope:
+  issue: 80
+  draft_pr: 81
+  base_main_commit: e8ba897033db6658d4114ffdf3a9060cf9a7d8a5
+  contract_commit: 91114dc5def016418df96b9de053f4b317883ec1
+  component_id: ATTENTION_KERNEL_SAGE
+  component_type: external_attention_kernel
+  external_component: true
+
+product_question: >-
+  Can the immutable F0 SageAttention result be retained as a
+  quality-screened, optional stack component while Standard Full Compute
+  remains the fallback?
+
+historical_f0_evidence:
+  immutable: true
+  decision: F0_SAGE_NO_GAIN
+  standard_run_id: f0-standard-bb480b1-001
+  sage_run_id: f0-sage-auto-bb480b1-001
+  workflow_sha256: 31ab33fdb053a7834cc866bd7aa08b887518fc656e4a796c89779c6b5e1786e6
+  standard_output_sha256: ec4ddbacaf9a9d578885c61b3514abc15dad1172566cd4ce84198f7a3bd641c4
+  sage_output_sha256: 147eb7872394fcb98a9a8990eb1a132bb776253739a238f38333220e6bcee120
+  standard_submit_to_terminal_seconds: 586.9724998
+  sage_submit_to_terminal_seconds: 486.2472157
+  submit_speedup_ratio: 1.2071483
+  time_reduction_percent: 17.1601368
+  standard_runner_total_seconds: 595.4828687
+  sage_runner_total_seconds: 497.1118352
+  runner_speedup_ratio: 1.1978851
+  sampled_peak_vram_bytes:
+    standard: 12460611508
+    sage: 12460611508
+  former_standalone_candidate_threshold: 1.3
+  former_threshold_reinterpreted: false
+  historical_decision_rewritten: false
+
+artifact_reuse:
+  status: F0_ARTIFACTS_REUSED
+  actual_output_hashes_match_history: true
+  profile_and_prompt_hashes_match: true
+  new_generation_count: 0
+  retry_count: 0
+  cuda_generation_count: 0
+  new_benchmark_count: 0
+
+output_integrity:
+  standard:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frames: 124
+    fps: 24.0
+    audio_streams: 1
+    black_frames: 0
+    corrupt_frames: 0
+  sage:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frames: 124
+    fps: 24.0
+    audio_streams: 1
+    black_frames: 0
+    corrupt_frames: 0
+  exact_contract_match: true
+
+offline_quality_screen:
+  status: AUTOMATIC_REGRESSION_SCREEN_PASSED
+  frame_alignment: exact_124_frame_pair
+  mean_ssim:
+    value: 0.9731167693188827
+    role: diagnostic_only
+  p05_ssim:
+    value: 0.96369893938393
+    role: diagnostic_only
+  min_ssim:
+    value: 0.9541882650325583
+    role: diagnostic_only
+  normalized_mae:
+    value: 0.018065279086358257
+    maximum: 0.06
+    passed: true
+  motion_energy_ratio:
+    value: 0.9861993840042123
+    allowed_range: [0.8, 1.25]
+    passed: true
+  spatial_gradient_energy_ratio:
+    value: 1.0293416257973977
+    allowed_range: [0.8, 1.25]
+    passed: true
+  temporal_difference_energy_ratio:
+    value: 1.0339983527168637
+    allowed_range: [0.8, 1.25]
+    passed: true
+  quality_at_least_standard_proven: false
+  visual_equivalence: not_proven
+
+private_visual_review_package:
+  repository_tracked: false
+  selected_frame_indices: [0, 31, 62, 67, 68, 69, 93, 123]
+  fixed_frame_indices: [0, 31, 62, 93, 123]
+  highest_standard_motion_transition_frames: [67, 68, 69]
+  layout: standard_sage_absolute_difference
+  contact_sheet_sha256: 99c3d98e09ccdec5c35896ed8d04c132f04c269803b0f9f20e244816b81071d4
+  review_manifest_sha256: 1e2ab0daaf5a426d23cd77310d93682e156308074b82e196f8ad09d3a5ff8fbf
+  human_review_status: PENDING_HUMAN_REVIEW
+  human_decision: null
+
+admission:
+  automatic_decision: A0_SAGE_STACKABLE_COMPONENT_READY_FOR_VISUAL_REVIEW
+  disposition: KEEP_AS_OPTIONAL
+  component_status: AVAILABLE_OPTIONAL
+  product_default: false
+  product_promotion_count: 0
+  speedup_claim_count: 0
+  final_cumulative_two_x_goal_reached: false
+  standalone_two_x_required_for_component: false
+  standard_full_compute_fallback: preserved
+
+stack_contract:
+  measured_component_ratios_must_not_be_multiplied: true
+  final_integrated_target:
+    quality: quality_at_least_standard_full_compute
+    accepted_result_end_to_end_speedup_minimum: 2.0
+  attention_workload_reduction_claimed: false
+  compound_eye_runtime_changes: 0
+  rust_abi_changes: 0
+  tensor_bytes_to_rust: 0
+  model_training_runs: 0
+
+limitations:
+  - The automatic screen can reject catastrophic regressions but cannot prove
+    human-perceived quality parity.
+  - The historical ratio is component evidence for one fixed environment, not
+    an integrated product speedup claim.
+  - SageAttention is an external component and is not claimed as a HIVEFRAME
+    invention.

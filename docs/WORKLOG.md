@@ -1697,6 +1697,40 @@ Speedup claim, quality promotion, and product promotion are zero. Diagram
 impact is `updated`. See the detailed
 [C4-S1-R1 worklog](worklogs/2026-08-09-c4-s1-r1-h3-ff-minimal-telemetry.md).
 
+## 2026-08-09 — A0 H3 SageAttention stackable component admission
+
+Issue #80, branch `accel/a0-h3-sage-stackable-attention`, and Draft PR #81
+re-evaluate the immutable F0 pair under a new cumulative-stack product
+question. The historical `F0_SAGE_NO_GAIN` decision, its former standalone
+1.3x rule, runtime values, hashes, and outputs remain unchanged. A0 does not
+claim that component ratios multiply or that the final accepted-result 2.0x
+target has been reached.
+
+The known private F0 Standard/Sage artifacts passed hash, profile, prompt-hash,
+terminal-state, and output-contract validation, so they were reused without a
+new Generation, retry, CUDA Generation, model load, or benchmark. Both H.264
+outputs decode 124/124 frames at 864x480 and 24 FPS with one audio stream and
+zero black/corrupt frames. Historical submit-to-terminal times remain
+586.972500 and 486.247216 seconds, a 1.207148x ratio and 17.160137% reduction;
+sampled peak VRAM remains equal at 12,460,611,508 bytes.
+
+The predeclared CPU-only offline screen measured mean/p05/min SSIM
+0.973117/0.963699/0.954188 (diagnostic only), normalized MAE 0.018065, motion
+ratio 0.986199, gradient ratio 1.029342, and temporal-difference ratio 1.033998.
+All fixed catastrophic-regression checks passed. This cannot prove visual
+equivalence or quality at least Standard. A private Standard/Sage/absolute-
+difference review package was created for fixed frames and the three highest
+Standard-motion transitions; human status remains `PENDING_HUMAN_REVIEW`.
+
+The bounded automatic decision is
+`A0_SAGE_STACKABLE_COMPONENT_READY_FOR_VISUAL_REVIEW`; disposition is
+`KEEP_AS_OPTIONAL`, component status is `AVAILABLE_OPTIONAL`, and product
+default is false. Standard Full Compute remains the fallback. Speedup claim,
+quality promotion, product promotion, Compound Eye changes, Rust ABI changes,
+and model training are zero. Thirteen focused model-free tests passed; no full
+suite or Rust build/test was repeated. Diagram impact is `updated`. See the
+detailed [A0 worklog](worklogs/2026-08-09-a0-h3-sage-stackable-attention.md).
+
 ---
 
 ## Entry template
