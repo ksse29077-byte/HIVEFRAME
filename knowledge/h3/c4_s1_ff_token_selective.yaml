@@ -1,0 +1,249 @@
+schema_version: "0.1.0"
+knowledge_id: "h3-c4-s1-ff-token-selective-2026-08-08"
+state: verified_once
+decision: C4_S1_INSTRUMENTATION_OVERHEAD_TOO_HIGH
+constitution_disposition: REVISE_ONCE
+
+source:
+  issue: 76
+  draft_pr: 77
+  base_main_commit: "f2d79ac5492a123818d691b875075ae191fa5b88"
+  premeasurement_commit: "6c21862ae4edb5b0f1dd9929efc6fc280b0ed9a2"
+  installed_source_logical_path: "<comfyui-root>/comfy/ldm/minimax/model.py"
+  installed_source_sha256: "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024"
+  workflow_revision: "video_minimax_h3_t2v@31ab33fdb053"
+  source_modified: false
+  workflow_modified: false
+
+fixed_profile:
+  width: 864
+  height: 480
+  frame_count: 124
+  fps: 24
+  steps: 20
+  scheduler: simple
+  sampler: res_multistep
+  denoise: 1.0
+  seed: 101
+  native_audio: true
+  sage_nodes: 0
+
+mechanism:
+  selector_id: FF_POSITIONWISE_LOW_IMPACT_TOKEN_SKIP_V1
+  attention_execution: ALWAYS_FULL_COMPUTE
+  eligible_rows: target_video_segment_only
+  non_video_rows: ALWAYS_FULL_COMPUTE
+  video_segment:
+    position: final_contiguous_packed_segment
+    token_order: batch-latent_time-patch_h-patch_w_nthw
+    expected_video_shape: [1, 24, 37, 30, 54]
+    video_token_count: 14985
+    non_video_token_count: 439
+    total_token_count: 15424
+    hidden_width: 5376
+  anchor_steps: [0, 1, 18, 19]
+  minimum_block_video_skip_ratio: 0.10
+  history_source: previous_actual_full_compute_only
+  history_fields:
+    - prev_h_norm
+    - prev_ff_delta_ratio
+    - prev_gate_norm
+    - history_valid
+  skipped_row_history: invalidated_immediately
+  consecutive_skip: prohibited_without_intervening_actual_full_compute
+  control_oracle_in_live_selector: false
+  skip_update: zero_feed_forward_contribution
+  maximum_mlp_calls_per_block: 1
+  fail_open: true
+
+policies:
+  - policy_id: P0
+    prev_ff_delta_ratio_max: 0.0025
+    h_norm_change_max: 0.005
+    gate_norm_change_max: 0.005
+  - policy_id: P1
+    prev_ff_delta_ratio_max: 0.005
+    h_norm_change_max: 0.010
+    gate_norm_change_max: 0.010
+  - policy_id: P2
+    prev_ff_delta_ratio_max: 0.010
+    h_norm_change_max: 0.020
+    gate_norm_change_max: 0.020
+
+control:
+  generation_count: 1
+  retry_count: 0
+  mode: CONTROL_FF_TOKEN_SHADOW
+  model_forward_count: 20
+  block_call_count: 1000
+  mlp_call_count: 1000
+  total_mlp_rows: 15424000
+  omitted_video_rows: 0
+  attention_omission_count: 0
+  non_video_omission_count: 0
+  fail_open_count: 0
+  mapping_error_count: 0
+  wrapper_failure_count: 0
+  instrumentation_gate_passed: true
+  sampler_wall_seconds: 519.8222723999934
+  submit_to_terminal_seconds: 619.6673093999852
+  runner_total_seconds: 628.411549100012
+  timing:
+    scope: deferred_cuda_event_spans_not_kernel_duration_sums
+    full_ff_group_seconds: 107.22408444213868
+    actual_mlp_seconds: 91.207116897583
+    gather_mask_seconds: 5.670097920417786
+    scatter_residual_seconds: 1.601063963651657
+    synchronization_count: 1
+    profiler_enabled: false
+    gpu_kernel_seconds:
+      value: null
+      support_status: not_collected
+      reason: "PyTorch profiler, CUPTI, Nsight, and kernel-level profiling were disabled by contract."
+  c4_s0_comparison:
+    reference_sampler_seconds: 488.84732
+    measured_sampler_seconds: 519.8222723999934
+    delta_seconds: 30.974952399993356
+    relative_delta: 0.06336324478569987
+    allowed_relative_delta: 0.05
+    passed: false
+
+shadow_observations:
+  selected_policy: null
+  policy_selection_status: blocked_by_control_comparability_gate
+  policy_rows:
+    P0:
+      predicted_skip_rows: 8
+      predicted_video_skip_ratio: 0.0000005338672005338672
+      predicted_all_token_mlp_row_reduction: 0.0000005186721991701245
+      affected_step_count: 5
+      affected_block_count: 1
+      actual_impact:
+        count: 8
+        mean: 0.0023008209245745093
+        p95: 0.0027099609375000003
+        p99: 0.0027099609375000003
+        max: 0.0027037346735596657
+        over_0_010_rate: 0.0
+        nonfinite_count: 0
+    P1:
+      predicted_skip_rows: 78
+      predicted_video_skip_ratio: 0.0000052052052052052055
+      predicted_all_token_mlp_row_reduction: 0.000005057053941908714
+      affected_step_count: 15
+      affected_block_count: 2
+      actual_impact:
+        count: 78
+        mean: 0.004235686044781827
+        p95: 0.00623779296875
+        p99: 0.00758056640625
+        max: 0.007571022491902113
+        over_0_010_rate: 0.0
+        nonfinite_count: 0
+    P2:
+      predicted_skip_rows: 1000
+      predicted_video_skip_ratio: 0.0000667334000667334
+      predicted_all_token_mlp_row_reduction: 0.00006483402489626556
+      affected_step_count: 16
+      affected_block_count: 9
+      actual_impact:
+        count: 1000
+        mean: 0.008143575369846076
+        p95: 0.010168457031250001
+        p99: 0.0110107421875
+        max: 0.016236428171396255
+        over_0_010_rate: 0.074
+        nonfinite_count: 0
+  interpretation: "These are CONTROL shadow observations. They did not receive SELECTIVE execution authority because the earlier control-comparability Gate failed."
+
+selective:
+  generation_count: 0
+  retry_count: 0
+  selected_policy: null
+  reason: C4_S1_INSTRUMENTATION_OVERHEAD_TOO_HIGH
+  actual_mlp_calls: null
+  actual_mlp_rows: null
+  omitted_video_rows: null
+  actual_all_token_mlp_row_reduction: null
+  actual_video_row_reduction: null
+  runtime: not_collected
+  quality: not_collected
+
+memory:
+  persistent_scalar_metadata_bytes: 11238750
+  persistent_scalar_metadata_budget_bytes: 67108864
+  budget_passed: true
+  full_tensor_cache_count: 0
+  host_full_tensor_copy_bytes: 0
+  tensor_bytes_to_rust: 0
+  rust_abi_change_count: 0
+  sampled_resources:
+    peak_nvidia_system_sampled_vram_bytes: 11589910528
+    peak_comfyui_process_sampled_vram_bytes: 12461735860
+    peak_process_tree_rss_bytes: 47107780608
+    exact_allocator_peak:
+      value: null
+      support_status: unavailable
+      reason: "The external runner cannot safely read the ComfyUI process allocator peak."
+
+output:
+  logical_artifact_id: C4_S1_CONTROL_FF_TOKEN_SHADOW_VIDEO
+  codec: h264
+  width: 864
+  height: 480
+  decoded_frame_count: 124
+  fps: 24.0
+  audio_stream_count: 1
+  decode_succeeded: true
+  corrupted_frame_count: 0
+  black_frame_count: 0
+  size_bytes: 263028
+  sha256: "ae06ef4c1ab2223b8de86bbcd18ded1a938b24e5a0767d9c853b4292deca2f87"
+
+attempt_history:
+  - attempt_id: ff-token-selective-6c21862-001
+    results_eligible: false
+    generation_count: 0
+    retry_count: 0
+    failure_stage: pre_runtime_configuration
+    error_signature: "ComfyUI start paths are not configured"
+    note: "The invocation used the wrong output-root environment variable name. No runtime, model, workflow, GPU, or Generation started."
+  - attempt_id: ff-token-selective-6c21862-002
+    results_eligible: true
+    generation_count: 1
+    retry_count: 0
+    control_completed: true
+    selective_started: false
+
+safety:
+  oom_count: 0
+  retry_count: 0
+  cuda_fatal_error_count: 0
+  nonfinite_count: 0
+  black_frame_count: 0
+  corrupt_frame_count: 0
+  output_valid: true
+  full_compute_fallback: preserved
+
+claims:
+  actual_backend_work_reduction: 0
+  paired_runtime_observation: not_collected
+  quality_comparison: not_collected
+  visual_equivalence: not_proven
+  human_visual_review: not_started
+  speedup_claim: 0
+  quality_promotion: 0
+  product_promotion: 0
+  attention_surface_modified: false
+  cumulative_product_goal: "Quality >= Standard Full Compute and accepted-result end-to-end >= 2.0x"
+  isolated_two_x_required: false
+  next_stage_started: false
+  training_eligibility: evaluation_only
+
+privacy:
+  prompt_in_public_repository: false
+  media_in_public_repository: false
+  private_receipt_in_public_repository: false
+  local_absolute_path_in_public_repository: false
+  model_binary_in_public_repository: false
+  credential_in_public_repository: false

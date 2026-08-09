@@ -1,0 +1,55 @@
+{
+  "schema_version": "c4-s1.ff-token-selective.config.1",
+  "selector_id": "FF_POSITIONWISE_LOW_IMPACT_TOKEN_SKIP_V1",
+  "source_sha256": "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024",
+  "attention_execution": "ALWAYS_FULL_COMPUTE",
+  "eligible_rows": "target_video_segment_only",
+  "anchors": [0, 1, 18, 19],
+  "minimum_block_video_skip_ratio": 0.1,
+  "policies": {
+    "P0": {"prev_ff_delta_ratio_max": 0.0025, "h_norm_change_max": 0.005, "gate_norm_change_max": 0.005},
+    "P1": {"prev_ff_delta_ratio_max": 0.005, "h_norm_change_max": 0.01, "gate_norm_change_max": 0.01},
+    "P2": {"prev_ff_delta_ratio_max": 0.01, "h_norm_change_max": 0.02, "gate_norm_change_max": 0.02}
+  },
+  "control_reference_sampler_seconds": 488.84732,
+  "control_comparability_relative_limit": 0.05,
+  "control_admission": {
+    "all_token_mlp_row_reduction_min": 0.1,
+    "video_token_skip_ratio_min": 0.2,
+    "affected_non_anchor_steps_min": 3,
+    "affected_blocks_min": 10,
+    "actual_impact_mean_max": 0.003,
+    "actual_impact_p99_max": 0.01,
+    "actual_impact_over_0_010_rate_max": 0.005,
+    "actual_impact_max_max": 0.025,
+    "nonfinite_count": 0
+  },
+  "quality_gate": {
+    "mean_ssim_min": 0.95,
+    "p05_ssim_min": 0.9,
+    "min_ssim_min": 0.85,
+    "ssim_below_0_85_rate_max": 0.02,
+    "normalized_mae_max": 0.03,
+    "motion_energy_ratio_min": 0.9,
+    "motion_energy_ratio_max": 1.1,
+    "gradient_energy_ratio_min": 0.9,
+    "gradient_energy_ratio_max": 1.1
+  },
+  "profile": {
+    "seed": 101,
+    "width": 864,
+    "height": 480,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "scheduler": "simple",
+    "sampler": "res_multistep",
+    "denoise": 1.0,
+    "native_audio": true,
+    "sage": false
+  },
+  "generation_budget": 2,
+  "retry_budget": 0,
+  "rust_abi_change": false,
+  "profiler_enabled": false
+}
