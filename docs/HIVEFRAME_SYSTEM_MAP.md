@@ -230,6 +230,9 @@ flowchart LR
     A0G["KEEP_AS_OPTIONAL\nhuman review pending; default false"]
     A1["A1 Active-Q CONTROL\nsubset-Q/global-KV structurally admitted"]
     A1G["Rust p95 + block Gate failed\nSELECTIVE not run; fallback-only"]
+    A2["A2 Exact-Q prototype CONTROL\n2x2 spatial reconstruction diagnostic"]
+    A2G["0 fidelity-admitted blocks\ncallback p95 failed; SELECTIVE not run"]
+    A2N["Regional attention-output reuse\nwith correction; separate approval"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -254,6 +257,9 @@ flowchart LR
     C2 -. "separately approved A1" .-> A1
     C4A -. "global K/V retained" .-> A1
     A1 --> A1G
+    A1G -. "separately approved A2" .-> A2
+    A2 --> A2G
+    A2G -. "candidate only" .-> A2N
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
@@ -263,14 +269,15 @@ flowchart LR
     C4S1R1G --> DEFAULT
     A0G --> DEFAULT
     A1G --> DEFAULT
+    A2G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1 verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G rejected;
-    class C4A,C4F,A0G planned;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2 verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G rejected;
+    class C4A,C4F,A0G,A2N planned;
     class DEFAULT safe;
 ```
 
@@ -306,6 +313,16 @@ fixed regional attention-impact Gate, so SELECTIVE did not run. The exact
 zero-update mechanism is fallback-only; this does not reject the global
 attention cost surface or A0's independent optional kernel evidence. Standard
 Full Compute remains the solid product path.
+
+A2 preserved that structural boundary but replaced A1 zero-update with exact
+post-RoPE representative Q rows and same-time/same-region bilinear
+reconstruction before the original full output projection. One Full Attention
+CONTROL generated a valid output and remained sampler-comparable, but none of
+50 blocks cleared the frozen reconstruction-fidelity Gate and the inclusive
+callback p95 also exceeded its fixed limit. SELECTIVE did not run. The exact
+prototype mechanism is fallback-only; corrected attention-output reuse is a
+candidate requiring separate approval, not an active path. Full Compute remains
+the current default and product speedup claim remains zero.
 
 ## 5. Module ownership
 

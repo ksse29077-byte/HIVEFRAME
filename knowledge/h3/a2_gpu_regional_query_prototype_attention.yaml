@@ -1,0 +1,265 @@
+schema_version: a2.h3.query-prototype.knowledge.1
+knowledge_status: verified_once
+recorded_at: "2026-08-10"
+
+scope:
+  issue: 84
+  draft_pr: 85
+  base_main_commit: 6c9b53f398df7c7c4ecbd38e2c1d5812d34b5f1b
+  contract_commit: 3e2847aea97da522555d20d43b497f5988372d1a
+  component_id: HIVEFRAME_GPU_REGIONAL_QUERY_PROTOTYPE_ATTENTION
+  mechanism: GPU_RESIDENT_REGIONAL_QUERY_PROTOTYPE_ATTENTION_V1
+  rust_abi: A1_ATTENTION_REGION_PLAN_ABI_V1
+
+product_question: >-
+  Can exact representative query rows in Compound Eye stable regions reduce
+  actual H3 attention-core Q work while full/global K/V, Standard quality,
+  and Full Compute fallback remain intact?
+
+relation_to_a1:
+  historical_candidate: REGIONAL_ACTIVE_QUERY_GLOBAL_KV_ZERO_UPDATE_V1
+  historical_evidence_changed: false
+  zero_update_reused: false
+  preserved_structural_evidence:
+    - subset_post_rope_q_supported
+    - full_global_kv_supported
+    - metadata_only_rust_region_plan
+  distinction: >-
+    A2 retains exact representative Q attention outputs and reconstructs only
+    omitted stable interiors; it does not replace stable attention contribution
+    with zero.
+
+stack_context:
+  final_integrated_target:
+    quality: quality_at_least_standard_full_compute
+    accepted_result_end_to_end_speedup_minimum: 2.0
+  a0_sage_status: AVAILABLE_OPTIONAL
+  a0_human_visual_review: pending
+  sage_enabled_in_a2: false
+  combined_a0_a2_generation_count: 0
+  combined_speedup_claim_count: 0
+  final_two_x_reached: false
+
+source_admission:
+  status: admitted
+  installed_model_source_sha256: 882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024
+  installed_attention_source_sha256: a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9
+  installed_source_modified: false
+  full_qkv_projection: preserved
+  representative_query_location: after_qk_norm_and_rope
+  attention_core_query_reduction_capability: structurally_admitted
+  key_rows: global_full
+  value_rows: global_full
+  reconstruction_location: attention_core_output_before_full_output_projection
+  output_projection: global_full
+  feed_forward: full_compute
+  qkv_projection_reduction_claimed: false
+  output_projection_reduction_claimed: false
+
+representative_strategy:
+  source: exact_original_query_rows
+  synthetic_or_averaged_queries: false
+  learned_prototype: false
+  clustering: false
+  spatial_stride: [2, 2]
+  temporal_stride: 1
+  temporal_crossing: false
+  interpolation: bilinear
+  interpolation_scope: same_latent_time_and_same_stable_region
+  video_grid: [37, 15, 27]
+  semantic_region_masks_precomputed: 16
+  halo_patches: 1
+  representative_rows_per_single_region: [1036, 1036, 1036, 1036]
+  omitted_rows_per_single_region: [2331, 2072, 1850, 1628]
+  single_region_interior_compression_range: [0.6111111111111112, 0.6923076923076923]
+  all_region_mask:
+    full_video_rows: 14985
+    representative_rows: 4144
+    omitted_rows: 7881
+    attention_core_video_query_rows: 7104
+    stable_interior_compression: 0.6553846153846153
+
+region_policy:
+  active: full_query
+  uncertain: full_query
+  non_video: full_query
+  boundary_halo: full_query
+  anchor_steps: [0, 1, 18, 19]
+  anchor_action: full_query
+  consecutive_same_region_prototype: false
+  refresh_after_prototype: true
+  invalid_or_late_plan: full_compute
+
+gpu_plan:
+  cpu_mapping_status: deterministic
+  gpu_materialization_scope: once_per_device_and_packed_layout
+  materialized_semantic_masks: 16
+  persistent_gpu_plan_bytes: 9061696
+  dynamic_per_block_plan_allocation_count: 0
+  per_block_cpu_tensor_construction_count: 0
+  explicit_hot_path_cuda_synchronization_count: 0
+  hot_path_full_tensor_host_transfer_count: 0
+
+rust_abi_reuse:
+  abi_changed: false
+  semantic_region_plan_changed: false
+  fail_open_changed: false
+  digest_semantics_changed: false
+  rust_call_count: 18
+  calls_per_ready_observation_max: 1
+  calls_per_block: 0
+  calls_per_token: 0
+  tensor_bytes_to_rust: 0
+  rust_policy_p50_ns: 2200
+  rust_policy_p95_ns: 4800
+  boundary_p50_ns: 10400
+  boundary_p95_ns: 17000
+  fallback_count: 0
+
+control_generation:
+  logical_run_id: a2-query-prototype-3e2847a-001-control
+  generation_count: 1
+  retry_count: 0
+  actual_execution: full_attention
+  counterfactual_only: true
+  counterfactual_altered_model_output: false
+  model_forwards: 20
+  block_calls: 1000
+  full_attention_calls: 1000
+  counterfactual_block_region_observations: 600
+  settings_digest: 2c8d21dd59eb8c10761388c8d99f3ab0cc180d87c965d4d026bc354398be35ba
+  sampler_seconds: 493.5932082000072
+  submit_to_terminal_seconds: 594.1248922999948
+  runner_seconds: 605.9696168000228
+  c4_s0_reference_sampler_seconds: 488.847320
+  sampler_relative_delta: 0.00970832406324164
+  sampler_comparability_passed: true
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frames: 124
+    fps: 24.0
+    audio_streams: 1
+    black_frames: 0
+    corrupt_frames: 0
+    size_bytes: 263060
+    sha256: 4ff07d975d51b21c324103da8f1cf966dd7966b703dbe23f4a545fd59c164fac
+
+prototype_fidelity:
+  block_region_observation_count: 600
+  observations_per_block: 12
+  nonfinite_count: 0
+  admitted_block_count: 0
+  best_block:
+    block_index: 0
+    mean_cosine: 0.9805388549963633
+    p05_cosine: 0.9681153297424316
+    mean_normalized_l2: 0.19367118428150812
+    p95_normalized_l2: 0.25085052847862244
+    mean_normalized_mae: 0.1357106100767851
+    mean_energy_ratio: 0.986984133720398
+    passed: false
+  fixed_gate:
+    minimum_observations: 3
+    mean_cosine_min: 0.98
+    p05_cosine_min: 0.95
+    mean_normalized_l2_max: 0.12
+    p95_normalized_l2_max: 0.25
+    mean_energy_ratio: [0.85, 1.15]
+    nonfinite_count: 0
+  threshold_changed_after_result: false
+
+opportunity:
+  stable_region_plan_events: 10
+  affected_non_anchor_steps: [4, 5, 6, 8, 11, 13, 14, 15, 16, 17]
+  admitted_blocks: 0
+  planned_attention_query_row_reduction: 0.0
+  planned_minimum: 0.05
+  passed: false
+  next_candidate: REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1
+
+control_plane_timing:
+  compound_eye_inclusive_callback_p50_ns: 608800
+  compound_eye_inclusive_callback_p95_ns: 59829032
+  compound_eye_inclusive_callback_max_ns: 484952763
+  fixed_inclusive_p95_max_ns: 3000000
+  passed: false
+  measurement_method: >-
+    Inclusive C2 callback CPU span. The Rust boundary is a child span and was
+    recorded separately rather than added a second time.
+  a1_rust_boundary_gate_reused: false
+
+actual_work:
+  full_q_rows: 15424000
+  actual_kernel_q_rows: 15424000
+  representative_q_rows: 0
+  omitted_q_rows: 0
+  actual_query_reduction: 0.0
+  full_kv_rows: 30848000
+  actual_kv_rows: 30848000
+  qkv_projection_full_rows: 15424000
+  output_projection_full_rows: 15424000
+  global_kv_preserved: true
+
+selective_generation:
+  generation_count: 0
+  reason: control_admission_failed
+  representative_q_rows: null
+  omitted_q_rows: null
+  actual_attention_core_query_reduction: null
+  paired_quality_metrics: not_collected
+  paired_runtime_metrics: not_collected
+  visual_equivalence: not_proven
+
+instrumentation:
+  periodic_resource_polling: disabled
+  process_tree_ram_peak: null
+  nvidia_sampled_vram_peak: null
+  memory_reason: >-
+    Periodic polling was excluded from the frozen hot-path contract; unsupported
+    memory peaks were not zero-filled.
+  gpu_kernel_seconds: null
+  gpu_kernel_reason: profiler_cupti_and_nsight_disabled
+  full_tensor_host_copy_bytes: 0
+  compound_eye_host_transfer_bytes: 3840
+
+safety:
+  oom_count: 0
+  fatal_cuda_error_count: 0
+  retry_count: 0
+  third_generation_count: 0
+  output_integrity_passed: true
+  full_compute_fallback: preserved
+
+decision:
+  technical: A2_QUERY_PROTOTYPE_OPPORTUNITY_TOO_LOW
+  disposition: FALLBACK_ONLY
+  failure_scope: >-
+    Exact 2x2 spatial representative-query reconstruction did not clear the
+    immutable per-block fidelity admission. Zero blocks were admitted, planned
+    Q reduction remained zero, and the inclusive callback p95 also exceeded
+    its fixed limit. SELECTIVE was therefore prohibited.
+  attention_cost_surface: ALIVE
+  next_mechanism_candidate: REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1
+  speedup_claim_count: 0
+  quality_promotion_count: 0
+  product_promotion_count: 0
+  automatic_a3_started: false
+
+evidence_digests:
+  private_experiment_receipt_sha256: 1e035827c54f155be8311f75e00667bc00c88b5d09b9c71f6822011bc267ddf3
+  control_callback_receipt_sha256: fc84edd21438fbbcb474b682d5666ed901d7a8d0771a8354ffc0410d5ca5e04e
+  control_receipt_sha256: ac9206789c7543696f1b52c310f4ceb1e4f846a2f7bcecade6eecfbcceb9175a
+  control_public_summary_sha256: 683a0d19d85b7a97502f3a8531fea4d86dfd0840a5e0dc003673cf4038be8ce0
+  websocket_events_sha256: ec9c7eb78993298b1ef02ab835dc5efbf8ea1dae4138faf76997c1e8d4e8c0f0
+  runtime_log_sha256: 1fea69845352829b6e09ee14befed5c2f981b008a389c41bea42016b6cb8547b
+
+limitations:
+  - SELECTIVE did not run, so actual reduced-Q execution, paired quality,
+    paired runtime, and human visual review were not collected.
+  - The first and subsequent callback outliers remain included in the fixed
+    inclusive callback p95; no samples were discarded after the result.
+  - A0 and A2 were not combined and component ratios were not multiplied.
+  - This single fixed profile does not reject every possible attention-output
+    reuse or correction mechanism.

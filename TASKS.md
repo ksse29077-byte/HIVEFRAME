@@ -335,6 +335,30 @@ under separate approval. A0 remains optional and uncombined; product speedup,
 quality promotion, product promotion, and automatic A2 starts remain zero.
 See the detailed [A1 worklog](docs/worklogs/2026-08-10-a1-h3-compound-eye-active-query-attention.md).
 
+## A2 — GPU-resident regional query prototype attention
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`A2_QUERY_PROTOTYPE_OPPORTUNITY_TOO_LOW`; disposition: `FALLBACK_ONLY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated A2 work | `draft_pr` | [Issue #84](https://github.com/ksse29077-byte/HIVEFRAME/issues/84); branch `accel/a2-h3-gpu-regional-query-prototype`; Draft PR [#85](https://github.com/ksse29077-byte/HIVEFRAME/pull/85) |
+| Freeze exact-query prototype mechanism | `verified` | commit `3e2847a...`; exact post-RoPE Q, fixed 2x2 stride, same-time/region bilinear reconstruction, global/full K/V, full projections, max two Generations, retry zero |
+| Prove model-free mapping and execution contract | `verified` | 16 focused tests; 16 deterministic semantic masks, stable-only omission, reconstruction, full-row parity, full K/V, GPU-plan reuse, installed source, PyO3 ABI roundtrip |
+| Reuse metadata-only Rust region plan | `verified_once` | ABI unchanged; 18 calls, boundary p95 17 us, tensor bytes and per-block/per-token calls zero |
+| Execute Full Attention CONTROL diagnostic | `verified_once` | one Generation, retry zero; 20 forwards/1,000 blocks; 600 finite counterfactual block-region observations; valid H.264 124/124 output |
+| Meet CONTROL comparability | `verified_once` | sampler 493.593208 s, +0.970832% versus immutable C4-S0 488.847320 s; within +5% |
+| Admit prototype blocks and query opportunity | `stopped` | zero blocks passed fixed fidelity Gate; best block mean L2 0.193671 > 0.120; planned Q reduction 0% |
+| Meet combined callback Gate | `stopped` | inclusive Compound Eye callback p95 59.829032 ms exceeded fixed 3 ms; Rust child span was not double-counted |
+| Execute SELECTIVE and paired quality | `stopped` | prohibited by CONTROL admission; SELECTIVE 0, actual Q reduction 0, paired quality/runtime not collected, visual equivalence not proven |
+
+The exact A2 mechanism is fallback-only; it does not invalidate A1 structural
+subset-Q/global-KV evidence or the global-attention cost surface. Standard Full
+Compute remains the product path. `REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1`
+is only a next candidate requiring separate approval. A0 integration, combined
+speedup, quality/product promotion, and automatic A3 starts remain zero. See
+the detailed [A2 worklog](docs/worklogs/2026-08-10-a2-h3-gpu-regional-query-prototype-attention.md).
+
 ## C0-H3 — Execution phase and Runtime Hook Map
 
 Overall status: `verified_once`; publication status: `published`.
