@@ -1,14 +1,17 @@
 #![doc = "Bounded Python 3.12 shared-buffer adapter for the model-free R3 probe."]
 
 use hive_retina_runtime::{
+    evaluate_attention_region_plan as evaluate_attention_region_plan_core,
     evaluate_c3_frozen_block_plan as evaluate_c3_frozen_block_plan_core,
     evaluate_compound_eye_shadow_policy as evaluate_compound_eye_shadow_policy_core,
     evaluate_correction_plan as evaluate_correction_plan_core,
     evaluate_reuse_plan as evaluate_reuse_plan_core,
-    evaluate_step_policy as evaluate_step_policy_core, C3FrozenBlockPlanDirective,
-    C3FrozenBlockPlanObservation, CompoundEyeShadowDirective, CompoundEyeShadowObservation,
-    CorrectionPlanDirective, CorrectionPlanObservation, InputProfile, PixelBox, R3CandidateSummary,
-    ReusePlanDirective, ReusePlanObservation, StepDirective, StepObservation, C1_REASON_RUST_PANIC,
+    evaluate_step_policy as evaluate_step_policy_core, AttentionRegionPlanDirective,
+    AttentionRegionPlanObservation, C3FrozenBlockPlanDirective, C3FrozenBlockPlanObservation,
+    CompoundEyeShadowDirective, CompoundEyeShadowObservation, CorrectionPlanDirective,
+    CorrectionPlanObservation, InputProfile, PixelBox, R3CandidateSummary, ReusePlanDirective,
+    ReusePlanObservation, StepDirective, StepObservation, A1_ATTENTION_REGION_PLAN_ABI_VERSION,
+    A1_EYE_COUNT, A1_REASON_RUST_PANIC, A1_REGION_COUNT, C1_REASON_RUST_PANIC,
     C1_STEP_POLICY_ABI_VERSION, C2_COMPOUND_EYE_SHADOW_ABI_VERSION, C2_EYE_COUNT,
     C2_REASON_RUST_PANIC, C2_SKETCH_VALUE_COUNT, C2_STABLE_VALIDATION_LIMIT_PPM, C3_R1_BLOCK_COUNT,
     C3_R1_BLOCK_PLAN_ABI_VERSION, C3_R1_CANDIDATE_BLOCK_COUNT, C3_R1_CANDIDATE_BLOCK_END,
@@ -185,6 +188,15 @@ fn fixed_sketch(values: Vec<i32>, name: &str) -> PyResult<[i32; C2_SKETCH_VALUE_
     values.try_into().map_err(|values: Vec<i32>| {
         PyValueError::new_err(format!(
             "{name} must contain exactly {C2_SKETCH_VALUE_COUNT} values; got {}.",
+            values.len()
+        ))
+    })
+}
+
+fn fixed_eye_values(values: Vec<u32>, name: &str) -> PyResult<[u32; A1_EYE_COUNT]> {
+    values.try_into().map_err(|values: Vec<u32>| {
+        PyValueError::new_err(format!(
+            "{name} must contain exactly {A1_EYE_COUNT} values; got {}.",
             values.len()
         ))
     })
@@ -422,6 +434,158 @@ fn compound_eye_shadow_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyD
         C2_STABLE_VALIDATION_LIMIT_PPM,
     )?;
     result.set_item("tensor_bytes_per_callback", 0)?;
+    Ok(result)
+}
+
+fn set_a1_directive(
+    dict: &Bound<'_, PyDict>,
+    directive: &AttentionRegionPlanDirective,
+) -> PyResult<()> {
+    dict.set_item("abi_version", directive.abi_version)?;
+    dict.set_item("struct_size", directive.struct_size)?;
+    dict.set_item("decision_code", directive.decision_code)?;
+    dict.set_item("reason_code", directive.reason_code)?;
+    dict.set_item("target_step", directive.target_step)?;
+    dict.set_item("stable_region_mask", directive.stable_region_mask)?;
+    dict.set_item(
+        "full_compute_region_mask",
+        directive.full_compute_region_mask,
+    )?;
+    dict.set_item("refresh_region_mask", directive.refresh_region_mask)?;
+    dict.set_item("fallback_required", directive.fallback_required)?;
+    dict.set_item("unsupported_flags", directive.unsupported_flags)?;
+    dict.set_item(
+        "shared_visual_state_digest",
+        PyBytes::new(dict.py(), &directive.shared_visual_state_digest),
+    )?;
+    dict.set_item(
+        "compute_plan_digest",
+        PyBytes::new(dict.py(), &directive.compute_plan_digest),
+    )?;
+    dict.set_item(
+        "decision_digest",
+        PyBytes::new(dict.py(), &directive.decision_digest),
+    )?;
+    Ok(())
+}
+
+/// Compile one ready C2 observation into a metadata-only A1 region plan.
+/// Model-specific token-row mapping remains outside Rust.
+#[pyfunction]
+#[allow(clippy::too_many_arguments)]
+fn evaluate_attention_region_plan<'py>(
+    py: Python<'py>,
+    abi_version: u32,
+    struct_size: u32,
+    run_digest: &Bound<'py, PyBytes>,
+    workflow_revision_digest: &Bound<'py, PyBytes>,
+    settings_digest: &Bound<'py, PyBytes>,
+    model_revision_digest: &Bound<'py, PyBytes>,
+    observed_step: u32,
+    predicted_execution_step: u32,
+    total_steps: u32,
+    topology_id: u32,
+    eye_state: Vec<u32>,
+    eye_confidence_ppm: Vec<u32>,
+    eye_change_ppm: Vec<u32>,
+    stable_mask: u32,
+    stable_count: u32,
+    active_mask: u32,
+    active_count: u32,
+    uncertain_mask: u32,
+    uncertain_count: u32,
+    global_invalidation: bool,
+    overlap_conflict_mask: u32,
+    anchor_step: bool,
+    cooldown_mask: u32,
+    refresh_required_mask: u32,
+    source_valid: bool,
+    prediction_valid: bool,
+    selective_supported: bool,
+    fallback_supported: bool,
+    fatal_flags: u32,
+    unsupported_flags: u32,
+) -> PyResult<Bound<'py, PyDict>> {
+    let observation = AttentionRegionPlanObservation {
+        abi_version,
+        struct_size,
+        run_digest: fixed_digest(run_digest, "run_digest")?,
+        workflow_revision_digest: fixed_digest(
+            workflow_revision_digest,
+            "workflow_revision_digest",
+        )?,
+        settings_digest: fixed_digest(settings_digest, "settings_digest")?,
+        model_revision_digest: fixed_digest(model_revision_digest, "model_revision_digest")?,
+        observed_step,
+        predicted_execution_step,
+        total_steps,
+        topology_id,
+        eye_state: fixed_eye_values(eye_state, "eye_state")?,
+        eye_confidence_ppm: fixed_eye_values(eye_confidence_ppm, "eye_confidence_ppm")?,
+        eye_change_ppm: fixed_eye_values(eye_change_ppm, "eye_change_ppm")?,
+        stable_mask,
+        stable_count,
+        active_mask,
+        active_count,
+        uncertain_mask,
+        uncertain_count,
+        global_invalidation: u32::from(global_invalidation),
+        overlap_conflict_mask,
+        anchor_step: u32::from(anchor_step),
+        cooldown_mask,
+        refresh_required_mask,
+        source_valid: u32::from(source_valid),
+        prediction_valid: u32::from(prediction_valid),
+        selective_supported: u32::from(selective_supported),
+        fallback_supported: u32::from(fallback_supported),
+        fatal_flags,
+        unsupported_flags,
+    };
+    let started = Instant::now();
+    let evaluated = catch_unwind(AssertUnwindSafe(|| {
+        evaluate_attention_region_plan_core(&observation)
+    }));
+    let rust_policy_ns = started.elapsed().as_nanos();
+    let result = PyDict::new(py);
+    match evaluated {
+        Ok(directive) => {
+            result.set_item("ffi_status", 0)?;
+            set_a1_directive(&result, &directive)?;
+        }
+        Err(_) => {
+            result.set_item("ffi_status", 1)?;
+            set_a1_directive(
+                &result,
+                &AttentionRegionPlanDirective::fail_open(
+                    A1_REASON_RUST_PANIC,
+                    predicted_execution_step,
+                ),
+            )?;
+        }
+    }
+    result.set_item("rust_policy_ns", rust_policy_ns)?;
+    Ok(result)
+}
+
+#[pyfunction]
+fn attention_region_plan_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    result.set_item("abi_version", A1_ATTENTION_REGION_PLAN_ABI_VERSION)?;
+    result.set_item(
+        "observation_struct_size",
+        AttentionRegionPlanObservation::contract_size(),
+    )?;
+    result.set_item(
+        "directive_struct_size",
+        AttentionRegionPlanDirective::contract_size(),
+    )?;
+    result.set_item("eye_count", A1_EYE_COUNT)?;
+    result.set_item("region_count", A1_REGION_COUNT)?;
+    result.set_item("max_rust_calls_per_ready_observation", 1)?;
+    result.set_item("max_rust_calls_per_block", 0)?;
+    result.set_item("max_rust_calls_per_token", 0)?;
+    result.set_item("tensor_bytes_per_call", 0)?;
+    result.set_item("prediction_horizon_steps", 2)?;
     Ok(result)
 }
 
@@ -852,6 +1016,8 @@ fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
         module
     )?)?;
     module.add_function(wrap_pyfunction!(compound_eye_shadow_contract, module)?)?;
+    module.add_function(wrap_pyfunction!(evaluate_attention_region_plan, module)?)?;
+    module.add_function(wrap_pyfunction!(attention_region_plan_contract, module)?)?;
     module.add_function(wrap_pyfunction!(evaluate_c3_frozen_block_plan, module)?)?;
     module.add_function(wrap_pyfunction!(c3_frozen_block_plan_contract, module)?)?;
     module.add_function(wrap_pyfunction!(evaluate_reuse_plan, module)?)?;

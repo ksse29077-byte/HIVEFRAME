@@ -1731,6 +1731,57 @@ and model training are zero. Thirteen focused model-free tests passed; no full
 suite or Rust build/test was repeated. Diagram impact is `updated`. See the
 detailed [A0 worklog](worklogs/2026-08-09-a0-h3-sage-stackable-attention.md).
 
+## 2026-08-10 — A1 H3 Compound Eye regional active-query attention
+
+Issue #82, branch `accel/a1-h3-compound-eye-active-query-attention`, and Draft
+PR #83 isolate `REGIONAL_ACTIVE_QUERY_GLOBAL_KV_ZERO_UPDATE_V1` with Sage
+disabled. A0 remains immutable optional evidence; no component ratios were
+combined. Commit `8b18126...` froze full QKV projection, subset Q after Q/K
+normalization and RoPE, full/global K/V, active-row output projection, the
+fixed 2x2 mapping and one-patch halo, anchors, cooldown, Rust metadata ABI,
+block/opportunity/quality Gates, retry zero, and the two-Generation maximum
+before runtime.
+
+Source inspection and 14 focused Python tests established all-row wrapper
+equivalence, selected-row equivalence, actual smaller Q with unchanged K/V,
+non-video preservation, deterministic mapping, fail-open behavior, and A1 ABI
+roundtrip. Three focused Rust tests, formatting, workspace check, release PyO3
+build/import, and installed-source admission passed. The full test suites were
+not run.
+
+Exactly one CONTROL Generation completed and SELECTIVE did not run. CONTROL
+executed 20 model forwards and 1,000 Full Attention block calls. C2 produced
+Stable/Active/Uncertain counts 23/4/45 with 23 validated and zero contradicted
+Stable observations, 3,840 total GPU-to-host sketch bytes, zero full-tensor
+host copy, and zero tensor bytes to Rust. Eighteen A1 Rust calls produced ten
+regional candidate plans. A1 boundary p95 was 202.5 us, exceeding the frozen
+100 us Gate; the aligned Compound Eye plus plan diagnostic p95 was 2.4512 ms,
+within its separate 3 ms limit.
+
+No block passed the fixed impact Gate. The lowest mean was block 10 at
+0.0338607638, above 0.020, so admitted blocks and planned query reduction were
+zero despite ten stable-region plan events and ten affected non-anchor steps.
+Thresholds were not changed. Sampler, submit-to-terminal, and runner spans
+were 489.823359, 595.023887, and 606.862300 seconds. Sampler delta versus the
+immutable 488.847320-second C4-S0 comparator was +0.199661%, so comparability
+passed.
+
+The CONTROL H.264 output decoded 124/124 frames at 864x480 and 24 FPS with one
+audio stream, zero black/corrupt frames, zero OOM/fatal CUDA indication, and
+retry zero. Periodic resource polling was excluded from the hot path, so peak
+VRAM and process-tree RAM are null/not collected. SELECTIVE, actual query
+omission, paired quality/runtime, visual review, and combined A0+A1 execution
+remain uncollected or zero.
+
+The technical decision is `A1_CONTROL_PLANE_OVERHEAD_TOO_HIGH`; the exact
+mechanism is `FALLBACK_ONLY`, the primary next candidate is
+`GPU_RESIDENT_PLAN_MASK`, and the Attention cost surface remains `ALIVE`.
+This is a current host-boundary and block-admission result, not a generalized
+attention failure. Full Compute remains the product default. Speedup claim,
+quality promotion, product promotion, retry, third Generation, training, and
+automatic A2 starts are zero. Diagram impact is `updated`. See the detailed
+[A1 worklog](worklogs/2026-08-10-a1-h3-compound-eye-active-query-attention.md).
+
 ---
 
 ## Entry template

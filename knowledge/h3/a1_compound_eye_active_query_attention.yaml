@@ -1,0 +1,234 @@
+schema_version: a1.h3.active-query.knowledge.1
+knowledge_status: verified_once
+recorded_at: "2026-08-10"
+
+scope:
+  issue: 82
+  draft_pr: 83
+  base_main_commit: 1d339f5966c89fc66bf59d025bce3d2a1d289bf5
+  contract_commit: 8b181266ce475f4f845c28c398dec6b1a0a22ed1
+  component_id: HIVEFRAME_REGIONAL_ACTIVE_QUERY_ATTENTION
+  mechanism: REGIONAL_ACTIVE_QUERY_GLOBAL_KV_ZERO_UPDATE_V1
+  rust_abi: A1_ATTENTION_REGION_PLAN_ABI_V1
+
+product_question: >-
+  Can the live C2 Compound Eye observation and Rust plan reduce actual H3
+  attention-core query work while global K/V, quality-first admission, and
+  Full Compute fallback remain intact?
+
+stack_context:
+  final_integrated_target:
+    quality: quality_at_least_standard_full_compute
+    accepted_result_end_to_end_speedup_minimum: 2.0
+  a0_sage_status: AVAILABLE_OPTIONAL
+  a0_human_visual_review: pending
+  sage_enabled_in_a1: false
+  sage_rejected_by_a1: false
+  combined_a0_a1_generation_count: 0
+  combined_speedup_claim_count: 0
+  final_two_x_reached: false
+
+source_admission:
+  status: admitted
+  installed_model_source_sha256: 882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024
+  installed_attention_source_sha256: a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9
+  full_qkv_projection: preserved
+  query_subset_location: after_qk_norm_and_rope_before_attention_core
+  key_rows: global_full
+  value_rows: global_full
+  output_projection: active_query_rows_only
+  feed_forward: full_compute
+  installed_source_modified: false
+  qkv_projection_reduction_claimed: false
+
+c2_observation_reuse:
+  source: x0.tensors[0]
+  source_shape: [1, 24, 37, 30, 54]
+  source_dtype: torch.float32
+  source_device: cuda
+  sketch_shape: [4, 4, 3]
+  sketch_value_count: 48
+  gpu_to_host_bytes_per_observation: 192
+  total_gpu_to_host_bytes: 3840
+  tensor_bytes_to_rust: 0
+  lagged_state_counts:
+    stable: 23
+    active: 4
+    uncertain: 45
+  validated_stable: 23
+  contradicted_stable: 0
+  observer_total_callback_p95_ns: 611164
+  explicit_callback_synchronization_count: 0
+  full_tensor_host_copy_bytes: 0
+
+region_and_dependency_contract:
+  video_grid: [37, 15, 27]
+  spatial_regions: fixed_exclusive_2x2
+  temporal_coverage: all_37_latent_steps
+  boundary_halo_patches: 1
+  prediction_horizon_steps: 2
+  anchor_steps: [0, 1, 18, 19]
+  consecutive_same_region_selective: false
+  refresh_after_selective: true
+  active_queries: full_compute
+  uncertain_queries: full_compute
+  non_video_queries: full_compute
+  stable_query_action: zero_attention_residual_update_candidate
+  all_keys: global_full
+  all_values: global_full
+  fail_open_full_compute: true
+
+model_free_structural_proof:
+  full_q_wrapper_matches_original: true
+  subset_q_matches_full_result_on_selected_rows: true
+  subset_q_actual_row_count_smaller: true
+  full_k_shape_preserved: true
+  full_v_shape_preserved: true
+  non_video_query_rows_preserved: true
+  pyo3_roundtrip: passed
+
+control_generation:
+  run_id: a1-active-query-8b18126-001-control
+  generation_count: 1
+  retry_count: 0
+  mode: CONTROL_A1_ACTIVE_QUERY_SHADOW
+  actual_execution: full_attention
+  model_forwards: 20
+  block_calls: 1000
+  settings_digest: d9cfdba67a356bb895ff5c3098f39aaeede85233acdecea460ab093d5a87b009
+  sampler_seconds: 489.8233592000324
+  submit_to_terminal_seconds: 595.0238866000436
+  runner_seconds: 606.8623003999819
+  c4_s0_reference_sampler_seconds: 488.847320
+  sampler_relative_delta: 0.001996613584855908
+  sampler_comparability_passed: true
+  output:
+    codec: h264
+    width: 864
+    height: 480
+    decoded_frames: 124
+    fps: 24.0
+    audio_streams: 1
+    black_frames: 0
+    corrupt_frames: 0
+    size_bytes: 263044
+    sha256: 4c6ad0743092af45da743480ab7b5ab35363c745c7f7516e52e7ce9689275173
+
+rust_plan:
+  call_count: 18
+  calls_per_ready_observation_max: 1
+  calls_per_block: 0
+  calls_per_token: 0
+  tensor_bytes: 0
+  rust_policy_p50_ns: 2000
+  rust_policy_p95_ns: 191200
+  rust_policy_max_ns: 191200
+  boundary_p50_ns: 10000
+  boundary_p95_ns: 202500
+  boundary_max_ns: 202500
+  predeclared_boundary_p95_max_ns: 100000
+  boundary_gate_passed: false
+  fallback_count: 0
+  decision_counts:
+    full_compute: 8
+    regional_active_query: 10
+  late_plan_count: 0
+  malformed_plan_count: 0
+
+combined_control_plane_timing:
+  aligned_sample_count: 18
+  derived_observer_plus_plan_p95_ns: 2451200
+  predeclared_p95_max_ns: 3000000
+  passed: true
+  note: >-
+    Derived from aligned C2 callback CPU spans plus A1 boundary spans. The
+    frozen receipt Gate also keeps the C2 callback and Rust boundary checks
+    separately; this derived value does not override the failed Rust Gate.
+
+block_calibration:
+  observations_per_block: 12
+  admitted_block_count: 0
+  minimum_mean_block_index: 10
+  minimum_mean_attention_update_ratio: 0.03386076384534439
+  corresponding_p95: 0.03495490178465843
+  corresponding_max: 0.03495490178465843
+  fixed_limits:
+    minimum_observations: 3
+    mean_max: 0.020
+    p95_max: 0.040
+    max_max: 0.080
+    nonfinite: 0
+  threshold_changed_after_result: false
+
+opportunity:
+  stable_region_plan_events: 10
+  affected_non_anchor_steps: [4, 5, 6, 8, 11, 13, 14, 15, 16, 17]
+  admitted_blocks: 0
+  planned_attention_query_row_reduction: 0.0
+  planned_minimum: 0.05
+  passed: false
+  actual_query_reduction: 0.0
+
+selective_generation:
+  generation_count: 0
+  reason: control_admission_failed
+  actual_baseline_q_rows: null
+  actual_kernel_q_rows: null
+  omitted_video_q_rows: null
+  full_k_rows: null
+  full_v_rows: null
+  quality_metrics: not_collected
+  visual_equivalence: not_proven
+  runtime_metrics: not_collected
+
+instrumentation:
+  periodic_resource_polling: disabled
+  process_tree_ram_peak: null
+  nvidia_sampled_vram_peak: null
+  memory_reason: >-
+    One-second resource polling was excluded from the frozen A1 hot-path
+    contract; unsupported values were not zero-filled.
+  gpu_kernel_seconds: null
+  gpu_kernel_reason: profiler_cupti_and_nsight_disabled
+  explicit_hot_path_cuda_sync_count: 0
+  hot_path_full_tensor_host_transfer_count: 0
+
+safety:
+  oom_count: 0
+  fatal_cuda_error_count: 0
+  retry_count: 0
+  third_generation_count: 0
+  output_integrity_passed: true
+  full_compute_fallback: preserved
+
+decision:
+  technical: A1_CONTROL_PLANE_OVERHEAD_TOO_HIGH
+  disposition: FALLBACK_ONLY
+  failed_mechanism: A1_ATTENTION_REGION_PLAN_ABI_V1_current_host_boundary
+  failed_reason: >-
+    The A1 boundary p95 was 202.5 us, above the immutable 100 us limit. The
+    independent block-impact Gate also admitted zero blocks, so SELECTIVE was
+    prohibited even if the boundary Gate were ignored.
+  preserved_evidence:
+    - subset_query_global_kv_structure_admitted
+    - full_q_and_subset_q_equivalence_passed
+    - live_c2_observation_and_rust_plan_completed
+    - full_compute_control_output_valid
+    - sampler_comparability_passed
+    - stable_region_plan_opportunity_observed
+  next_mechanism_candidate: GPU_RESIDENT_PLAN_MASK
+  attention_cost_surface: ALIVE
+  speedup_claim_count: 0
+  quality_promotion_count: 0
+  product_promotion_count: 0
+  automatic_a2_started: false
+
+limitations:
+  - SELECTIVE did not run, so actual active-query work reduction, paired
+    quality, and paired runtime remain uncollected.
+  - The boundary p95 includes the predeclared first-call sample; it was not
+    discarded or reclassified after observing the result.
+  - The successful CONTROL receipt did not include a dedicated safety object;
+    event counts above come from terminal success, decoded integrity, and the
+    retained runtime log, while memory peaks remain explicitly uncollected.
+  - A0 and A1 ratios were not combined or multiplied.
