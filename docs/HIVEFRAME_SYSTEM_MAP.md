@@ -2,9 +2,9 @@
 
 Status: living architecture map
 
-Snapshot date: 2026-08-09
+Snapshot date: 2026-08-10
 
-Verified source `main`: `e8ba897033db6658d4114ffdf3a9060cf9a7d8a5`
+Verified source `main`: `1d339f5966c89fc66bf59d025bce3d2a1d289bf5`
 
 This document visualizes the current product path, Core/adapter ownership,
 selective-execution safety flow, and published H3 mechanism evidence. It must
@@ -228,6 +228,8 @@ flowchart LR
     C4S1R1G["Comparison still failed\n+6.47%; selector fallback-only"]
     A0["A0 SageAttention component\nhistorical 1.207x; screen passed"]
     A0G["KEEP_AS_OPTIONAL\nhuman review pending; default false"]
+    A1["A1 Active-Q CONTROL\nsubset-Q/global-KV structurally admitted"]
+    A1G["Rust p95 + block Gate failed\nSELECTIVE not run; fallback-only"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -249,6 +251,9 @@ flowchart LR
     C4S1R1 --> C4S1R1G
     C4A -. "separate external component review" .-> A0
     A0 --> A0G
+    C2 -. "separately approved A1" .-> A1
+    C4A -. "global K/V retained" .-> A1
+    A1 --> A1G
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
@@ -257,13 +262,14 @@ flowchart LR
     C4S1G --> DEFAULT
     C4S1R1G --> DEFAULT
     A0G --> DEFAULT
+    A1G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0 verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G rejected;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1 verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G rejected;
     class C4A,C4F,A0G planned;
     class DEFAULT safe;
 ```
@@ -291,6 +297,15 @@ SELECTIVE did not run. The exact selector is now fallback-only with no
 automatic R2; the independent feed-forward cost surface remains unadmitted
 evidence for a separately approved mechanism. Global attention remains Full
 Compute, and product speedup claim remains zero.
+
+A1 then connected the live C2 48-value sketch to a new metadata-only Rust
+region plan and an H3 adapter whose structural tests admit smaller post-RoPE Q
+against full/global K/V. One Full Attention CONTROL output remained comparable
+and valid. The immutable Rust boundary p95 was exceeded and no block passed the
+fixed regional attention-impact Gate, so SELECTIVE did not run. The exact
+zero-update mechanism is fallback-only; this does not reject the global
+attention cost surface or A0's independent optional kernel evidence. Standard
+Full Compute remains the solid product path.
 
 ## 5. Module ownership
 

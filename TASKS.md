@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-09
+Status date: 2026-08-10
 
 ## Status legend
 
@@ -21,7 +21,8 @@ expansion does not block the launch track.
 
 | Track | Status | Evidence or blocker |
 |---|---|---|
-| A0 — SageAttention stackable component admission | `pending_review` | Issue #80 / Draft PR #81; fixed automatic regression screen passed; `AVAILABLE_OPTIONAL`, product default false, human visual review pending |
+| A0 — SageAttention stackable component admission | `pending_review` | Issue #80 completed / PR #81 merged; `AVAILABLE_OPTIONAL`, product default false, human visual review pending |
+| A1 — Compound Eye regional active-query attention | `stopped` | Issue #82 / Draft PR #83; CONTROL valid and comparable, but Rust boundary p95 and block admission failed; SELECTIVE 0; `FALLBACK_ONLY` |
 | P0 — Local H3 vertical slice | `done` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) completed; PR #54 merged; `P0_LOCAL_H3_COMFYUI_READY` |
 | F0-SAGE — External SageAttention paired probe | `verified_once` | Issue #55; 1.207148× is below 1.3×; `F0_SAGE_NO_GAIN`; Draft review pending |
 | P1 — One-click Local H3 launcher | `planned` | separate approval; the P0 runtime/database isolation observation remains a non-promoted candidate |
@@ -289,7 +290,7 @@ selective compute, or model training is authorized automatically.
 
 ## A0 — H3 SageAttention stackable component admission
 
-Overall status: `pending_review`; publication status: `draft_pr`. Automatic
+Overall status: `pending_review`; publication status: `published`. Automatic
 decision: `A0_SAGE_STACKABLE_COMPONENT_READY_FOR_VISUAL_REVIEW`.
 
 | Task | Status | Evidence or blocker |
@@ -301,12 +302,38 @@ decision: `A0_SAGE_STACKABLE_COMPONENT_READY_FOR_VISUAL_REVIEW`.
 | Preserve quality claim boundary | `verified` | SSIM is diagnostic only; quality-at-least-Standard and visual equivalence remain unproven |
 | Prepare private visual review | `pending_review` | fixed frames plus three highest-motion transitions; human decision not inferred |
 | Admit product default | `not_admitted` | `KEEP_AS_OPTIONAL` / `AVAILABLE_OPTIONAL`; Standard Full Compute fallback preserved; final 2.0x not reached |
+| Publish A0 evidence | `published` | [Issue #80](https://github.com/ksse29077-byte/HIVEFRAME/issues/80) completed; [PR #81](https://github.com/ksse29077-byte/HIVEFRAME/pull/81) merged |
 
 A0 treats the historical 1.207148x result as one optional external component,
 not as a standalone product accelerator or a HIVEFRAME invention. Component
 ratios may not be multiplied to claim cumulative performance. Human review is
-required before any further quality disposition, and A1 has not started. See
+required before any further quality disposition. A1 later ran independently
+with Sage disabled and did not modify A0. See
 the detailed [A0 worklog](docs/worklogs/2026-08-09-a0-h3-sage-stackable-attention.md).
+
+## A1 — H3 Compound Eye regional active-query attention
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`A1_CONTROL_PLANE_OVERHEAD_TOO_HIGH`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated A1 work | `draft_pr` | [Issue #82](https://github.com/ksse29077-byte/HIVEFRAME/issues/82); branch `accel/a1-h3-compound-eye-active-query-attention`; Draft PR [#83](https://github.com/ksse29077-byte/HIVEFRAME/pull/83) |
+| Freeze A1 mechanism and Gates | `verified` | commit `8b18126...`; full QKV projection, subset Q after RoPE, global/full K/V, one-patch halo, anchors, cooldown, Full FF, max two Generations, retry zero |
+| Prove structural active-Q path | `verified` | full-Q wrapper and subset-Q row equivalence, smaller Q with unchanged K/V, non-video preservation, fixed region mapping, PyO3 A1 ABI roundtrip |
+| Execute CONTROL shadow | `verified_once` | one Generation, retry zero; live C2 + 18 A1 Rust plans; 20 forwards/1,000 Full Attention blocks; H.264 864x480, 124/124 frames, audio 1 |
+| Meet CONTROL comparability | `verified_once` | sampler 489.823359 s, +0.199661% versus immutable C4-S0 488.847320 s; within +/-5% |
+| Meet Rust overhead Gate | `stopped` | A1 boundary p95 202.5 us exceeded fixed 100 us; first-call sample retained |
+| Admit block opportunity | `stopped` | 12 observations/block, but zero blocks passed mean <=0.020; lowest mean 0.033861; planned Q reduction 0% |
+| Execute SELECTIVE and paired quality | `stopped` | prohibited by CONTROL Gate; SELECTIVE 0, paired quality/runtime not collected, visual equivalence not proven |
+
+The exact zero-update mechanism is `FALLBACK_ONLY`; this is not an attention-
+surface rejection. Structural query-subset/global-KV evidence, live C2/Rust
+control evidence, valid Full Compute output, and sampler comparability are
+preserved. The primary next mechanism candidate is `GPU_RESIDENT_PLAN_MASK`
+under separate approval. A0 remains optional and uncombined; product speedup,
+quality promotion, product promotion, and automatic A2 starts remain zero.
+See the detailed [A1 worklog](docs/worklogs/2026-08-10-a1-h3-compound-eye-active-query-attention.md).
 
 ## C0-H3 — Execution phase and Runtime Hook Map
 
