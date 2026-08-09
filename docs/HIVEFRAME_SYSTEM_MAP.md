@@ -215,6 +215,8 @@ flowchart LR
     C4F["Feed-forward positionwise 19.49%\nbounded candidate"]
     C4S1["C4-S1 FF token CONTROL shadow\nFull Compute output valid"]
     C4S1G["Instrumentation comparison failed\n+6.34%; SELECTIVE not run"]
+    C4S1R1["C4-S1-R1 minimal telemetry\nFull Compute output valid"]
+    C4S1R1G["Comparison still failed\n+6.47%; selector fallback-only"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -232,19 +234,22 @@ flowchart LR
     C4 --> C4F
     C4F -. "separately approved C4-S1" .-> C4S1
     C4S1 --> C4S1G
+    C4S1G -. "single approved REVISE_ONCE" .-> C4S1R1
+    C4S1R1 --> C4S1R1G
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
     R4G --> DEFAULT
     C4A --> DEFAULT
     C4S1G --> DEFAULT
+    C4S1R1G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1 verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G rejected;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1 verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G rejected;
     class C4A,C4F planned;
     class DEFAULT safe;
 ```
@@ -262,6 +267,16 @@ immutable C4-S0 comparator and exceeded the fixed +/-5% band. No policy
 received compute authority and SELECTIVE did not run. This is an
 instrumentation-comparability stop with `REVISE_ONCE`, not a rejection of the
 entire feed-forward surface. Full Compute remains the current default.
+
+C4-S1-R1 consumed that single revision. It removed measurement-only per-block
+events, synchronization, histogram, CONTROL host reads, and resource polling,
+while retaining the exact selector-required scalar and history work. Its
+520.488870-second sampler remained 6.472686% above the immutable C4-S0
+reference, so comparability failed again. Official policy admission and
+SELECTIVE did not run. The exact selector is now fallback-only with no
+automatic R2; the independent feed-forward cost surface remains unadmitted
+evidence for a separately approved mechanism. Global attention remains Full
+Compute, and product speedup claim remains zero.
 
 ## 5. Module ownership
 

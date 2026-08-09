@@ -485,13 +485,13 @@ profilers were disabled. See the detailed
 
 ## C4-S1 — H3 Feed-Forward Positionwise Token Selective Compute
 
-Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+Overall status: `stopped`; publication status: `published`. Bounded decision:
 `C4_S1_INSTRUMENTATION_OVERHEAD_TOO_HIGH`; constitution disposition:
 `REVISE_ONCE`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated C4-S1 work | `draft_pr` | [Issue #76](https://github.com/ksse29077-byte/HIVEFRAME/issues/76); branch `accel/c4-s1-h3-ff-token-selective`; Draft PR [#77](https://github.com/ksse29077-byte/HIVEFRAME/pull/77) |
+| Track isolated C4-S1 work | `published` | [Issue #76](https://github.com/ksse29077-byte/HIVEFRAME/issues/76) completed; branch `accel/c4-s1-h3-ff-token-selective`; PR [#77](https://github.com/ksse29077-byte/HIVEFRAME/pull/77) merged into the R1 base main |
 | Freeze causal selector and Gates before runtime | `verified` | P0/P1/P2, anchors 0/1/18/19, actual-history-only features, no consecutive skip, 10% block guard, fixed quality/comparison Gates; commit `6c21862...` |
 | Validate source, segment, execution, and memory contracts | `verified` | exact H3 source digest; final contiguous 14,985-row video segment; 5,376 hidden width; 15 focused model-free tests |
 | Execute fixed CONTROL shadow | `verified_once` | one eligible Generation, retry 0; 20 forwards, 1,000 full MLP calls, 15,424,000 rows, attention and FF both Full Compute; 124/124 H.264 frames with audio |
@@ -508,6 +508,30 @@ neither the entire feed-forward cost surface nor the cumulative 2.0x product
 goal. It requires one separately approved instrumentation refinement before
 this exact selector can be tested further. See the detailed
 [C4-S1 worklog](docs/worklogs/2026-08-08-c4-s1-h3-ff-token-selective.md).
+
+## C4-S1-R1 — Minimal Telemetry / Selector Overhead Truth
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`C4_S1_R1_MINIMAL_PATH_OVERHEAD_TOO_HIGH`; exact-selector disposition:
+`FALLBACK_ONLY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track the single C4-S1 revision | `draft_pr` | [Issue #78](https://github.com/ksse29077-byte/HIVEFRAME/issues/78); branch `accel/c4-s1-r1-h3-ff-minimal-telemetry`; Draft PR [#79](https://github.com/ksse29077-byte/HIVEFRAME/pull/79) |
+| Freeze unchanged selector and reduced telemetry | `verified` | Commit `28c21dc...`; P0/P1/P2, anchors, history, 10% guard, quality/opportunity Gates unchanged; per-block events, explicit sync, histogram, CONTROL host reads, and resource sampler removed |
+| Validate decision-equivalent p99 handling | `verified` | numeric p99 `null`; fixed >0.010 rate <=0.005 conservatively implies nearest-rank p99 <=0.010; focused boundary tests passed |
+| Execute minimal CONTROL | `verified_once` | one Generation, retry 0; 20 forwards, 1,000 full MLP calls, 15,424,000 rows; 124/124 H.264 frames with audio; instrumentation integrity Gate passed |
+| Pass CONTROL comparison | `stopped` | sampler 520.488870 s versus immutable 488.847320 s; +6.472686% exceeds fixed +/-5% band |
+| Evaluate official policy admission | `stopped` | blocked by earlier CONTROL Gate; 8/78/1,000 candidate rows remain diagnostic only |
+| Execute SELECTIVE | `stopped` | prohibited by the fixed Gate; Generation count 0 and quality/runtime not collected |
+| Preserve safety and claims | `verified_once` | Full Compute fallback preserved; actual work reduction, speedup claim, quality promotion, and product promotion 0 |
+
+The one permitted revision removed measurement-only telemetry but did not
+recover comparability. The exact selector is now fallback-only and has no
+automatic R2. The independent feed-forward cost surface remains valid but
+requires a different, separately approved product question and mechanism.
+Global attention remains Full Compute. See the detailed
+[C4-S1-R1 worklog](docs/worklogs/2026-08-09-c4-s1-r1-h3-ff-minimal-telemetry.md).
 
 ## Maintenance checklist
 
