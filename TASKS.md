@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-07
+Status date: 2026-08-09
 
 ## Status legend
 
@@ -21,6 +21,7 @@ expansion does not block the launch track.
 
 | Track | Status | Evidence or blocker |
 |---|---|---|
+| A0 — SageAttention stackable component admission | `pending_review` | Issue #80 / Draft PR #81; fixed automatic regression screen passed; `AVAILABLE_OPTIONAL`, product default false, human visual review pending |
 | P0 — Local H3 vertical slice | `done` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) completed; PR #54 merged; `P0_LOCAL_H3_COMFYUI_READY` |
 | F0-SAGE — External SageAttention paired probe | `verified_once` | Issue #55; 1.207148× is below 1.3×; `F0_SAGE_NO_GAIN`; Draft review pending |
 | P1 — One-click Local H3 launcher | `planned` | separate approval; the P0 runtime/database isolation observation remains a non-promoted candidate |
@@ -285,6 +286,27 @@ Overall status: `verified_once`; publication status: `published`; decision:
 This is external F0 acceleration, not HIVEFRAME Core acceleration. Standard
 full compute remains the fallback. No other mode, accelerator, Rust runtime,
 selective compute, or model training is authorized automatically.
+
+## A0 — H3 SageAttention stackable component admission
+
+Overall status: `pending_review`; publication status: `draft_pr`. Automatic
+decision: `A0_SAGE_STACKABLE_COMPONENT_READY_FOR_VISUAL_REVIEW`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Preserve immutable F0 decision | `verified` | `F0_SAGE_NO_GAIN` and the former standalone 1.3x contract remain unchanged |
+| Predeclare stackable component Gate | `verified` | fixed provenance, integrity, nMAE, motion, gradient, temporal-difference, review, fallback, and claim boundaries |
+| Reuse valid F0 pair | `verified_once` | output/workflow/profile hashes match; new Generation, retry, CUDA Generation, and benchmark counts are zero |
+| Run offline catastrophic-regression screen | `verified_once` | nMAE 0.018065; motion 0.986199; gradient 1.029342; temporal difference 1.033998; all fixed checks pass |
+| Preserve quality claim boundary | `verified` | SSIM is diagnostic only; quality-at-least-Standard and visual equivalence remain unproven |
+| Prepare private visual review | `pending_review` | fixed frames plus three highest-motion transitions; human decision not inferred |
+| Admit product default | `not_admitted` | `KEEP_AS_OPTIONAL` / `AVAILABLE_OPTIONAL`; Standard Full Compute fallback preserved; final 2.0x not reached |
+
+A0 treats the historical 1.207148x result as one optional external component,
+not as a standalone product accelerator or a HIVEFRAME invention. Component
+ratios may not be multiplied to claim cumulative performance. Human review is
+required before any further quality disposition, and A1 has not started. See
+the detailed [A0 worklog](docs/worklogs/2026-08-09-a0-h3-sage-stackable-attention.md).
 
 ## C0-H3 — Execution phase and Runtime Hook Map
 

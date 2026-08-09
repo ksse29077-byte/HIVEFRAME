@@ -1,0 +1,77 @@
+{
+  "schema_version": "a0.sage.stackable.contract.1",
+  "product_question": "Can the immutable F0 SageAttention result be retained as a quality-screened, optional stack component while Standard Full Compute remains the fallback?",
+  "base_main_commit": "e8ba897033db6658d4114ffdf3a9060cf9a7d8a5",
+  "historical_f0": {
+    "decision": "F0_SAGE_NO_GAIN",
+    "decision_is_immutable": true,
+    "standard_run_id": "f0-standard-bb480b1-001",
+    "sage_run_id": "f0-sage-auto-bb480b1-001",
+    "workflow_sha256": "31ab33fdb053a7834cc866bd7aa08b887518fc656e4a796c89779c6b5e1786e6",
+    "standard_output_sha256": "ec4ddbacaf9a9d578885c61b3514abc15dad1172566cd4ce84198f7a3bd641c4",
+    "sage_output_sha256": "147eb7872394fcb98a9a8990eb1a132bb776253739a238f38333220e6bcee120",
+    "contact_sheet_sha256": "2c065fc687967effbb848e790ad9e88c62bde9341f77968c8ba55e383f5dc1f5",
+    "side_by_side_sha256": "651ae67f84a2c47ae2ddaf3484bbc54d185ef48a68dcbb6e41ddc0ec6aa9b983",
+    "standard_submit_to_terminal_seconds": 586.9724998,
+    "sage_submit_to_terminal_seconds": 486.2472157,
+    "submit_speedup": 1.2071483,
+    "time_reduction_percent": 17.1601368,
+    "standard_runner_total_seconds": 595.4828687,
+    "sage_runner_total_seconds": 497.1118352,
+    "runner_speedup": 1.1978851,
+    "standalone_candidate_threshold": 1.3,
+    "standalone_candidate_threshold_used_by_a0": false,
+    "standalone_two_x_gate_used_by_a0": false
+  },
+  "fixed_output_contract": {
+    "codec": "h264",
+    "width": 864,
+    "height": 480,
+    "decoded_frame_count": 124,
+    "fps": 24.0,
+    "minimum_audio_stream_count": 1,
+    "black_frame_count": 0,
+    "corrupted_frame_count": 0
+  },
+  "automatic_catastrophic_regression_gate": {
+    "normalized_mae_max": 0.06,
+    "motion_energy_ratio_min": 0.8,
+    "motion_energy_ratio_max": 1.25,
+    "spatial_gradient_energy_ratio_min": 0.8,
+    "spatial_gradient_energy_ratio_max": 1.25,
+    "temporal_difference_energy_ratio_min": 0.8,
+    "temporal_difference_energy_ratio_max": 1.25,
+    "ssim_is_diagnostic_only": true
+  },
+  "visual_review": {
+    "fixed_frame_indices": [0, 31, 62, 93, 123],
+    "additional_motion_frame_count": 3,
+    "status_before_human_review": "PENDING_HUMAN_REVIEW"
+  },
+  "decisions": {
+    "automatic_pass": "A0_SAGE_STACKABLE_COMPONENT_READY_FOR_VISUAL_REVIEW",
+    "automatic_quality_fail": "A0_SAGE_AUTOMATIC_QUALITY_REGRESSION",
+    "current_environment_no_gain": "A0_SAGE_CURRENT_ENVIRONMENT_NO_GAIN",
+    "runtime_rejected": "A0_SAGE_RUNTIME_REJECTED"
+  },
+  "component_contract": {
+    "component_id": "ATTENTION_KERNEL_SAGE",
+    "component_type": "external_attention_kernel",
+    "success_disposition": "KEEP_AS_OPTIONAL",
+    "success_status": "AVAILABLE_OPTIONAL",
+    "product_default": false,
+    "product_promotion": 0,
+    "final_cumulative_two_x_goal_reached": false,
+    "standard_full_compute_fallback": "preserved",
+    "attention_workload_reduction": false,
+    "compound_eye_runtime_change_count": 0,
+    "rust_abi_change_count": 0,
+    "tensor_bytes_to_rust": 0
+  },
+  "execution_budget": {
+    "artifact_reuse_first": true,
+    "maximum_fresh_generations_if_reuse_invalid": 2,
+    "retry_count": 0,
+    "maximum_third_generation": 0
+  }
+}
