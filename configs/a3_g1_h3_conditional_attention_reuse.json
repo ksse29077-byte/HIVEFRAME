@@ -1,0 +1,145 @@
+{
+  "schema_version": "a3-g1.h3.conditional-reuse-config.1",
+  "mechanism": "REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1",
+  "correction": "REGION_CHANNEL_MEAN_DELTA",
+  "execution_authority": "GPU_NATIVE_CONDITIONAL_KERNEL_OMISSION_V1",
+  "execution_island": "PYTORCH_CUDAGRAPH_CONDITIONAL_IF_EXACT_SDPA_V1",
+  "product_default_enabled": false,
+  "modes": {
+    "control": "CONTROL_A3_G1_REAL_H3",
+    "selective": "SELECTIVE_A3_G1_REAL_H3"
+  },
+  "profile": {
+    "seed": 101,
+    "width": 864,
+    "height": 480,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "scheduler": "simple",
+    "sampler": "res_multistep",
+    "denoise": 1.0,
+    "native_audio": true,
+    "codec": "h264",
+    "sage": false,
+    "fresh_owned_comfyui_process": true,
+    "retry_budget": 0
+  },
+  "rust_authority": {
+    "directives": [
+      "FORCE_FULL",
+      "GPU_CHECK"
+    ],
+    "final_safe_authority": false,
+    "tensor_bytes": 0,
+    "calls_per_block": 0,
+    "calls_per_token": 0
+  },
+  "gpu_authority": {
+    "results": [
+      "SAFE_REUSE",
+      "FULL_COMPUTE"
+    ],
+    "decision_scope": "BLOCK_LEVEL_ALL_ELIGIBLE_STABLE_REGIONS",
+    "predicate": "CUDA_BOOL_SCALAR",
+    "host_guard_read": false,
+    "guard_d2h_bytes": 0,
+    "explicit_hot_path_cpu_sync": 0
+  },
+  "execution_island_contract": {
+    "exact_attention_backend": "attention_pytorch",
+    "exact_attention_operation": "PYTORCH_SDPA",
+    "cuda_runtime_minimum": "12.8",
+    "capture_tracing": "FAKE_TENSOR_NO_KERNEL_EXECUTION",
+    "static_address_required": true,
+    "address_mismatch_action": "FORCE_FULL",
+    "hot_path_recapture": false,
+    "native_full_parity": "BIT_EXACT_ONE_FIXED_CONTROL_SAMPLE"
+  },
+  "cache": {
+    "source": "ACTUAL_FULL_ATTENTION_CORE_OUTPUT_ONLY",
+    "location": "PINNED_HOST_MEMORY",
+    "age_source_intervals": 1,
+    "approximation_chaining": false,
+    "maximum_host_bytes": 2147483648,
+    "host_safety_reserve_bytes": 8589934592,
+    "maximum_candidate_blocks": 16,
+    "minimum_cache_capable_blocks": 3,
+    "maximum_gpu_staging_bytes": 268435456,
+    "d2h": "PINNED_NONBLOCKING",
+    "h2d": "PINNED_NONBLOCKING"
+  },
+  "candidate_blocks_from_a2_frozen_ranking": [
+    0,
+    48,
+    16,
+    10,
+    4,
+    11,
+    17,
+    13,
+    49,
+    15,
+    12,
+    14
+  ],
+  "runtime_guard": {
+    "representative_cosine_min": 0.97,
+    "representative_normalized_l2_max": 0.25,
+    "nonfinite_count": 0,
+    "one_unsafe_action": "FULL_BLOCK"
+  },
+  "block_admission": {
+    "valid_observations_min": 3,
+    "mean_cosine_min": 0.98,
+    "p05_cosine_min": 0.95,
+    "mean_normalized_l2_max": 0.12,
+    "p95_normalized_l2_max": 0.25,
+    "mean_energy_ratio_min": 0.85,
+    "mean_energy_ratio_max": 1.15,
+    "nonfinite_count": 0,
+    "corrected_l2_must_not_exceed_raw_l2": true
+  },
+  "false_safe": {
+    "corrected_cosine_min": 0.95,
+    "corrected_normalized_l2_max": 0.25,
+    "nonfinite_count": 0,
+    "allowed_count": 0
+  },
+  "opportunity": {
+    "admitted_blocks_min": 3,
+    "planned_actual_semantics_q_reduction_min": 0.03,
+    "actual_q_reduction_min": 0.03,
+    "affected_non_anchor_steps_min": 3,
+    "stable_plan_events_min": 3,
+    "callback_p95_ns_max": 3000000
+  },
+  "automatic_quality": {
+    "mean_ssim_min": 0.95,
+    "p05_ssim_min": 0.9,
+    "min_ssim_min": 0.85,
+    "ssim_below_0_85_rate_max": 0.02,
+    "normalized_mae_max": 0.03,
+    "motion_energy_ratio": [0.9, 1.1],
+    "gradient_energy_ratio": [0.9, 1.1],
+    "temporal_consistency_ratio": [0.9, 1.1]
+  },
+  "generation_budget": {
+    "control": 1,
+    "selective": 1,
+    "retry": 0
+  },
+  "decision_matrix": [
+    "A3_G1_REAL_H3_EXECUTION_ISLAND_NOT_ADMITTED",
+    "A3_G1_NATIVE_FULL_ATTENTION_PARITY_FAILED",
+    "A3_G1_RUNTIME_GUARD_NOT_SAFE",
+    "A3_G1_REUSE_NOT_ADMITTED",
+    "A3_G1_REAL_WORK_OMISSION_NOT_PROVEN",
+    "A3_G1_QUALITY_REJECTED",
+    "A3_G1_WORK_REDUCTION_VERIFIED_RUNTIME_NOT_POSITIVE",
+    "A3_G1_REAL_H3_SELECTIVE_ACCELERATION_READY_FOR_VISUAL_REVIEW"
+  ],
+  "speedup_claim": 0,
+  "quality_promotion": 0,
+  "product_promotion": 0
+}

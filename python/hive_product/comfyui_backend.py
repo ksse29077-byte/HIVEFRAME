@@ -191,6 +191,12 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "state": "synthetic_verified_once",
             "actual_h3_attention_connected": False,
             "fallback": "standard_full_compute",
+        },
+        "real_h3_conditional_attention_reuse_v1": {
+            "default_enabled": False,
+            "state": "experiment_only_not_admitted",
+            "execution_authority": "gpu_guard_only",
+            "fallback": "standard_full_compute",
         }
     }
 
