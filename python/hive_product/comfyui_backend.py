@@ -180,6 +180,13 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
     name = BACKEND_KEY
     display_name = "Local H3 — ComfyUI"
     poll_interval_seconds = 0.5
+    experimental_capabilities = {
+        "regional_attention_output_reuse_correction_v1": {
+            "default_enabled": False,
+            "state": "structurally_not_admitted",
+            "fallback": "standard_full_compute",
+        }
+    }
 
     def __init__(
         self,

@@ -1,0 +1,89 @@
+{
+  "schema_version": "a3.h3.output-reuse-config.1",
+  "mechanism": "REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1",
+  "correction": "REGION_CHANNEL_MEAN_DELTA",
+  "product_default_enabled": false,
+  "modes": {
+    "control": "CONTROL_A3_OUTPUT_REUSE_SHADOW",
+    "selective": "SELECTIVE_A3_OUTPUT_REUSE_CORRECTION"
+  },
+  "profile": {
+    "seed": 101,
+    "width": 864,
+    "height": 480,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "scheduler": "simple",
+    "sampler": "res_multistep",
+    "denoise": 1.0,
+    "native_audio": true,
+    "codec": "h264",
+    "sage": false,
+    "fresh_owned_comfyui_process": true,
+    "retry_budget": 0
+  },
+  "cache": {
+    "source": "ACTUAL_FULL_ATTENTION_CORE_OUTPUT_ONLY",
+    "location": "PINNED_HOST_MEMORY",
+    "age_source_intervals": 1,
+    "approximation_chaining": false,
+    "maximum_host_bytes": 2147483648,
+    "host_safety_reserve_bytes": 8589934592,
+    "maximum_candidate_blocks": 16,
+    "minimum_cache_capable_blocks": 3,
+    "maximum_gpu_staging_bytes": 268435456,
+    "d2h": "PINNED_NONBLOCKING",
+    "h2d": "PINNED_NONBLOCKING"
+  },
+  "runtime_guard": {
+    "mean_representative_cosine_min": 0.97,
+    "normalized_representative_l2_max": 0.25,
+    "nonfinite_count": 0,
+    "failure_action": "SAME_BLOCK_REGION_FULL_ATTENTION",
+    "current_adapter_conditional_dispatch_available": false
+  },
+  "block_admission": {
+    "valid_observations_min": 3,
+    "mean_cosine_min": 0.98,
+    "p05_cosine_min": 0.95,
+    "mean_normalized_l2_max": 0.12,
+    "p95_normalized_l2_max": 0.25,
+    "mean_energy_ratio_min": 0.85,
+    "mean_energy_ratio_max": 1.15,
+    "nonfinite_count": 0,
+    "corrected_l2_must_not_exceed_raw_l2": true
+  },
+  "control_plane": {
+    "semantic_callback_p95_ns_max": 3000000,
+    "tensor_bytes_to_rust": 0,
+    "rust_calls_per_block": 0,
+    "rust_calls_per_token": 0,
+    "explicit_hot_path_host_cuda_sync": 0
+  },
+  "runtime": {
+    "reference_sampler_seconds": 488.84732,
+    "control_regression_limit": 0.05
+  },
+  "opportunity": {
+    "admitted_blocks_min": 3,
+    "planned_attention_core_q_row_reduction_min": 0.03,
+    "affected_non_anchor_steps_min": 3,
+    "stable_region_plan_events_min": 3,
+    "false_safe_count": 0
+  },
+  "generation_budget": 2,
+  "selective_requires_all_control_gates": true,
+  "decision_matrix": {
+    "structural_path_unavailable": "A3_ATTENTION_OUTPUT_REUSE_STRUCTURALLY_NOT_ADMITTED",
+    "control_correction_or_guard_rejected": "A3_ATTENTION_OUTPUT_REUSE_CORRECTION_NOT_ADMITTED",
+    "control_cache_or_callback_overhead": "A3_OUTPUT_REUSE_CONTROL_OVERHEAD_TOO_HIGH",
+    "selective_quality_and_runtime_positive": "A3_HIVEFRAME_ATTENTION_REUSE_READY_FOR_VISUAL_REVIEW",
+    "work_reduction_quality_pass_runtime_not_positive": "A3_ATTENTION_REUSE_WORK_REDUCTION_VERIFIED_RUNTIME_NOT_YET_POSITIVE",
+    "automatic_quality_failed": "A3_ATTENTION_REUSE_QUALITY_REJECTED",
+    "actual_q_reduction_below_three_percent": "A3_ATTENTION_REUSE_OPPORTUNITY_TOO_LOW"
+  },
+  "speedup_claim": 0,
+  "quality_promotion": 0,
+  "product_promotion": 0
+}
