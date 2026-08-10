@@ -1,7 +1,7 @@
 # A3 H3 Attention-output reuse correction contract
 
-Status: frozen model-free structural contract  
-Mechanism: `REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1`  
+Status: frozen model-free structural contract
+Mechanism: `REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1`
 Correction: `REGION_CHANNEL_MEAN_DELTA`
 
 ## Product question

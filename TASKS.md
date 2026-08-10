@@ -606,6 +606,27 @@ requires a different, separately approved product question and mechanism.
 Global attention remains Full Compute. See the detailed
 [C4-S1-R1 worklog](docs/worklogs/2026-08-09-c4-s1-r1-h3-ff-minimal-telemetry.md).
 
+## A3 — Regional Attention Output Reuse with Correction
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded
+decision: `A3_ATTENTION_OUTPUT_REUSE_STRUCTURALLY_NOT_ADMITTED`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated A3 work | `draft_pr` | [Issue #86](https://github.com/ksse29077-byte/HIVEFRAME/issues/86); branch `accel/a3-h3-attention-output-reuse-correction`; Draft PR [#87](https://github.com/ksse29077-byte/HIVEFRAME/pull/87) |
+| Freeze mechanism before any runtime | `verified` | Commit `ef6f700...`; prior actual Full Attention-core cache only, channel-mean delta, age one, no chaining, unchanged A1 ABI, fixed Gates and decision matrix |
+| Validate source, mapping, cache, and ownership | `verified` | Installed H3/A1/A2 structural checks passed; H3-specific rows, cache, CUDA, and correction remain adapter-owned; 26 focused model-free tests passed |
+| Admit host cache capacity | `verified_once` | 50,546,864,128 available host bytes; 172,390,400 bytes/block; 12 ranked blocks fit the 2 GiB cap; staging stays below 256 MiB |
+| Admit same-block runtime guard dispatch | `stopped` | Current PyTorch adapter cannot branch from a current CUDA scalar guard to same-block Full Attention without a blocking host sync or unconditional Full Attention |
+| Execute CONTROL or SELECTIVE | `stopped` | Pre-generation structural Gate failed as declared; model load, CUDA, Generation, retry, CONTROL, and SELECTIVE counts are zero |
+| Claim work reduction, quality, or speedup | `stopped` | Runtime and paired output do not exist; values remain uncollected rather than zero-filled |
+
+The cache/correction idea remains an attention-surface hypothesis, but A3 V1
+does not have safe execution authority. A GPU-native conditional-dispatch hook
+or a separately approved pre-admission contract is required before another
+runtime experiment. Full Compute remains the default. See the detailed
+[A3 worklog](docs/worklogs/2026-08-10-a3-h3-attention-output-reuse-correction.md).
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.

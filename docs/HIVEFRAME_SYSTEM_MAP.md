@@ -4,7 +4,7 @@ Status: living architecture map
 
 Snapshot date: 2026-08-10
 
-Verified source `main`: `1d339f5966c89fc66bf59d025bce3d2a1d289bf5`
+Verified source `main`: `8d89b4dc64f3d15142ab4dc8bd32728988784bff`
 
 This document visualizes the current product path, Core/adapter ownership,
 selective-execution safety flow, and published H3 mechanism evidence. It must
@@ -232,7 +232,8 @@ flowchart LR
     A1G["Rust p95 + block Gate failed\nSELECTIVE not run; fallback-only"]
     A2["A2 Exact-Q prototype CONTROL\n2x2 spatial reconstruction diagnostic"]
     A2G["0 fidelity-admitted blocks\ncallback p95 failed; SELECTIVE not run"]
-    A2N["Regional attention-output reuse\nwith correction; separate approval"]
+    A3["A3 Attention-core output reuse\ncache/correction capacity admitted"]
+    A3G["Same-block GPU guard dispatch unavailable\nGeneration 0; structurally not admitted"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -259,7 +260,8 @@ flowchart LR
     A1 --> A1G
     A1G -. "separately approved A2" .-> A2
     A2 --> A2G
-    A2G -. "candidate only" .-> A2N
+    A2G -. "separately approved A3" .-> A3
+    A3 --> A3G
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
@@ -270,14 +272,15 @@ flowchart LR
     A0G --> DEFAULT
     A1G --> DEFAULT
     A2G --> DEFAULT
+    A3G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2 verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G rejected;
-    class C4A,C4F,A0G,A2N planned;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3 verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G rejected;
+    class C4A,C4F,A0G planned;
     class DEFAULT safe;
 ```
 
@@ -323,6 +326,19 @@ callback p95 also exceeded its fixed limit. SELECTIVE did not run. The exact
 prototype mechanism is fallback-only; corrected attention-output reuse is a
 candidate requiring separate approval, not an active path. Full Compute remains
 the current default and product speedup claim remains zero.
+
+A3 froze an H3 adapter capability for prior actual Full Attention-core output
+reuse with per-region channel-mean correction. Its model-free preflight proved
+the installed source hook, unchanged A1 Rust ABI, A2 representative mapping,
+and bounded host/GPU storage: 2 GiB admits 12 candidate blocks and one-block
+staging is about 164.4 MiB. It also exposed a stricter execution-authority
+blocker. The current PyTorch adapter cannot consume the current GPU
+representative guard and conditionally dispatch same-block Full Attention
+without either blocking host synchronization or unconditionally computing the
+work intended for omission. Quality-First fail-open therefore stopped A3
+before model load, CUDA, CONTROL, or SELECTIVE. This is a current dispatch-
+boundary result, not a rejection of the attention surface. Full Compute remains
+the product default and product speedup claim remains zero.
 
 ## 5. Module ownership
 
