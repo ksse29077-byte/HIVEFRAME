@@ -1943,6 +1943,47 @@ callable and the product default. A3-G1 is a separately approved integration
 candidate, not an automatic next action. Diagram impact is `updated`. See the
 detailed [A3-G0 worklog](worklogs/2026-08-10-a3-g0-gpu-conditional-omission.md).
 
+## 2026-08-10 — A3-G1 real H3 conditional attention reuse
+
+G0 PR #89 was published by normal merge commit
+`f5d2bf8c2f80612909eef21c555d764a116f7062`, and Issue #88 was completed.
+Issue #90, branch `accel/a3-g1-h3-conditional-attention-reuse`, and Draft PR
+#91 then isolated the approved real-H3 integration. Commit `5fa85ce...` froze
+`REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1`,
+`REGION_CHANNEL_MEAN_DELTA`, the G0 GPU-native conditional authority, exact
+`attention_pytorch` backend, conservative whole-block fallback, age-one
+actual-Full cache lineage, fixed thresholds, and work accounting before any
+Generation.
+
+Fifteen focused model-free tests passed with one opt-in CUDA case skipped. The
+separately opted-in CUDA focused test passed, as did targeted syntax/import and
+custom-node checks. The published G0 evidence sequence was not rerun. The one
+authorized CONTROL attempt reached step 0, block 0, then failed while capturing
+the real PyTorch SDPA body into the conditional CUDA Graph. CUDA reported
+`cudaErrorStreamCaptureIsolation` because of a dependency on uncaptured work
+in another stream, followed by `cudaErrorStreamCaptureInvalidated` and a
+`cudaMallocAsync` uncaptured-allocation release warning. The owned ComfyUI
+runtime terminated.
+
+CONTROL attempts/successes were 1/0, SELECTIVE attempts/successes were 0/0,
+and retry count was zero. Native Full parity, output integrity, admitted
+blocks, actual Q omission, paired quality, and all speedups are
+`not_collected`. No MP4 was created. Partial failure-path diagnostics recorded
+one model forward, one block call, one native-error fallback, zero graph
+captures/replays, 172,390,400 bytes of one-block GPU staging, and zero guard
+D2H, host guard reads, hot-path CPU synchronization, Rust calls, or tensor
+bytes to Rust. These partial counts and timings are not promoted to baseline
+performance evidence.
+
+The decision is `A3_G1_REAL_H3_EXECUTION_ISLAND_NOT_ADMITTED`, disposition
+`FALLBACK_ONLY`. It rejects this live exact-SDPA capture boundary, not the
+reuse correction or Attention surface. Standard Full Compute remains the
+independent product default. Speedup claim, quality promotion, and product
+promotion are zero; no automatic revision was started. Diagram impact is
+`updated`. See the detailed
+[A3-G1 worklog](worklogs/2026-08-10-a3-g1-h3-conditional-attention-reuse.md)
+and [decision report](../reports/a3_g1/decision-report.md).
+
 ---
 
 ## Entry template

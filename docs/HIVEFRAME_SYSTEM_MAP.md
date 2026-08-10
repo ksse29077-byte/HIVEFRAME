@@ -4,7 +4,7 @@ Status: living architecture map
 
 Snapshot date: 2026-08-10
 
-Verified source `main`: `6b58dfac7c7e63247294184b70c2caceb6e8518b`
+Verified source `main`: `f5d2bf8c2f80612909eef21c555d764a116f7062`
 
 This document visualizes the current product path, Core/adapter ownership,
 selective-execution safety flow, and published H3 mechanism evidence. It must
@@ -52,6 +52,7 @@ flowchart TB
         DECODE["Video/audio decode + H.264 encode"]
         H3HOOKS["H3-specific hook / tensor / cache adapter"]
         GPUCOND["A3-G0 GPU conditional omission\nsynthetic verified; default false"]
+        G1COND["A3-G1 real H3 execution island\ncapture isolation failed; disabled"]
 
         H3PRODUCT --> LOOPBACK --> WORKFLOW
         WORKFLOW --> LOADERS --> SAMPLER
@@ -59,7 +60,8 @@ flowchart TB
         SAGE -. "external attention kernel" .-> SAMPLER
         SAMPLER <--> H3HOOKS
         DIT <--> H3HOOKS
-        H3HOOKS -. "H3 attention not connected" .-> GPUCOND
+        H3HOOKS -. "conditional authority candidate" .-> GPUCOND
+        GPUCOND -. "real exact SDPA capture" .-> G1COND
     end
 
     subgraph CORE["Model-replaceable HIVEFRAME Core"]
@@ -239,6 +241,8 @@ flowchart LR
     A3G["Same-block GPU guard dispatch unavailable\nGeneration 0; structurally not admitted"]
     A3G0["A3-G0 GPU conditional omission\nsynthetic PyTorch/CUDA primitive"]
     A3G0G["SAFE omission + exact fallback\nverified_once; H3 not connected"]
+    A3G1["A3-G1 real H3 attention reuse\nCONTROL attempted once"]
+    A3G1G["CUDA Graph capture isolation failed\nCONTROL incomplete; SELECTIVE 0"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -269,6 +273,8 @@ flowchart LR
     A3 --> A3G
     A3G -. "separately approved A3-G0" .-> A3G0
     A3G0 --> A3G0G
+    A3G0G -. "separately approved A3-G1" .-> A3G1
+    A3G1 --> A3G1G
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
@@ -281,13 +287,14 @@ flowchart LR
     A2G --> DEFAULT
     A3G --> DEFAULT
     A3G0G --> DEFAULT
+    A3G1G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3,A3G0,A3G0G verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G rejected;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3,A3G0,A3G0G,A3G1 verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G,A3G1G rejected;
     class C4A,C4F,A0G planned;
     class DEFAULT safe;
 ```
@@ -358,7 +365,18 @@ CPU synchronization, redundant tensor copies, and conditional-body
 allocations were zero. This verifies a bounded GPU-native dispatch primitive,
 not actual H3 attention omission. The capability is disabled by default, H3
 integration and product speedup remain zero, and Full Compute remains the
-solid product path. A3-G1 requires separate approval.
+solid product path.
+
+A3-G1 subsequently attempted the separately approved real-H3 connection. One
+CONTROL reached step 0, block 0, but the installed exact PyTorch SDPA path
+created a dependency on uncaptured work in another stream during conditional
+CUDA Graph capture. CUDA invalidated the capture, the `cudaMallocAsync`
+allocator reported an uncaptured-allocation release during capture, and the
+owned runtime terminated. Native Full parity and output integrity were not
+collected, so SELECTIVE was prohibited and no retry occurred. This rejects the
+current live-capture execution-island integration, not the Attention surface
+or correction hypothesis. Standard Full Compute remains the solid product
+path and all acceleration, quality, and product claims remain zero.
 
 ## 5. Module ownership
 
