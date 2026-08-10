@@ -1,0 +1,96 @@
+schema_version: hiveframe.h3.knowledge.1
+logical_id: a3_attention_output_reuse_correction
+updated_at: 2026-08-10
+status: verified_once
+
+mechanism:
+  id: REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1
+  correction: REGION_CHANNEL_MEAN_DELTA
+  product_default_enabled: false
+  execution_status: structurally_not_admitted
+  full_compute_fallback: preserved
+
+runtime_contract:
+  cache_source: actual_full_attention_core_output_only
+  cache_age_source_intervals: 1
+  selective_or_corrected_cache_source: rejected
+  approximation_chaining: false
+  qkv_projection: full
+  key_value_rows: full_global
+  output_projection: full_original
+  mlp: full
+  vae: full
+  audio: full
+  rust_abi: A1_ATTENTION_REGION_PLAN_ABI_V1
+  tensor_bytes_to_rust: 0
+
+cache_capacity:
+  status: verified_once
+  attention_core_width: 7168
+  regional_interior_rows: 12025
+  dtype: bfloat16
+  bytes_per_block: 172390400
+  maximum_host_cache_bytes: 2147483648
+  host_safety_reserve_bytes: 8589934592
+  available_host_bytes_at_preflight: 50546864128
+  admitted_candidate_blocks: 12
+  selected_blocks: [0, 48, 16, 10, 4, 11, 17, 13, 49, 15, 12, 14]
+  gpu_staging_peak_contract_bytes: 172390400
+  gpu_staging_limit_bytes: 268435456
+
+candidate_source:
+  state: reused_successfully
+  a2_private_callback_receipt_sha256: fc84edd21438fbbcb474b682d5666ed901d7a8d0771a8354ffc0410d5ca5e04e
+  a2_settings_digest: 2c8d21dd59eb8c10761388c8d99f3ab0cc180d87c965d4d026bc354398be35ba
+  ranking:
+    - mean_normalized_l2_ascending
+    - mean_cosine_descending
+    - p95_normalized_l2_ascending
+    - block_index_ascending
+
+structural_admission:
+  state: verified_once
+  passed:
+    - installed_h3_source_fixed
+    - a1_smaller_q_full_kv_reachable
+    - attention_core_output_hook_available
+    - full_output_projection_original
+    - full_attention_fallback_callable
+    - a2_representative_mapping_reusable
+    - host_cache_capacity
+    - gpu_staging_capacity
+    - generic_core_h3_leakage_zero
+    - rust_abi_unchanged
+  rejected:
+    - same_block_gpu_guard_conditional_dispatch
+  blocker: >-
+    A current CUDA representative guard cannot conditionally dispatch the same
+    block's Full Attention in the current PyTorch adapter without either a
+    blocking host synchronization or unconditional Full Attention computation.
+
+decision:
+  technical: A3_ATTENTION_OUTPUT_REUSE_STRUCTURALLY_NOT_ADMITTED
+  disposition: FALLBACK_ONLY
+  attention_surface: ALIVE
+  generation_count: 0
+  cuda_execution_count: 0
+  selective_execution_count: 0
+  speedup_claim_count: 0
+  quality_promotion_count: 0
+  product_promotion_count: 0
+  next_actions:
+    - candidate: GPU_NATIVE_CONDITIONAL_ATTENTION_DISPATCH
+      status: candidate_only
+      promotion: H3_KNOWLEDGE_PROMOTION_REQUIRED
+    - candidate: PREDECLARED_REPRESENTATIVE_GUARD_ADMISSION
+      status: candidate_only
+      promotion: H3_KNOWLEDGE_PROMOTION_REQUIRED
+
+evidence:
+  implementation_commit: ef6f70036f8d563b45edfe446fb18f8078904b20
+  structural_receipt_sha256: b8003e212e9458d55f320a0f220313481f66c2cebf0adde7096b89b5516ee4d8
+  focused_tests: 26
+  focused_tests_status: passed
+  full_suite_repeated: false
+  sensitive_paths_published: 0
+  model_binary_tracked: 0

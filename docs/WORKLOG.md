@@ -1823,6 +1823,53 @@ promotion, A0 integration, and final 2x claims are zero. Diagram impact is
 `updated`. See the detailed
 [A2 worklog](worklogs/2026-08-10-a2-h3-gpu-regional-query-prototype-attention.md).
 
+## 2026-08-10 — A3 H3 regional attention-output reuse correction
+
+Issue #86, branch `accel/a3-h3-attention-output-reuse-correction`, and Draft
+PR #87 isolate
+`REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1`. Commit `ef6f700...`
+froze prior actual Full Attention-core output as the only cache source,
+`REGION_CHANNEL_MEAN_DELTA`, exact age one, no approximation chaining, current
+exact A2 representatives, full/global K/V, full QKV and output projection,
+anchors and fail-open states, fixed fidelity/opportunity/runtime Gates, and a
+two-Generation maximum before any runtime result was observed.
+
+Twenty-six focused model-free tests passed. They cover Full Compute parity and
+fallback semantics, cache lineage, age, Active/Uncertain/Halo/Anchor handling,
+stale/missing/not-ready cache, exact representative and full/global-KV
+contracts, deterministic channel correction, region/time isolation,
+nonfinite/layout failure, stable settings digests, product-default false, and
+the unchanged Standard sampler route. No unchanged full Python or Rust suite
+was repeated.
+
+Read-only installed-source admission and immutable A2 evidence both matched.
+The A2 callback receipt SHA-256 is
+`fc84edd21438fbbcb474b682d5666ed901d7a8d0771a8354ffc0410d5ca5e04e`.
+Its full ranking selected blocks 0, 48, 16, 10, 4, 11, 17, 13, 49, 15, 12,
+and 14 under the fixed 2 GiB cache cap. H3 attention-core width 7,168 and
+12,025 exclusive interior rows produce 172,390,400 bytes per BF16 block;
+twelve blocks require 2,068,684,800 bytes. Available host memory was
+50,546,864,128 bytes and one-block GPU staging remained 172,390,400 bytes,
+below 256 MiB. Cache capacity was admitted.
+
+The pre-generation Gate found one execution-authority blocker. SELECTIVE must
+evaluate a current GPU representative cosine/L2 guard and, on failure, execute
+same-block Full Attention. The current PyTorch/ComfyUI adapter cannot make that
+conditional dispatch without a blocking `.item()`/equivalent host wait.
+Computing Full Attention unconditionally and selecting on GPU would preserve
+quality but eliminate the claimed omitted-Q reduction; deferring the guard
+would violate same-block fail-open. No such workaround was mislabeled as safe.
+
+The bounded decision is
+`A3_ATTENTION_OUTPUT_REUSE_STRUCTURALLY_NOT_ADMITTED`. Model load, CUDA,
+Generation, CONTROL, SELECTIVE, retry, Sage, external API, threshold change,
+speedup claim, quality promotion, and product promotion counts are zero. The
+private structural receipt and its sanitized summary share SHA-256
+`b8003e212e9458d55f320a0f220313481f66c2cebf0adde7096b89b5516ee4d8`;
+private paths remain outside Git. Full Compute stays independently callable and
+default. Diagram impact is `updated`. See the detailed
+[A3 worklog](worklogs/2026-08-10-a3-h3-attention-output-reuse-correction.md).
+
 ---
 
 ## Entry template
