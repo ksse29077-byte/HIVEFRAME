@@ -4,7 +4,7 @@ Status: living architecture map
 
 Snapshot date: 2026-08-10
 
-Verified source `main`: `8d89b4dc64f3d15142ab4dc8bd32728988784bff`
+Verified source `main`: `6b58dfac7c7e63247294184b70c2caceb6e8518b`
 
 This document visualizes the current product path, Core/adapter ownership,
 selective-execution safety flow, and published H3 mechanism evidence. It must
@@ -51,6 +51,7 @@ flowchart TB
         DIT["H3 transformer blocks"]
         DECODE["Video/audio decode + H.264 encode"]
         H3HOOKS["H3-specific hook / tensor / cache adapter"]
+        GPUCOND["A3-G0 GPU conditional omission\nsynthetic verified; default false"]
 
         H3PRODUCT --> LOOPBACK --> WORKFLOW
         WORKFLOW --> LOADERS --> SAMPLER
@@ -58,6 +59,7 @@ flowchart TB
         SAGE -. "external attention kernel" .-> SAMPLER
         SAMPLER <--> H3HOOKS
         DIT <--> H3HOOKS
+        H3HOOKS -. "H3 attention not connected" .-> GPUCOND
     end
 
     subgraph CORE["Model-replaceable HIVEFRAME Core"]
@@ -88,6 +90,7 @@ flowchart TB
     POLICY -. "directive; no raw tensor to Rust" .-> H3HOOKS
     CAP -. "only if supported and safe" .-> OPT
     H3HOOKS --> FULL
+    GPUCOND -. "future separately admitted dispatch" .-> OPT
     H3HOOKS -. "future admitted path" .-> OPT
     H3HOOKS --> FALLBACK --> FULL
     FULL --> DIT
@@ -101,7 +104,7 @@ flowchart TB
     class UI,JOBS,RESULT,FEEDBACK,ROUTER,MOCK,H3PRODUCT,FULL,FALLBACK product;
     class CONTRACT,EYES,FUSION,STATE,PLAN,CAP,POLICY,AUDIT core;
     class LOOPBACK,WORKFLOW,LOADERS,SAMPLER,DIT,DECODE,H3HOOKS adapter;
-    class OPT,SAGE planned;
+    class OPT,SAGE,GPUCOND planned;
 ```
 
 The solid product path is Local UI -> explicit backend -> loopback ComfyUI ->
@@ -234,6 +237,8 @@ flowchart LR
     A2G["0 fidelity-admitted blocks\ncallback p95 failed; SELECTIVE not run"]
     A3["A3 Attention-core output reuse\ncache/correction capacity admitted"]
     A3G["Same-block GPU guard dispatch unavailable\nGeneration 0; structurally not admitted"]
+    A3G0["A3-G0 GPU conditional omission\nsynthetic PyTorch/CUDA primitive"]
+    A3G0G["SAFE omission + exact fallback\nverified_once; H3 not connected"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -262,6 +267,8 @@ flowchart LR
     A2 --> A2G
     A2G -. "separately approved A3" .-> A3
     A3 --> A3G
+    A3G -. "separately approved A3-G0" .-> A3G0
+    A3G0 --> A3G0G
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
@@ -273,12 +280,13 @@ flowchart LR
     A1G --> DEFAULT
     A2G --> DEFAULT
     A3G --> DEFAULT
+    A3G0G --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3 verified;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3,A3G0,A3G0G verified;
     class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G rejected;
     class C4A,C4F,A0G planned;
     class DEFAULT safe;
@@ -339,6 +347,18 @@ work intended for omission. Quality-First fail-open therefore stopped A3
 before model load, CUDA, CONTROL, or SELECTIVE. This is a current dispatch-
 boundary result, not a rejection of the attention surface. Full Compute remains
 the product default and product speedup claim remains zero.
+
+A3-G0 then isolated the missing execution-authority primitive without loading
+H3. One synthetic PyTorch/CUDA tensor sequence entered a native CUDA Graph on
+the current device, context, and stream. A GPU guard selected complementary IF
+bodies: SAFE executed only the cheap reference body and UNSAFE executed only
+the exact body. Both paths were bit-exact to independent references, branch
+history did not leak state, and guard D2H, host guard reads, hot-path explicit
+CPU synchronization, redundant tensor copies, and conditional-body
+allocations were zero. This verifies a bounded GPU-native dispatch primitive,
+not actual H3 attention omission. The capability is disabled by default, H3
+integration and product speedup remain zero, and Full Compute remains the
+solid product path. A3-G1 requires separate approval.
 
 ## 5. Module ownership
 

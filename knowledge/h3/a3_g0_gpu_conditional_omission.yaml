@@ -1,0 +1,110 @@
+schema_version: hiveframe.h3.a3-g0-conditional-omission.1
+knowledge_status: verified_once
+recorded_at: 2026-08-10
+mechanism: GPU_NATIVE_CONDITIONAL_KERNEL_OMISSION_V1
+source_main: 6b58dfac7c7e63247294184b70c2caceb6e8518b
+issue: 88
+branch: runtime/a3-g0-gpu-conditional-omission
+draft_pr: 89
+
+environment:
+  host_runtime: windows
+  python: 3.13.12
+  pytorch: 2.12.1+cu130
+  pytorch_cuda_build: "13.0"
+  nvidia_driver: "610.88"
+  gpu: NVIDIA GeForce RTX 3060
+  cuda_toolkit: 13.0.2
+  nvcc: 13.0.88
+  cuda_home: <cuda-toolkit-root>
+  msvc_toolset: 14.44.35207
+
+toolchain:
+  installer_source: https://developer.download.nvidia.com/compute/cuda/13.0.2/network_installers/cuda_13.0.2_windows_network.exe
+  installer_sha256: 00c03dcc82007bc1c323c50d64bc2c25bdcffb1846a187889a3b86f6a3050841
+  authenticode_signer: NVIDIA Corporation
+  installed_components:
+    - nvcc_13.0
+    - cudart_13.0
+    - crt_13.0
+    - nvvm_13.0
+  driver_changed: false
+  pytorch_changed: false
+  python_changed: false
+  comfyui_changed: false
+  reboot_required_for_admission: false
+  conditional_device_compile: passed
+
+native_boundary:
+  implementation: cpython_c_api_plus_cuda_runtime
+  input: real_pytorch_cuda_tensor
+  same_device: true
+  same_context: true
+  current_pytorch_stream: true
+  separate_cuda_context_created: false
+  redundant_tensor_copy_bytes: 0
+  note: installed_pytorch_cpp_headers_unavailable
+
+graph_contract:
+  topology: one_guard_two_complementary_if_nodes
+  conditional_api: cudaGraphSetConditional
+  conditional_type: IF
+  fixed_sequence:
+    - SAFE
+    - UNSAFE
+    - SAFE
+    - UNSAFE
+  safe_value: 1
+  fail_closed_rule: every_non_safe_value_runs_exact_body
+  all_buffers_preallocated: true
+
+observed_result:
+  actual_fixed_sequence_runs: 1
+  graph_launches: 4
+  safe_reuse_body_executions: 2
+  safe_exact_body_executions: 0
+  unsafe_reuse_body_executions: 0
+  unsafe_exact_body_executions: 2
+  branch_history:
+    - 0
+    - 1
+    - 0
+    - 1
+  branch_state_leak: false
+  safe_reference_bit_exact: true
+  unsafe_exact_control_bit_exact: true
+  guard_d2h_bytes: 0
+  host_guard_reads: 0
+  explicit_hot_path_cpu_sync_count: 0
+  final_evidence_sync_count: 1
+  conditional_body_allocations: 0
+  conditional_body_frees: 0
+  counter_semantics: body_execution_evidence_not_profiler_measured_kernel_launch_count
+
+verification:
+  settings_digest: 37912a32eb9b7769b2040b04a4c1d040621a0029271077c5ad23d200b4e76efa
+  focused_tests_with_native_gpu_primitive: 5_passed
+  later_model_free_contract_tests: 4_passed
+  targeted_python_compile: passed
+  native_cpp_cuda_build: passed
+  full_python_suite: not_repeated
+  full_rust_suite: not_repeated
+
+capability:
+  state: synthetic_verified_once
+  default_enabled: false
+  actual_h3_attention_connected: false
+  fallback: standard_full_compute
+
+claims:
+  model_load_count: 0
+  generation_count: 0
+  actual_h3_attention_omission_count: 0
+  speedup_claim: 0
+  quality_success: false
+  product_promotion: 0
+
+decision: A3_G0_GPU_CONDITIONAL_OMISSION_READY
+disposition: INTEGRATE
+next_candidate: A3-G1
+next_candidate_requires_separate_approval: true
