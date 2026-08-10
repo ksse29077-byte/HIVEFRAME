@@ -1782,6 +1782,47 @@ quality promotion, product promotion, retry, third Generation, training, and
 automatic A2 starts are zero. Diagram impact is `updated`. See the detailed
 [A1 worklog](worklogs/2026-08-10-a1-h3-compound-eye-active-query-attention.md).
 
+## 2026-08-10 — A2 H3 GPU-resident regional query prototype attention
+
+Issue #84, branch `accel/a2-h3-gpu-regional-query-prototype`, and Draft PR #85
+isolate `GPU_RESIDENT_REGIONAL_QUERY_PROTOTYPE_ATTENTION_V1`. Historical A1
+zero-update evidence remains unchanged and was not retried. A2 instead fixed
+exact original post-RoPE Q representatives on a 2x2 spatial stride, same-time
+and same-region bilinear attention-core reconstruction, full QKV projection,
+full/global K/V, full output projection, Full Compute fallback, frozen fidelity
+and opportunity Gates, Sage disabled, retry zero, and at most two Generations.
+
+Sixteen focused Python tests, three focused Rust ABI tests, Python compile,
+Rust formatting/workspace check, installed-source admission, PyO3 roundtrip,
+and diff check passed. The unchanged metadata-only Rust ABI made 18 calls with
+17 us boundary p95 and zero tensor bytes, per-block calls, or per-token calls.
+Sixteen GPU plan masks used 9,061,696 persistent bytes; per-block plan
+allocation, explicit CUDA synchronization, and full-tensor host copy were zero.
+
+Exactly one Full Attention CONTROL Generation completed with retry zero. It
+executed 20 forwards and 1,000 blocks, collected 600 finite counterfactual
+block-region observations, and emitted a valid H.264 864x480, 124/124-frame,
+24 FPS video with one audio stream. Sampler, submit-to-terminal, and runner
+spans were 493.593208, 594.124892, and 605.969617 seconds. The sampler was
++0.970832% versus immutable C4-S0 and passed the +5% comparison Gate.
+
+No block passed the fixed prototype-fidelity Gate. Best block 0 had mean/p05
+cosine 0.980539/0.968115 but mean/p95 normalized L2 0.193671/0.250851,
+exceeding fixed 0.120/0.250 limits. Admitted blocks and planned Q reduction
+were zero. The inclusive Compound Eye callback p95 was also 59.829032 ms,
+above the fixed 3 ms Gate; the Rust boundary is a child span and was not added
+twice. Thresholds and mechanism were not changed.
+
+SELECTIVE, retry, and third Generation counts were zero. Actual query
+reduction, paired quality/runtime, and visual equivalence remain zero,
+uncollected, or unproven as applicable. The decision is
+`A2_QUERY_PROTOTYPE_OPPORTUNITY_TOO_LOW`, disposition is `FALLBACK_ONLY`, and
+the candidate `REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1` was not
+started. Full Compute remains default; speedup, quality promotion, product
+promotion, A0 integration, and final 2x claims are zero. Diagram impact is
+`updated`. See the detailed
+[A2 worklog](worklogs/2026-08-10-a2-h3-gpu-regional-query-prototype-attention.md).
+
 ---
 
 ## Entry template
