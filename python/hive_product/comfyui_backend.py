@@ -185,6 +185,12 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "default_enabled": False,
             "state": "structurally_not_admitted",
             "fallback": "standard_full_compute",
+        },
+        "gpu_conditional_omission_v1": {
+            "default_enabled": False,
+            "state": "synthetic_verified_once",
+            "actual_h3_attention_connected": False,
+            "fallback": "standard_full_compute",
         }
     }
 
