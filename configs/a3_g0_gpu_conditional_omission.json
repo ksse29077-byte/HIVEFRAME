@@ -1,0 +1,53 @@
+{
+  "schema_version": "a3-g0.conditional-omission.1",
+  "mechanism": "GPU_NATIVE_CONDITIONAL_KERNEL_OMISSION_V1",
+  "product_question": "Can GPU-native conditional execution omit the exact body without a host guard read and retain bit-exact full-compute fallback?",
+  "default_enabled": false,
+  "actual_h3_attention_connected": false,
+  "input_contract": {
+    "device": "current_pytorch_cuda_device",
+    "stream": "current_pytorch_cuda_stream",
+    "dtype": "int32",
+    "synthetic_only": true
+  },
+  "graph_topology": {
+    "guard": "one_gpu_guard_kernel",
+    "reuse_condition": "SAFE == 1",
+    "full_condition": "SAFE == 0",
+    "conditional_nodes": 2,
+    "conditional_type": "IF",
+    "body_execution_rule": "exactly_one",
+    "replay_sequence": [
+      "SAFE",
+      "UNSAFE",
+      "SAFE",
+      "UNSAFE"
+    ]
+  },
+  "synchronization_contract": {
+    "host_guard_read": false,
+    "guard_d2h_bytes": 0,
+    "explicit_hot_path_cpu_sync_count": 0,
+    "final_evidence_sync_count": 1
+  },
+  "memory_contract": {
+    "all_required_buffers_preallocated": true,
+    "conditional_body_allocation_count": 0
+  },
+  "claim_boundary": {
+    "body_counters_are_kernel_launch_counts": false,
+    "body_counters_are_body_execution_evidence": true,
+    "actual_h3_attention_omission": false,
+    "speedup_claim": false,
+    "quality_success": false,
+    "product_promotion": false
+  },
+  "decisions": [
+    "A3_G0_NATIVE_BUILD_TOOLCHAIN_UNAVAILABLE",
+    "A3_G0_CONDITIONAL_DEVICE_COMPILE_FAILED",
+    "A3_G0_PYTORCH_NATIVE_DISPATCH_NOT_ADMITTED",
+    "A3_G0_KERNEL_OMISSION_NOT_PROVEN",
+    "A3_G0_EXACT_FALLBACK_PARITY_FAILED",
+    "A3_G0_GPU_CONDITIONAL_OMISSION_READY"
+  ]
+}

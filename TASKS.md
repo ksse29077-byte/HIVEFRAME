@@ -627,6 +627,28 @@ or a separately approved pre-admission contract is required before another
 runtime experiment. Full Compute remains the default. See the detailed
 [A3 worklog](docs/worklogs/2026-08-10-a3-h3-attention-output-reuse-correction.md).
 
+## A3-G0 — GPU-Native Conditional Kernel Omission Primitive
+
+Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+decision: `A3_G0_GPU_CONDITIONAL_OMISSION_READY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated A3-G0 work | `draft_pr` | [Issue #88](https://github.com/ksse29077-byte/HIVEFRAME/issues/88); branch `runtime/a3-g0-gpu-conditional-omission`; Draft PR [#89](https://github.com/ksse29077-byte/HIVEFRAME/pull/89) |
+| Admit a native Windows CUDA build path | `verified_once` | Official CUDA 13.0.2 minimal developer components; NVCC 13.0 V13.0.88; conditional-device source compiled and linked |
+| Freeze the bounded primitive | `verified` | Two complementary CUDA Graph IF nodes, one GPU guard, fixed SAFE/UNSAFE/SAFE/UNSAFE replay, preallocated buffers, exact fail-closed fallback |
+| Execute the fixed synthetic primitive | `verified_once` | One fixed native sequence; reuse/exact body evidence 2/2; branch history 0/1/0/1; no state leak |
+| Preserve exact fallback parity | `verified_once` | SAFE output bit-exact to an independent reuse reference; UNSAFE output bit-exact to standalone exact control |
+| Preserve the host/synchronization boundary | `verified_once` | guard D2H 0 bytes; host guard reads 0; hot-path explicit CPU sync 0; one final evidence sync; conditional-body allocations 0 |
+| Integrate actual H3 attention | `not_started` | A3-G0 is synthetic only; actual H3 attention omission, model load, and Generation counts are zero |
+| Claim speed or quality | `stopped` | No profiler kernel-launch count, H3 paired output, runtime speedup, quality success, or product promotion exists |
+
+A3-G0 closes only the missing GPU-native conditional execution primitive. It
+does not revive A3 V1 automatically and does not authorize A3-G1. Standard
+Full Compute remains the product default, and the experimental adapter
+capability is disabled by default. See the detailed
+[A3-G0 worklog](docs/worklogs/2026-08-10-a3-g0-gpu-conditional-omission.md).
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.

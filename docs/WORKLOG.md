@@ -1870,6 +1870,79 @@ private paths remain outside Git. Full Compute stays independently callable and
 default. Diagram impact is `updated`. See the detailed
 [A3 worklog](worklogs/2026-08-10-a3-h3-attention-output-reuse-correction.md).
 
+## 2026-08-10 — A3-G0 GPU-native conditional kernel omission primitive
+
+Issue #88, branch `runtime/a3-g0-gpu-conditional-omission`, and Draft PR #89
+isolate `GPU_NATIVE_CONDITIONAL_KERNEL_OMISSION_V1`. The task addressed the
+specific A3 blocker: dispatching a cheap body or exact body from a current GPU
+guard without a host guard read. It did not reconnect A3 reuse/correction to
+H3 attention.
+
+The official CUDA 13.0.2 Windows network installer was obtained from NVIDIA.
+Its SHA-256 was
+`00c03dcc82007bc1c323c50d64bc2c25bdcffb1846a187889a3b86f6a3050841`
+and its Authenticode signer was NVIDIA Corporation. Only `nvcc_13.0`,
+`cudart_13.0`, `crt_13.0`, and `nvvm_13.0` were selected. The toolkit is at
+the NVIDIA default CUDA 13.0 location, represented publicly as
+`<cuda-toolkit-root>`. NVCC reports 13.0 V13.0.88 and CUDA SDK metadata reports
+13.0.2. The existing NVIDIA driver 610.88, MSVC 14.44.35207, Python 3.13.12,
+PyTorch 2.12.1+cu130, ComfyUI, H3 assets, and prior M0/Wan environments were
+not changed. No reboot was required to pass compilation and runtime admission.
+
+A minimal CUDA source compiled and linked first. A second device source using
+`cudaGraphSetConditional` then compiled and linked, establishing
+`A3_G0_CONDITIONAL_DEVICE_COMPILE_READY`. The repository implementation uses
+the CPython C API plus CUDA Runtime API because the installed PyTorch wheel
+does not expose the C++ header tree required by a conventional torch extension.
+It still accepts real current-device PyTorch CUDA tensors and the current
+PyTorch stream pointer; it creates no second context and makes no tensor copy
+at the boundary.
+
+The fixed CUDA Graph has one guard kernel and two complementary IF handles.
+SAFE executes only a cheap reuse-reference body. UNSAFE, and every value other
+than the explicit SAFE value, executes only the exact body. All buffers and
+counters are allocated before graph execution. Conditional bodies allocate or
+free nothing. The hot path performs no `.item()`, host guard read, D2H guard
+copy, or explicit CPU synchronization. One synchronization after all four
+launches is retained solely to read final evidence.
+
+The fixed synthetic sequence `SAFE, UNSAFE, SAFE, UNSAFE` was executed exactly
+once after the final implementation was built. Reuse/exact body counters were
+2/2, branch history was 0/1/0/1, and state leakage was false. SAFE results were
+bit-exact to an independently launched reuse reference and UNSAFE results were
+bit-exact to a standalone exact-control kernel. Guard D2H bytes, host guard
+reads, hot-path explicit synchronization, conditional-body allocation, and
+redundant tensor-copy bytes were all zero. One final evidence synchronization
+was recorded. These counters prove body execution and omission within this
+fixed primitive; without a profiler they are not described as directly
+measured CUDA kernel-launch counts.
+
+Setup failures were preserved as engineering evidence rather than hidden:
+the first temporary build root was inaccessible to the compiler sandbox,
+nested build attempts did not retain the Visual C++ environment, the standard
+torch-extension path lacked PyTorch C++ headers, and the first native call
+incorrectly treated the valid default CUDA stream value zero as invalid. None
+of those attempts launched the conditional graph. The stream validation was
+corrected before the one fixed evidence sequence; no retry of that final
+sequence was performed.
+
+Five focused tests passed with the one fixed native GPU test included. A later
+model-free contract-only check passed four tests, and targeted Python bytecode
+compilation passed. The native C++/CUDA module built successfully. The full
+Python and Rust suites were intentionally not repeated under the bounded
+verification contract. Public-path, credential, and tracked binary scans
+found zero findings; the native build output and full local receipt remain
+outside Git.
+
+The decision is `A3_G0_GPU_CONDITIONAL_OMISSION_READY`, disposition
+`INTEGRATE`. The adapter capability is `synthetic_verified_once`, disabled by
+default, and reports `actual_h3_attention_connected: false`. Model loads,
+Generations, actual H3 attention omissions, speedup claims, quality success,
+and product promotion are zero. Standard Full Compute remains independently
+callable and the product default. A3-G1 is a separately approved integration
+candidate, not an automatic next action. Diagram impact is `updated`. See the
+detailed [A3-G0 worklog](worklogs/2026-08-10-a3-g0-gpu-conditional-omission.md).
+
 ---
 
 ## Entry template
