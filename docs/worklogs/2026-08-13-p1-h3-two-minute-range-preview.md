@@ -67,7 +67,7 @@ generation run is authorized by this task.
 - External API calls and model downloads: 0.
 - Standard fallback: preserved and still selected by default.
 
-Implementation commit: `PENDING_LOCAL_COMMIT`.
+Implementation commit: `11ec012`.
 
 Remote push: not attempted; repository rules require explicit authorization
 for this exact repository.

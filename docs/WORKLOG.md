@@ -47,8 +47,8 @@ the profile experimental and reports its effective settings. Focused tests
 passed 28/28. A broader 449-test run had 427 passes, 12 skips, nine unrelated
 Windows SQLite cleanup errors, and one pre-existing C0 knowledge-status
 mismatch; no fast-profile assertion failed. Node.js was unavailable for a
-standalone JavaScript parse check. Implementation commit is
-`PENDING_LOCAL_COMMIT`; remote push was not attempted because exact repository
+standalone JavaScript parse check. Implementation commit is `11ec012`; remote
+push was not attempted because exact repository
 authorization is required. See the detailed
 [P1-F worklog](worklogs/2026-08-13-p1-h3-two-minute-range-preview.md).
 
