@@ -79,9 +79,28 @@ class ProductLocalReadyTests(unittest.TestCase):
     def test_request_schema_parses_and_contract_round_trips(self) -> None:
         schema = json.loads((ROOT / "schemas" / "h3_generation_request.schema.json").read_text(encoding="utf-8"))
         self.assertEqual(schema["properties"]["model"]["const"], "MiniMax-H3")
+        self.assertEqual(schema["properties"]["profile"]["enum"], ["standard", "fast_2m_candidate"])
         request = H3GenerationRequest.create(content=[H3ContentItem("text", text="A quiet street")])
         self.assertEqual(H3GenerationRequest.from_dict(request.to_dict()).to_dict(), request.to_dict())
         self.assertNotIn("url", json.dumps(request.to_dict()))
+        fast = H3GenerationRequest.create(
+            content=[H3ContentItem("text", text="A quiet street")],
+            profile="fast_2m_candidate",
+        )
+        self.assertEqual(fast.profile, "fast_2m_candidate")
+        with self.assertRaisesRegex(ValueError, "profile must be"):
+            H3GenerationRequest.create(
+                content=[H3ContentItem("text", text="A quiet street")],
+                profile=["fast_2m_candidate"],
+            )
+        with TemporaryDirectory(prefix="hiveframe-fast-contract-") as temporary:
+            with self.assertRaisesRegex(ValueError, "local ComfyUI"):
+                ProductService(artifact_root=Path(temporary)).create_job({
+                    "backend": "mock_h3",
+                    "prompt": "A quiet street",
+                    "profile": "fast_2m_candidate",
+                    "generation_consent": True,
+                })
 
     def test_empty_text_and_invalid_role_groups_are_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "prompt"):

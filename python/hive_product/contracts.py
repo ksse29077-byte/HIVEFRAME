@@ -11,6 +11,8 @@ import re
 
 
 PROFILE = "standard"
+FAST_PROFILE = "fast_2m_candidate"
+PROFILES = {PROFILE, FAST_PROFILE}
 MODEL = "MiniMax-H3"
 DEFAULT_RESOLUTION = "768P"
 DEFAULT_DURATION_SECONDS = 4
@@ -82,9 +84,9 @@ def validate_prompt(prompt: Any) -> str:
 
 
 def validate_profile(profile: Any) -> str:
-    if profile != PROFILE:
-        raise ValueError(f"only the {PROFILE!r} profile is supported")
-    return PROFILE
+    if not isinstance(profile, str) or profile not in PROFILES:
+        raise ValueError(f"profile must be one of {sorted(PROFILES)!r}")
+    return str(profile)
 
 
 def validate_duration(value: Any) -> int:

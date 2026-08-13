@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-10
+Status date: 2026-08-13
 
 ## Status legend
 
@@ -21,6 +21,7 @@ expansion does not block the launch track.
 
 | Track | Status | Evidence or blocker |
 |---|---|---|
+| P1-F - Local H3 two-minute-range preview | `verified_once` | Optional 480x288, 124-frame, 8-step Sage profile completed cold in 156.859 s; video/audio integrity passed; `KEEP_AS_OPTIONAL`; Standard remains default |
 | A0 — SageAttention stackable component admission | `pending_review` | Issue #80 completed / PR #81 merged; `AVAILABLE_OPTIONAL`, product default false, human visual review pending |
 | A1 — Compound Eye regional active-query attention | `stopped` | Issue #82 / Draft PR #83; CONTROL valid and comparable, but Rust boundary p95 and block admission failed; SELECTIVE 0; `FALLBACK_ONLY` |
 | P0 — Local H3 vertical slice | `done` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) completed; PR #54 merged; `P0_LOCAL_H3_COMFYUI_READY` |

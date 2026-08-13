@@ -28,6 +28,13 @@
         </select>
         <p id="backendMessage" class="message" aria-live="polite"></p>
 
+        <label for="executionProfile">Generation mode</label>
+        <select id="executionProfile">
+          <option value="standard">Standard quality</option>
+          <option value="fast_2m_candidate">2-minute range preview (experimental)</option>
+        </select>
+        <p id="profileMessage" class="message" aria-live="polite"></p>
+
         <label for="prompt">프롬프트</label>
         <textarea id="prompt" maxlength="2000" required placeholder="예: 한 사람이 창가에서 카메라를 보며 천천히 고개를 돌린다."></textarea>
 

@@ -24,6 +24,12 @@ function renderBackend() {
   const selected = byId("backend").value;
   const backend = state.config.backends[selected];
   const localWaiting = selected === "minimax_h3_comfyui_local" && !backend.can_generate;
+  const profile = byId("executionProfile");
+  if (selected !== "minimax_h3_comfyui_local") profile.value = "standard";
+  profile.disabled = selected !== "minimax_h3_comfyui_local";
+  byId("profileMessage").textContent = profile.value === "fast_2m_candidate"
+    ? "480x288, 124 frames, 8 steps, SageAttention auto. Standard mode remains available."
+    : "864x480, 124 frames, 20 steps.";
   byId("backendBadge").textContent = backend.message || `${backend.display_name} · ${backend.state}`;
   byId("backendMessage").textContent = localWaiting
     ? `Local H3 — ComfyUI를 사용할 수 없습니다 (${backend.reason || "runtime_unavailable"}). Mock H3는 직접 선택할 수 있습니다.`
@@ -66,6 +72,7 @@ async function pollJob() {
 }
 
 byId("backend").addEventListener("change", renderBackend);
+byId("executionProfile").addEventListener("change", renderBackend);
 byId("generationForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   byId("formMessage").textContent = "요청을 만드는 중입니다.";
@@ -81,7 +88,7 @@ byId("generationForm").addEventListener("submit", async (event) => {
         resolution: "768P",
         duration_seconds: 4,
         ratio: "16:9",
-        profile: "standard",
+        profile: byId("executionProfile").value,
         generation_consent: byId("generationConsent").checked,
         reference,
       }),

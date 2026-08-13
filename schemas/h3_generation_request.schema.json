@@ -7,7 +7,7 @@
   "required": ["model", "profile", "content", "resolution", "duration_seconds", "ratio", "requested_ratio", "aigc_watermark"],
   "properties": {
     "model": {"const": "MiniMax-H3"},
-    "profile": {"const": "standard"},
+    "profile": {"enum": ["standard", "fast_2m_candidate"]},
     "content": {
       "type": "array",
       "minItems": 1,

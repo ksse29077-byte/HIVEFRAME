@@ -16,6 +16,7 @@ import threading
 import time
 
 from .comfyui_backend import MiniMaxH3ComfyUIBackend
+from .contracts import FAST_PROFILE, PROFILE
 from .server import create_server
 from .service import ProductService
 
@@ -71,12 +72,16 @@ def main() -> int:
     prompt = os.environ.get("HIVEFRAME_H3_SMOKE_PROMPT", "").strip()
     if not prompt:
         raise SystemExit("HIVEFRAME_H3_SMOKE_PROMPT is required")
+    profile = os.environ.get("HIVEFRAME_H3_SMOKE_PROFILE", PROFILE).strip()
+    if profile not in {PROFILE, FAST_PROFILE}:
+        raise SystemExit("HIVEFRAME_H3_SMOKE_PROFILE must be standard or fast_2m_candidate")
     backend = MiniMaxH3ComfyUIBackend()
     server = None
     server_thread = None
     summary: dict = {
         "run_kind": "p0_local_h3_comfyui_smoke",
         "prompt_sha256": sha256(prompt.encode("utf-8")).hexdigest(),
+        "requested_profile": profile,
         "external_api_call_count": 0,
         "model_download_count": 0,
         "workflow_submission_count": 0,
@@ -97,6 +102,7 @@ def main() -> int:
         server_thread = threading.Thread(target=server.serve_forever, daemon=True)
         server_thread.start()
         base_url = f"http://127.0.0.1:{server.server_address[1]}"
+        generation_started = time.monotonic()
         job = _json_request(
             base_url,
             "/api/jobs",
@@ -106,7 +112,7 @@ def main() -> int:
                 "resolution": "768P",
                 "duration_seconds": 4,
                 "ratio": "16:9",
-                "profile": "standard",
+                "profile": profile,
                 "generation_consent": True,
             },
         )
@@ -123,6 +129,7 @@ def main() -> int:
                 observed.append(job["status"])
         summary["observed_product_states"] = observed
         summary["terminal_status"] = job["status"]
+        summary["generation_wall_seconds"] = time.monotonic() - generation_started
         summary["backend_prompt_id"] = job.get("backend_job_id")
         summary["error_code"] = job.get("error_code")
         summary["error_message"] = job.get("error_message")
@@ -172,11 +179,13 @@ def main() -> int:
         if output_root is not None:
             runtime_root = output_root / "runtime"
             runtime_root.mkdir(parents=True, exist_ok=True)
-            summary_path = runtime_root / "hiveframe-p0-h3-smoke-summary.json"
+            summary_path = runtime_root / f"hiveframe-p0-h3-{profile}-smoke-summary.json"
             summary_path.write_text(json.dumps(summary, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
         public = {
             "run_kind": summary["run_kind"],
+            "requested_profile": summary["requested_profile"],
             "terminal_status": summary.get("terminal_status", "failed"),
+            "generation_wall_seconds": summary.get("generation_wall_seconds"),
             "observed_product_states": summary.get("observed_product_states", []),
             "workflow_submission_count": summary["workflow_submission_count"],
             "result_sha256": summary.get("result", {}).get("sha256"),

@@ -12,6 +12,8 @@ import unittest
 from hive_product.comfyui_backend import (
     REQUIRED_MODELS,
     REQUIRED_NODES,
+    SAGE_NODE_CLASS,
+    SAGE_NODE_ID,
     ComfyUIH3Config,
     MiniMaxH3ComfyUIBackend,
 )
@@ -28,6 +30,7 @@ class FakeComfyClient:
         self.queue_reads = 0
         self.phase = "automatic"
         self.prompt_id = "prompt-test-001"
+        self.sage_available = True
 
     def json(self, method: str, path: str, body: dict | None = None):
         if path == "/system_stats":
@@ -46,6 +49,8 @@ class FakeComfyClient:
             result["UNETLoader"]["input"]["required"]["unet_name"] = [[REQUIRED_MODELS["diffusion_model"]]]
             result["CLIPLoader"]["input"]["required"]["clip_name"] = [[REQUIRED_MODELS["text_encoder"]]]
             result["VAELoader"]["input"]["required"]["vae_name"] = [[REQUIRED_MODELS["video_vae"], REQUIRED_MODELS["audio_vae"]]]
+            if self.sage_available:
+                result[SAGE_NODE_CLASS] = {"input": {"required": {"sage_attention": [["auto", "disabled"]]}}}
             return result
         if path == "/prompt" and method == "POST":
             self.submits += 1
@@ -148,6 +153,12 @@ class ProductComfyUIBackendTests(unittest.TestCase):
             workflow = backend.inspect_workflow()
             self.assertEqual(workflow["state"], "ready")
             self.assertTrue(workflow["api_copy_required"])
+            fast_profile = next(
+                profile
+                for profile in workflow["available_execution_profiles"]
+                if profile["profile"] == "fast_2m_candidate"
+            )
+            self.assertEqual(fast_profile["target_wall_seconds"], 180)
             api_workflow = backend.build_api_workflow(
                 {"content": [{"type": "text", "text": "fixture prompt"}]},
                 output_prefix="hiveframe/test",
@@ -156,6 +167,31 @@ class ProductComfyUIBackendTests(unittest.TestCase):
             self.assertEqual(api_workflow["6"]["inputs"]["steps"], 20)
             self.assertEqual(api_workflow["7"]["inputs"]["sampler_name"], "res_multistep")
             self.assertEqual(api_workflow["5"]["inputs"]["noise_seed"], 101)
+
+            fast_workflow = backend.build_api_workflow(
+                {"profile": "fast_2m_candidate", "content": [{"type": "text", "text": "fixture prompt"}]},
+                output_prefix="hiveframe/fast-test",
+            )
+            self.assertEqual(fast_workflow["8"]["inputs"]["width"], 480)
+            self.assertEqual(fast_workflow["8"]["inputs"]["height"], 288)
+            self.assertEqual(fast_workflow["8"]["inputs"]["length"], 124)
+            self.assertEqual(fast_workflow["6"]["inputs"]["steps"], 8)
+            self.assertEqual(fast_workflow[SAGE_NODE_ID]["inputs"]["sage_attention"], "auto")
+            self.assertNotIn(SAGE_NODE_ID, api_workflow)
+
+    def test_fast_profile_fails_before_submission_without_sageattention(self) -> None:
+        with TemporaryDirectory(prefix="hiveframe-comfy-test-") as temporary:
+            client = FakeComfyClient()
+            client.sage_available = False
+            backend = MiniMaxH3ComfyUIBackend(config=write_fixture(Path(temporary)), client=client)
+            with self.assertRaisesRegex(Exception, "requires SageAttention"):
+                backend.create_job({
+                    "generation_request": {
+                        "profile": "fast_2m_candidate",
+                        "content": [{"type": "text", "text": "fixture prompt"}],
+                    }
+                })
+            self.assertEqual(client.submits, 0)
 
     def test_fake_comfy_submit_status_result_and_sanitized_receipt(self) -> None:
         with TemporaryDirectory(prefix="hiveframe-comfy-test-") as temporary:

@@ -21,6 +21,7 @@ from .contracts import (
     DEFAULT_RESOLUTION,
     FEEDBACK_DECISIONS,
     FEEDBACK_REASONS,
+    FAST_PROFILE,
     H3ContentItem,
     H3GenerationRequest,
     MAX_REFERENCE_BYTES,
@@ -61,6 +62,8 @@ class ProductService:
         backend_name = request.get("backend", "mock_h3")
         if backend_name not in BACKENDS or backend_name not in self.backends:
             raise ValueError("backend must be mock_h3, local_h3, or minimax_h3_comfyui_local")
+        if request.get("profile", PROFILE) == FAST_PROFILE and backend_name != COMFYUI_BACKEND_KEY:
+            raise ValueError("fast_2m_candidate requires the local ComfyUI H3 backend")
         if request.get("generation_consent") is not True:
             raise ValueError("generation_consent must be accepted before creating a job")
         prepared_reference = self._prepare_reference(request.get("reference"))

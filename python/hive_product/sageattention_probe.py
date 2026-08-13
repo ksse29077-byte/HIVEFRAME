@@ -7,7 +7,6 @@ repository-external run root supplied at execution time.
 
 from __future__ import annotations
 
-from copy import deepcopy
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
@@ -19,14 +18,18 @@ import sqlite3
 import sys
 import time
 
-from .comfyui_backend import BackendFailure, MiniMaxH3ComfyUIBackend
+from .comfyui_backend import (
+    MODEL_CONSUMERS,
+    SAGE_NODE_CLASS,
+    SAGE_NODE_ID,
+    STANDARD_MODEL_NODE_ID,
+    BackendFailure,
+    MiniMaxH3ComfyUIBackend,
+    apply_sageattention_auto,
+)
 from .service import ProductService
 
 
-SAGE_NODE_CLASS = "PathchSageAttentionKJ"
-SAGE_NODE_ID = "15"
-STANDARD_MODEL_NODE_ID = "1"
-MODEL_CONSUMERS = ("6", "9")
 SAFE_RUN_ID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,79}$")
 
 
@@ -38,34 +41,6 @@ def _unsupported(reason: str, method: str = "ComfyUI history and logs") -> dict[
         "reason": reason,
         "measurement_method": method,
     }
-
-
-def apply_sageattention_auto(standard_workflow: Mapping[str, Any]) -> dict[str, Any]:
-    """Return a Sage copy with one patch node on the shared MODEL edge."""
-    workflow = deepcopy(dict(standard_workflow))
-    if SAGE_NODE_ID in workflow:
-        raise ValueError(f"workflow node {SAGE_NODE_ID} is already occupied")
-    if any(
-        isinstance(node, Mapping) and node.get("class_type") == SAGE_NODE_CLASS
-        for node in workflow.values()
-    ):
-        raise ValueError("workflow already contains a SageAttention KJ node")
-    expected_edge = [STANDARD_MODEL_NODE_ID, 0]
-    for consumer_id in MODEL_CONSUMERS:
-        consumer = workflow.get(consumer_id)
-        if not isinstance(consumer, dict) or consumer.get("inputs", {}).get("model") != expected_edge:
-            raise ValueError(f"unexpected MODEL edge at node {consumer_id}")
-    workflow[SAGE_NODE_ID] = {
-        "class_type": SAGE_NODE_CLASS,
-        "inputs": {
-            "model": expected_edge,
-            "sage_attention": "auto",
-            "allow_compile": False,
-        },
-    }
-    for consumer_id in MODEL_CONSUMERS:
-        workflow[consumer_id]["inputs"]["model"] = [SAGE_NODE_ID, 0]
-    return workflow
 
 
 def workflow_patch_summary(standard: Mapping[str, Any], sage: Mapping[str, Any]) -> dict[str, Any]:

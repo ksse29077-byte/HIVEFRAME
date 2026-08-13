@@ -25,6 +25,33 @@ their architecture documents.
 | `blocked` | an external requirement prevents progress |
 | `unsupported` | the current environment or backend cannot provide it |
 
+## 2026-08-13 - P1-F Local H3 two-minute-range preview
+
+An optional Local H3 ComfyUI profile was added for the user's RTX 3060 12 GiB
+two-minute-range goal. The Standard 864x480, 124-frame, 20-step profile remains
+unchanged and default. The optional profile uses 480x288, 124 frames, 24 FPS,
+8 steps, `simple`, `res_multistep`, seed 101, native audio, and SageAttention
+auto. Mock and non-ComfyUI backends reject the profile before execution.
+
+The bounded initial 608x352 run completed in 181.954261 seconds and triggered
+the one permitted revision. The final 480x288 cold run completed in 156.858657
+seconds, 3.100x faster than the reused 486.247216-second Sage baseline. The
+result decoded 124/124 frames with zero black frames and decoded one audio
+stream into 162 frames and 165,888 samples. Its SHA-256 is
+`251f9ed37a4314105385d4f07efe404c11e7e87de27fc06bf90f20d0a5b9094e`.
+Private prompts, paths, receipts, logs, and media remain outside Git.
+
+The decision is `KEEP_AS_OPTIONAL`: the measured output is in the requested
+two-minute range, but quality parity with Standard is not proven. The UI labels
+the profile experimental and reports its effective settings. Focused tests
+passed 28/28. A broader 449-test run had 427 passes, 12 skips, nine unrelated
+Windows SQLite cleanup errors, and one pre-existing C0 knowledge-status
+mismatch; no fast-profile assertion failed. Node.js was unavailable for a
+standalone JavaScript parse check. Implementation commit is
+`PENDING_LOCAL_COMMIT`; remote push was not attempted because exact repository
+authorization is required. See the detailed
+[P1-F worklog](worklogs/2026-08-13-p1-h3-two-minute-range-preview.md).
+
 ---
 
 ## 2026-07-31 — M0 evidence preserved
