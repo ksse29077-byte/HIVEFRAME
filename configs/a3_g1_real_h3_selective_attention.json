@@ -1,0 +1,76 @@
+{
+  "schema_version": "a3-g1.real-h3-selective-attention.1",
+  "mechanism": "REAL_H3_GPU_CONDITIONAL_ATTENTION_OMISSION_V1",
+  "base_commit": "f5d2bf8c2f80612909eef21c555d764a116f7062",
+  "product_question": "Can the G0 GPU conditional omission primitive skip real H3 Attention work and reduce runtime without reducing quality?",
+  "default_enabled": false,
+  "profile": {
+    "width": 864,
+    "height": 480,
+    "steps": 20,
+    "frames": 124,
+    "fps": 24,
+    "seed": 101,
+    "scheduler": "simple",
+    "sampler": "res_multistep",
+    "denoise": 1.0,
+    "sage": false,
+    "retry_budget": 0
+  },
+  "generation_budget": {
+    "control_max": 1,
+    "selective_max": 1,
+    "retry_max": 0,
+    "requires_structural_gate": true
+  },
+  "control_gate": {
+    "native_full_parity_required": true,
+    "false_safe_max": 0,
+    "admitted_blocks_min": 3,
+    "planned_actual_q_reduction_min": 0.03
+  },
+  "selective_gate": {
+    "reused_omitted_rows_min": 1,
+    "actual_q_reduction_min": 0.03,
+    "post_compute_masking_forbidden": true,
+    "actual_backend_work_omission_required": true
+  },
+  "runtime_gate": {
+    "sampler_must_be_faster": true,
+    "submit_to_terminal_must_be_faster": true,
+    "runner_wall_clock_reported": true
+  },
+  "fallback": {
+    "action": "IMMEDIATE_EXACT_FULL_COMPUTE",
+    "reasons": [
+      "UNCERTAIN",
+      "ACTIVE",
+      "ANCHOR",
+      "CACHE_ERROR",
+      "GUARD_ERROR",
+      "NATIVE_ERROR",
+      "NONFINITE"
+    ]
+  },
+  "quality_gate": {
+    "source": "A3_V1_FROZEN_UNCHANGED",
+    "threshold_change_allowed": false,
+    "sweep_allowed": false,
+    "correction_change_allowed": false
+  },
+  "forbidden": [
+    "RESIDENCY",
+    "PREFETCH",
+    "CUDA_COMPLETE_BLOCK",
+    "SAGE",
+    "NEW_ATTENTION_APPROXIMATION",
+    "NEW_CORRECTION",
+    "LOW_RESOLUTION",
+    "EXTRA_GENERATION",
+    "AUTO_A3_G1_R1"
+  ],
+  "decisions": {
+    "success": "A3_G1_REAL_H3_SELECTIVE_ACCELERATION_READY_FOR_VISUAL_REVIEW",
+    "structural_failure": "A3_G1_REAL_H3_CONDITIONAL_GRAPH_BODY_NOT_CONNECTABLE"
+  }
+}

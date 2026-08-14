@@ -1,0 +1,71 @@
+schema_version: hiveframe.h3.a3-g1-real-selective-attention.1
+knowledge_status: structurally_blocked_once
+recorded_at: 2026-08-14
+mechanism: REAL_H3_GPU_CONDITIONAL_ATTENTION_OMISSION_V1
+source_main: f5d2bf8c2f80612909eef21c555d764a116f7062
+branch: codex/a3-g1-real-h3-selective-attention
+implementation_commit: c78e05f
+
+separation:
+  p1_f_branch: codex/p1-h3-two-minute-profile
+  p1_f_preservation_commit: e04259f
+  p1_f_in_a3_g1_history: false
+  temporary_commit_on_main: false
+
+frozen_profile:
+  width: 864
+  height: 480
+  steps: 20
+  frames: 124
+  fps: 24
+  seed: 101
+  scheduler: simple
+  sampler: res_multistep
+  sage: false
+  retry_budget: 0
+
+source_gate:
+  scope: model_free_source_readonly
+  settings_digest: f001493ba9d2b907fac6381313177d9026098dd2eb10c7c7738ee7e21d1042fd
+  actual_h3_exact_attention_boundary_identified: true
+  standard_pytorch_sdpa_boundary_identified: true
+  g0_gpu_conditional_primitive_present: true
+  g0_accepts_real_h3_qkv: false
+  g0_body_is_not_fixed_synthetic: false
+  g0_can_embed_or_capture_existing_h3_attention_graph: false
+  native_full_branch_delegates_existing_exact_attention: false
+  passed: false
+  blocker: G0_CONDITIONAL_BODIES_ARE_FIXED_SYNTHETIC_KERNELS_AND_EXPOSE_NO_H3_SDPA_GRAPH_REGISTRATION_OR_CAPTURE_BOUNDARY
+
+execution:
+  prior_evidence_revalidation_count: 0
+  model_load_count: 0
+  cuda_execution_count: 0
+  control_generation_count: 0
+  selective_generation_count: 0
+  retry_count: 0
+  low_resolution_experiment_count: 0
+  sage_execution_count: 0
+
+claims:
+  actual_h3_attention_connected: false
+  actual_attention_work_omission_proven: false
+  actual_q_reduction: 0.0
+  quality_success: false
+  sampler_speedup_claim: 0
+  submit_to_terminal_speedup_claim: 0
+  product_promotion: 0
+  full_compute_fallback_preserved: true
+
+verification:
+  focused_model_free_tests: 4_passed
+  source_gate_receipt: reports/h3/a3_g1_source_structural_gate.json
+  git_diff_check: passed
+  full_python_suite: not_repeated
+  prior_gpu_primitive_test: not_repeated
+  prior_generation_evidence: not_repeated
+
+decision: A3_G1_REAL_H3_CONDITIONAL_GRAPH_BODY_NOT_CONNECTABLE
+disposition: STOP
+automatic_a3_g1_r1_started: false
+
