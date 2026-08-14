@@ -1,0 +1,153 @@
+schema_version: hiveframe.h3.a3-g1b-prebuilt-sdpa-island.1
+knowledge_status: preadmission_rejected
+recorded_at: 2026-08-14
+base_main: f5d2bf8c2f80612909eef21c555d764a116f7062
+issue: 93
+branch: accel/a3-g1b-prebuilt-sdpa-conditional-island
+draft_pr: pending_at_evidence_commit
+
+historical_prs:
+  pr_91: {state: draft_open, modified: false, role: source_readonly_evidence}
+  pr_92: {state: draft_open, modified: false, role: source_readonly_evidence}
+  cherry_pick_count: 0
+  live_capture_code_reused: false
+
+torch_version: 2.12.1+cu130
+torch_cuda: "13.0"
+python_version: 3.13.12
+gpu: NVIDIA GeForce RTX 3060
+exact_attention_backend: attention_pytorch
+sage_enabled: false
+inductor_used: false
+
+signature:
+  block_count: 50
+  signatures: 1
+  batch: 1
+  sequence_rows: 15424
+  heads: 56
+  head_dim: 128
+  core_width: 7168
+  q_shape: [1, 56, 15424, 128]
+  k_shape: [1, 56, 15424, 128]
+  v_shape: [1, 56, 15424, 128]
+  output_shape: [1, 15424, 7168]
+  dtype: bfloat16
+  device: cuda:0
+  mask: null
+  dropout: 0.0
+  is_causal: false
+  skip_reshape: true
+  output_reshape: transpose_heads_then_flatten
+  uniform_across_blocks: true
+
+static_island_bytes:
+  static_q: 221118464
+  static_k: 221118464
+  static_v: 221118464
+  static_safe_core: 221118464
+  static_predicate: 1
+  minimum_without_distinct_output: 884473857
+  static_output_if_required: 221118464
+  total_with_output: 1105592321
+  other_persistent_bytes: null
+  other_persistent_status: not_compiled_not_zero_filled
+
+vram:
+  total_bytes: 12884377600
+  idle_free_bytes_before_model_load: 11799625728
+  prior_standard_peak_bytes: 12460611508
+  standard_peak_headroom_bytes: 423766092
+  minimum_shortfall_bytes: 460707765
+  with_output_shortfall_bytes: 681826229
+  model_load_count: 0
+  island_allocation_count: 0
+  vram_admitted: false
+
+api_gate:
+  torch_cond_available: true
+  torch_compile_available: true
+  cudagraphs_backend_available: true
+  exact_sdpa_available: true
+  graph_break: not_tested_vram_gate_failed_first
+  eager_host_branch: not_tested_vram_gate_failed_first
+
+compile_seconds: null
+warmup_seconds: null
+capture_seconds: null
+persistent_island_bytes: 0
+runtime_compile_count: 0
+runtime_capture_count: 0
+runtime_instantiate_count: 0
+
+phase_a:
+  execution_count: 0
+  safe_pass: false
+  safe_status: not_run_vram_gate_failed
+  unsafe_bit_exact: false
+  unsafe_status: not_run_vram_gate_failed
+  predicate_gpu_resident: not_collected
+  state_leak: not_collected
+
+control_generation_count: 0
+selective_generation_count: 0
+retry_count: 0
+
+native_full_parity: not_collected
+admitted_blocks: null
+false_safe_count: null
+
+full_q_rows: null
+actual_q_rows: null
+reused_rows: null
+q_reduction_ratio: null
+
+exact_branch_executions: 0
+reuse_branch_executions: 0
+
+static_gpu_copy_bytes: 0
+cache_h2d_bytes: 0
+cache_d2h_bytes: 0
+guard_d2h_bytes: 0
+host_guard_reads: 0
+hot_path_cpu_sync: 0
+
+control_sampler_seconds: null
+selective_sampler_seconds: null
+sampler_speedup: null
+control_submit_seconds: null
+selective_submit_seconds: null
+submit_speedup: null
+control_runner_seconds: null
+selective_runner_seconds: null
+runner_speedup: null
+
+quality:
+  mean_ssim: null
+  p05_ssim: null
+  min_ssim: null
+  low_ssim_frame_rate: null
+  nmae: null
+  motion_ratio: null
+  gradient_ratio: null
+  temporal_ratio: null
+automatic_quality_pass: false
+automatic_quality_status: not_collected
+human_quality: not_collected
+
+fallback_verified:
+  standard_full_compute_unchanged: true
+  product_default_full_compute: true
+  experimental_path_executed: false
+
+claims:
+  actual_h3_attention_omission_proven: false
+  speedup_claim: 0
+  quality_promotion: 0
+  product_promotion: 0
+
+implementation_commit_created: false
+evidence_commit_required: true
+automatic_g1b_r1_started: false
+decision: A3_G1B_STATIC_ISLAND_MEMORY_NOT_ADMITTED
+disposition: STOP
