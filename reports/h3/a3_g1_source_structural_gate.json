@@ -1,0 +1,40 @@
+{
+  "blocker": "G0_CONDITIONAL_BODIES_ARE_FIXED_SYNTHETIC_KERNELS_AND_EXPOSE_NO_H3_SDPA_GRAPH_REGISTRATION_OR_CAPTURE_BOUNDARY",
+  "checks": {
+    "actual_h3_exact_attention_boundary_identified": true,
+    "g0_accepts_real_h3_qkv": false,
+    "g0_body_is_not_fixed_synthetic": false,
+    "g0_can_embed_or_capture_existing_h3_attention_graph": false,
+    "g0_gpu_conditional_primitive_present": true,
+    "native_full_branch_delegates_existing_exact_attention": false,
+    "standard_sage_disabled_backend_boundary_identified": true
+  },
+  "claim_boundary": {
+    "actual_attention_work_omission_proven": false,
+    "actual_h3_attention_connected": false,
+    "actual_q_reduction": 0.0,
+    "full_compute_fallback_preserved": true,
+    "product_default_changed": false,
+    "quality_pass": false,
+    "runtime_speedup_claim": 0
+  },
+  "control_generation_count": 0,
+  "cuda_execution_count": 0,
+  "decision": "A3_G1_REAL_H3_CONDITIONAL_GRAPH_BODY_NOT_CONNECTABLE",
+  "generation_attempt_count": 0,
+  "mechanism": "REAL_H3_GPU_CONDITIONAL_ATTENTION_OMISSION_V1",
+  "model_load_count": 0,
+  "passed": false,
+  "retry_count": 0,
+  "schema_version": "a3-g1.h3.source-structural-gate.1",
+  "selective_generation_count": 0,
+  "settings_digest": "f001493ba9d2b907fac6381313177d9026098dd2eb10c7c7738ee7e21d1042fd",
+  "source_sha256": {
+    "comfy_attention": "a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9",
+    "g0_binding": "6a9f8883c997519de34ea8afda5c0bb4e0c27f2659963243f045995a2204ca9e",
+    "g0_cuda": "b768be64292e080d2e7a8fe7e1c81a7dfc7f9ade5b6466c613ea04c126b94399",
+    "g0_header": "e206d0aaac25e3b7fa0d970f2fd85220bbfa14c9c6a4b3512f9af61e1d0a090f",
+    "h3_model": "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024"
+  },
+  "stop_required": true
+}
