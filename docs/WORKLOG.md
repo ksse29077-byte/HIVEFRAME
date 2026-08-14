@@ -25,6 +25,34 @@ their architecture documents.
 | `blocked` | an external requirement prevents progress |
 | `unsupported` | the current environment or backend cannot provide it |
 
+## 2026-08-14 - P1-F standard-quality speed target check
+
+The bounded product question was whether the same local MiniMax H3 image-to-
+video content could retain the Standard `864x480`, 124-frame, 24 FPS, 20-step
+profile and complete within 180 seconds using only the already available
+SageAttention path. Exactly one generation was allowed. Resolution, frame
+count, steps, scheduler, sampler, denoise, seed, native audio, prompt intent,
+and source image were held to the declared Standard-quality target. No model,
+checkpoint, network service, or additional accelerator was introduced.
+
+The generation succeeded without retry in 521.793416 seconds. The H.264 output
+decoded 124/124 frames at 864x480 and 24 FPS, contained one AAC audio stream,
+and had SHA-256
+`a80960b6c8f167547203abda19c485c268e63952770c34c4d894bc60bc157db1`.
+Fixed-frame visual inspection showed sharper facial fur, recovery-cone edges,
+and bedding detail than the same-content 608x352/7-step output. Formal Sage
+quality parity with a same-input no-Sage Standard pair remains unproven.
+Private media, prompts, paths, receipts, and logs remain outside Git.
+
+The 521.79-second result is 2.96x slower than the same-content 176.49-second
+reduced-compute result and misses the 180-second target by 341.79 seconds. The
+bounded decision is `DROP` for the claim that the current Sage path can deliver
+Standard-profile quality in the two-minute range on this RTX 3060. The
+Standard Full Compute path remains the product default and fallback. No
+additional generation, profile sweep, model change, or research stage is
+authorized by this result. Diagram impact: none; execution structure did not
+change.
+
 ## 2026-08-13 - P1-F Local H3 two-minute-range preview
 
 An optional Local H3 ComfyUI profile was added for the user's RTX 3060 12 GiB

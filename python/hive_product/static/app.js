@@ -28,7 +28,7 @@ function renderBackend() {
   if (selected !== "minimax_h3_comfyui_local") profile.value = "standard";
   profile.disabled = selected !== "minimax_h3_comfyui_local";
   byId("profileMessage").textContent = profile.value === "fast_2m_candidate"
-    ? "480x288, 124 frames, 8 steps, SageAttention auto. Standard mode remains available."
+    ? "608x352, 124 frames, 7 steps, SageAttention auto. Standard mode remains available."
     : "864x480, 124 frames, 20 steps.";
   byId("backendBadge").textContent = backend.message || `${backend.display_name} · ${backend.state}`;
   byId("backendMessage").textContent = localWaiting

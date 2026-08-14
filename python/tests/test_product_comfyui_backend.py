@@ -31,6 +31,8 @@ class FakeComfyClient:
         self.phase = "automatic"
         self.prompt_id = "prompt-test-001"
         self.sage_available = True
+        self.uploads: list[dict] = []
+        self.submitted_prompt: dict | None = None
 
     def json(self, method: str, path: str, body: dict | None = None):
         if path == "/system_stats":
@@ -46,6 +48,7 @@ class FakeComfyClient:
             }
         if path == "/object_info":
             result = {name: {"input": {"required": {}}} for name in REQUIRED_NODES}
+            result["LoadImage"] = {"input": {"required": {}}}
             result["UNETLoader"]["input"]["required"]["unet_name"] = [[REQUIRED_MODELS["diffusion_model"]]]
             result["CLIPLoader"]["input"]["required"]["clip_name"] = [[REQUIRED_MODELS["text_encoder"]]]
             result["VAELoader"]["input"]["required"]["vae_name"] = [[REQUIRED_MODELS["video_vae"], REQUIRED_MODELS["audio_vae"]]]
@@ -54,6 +57,7 @@ class FakeComfyClient:
             return result
         if path == "/prompt" and method == "POST":
             self.submits += 1
+            self.submitted_prompt = body["prompt"] if body else None
             return {"prompt_id": self.prompt_id, "node_errors": {}}
         if path.startswith("/history/"):
             succeeded = self.phase == "succeeded" or (self.phase == "automatic" and self.queue_reads >= 2)
@@ -88,6 +92,10 @@ class FakeComfyClient:
         if path.startswith("/view?"):
             return b"fake-comfyui-video"
         raise AssertionError(path)
+
+    def upload_image(self, *, filename: str, media_type: str, content: bytes) -> dict:
+        self.uploads.append({"filename": filename, "media_type": media_type, "content": content})
+        return {"name": filename, "subfolder": "", "type": "input"}
 
 
 def write_fixture(root: Path) -> ComfyUIH3Config:
@@ -172,10 +180,10 @@ class ProductComfyUIBackendTests(unittest.TestCase):
                 {"profile": "fast_2m_candidate", "content": [{"type": "text", "text": "fixture prompt"}]},
                 output_prefix="hiveframe/fast-test",
             )
-            self.assertEqual(fast_workflow["8"]["inputs"]["width"], 480)
-            self.assertEqual(fast_workflow["8"]["inputs"]["height"], 288)
+            self.assertEqual(fast_workflow["8"]["inputs"]["width"], 608)
+            self.assertEqual(fast_workflow["8"]["inputs"]["height"], 352)
             self.assertEqual(fast_workflow["8"]["inputs"]["length"], 124)
-            self.assertEqual(fast_workflow["6"]["inputs"]["steps"], 8)
+            self.assertEqual(fast_workflow["6"]["inputs"]["steps"], 7)
             self.assertEqual(fast_workflow[SAGE_NODE_ID]["inputs"]["sage_attention"], "auto")
             self.assertNotIn(SAGE_NODE_ID, api_workflow)
 
@@ -230,6 +238,7 @@ class ProductComfyUIBackendTests(unittest.TestCase):
                         break
                     time.sleep(0.01)
                 self.assertEqual(job["status"], "succeeded")
+                self.assertIsNotNone(job["receipt_id"])
                 self.assertIn("queued", states)
                 self.assertIn("running", states)
                 self.assertEqual(job["result_media_type"], "video/mp4")
@@ -239,6 +248,30 @@ class ProductComfyUIBackendTests(unittest.TestCase):
                     "decision": "accepted", "training_opt_in": False, "deletion_requested": False,
                 })
                 self.assertEqual(feedback["training_eligibility"], "evaluation_only")
+
+    def test_product_reference_is_uploaded_and_wired_as_first_frame(self) -> None:
+        with TemporaryDirectory(prefix="hiveframe-comfy-test-") as temporary, TemporaryDirectory(prefix="hiveframe-product-test-") as artifact:
+            client = FakeComfyClient()
+            backend = MiniMaxH3ComfyUIBackend(config=write_fixture(Path(temporary)), client=client)
+            service = ProductService(artifact_root=Path(artifact), comfyui_backend=backend)
+            job = service.create_job({
+                "backend": "minimax_h3_comfyui_local",
+                "prompt": "the dog blinks",
+                "generation_consent": True,
+                "reference": {
+                    "name": "dog.png",
+                    "media_type": "image/png",
+                    "content_base64": "cG5nLWZpeHR1cmU=",
+                },
+            })
+            result = service.execute_job(job["job_id"])
+            self.assertEqual(result["status"], "succeeded")
+            self.assertEqual(len(client.uploads), 1)
+            self.assertEqual(client.uploads[0]["content"], b"png-fixture")
+            self.assertIsNotNone(client.submitted_prompt)
+            assert client.submitted_prompt is not None
+            self.assertEqual(client.submitted_prompt["16"]["class_type"], "LoadImage")
+            self.assertEqual(client.submitted_prompt["8"]["inputs"]["first_frame"], ["16", 0])
 
     def test_cancel_and_ui_backend_keys(self) -> None:
         with TemporaryDirectory(prefix="hiveframe-comfy-test-") as temporary:

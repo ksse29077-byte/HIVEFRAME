@@ -149,12 +149,19 @@ class ProductService:
         backend = self.backends[job["backend"]]
         self.store.update_job(job_id, updated_at=utc_now(), backend_state="queued", error_code=None, error_message=None)
         reference_sha = None
+        reference_image = None
         if job["reference_asset_id"]:
-            metadata, _ = self.store.get_asset(job["reference_asset_id"])
+            metadata, path = self.store.get_asset(job["reference_asset_id"])
             reference_sha = metadata["sha256"]
+            reference_image = {
+                "filename": metadata["filename"],
+                "media_type": metadata["media_type"],
+                "content": path.read_bytes(),
+            }
         request = {
             "generation_request": H3GenerationRequest.from_dict(json.loads(job["request_json"])).to_dict(),
             "reference_sha256": reference_sha,
+            "reference_image": reference_image,
             "fixture": fixture,
         }
         backend_job_id = None
@@ -188,11 +195,11 @@ class ProductService:
             if self.fail_artifact_writes:
                 raise OSError("injected artifact save failure")
             output = self.store.save_result(job_id, result.filename, result.media_type, result.content)
-            succeeded = self.store.update_job(
+            self.store.update_job(
                 job_id,
                 updated_at=utc_now(),
-                status="succeeded",
-                backend_state="generation_succeeded",
+                status="running",
+                backend_state="artifact_saved",
                 output_asset_id=output["asset_id"],
                 error_code=None,
                 error_message=None,
@@ -211,7 +218,13 @@ class ProductService:
                 training_eligibility="evaluation_only",
             )
             receipt_asset = self.store.save_receipt(job_id, receipt)
-            succeeded = self.store.update_job(job_id, updated_at=utc_now(), receipt_id=receipt_asset["asset_id"])
+            succeeded = self.store.update_job(
+                job_id,
+                updated_at=utc_now(),
+                status="succeeded",
+                backend_state="generation_succeeded",
+                receipt_id=receipt_asset["asset_id"],
+            )
             return self.public_job(succeeded)
         except Exception as error:
             failure = backend.normalize_error(error)

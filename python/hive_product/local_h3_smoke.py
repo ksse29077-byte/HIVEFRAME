@@ -6,6 +6,7 @@ contains the runner contract, never a user prompt or machine-specific path.
 
 from __future__ import annotations
 
+from base64 import b64encode
 from hashlib import sha256
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -75,6 +76,22 @@ def main() -> int:
     profile = os.environ.get("HIVEFRAME_H3_SMOKE_PROFILE", PROFILE).strip()
     if profile not in {PROFILE, FAST_PROFILE}:
         raise SystemExit("HIVEFRAME_H3_SMOKE_PROFILE must be standard or fast_2m_candidate")
+    reference_path_value = os.environ.get("HIVEFRAME_H3_SMOKE_REFERENCE", "").strip()
+    reference = None
+    reference_sha256 = None
+    if reference_path_value:
+        reference_path = Path(reference_path_value).expanduser().resolve()
+        suffix = reference_path.suffix.lower()
+        media_types = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
+        if not reference_path.is_file() or suffix not in media_types:
+            raise SystemExit("HIVEFRAME_H3_SMOKE_REFERENCE must be a PNG, JPEG, or WebP file")
+        reference_bytes = reference_path.read_bytes()
+        reference_sha256 = sha256(reference_bytes).hexdigest()
+        reference = {
+            "name": reference_path.name,
+            "media_type": media_types[suffix],
+            "content_base64": b64encode(reference_bytes).decode("ascii"),
+        }
     backend = MiniMaxH3ComfyUIBackend()
     server = None
     server_thread = None
@@ -86,6 +103,7 @@ def main() -> int:
         "model_download_count": 0,
         "workflow_submission_count": 0,
         "feedback_created": False,
+        "reference_sha256": reference_sha256,
     }
     exit_code = 1
     try:
@@ -103,18 +121,21 @@ def main() -> int:
         server_thread.start()
         base_url = f"http://127.0.0.1:{server.server_address[1]}"
         generation_started = time.monotonic()
+        job_request = {
+            "backend": "minimax_h3_comfyui_local",
+            "prompt": prompt,
+            "resolution": "768P",
+            "duration_seconds": 4,
+            "ratio": "16:9",
+            "profile": profile,
+            "generation_consent": True,
+        }
+        if reference is not None:
+            job_request["reference"] = reference
         job = _json_request(
             base_url,
             "/api/jobs",
-            {
-                "backend": "minimax_h3_comfyui_local",
-                "prompt": prompt,
-                "resolution": "768P",
-                "duration_seconds": 4,
-                "ratio": "16:9",
-                "profile": profile,
-                "generation_consent": True,
-            },
+            job_request,
         )
         summary["product_job_create_count"] = 1
         summary["job_id"] = job["job_id"]

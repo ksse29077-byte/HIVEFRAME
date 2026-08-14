@@ -50,6 +50,13 @@ REQUIRED_NODES = {
     "SaveVideo",
 }
 ALLOWED_VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
+ALLOWED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+IMAGE_MEDIA_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
 SAGE_NODE_CLASS = "PathchSageAttentionKJ"
 SAGE_NODE_ID = "15"
 STANDARD_MODEL_NODE_ID = "1"
@@ -63,9 +70,9 @@ WORKFLOW_PROFILES = {
         "candidate_only": False,
     },
     FAST_PROFILE: {
-        "width": 480,
-        "height": 288,
-        "steps": 8,
+        "width": 608,
+        "height": 352,
+        "steps": 7,
         "sage_attention": True,
         "candidate_only": True,
     },
@@ -217,6 +224,34 @@ class LoopbackComfyClient:
                 return response.read()
         except (HTTPError, URLError, TimeoutError, OSError) as error:
             raise BackendFailure("output_missing", "The ComfyUI output could not be collected.") from error
+
+    def upload_image(self, *, filename: str, media_type: str, content: bytes) -> Any:
+        """Upload one bounded image to the loopback runtime input directory."""
+        boundary = f"hiveframe-{sha256(content).hexdigest()[:24]}"
+        parts = [
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="image"; filename="{filename}"\r\n'
+            f"Content-Type: {media_type}\r\n\r\n".encode("utf-8"),
+            content,
+            f"\r\n--{boundary}\r\n"
+            'Content-Disposition: form-data; name="type"\r\n\r\n'
+            f"input\r\n--{boundary}\r\n"
+            'Content-Disposition: form-data; name="overwrite"\r\n\r\n'
+            f"true\r\n--{boundary}--\r\n".encode("utf-8"),
+        ]
+        request = Request(
+            self.base_url + "/upload/image",
+            data=b"".join(parts),
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=self.timeout_seconds) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except HTTPError as error:
+            raise BackendFailure("comfyui_http_error", f"ComfyUI image upload returned HTTP {error.code}.") from error
+        except (URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise BackendFailure("comfyui_unavailable", "The loopback ComfyUI image upload failed.", True) from error
 
 
 class MiniMaxH3ComfyUIBackend(H3Backend):
@@ -405,7 +440,13 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "workflow_default_preserved": profile == PROFILE,
         }
 
-    def build_api_workflow(self, generation_request: Mapping[str, Any], *, output_prefix: str) -> dict[str, Any]:
+    def build_api_workflow(
+        self,
+        generation_request: Mapping[str, Any],
+        *,
+        output_prefix: str,
+        first_frame_name: str | None = None,
+    ) -> dict[str, Any]:
         execution_profile = self._workflow_profile(str(generation_request.get("profile", PROFILE)))
         prompt = next(
             (
@@ -419,6 +460,11 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             raise BackendFailure("bad_input", "A text prompt is required for the H3 workflow.")
         if not output_prefix or any(part in output_prefix for part in ("..", "\\", ":")):
             raise BackendFailure("bad_input", "The ComfyUI output prefix is unsafe.")
+        if first_frame_name is not None and (
+            Path(first_frame_name).name != first_frame_name
+            or Path(first_frame_name).suffix.lower() not in ALLOWED_IMAGE_SUFFIXES
+        ):
+            raise BackendFailure("bad_input", "The ComfyUI first-frame name is unsafe.")
         workflow = {
             "1": {"class_type": "UNETLoader", "inputs": {"unet_name": REQUIRED_MODELS["diffusion_model"], "weight_dtype": "default"}},
             "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": REQUIRED_MODELS["text_encoder"], "type": "minimax", "device": "default"}},
@@ -435,6 +481,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "13": {"class_type": "CreateVideo", "inputs": {"images": ["11", 0], "audio": ["12", 0], "fps": 24.0, "bit_depth": 8}},
             "14": {"class_type": "SaveVideo", "inputs": {"video": ["13", 0], "filename_prefix": output_prefix, "format": "mp4", "codec": "auto"}},
         }
+        if first_frame_name is not None:
+            workflow["16"] = {"class_type": "LoadImage", "inputs": {"image": first_frame_name}}
+            workflow["8"]["inputs"]["first_frame"] = ["16", 0]
         return apply_sageattention_auto(workflow) if execution_profile["sage_attention"] else workflow
 
     def start(self) -> dict[str, Any]:
@@ -558,7 +607,41 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
                 )
         request_digest = sha256(json.dumps(generation_request, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
         output_prefix = f"hiveframe/p0-h3-{request_digest[:16]}"
-        prompt = self.build_api_workflow(generation_request, output_prefix=output_prefix)
+        first_frame_name = None
+        reference_image = request.get("reference_image")
+        if reference_image is not None:
+            if not isinstance(reference_image, Mapping):
+                raise BackendFailure("bad_input", "The first-frame payload is invalid.")
+            content = reference_image.get("content")
+            media_type = reference_image.get("media_type")
+            source_name = reference_image.get("filename")
+            suffix = Path(str(source_name)).suffix.lower()
+            if (
+                not isinstance(content, bytes)
+                or not content
+                or not isinstance(media_type, str)
+                or suffix not in ALLOWED_IMAGE_SUFFIXES
+                or media_type != IMAGE_MEDIA_TYPES[suffix]
+            ):
+                raise BackendFailure("bad_input", "The first-frame image is unsupported.")
+            objects = self.client.json("GET", "/object_info")
+            if not isinstance(objects, Mapping) or "LoadImage" not in objects:
+                raise BackendFailure("comfyui_dependency_required", "Image-to-video requires ComfyUI LoadImage support.")
+            upload_name = f"hiveframe-reference-{sha256(content).hexdigest()[:16]}{suffix}"
+            uploaded = self.client.upload_image(filename=upload_name, media_type=media_type, content=content)
+            if (
+                not isinstance(uploaded, Mapping)
+                or uploaded.get("name") != upload_name
+                or uploaded.get("type") != "input"
+                or uploaded.get("subfolder", "") not in {"", None}
+            ):
+                raise BackendFailure("comfyui_upload_failed", "ComfyUI returned an unsafe first-frame location.")
+            first_frame_name = upload_name
+        prompt = self.build_api_workflow(
+            generation_request,
+            output_prefix=output_prefix,
+            first_frame_name=first_frame_name,
+        )
         submitted_perf = time.monotonic()
         submitted_at = _utc_now()
         self._sample_resources(None)
