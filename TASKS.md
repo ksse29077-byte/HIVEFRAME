@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-10
+Status date: 2026-08-18
 
 ## Status legend
 
@@ -21,11 +21,13 @@ expansion does not block the launch track.
 
 | Track | Status | Evidence or blocker |
 |---|---|---|
+| P1-F - Local H3 two-minute-range preview | `stopped` | 608x352/7-step Sage reached 176.49 seconds but reduced quality settings; same-content 864x480/20-step Sage preserved the Standard profile and decoded fully but took 521.79 seconds, missing the 180-second target; no quality-preserving two-minute claim; Standard remains default |
 | A0 — SageAttention stackable component admission | `pending_review` | Issue #80 completed / PR #81 merged; `AVAILABLE_OPTIONAL`, product default false, human visual review pending |
 | A1 — Compound Eye regional active-query attention | `stopped` | Issue #82 / Draft PR #83; CONTROL valid and comparable, but Rust boundary p95 and block admission failed; SELECTIVE 0; `FALLBACK_ONLY` |
 | P0 — Local H3 vertical slice | `done` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) completed; PR #54 merged; `P0_LOCAL_H3_COMFYUI_READY` |
 | F0-SAGE — External SageAttention paired probe | `verified_once` | Issue #55; 1.207148× is below 1.3×; `F0_SAGE_NO_GAIN`; Draft review pending |
-| P1 — One-click Local H3 launcher | `planned` | separate approval; the P0 runtime/database isolation observation remains a non-promoted candidate |
+| P1-A - Release Alpha shell and one-click Local H3 launcher | `done` | Explicit T2V/I2V, fixed Standard Quality, Local H3 readiness, product status/error/result UX, dev-only Mock, and bounded Windows launcher verified by 52 focused tests plus desktop/mobile browser checks; Generation 0 |
+| P1-A1 - Real Alpha end-to-end smoke | `blocked` | Actual launcher and Standard I2V submit verified once, but an unattributed T2V already occupied the fresh local runtime; the I2V prompt was removed before running, output is absent, retry is 0, and a clean rerun requires separate Generation approval; `P1_A1_REAL_ALPHA_E2E_FAILED` |
 | P2 — Real local H3 product flow | `planned` | replace provisional pipeline/output details only after official artifact code exists |
 | P3 — Selective runtime integration | `planned` | requires backend-admitted partial-compute evidence and complete accepted-result costs |
 | P4 — Internal alpha/commercial preparation | `planned` | operational, rights, retention/deletion, terms, packaging, and release safeguards |
@@ -264,7 +266,7 @@ Bounded decision: `P0_LOCAL_H3_COMFYUI_READY`.
 | Run one actual Local H3 smoke | `verified_once` | one submission, 124 decoded frames, OOM 0, retry 0 |
 | Preserve H3 Knowledge Flywheel | `implemented` | workflow, runtime, failure, capability, and decision files; no automatic promotion |
 | Publish P0 through PR #54 | `published` | Issue #53 completed; PR #54 merged at `d716a22...` |
-| Start P1 one-click launcher | `planned` | separate user approval required; parallel-runtime database isolation remains a candidate |
+| Complete P1-A release shell and one-click launcher | `done` | Repository-owned `.cmd`/`.ps1`, owned-runtime lifecycle, Local H3 preflight, browser-after-ready ordering, and bounded failure paths verified without Generation |
 
 This result proves only the first Local H3 product path. It does not establish
 quality, speed, cost, cache, selective compute, or production-default settings.

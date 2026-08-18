@@ -25,6 +25,84 @@ their architecture documents.
 | `blocked` | an external requirement prevents progress |
 | `unsupported` | the current environment or backend cannot provide it |
 
+## 2026-08-18 - P1-A1 real Alpha end-to-end smoke
+
+The Release Alpha started through `scripts/hiveframe-local.cmd`, passed Local
+H3 readiness, opened the browser after server readiness, and accepted one
+controlled private-reference Standard I2V request. The existing 52 focused
+tests passed before submission. The request preserved 864x480, 124 frames,
+24 FPS, 20 steps, `simple`, `res_multistep`, denoise 1.0, seed 101, native
+audio, and Sage disabled. The reference remained local and was uploaded once.
+
+The run did not reach a valid E2E result. A separate unattributed Standard T2V
+request already occupied the freshly launched runtime before the controlled
+I2V submit. The I2V prompt was removed from the pending ComfyUI queue before it
+ran, retry remained zero, and no output, receipt, result URL, integrity result,
+or human usability result exists. The bounded decision is
+`P1_A1_REAL_ALPHA_E2E_FAILED`; another Generation requires separate approval.
+
+Cancellation exposed that successful empty ComfyUI command responses were
+treated as JSON decode failures. The loopback client now accepts an empty 2xx
+body as `{}`; eight focused backend/product tests passed. No acceleration,
+profile reduction, model download, external API call, automatic fallback, or
+second P1-A1 Generation was used. Diagram impact: none. See the detailed
+[P1-A1 worklog](worklogs/2026-08-18-p1-a1-real-alpha-e2e-smoke.md).
+
+## 2026-08-14 - P1-F standard-quality speed target check
+
+The bounded product question was whether the same local MiniMax H3 image-to-
+video content could retain the Standard `864x480`, 124-frame, 24 FPS, 20-step
+profile and complete within 180 seconds using only the already available
+SageAttention path. Exactly one generation was allowed. Resolution, frame
+count, steps, scheduler, sampler, denoise, seed, native audio, prompt intent,
+and source image were held to the declared Standard-quality target. No model,
+checkpoint, network service, or additional accelerator was introduced.
+
+The generation succeeded without retry in 521.793416 seconds. The H.264 output
+decoded 124/124 frames at 864x480 and 24 FPS, contained one AAC audio stream,
+and had SHA-256
+`a80960b6c8f167547203abda19c485c268e63952770c34c4d894bc60bc157db1`.
+Fixed-frame visual inspection showed sharper facial fur, recovery-cone edges,
+and bedding detail than the same-content 608x352/7-step output. Formal Sage
+quality parity with a same-input no-Sage Standard pair remains unproven.
+Private media, prompts, paths, receipts, and logs remain outside Git.
+
+The 521.79-second result is 2.96x slower than the same-content 176.49-second
+reduced-compute result and misses the 180-second target by 341.79 seconds. The
+bounded decision is `DROP` for the claim that the current Sage path can deliver
+Standard-profile quality in the two-minute range on this RTX 3060. The
+Standard Full Compute path remains the product default and fallback. No
+additional generation, profile sweep, model change, or research stage is
+authorized by this result. Diagram impact: none; execution structure did not
+change.
+
+## 2026-08-13 - P1-F Local H3 two-minute-range preview
+
+An optional Local H3 ComfyUI profile was added for the user's RTX 3060 12 GiB
+two-minute-range goal. The Standard 864x480, 124-frame, 20-step profile remains
+unchanged and default. The optional profile uses 480x288, 124 frames, 24 FPS,
+8 steps, `simple`, `res_multistep`, seed 101, native audio, and SageAttention
+auto. Mock and non-ComfyUI backends reject the profile before execution.
+
+The bounded initial 608x352 run completed in 181.954261 seconds and triggered
+the one permitted revision. The final 480x288 cold run completed in 156.858657
+seconds, 3.100x faster than the reused 486.247216-second Sage baseline. The
+result decoded 124/124 frames with zero black frames and decoded one audio
+stream into 162 frames and 165,888 samples. Its SHA-256 is
+`251f9ed37a4314105385d4f07efe404c11e7e87de27fc06bf90f20d0a5b9094e`.
+Private prompts, paths, receipts, logs, and media remain outside Git.
+
+The decision is `KEEP_AS_OPTIONAL`: the measured output is in the requested
+two-minute range, but quality parity with Standard is not proven. The UI labels
+the profile experimental and reports its effective settings. Focused tests
+passed 28/28. A broader 449-test run had 427 passes, 12 skips, nine unrelated
+Windows SQLite cleanup errors, and one pre-existing C0 knowledge-status
+mismatch; no fast-profile assertion failed. Node.js was unavailable for a
+standalone JavaScript parse check. Implementation commit is `11ec012`; remote
+push was not attempted because exact repository
+authorization is required. See the detailed
+[P1-F worklog](worklogs/2026-08-13-p1-h3-two-minute-range-preview.md).
+
 ---
 
 ## 2026-07-31 — M0 evidence preserved

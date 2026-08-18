@@ -8,6 +8,7 @@ this module performs no network, model, or GPU work.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -20,13 +21,15 @@ import json
 import os
 import socket
 import subprocess
+import threading
 import time
 
 from .backends import H3Backend
-from .contracts import BackendFailure, BackendResult, MINIMAX_POLICY_STATE, MODEL
+from .contracts import BackendFailure, BackendResult, FAST_PROFILE, MINIMAX_POLICY_STATE, MODEL, PROFILE
 
 
 BACKEND_KEY = "minimax_h3_comfyui_local"
+SHARED_RUNTIME_BUSY_MESSAGE = "현재 다른 영상 생성 작업이 실행 중입니다. 작업이 완료된 후 다시 시도해주세요."
 REQUIRED_MODELS = {
     "diffusion_model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
     "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
@@ -49,6 +52,57 @@ REQUIRED_NODES = {
     "SaveVideo",
 }
 ALLOWED_VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
+ALLOWED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+IMAGE_MEDIA_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
+SAGE_NODE_CLASS = "PathchSageAttentionKJ"
+SAGE_NODE_ID = "15"
+STANDARD_MODEL_NODE_ID = "1"
+MODEL_CONSUMERS = ("6", "9")
+WORKFLOW_PROFILES = {
+    PROFILE: {
+        "width": 864,
+        "height": 480,
+        "steps": 20,
+        "sage_attention": False,
+        "candidate_only": False,
+    },
+    FAST_PROFILE: {
+        "width": 608,
+        "height": 352,
+        "steps": 7,
+        "sage_attention": True,
+        "candidate_only": True,
+    },
+}
+
+
+def apply_sageattention_auto(standard_workflow: Mapping[str, Any]) -> dict[str, Any]:
+    """Return a copy with the admitted SageAttention node on the shared model edge."""
+    workflow = deepcopy(dict(standard_workflow))
+    if SAGE_NODE_ID in workflow:
+        raise ValueError(f"workflow node {SAGE_NODE_ID} is already occupied")
+    if any(
+        isinstance(node, Mapping) and node.get("class_type") == SAGE_NODE_CLASS
+        for node in workflow.values()
+    ):
+        raise ValueError("workflow already contains a SageAttention KJ node")
+    expected_edge = [STANDARD_MODEL_NODE_ID, 0]
+    for consumer_id in MODEL_CONSUMERS:
+        consumer = workflow.get(consumer_id)
+        if not isinstance(consumer, dict) or consumer.get("inputs", {}).get("model") != expected_edge:
+            raise ValueError(f"unexpected MODEL edge at node {consumer_id}")
+    workflow[SAGE_NODE_ID] = {
+        "class_type": SAGE_NODE_CLASS,
+        "inputs": {"model": expected_edge, "sage_attention": "auto", "allow_compile": False},
+    }
+    for consumer_id in MODEL_CONSUMERS:
+        workflow[consumer_id]["inputs"]["model"] = [SAGE_NODE_ID, 0]
+    return workflow
 
 
 def _utc_now() -> str:
@@ -155,7 +209,8 @@ class LoopbackComfyClient:
         )
         try:
             with urlopen(request, timeout=self.timeout_seconds) as response:
-                return json.loads(response.read().decode("utf-8"))
+                content = response.read()
+                return json.loads(content.decode("utf-8")) if content else {}
         except HTTPError as error:
             try:
                 detail = json.loads(error.read().decode("utf-8"))
@@ -173,12 +228,40 @@ class LoopbackComfyClient:
         except (HTTPError, URLError, TimeoutError, OSError) as error:
             raise BackendFailure("output_missing", "The ComfyUI output could not be collected.") from error
 
+    def upload_image(self, *, filename: str, media_type: str, content: bytes) -> Any:
+        """Upload one bounded image to the loopback runtime input directory."""
+        boundary = f"hiveframe-{sha256(content).hexdigest()[:24]}"
+        parts = [
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="image"; filename="{filename}"\r\n'
+            f"Content-Type: {media_type}\r\n\r\n".encode("utf-8"),
+            content,
+            f"\r\n--{boundary}\r\n"
+            'Content-Disposition: form-data; name="type"\r\n\r\n'
+            f"input\r\n--{boundary}\r\n"
+            'Content-Disposition: form-data; name="overwrite"\r\n\r\n'
+            f"true\r\n--{boundary}--\r\n".encode("utf-8"),
+        ]
+        request = Request(
+            self.base_url + "/upload/image",
+            data=b"".join(parts),
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=self.timeout_seconds) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except HTTPError as error:
+            raise BackendFailure("comfyui_http_error", f"ComfyUI image upload returned HTTP {error.code}.") from error
+        except (URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise BackendFailure("comfyui_unavailable", "The loopback ComfyUI image upload failed.", True) from error
+
 
 class MiniMaxH3ComfyUIBackend(H3Backend):
     """Real local H3 backend using one loopback ComfyUI workflow submission."""
 
     name = BACKEND_KEY
-    display_name = "Local H3 — ComfyUI"
+    display_name = "Local H3"
     poll_interval_seconds = 0.5
     experimental_capabilities = {
         "regional_attention_output_reuse_correction_v1": {
@@ -209,6 +292,46 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
         self._process: subprocess.Popen[bytes] | None = None
         self._log_handle: Any | None = None
         self._runtime_started_here = False
+        self._accounting_lock = threading.Lock()
+        self._submission_lock = threading.Lock()
+        self._accounting = {
+            "backend_prompt_submission_count": 0,
+            "gpu_execution_started_count": 0,
+            "completed_generation_count": 0,
+            "foreign_job_termination_count": 0,
+        }
+
+    @staticmethod
+    def _queue_state(queue: Any) -> dict[str, Any]:
+        running = queue.get("queue_running") if isinstance(queue, Mapping) else None
+        pending = queue.get("queue_pending") if isinstance(queue, Mapping) else None
+        if not isinstance(running, list) or not isinstance(pending, list):
+            raise BackendFailure("runtime_incompatible", "The local generation queue returned an invalid state.")
+        running_count = len(running)
+        pending_count = len(pending)
+        return {
+            "running_count": running_count,
+            "pending_count": pending_count,
+            "busy": running_count > 0 or pending_count > 0,
+        }
+
+    def inspect_queue(self) -> dict[str, Any]:
+        """Read the shared runtime queue without mutating any queued work."""
+        return self._queue_state(self.client.json("GET", "/queue"))
+
+    @staticmethod
+    def _require_idle_queue(queue_state: Mapping[str, Any]) -> None:
+        if queue_state.get("busy"):
+            raise BackendFailure("runtime_busy", SHARED_RUNTIME_BUSY_MESSAGE, True)
+
+    def _increment_accounting(self, key: str) -> None:
+        with self._accounting_lock:
+            self._accounting[key] += 1
+
+    def execution_accounting(self) -> dict[str, int]:
+        """Return process-local execution counters for product evidence."""
+        with self._accounting_lock:
+            return dict(self._accounting)
 
     def inspect_runtime(self) -> dict[str, Any]:
         try:
@@ -236,6 +359,7 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             devices = system.get("devices")
             if isinstance(devices, list) and devices:
                 device = devices[0]
+        queue_state = self._queue_state(queue)
         return {
             "state": "ready" if not missing and not unrecognized else "runtime_incompatible",
             "reason": None if not missing and not unrecognized else "required_nodes_missing" if missing else "model_paths_unrecognized",
@@ -250,8 +374,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "device_name": device.get("name") if isinstance(device, dict) else None,
             "device_type": device.get("type") if isinstance(device, dict) else None,
             "vram_total_bytes": device.get("vram_total") if isinstance(device, dict) else None,
-            "queue_running": len(queue.get("queue_running", [])) if isinstance(queue, dict) else None,
-            "queue_pending": len(queue.get("queue_pending", [])) if isinstance(queue, dict) else None,
+            "queue_running": queue_state["running_count"],
+            "queue_pending": queue_state["pending_count"],
+            "queue_busy": queue_state["busy"],
         }
 
     @staticmethod
@@ -320,6 +445,10 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "referenced_models": referenced,
             "api_copy_required": True,
             "execution_profile": self._workflow_profile(),
+            "available_execution_profiles": [
+                self._workflow_profile(PROFILE),
+                self._workflow_profile(FAST_PROFILE),
+            ],
         }
 
     @staticmethod
@@ -333,23 +462,37 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
         return False
 
     @staticmethod
-    def _workflow_profile() -> dict[str, Any]:
+    def _workflow_profile(profile: str = PROFILE) -> dict[str, Any]:
+        settings = WORKFLOW_PROFILES.get(profile)
+        if settings is None:
+            raise BackendFailure("bad_input", "The requested H3 execution profile is unsupported.")
         return {
+            "profile": profile,
             "mode": "text_to_video_with_native_audio",
-            "width": 864,
-            "height": 480,
+            "width": settings["width"],
+            "height": settings["height"],
             "duration_seconds": 5,
             "frame_count": 124,
             "fps": 24,
-            "steps": 20,
+            "steps": settings["steps"],
             "scheduler": "simple",
             "sampler": "res_multistep",
             "denoise": 1.0,
             "seed": 101,
-            "workflow_default_preserved": True,
+            "sage_attention": settings["sage_attention"],
+            "candidate_only": settings["candidate_only"],
+            "target_wall_seconds": 180 if profile == FAST_PROFILE else None,
+            "workflow_default_preserved": profile == PROFILE,
         }
 
-    def build_api_workflow(self, generation_request: Mapping[str, Any], *, output_prefix: str) -> dict[str, Any]:
+    def build_api_workflow(
+        self,
+        generation_request: Mapping[str, Any],
+        *,
+        output_prefix: str,
+        first_frame_name: str | None = None,
+    ) -> dict[str, Any]:
+        execution_profile = self._workflow_profile(str(generation_request.get("profile", PROFILE)))
         prompt = next(
             (
                 str(item.get("text", "")).strip()
@@ -362,15 +505,20 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             raise BackendFailure("bad_input", "A text prompt is required for the H3 workflow.")
         if not output_prefix or any(part in output_prefix for part in ("..", "\\", ":")):
             raise BackendFailure("bad_input", "The ComfyUI output prefix is unsafe.")
-        return {
+        if first_frame_name is not None and (
+            Path(first_frame_name).name != first_frame_name
+            or Path(first_frame_name).suffix.lower() not in ALLOWED_IMAGE_SUFFIXES
+        ):
+            raise BackendFailure("bad_input", "The ComfyUI first-frame name is unsafe.")
+        workflow = {
             "1": {"class_type": "UNETLoader", "inputs": {"unet_name": REQUIRED_MODELS["diffusion_model"], "weight_dtype": "default"}},
             "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": REQUIRED_MODELS["text_encoder"], "type": "minimax", "device": "default"}},
             "3": {"class_type": "VAELoader", "inputs": {"vae_name": REQUIRED_MODELS["video_vae"]}},
             "4": {"class_type": "VAELoader", "inputs": {"vae_name": REQUIRED_MODELS["audio_vae"]}},
             "5": {"class_type": "RandomNoise", "inputs": {"noise_seed": 101}},
-            "6": {"class_type": "BasicScheduler", "inputs": {"model": ["1", 0], "scheduler": "simple", "steps": 20, "denoise": 1.0}},
+            "6": {"class_type": "BasicScheduler", "inputs": {"model": ["1", 0], "scheduler": "simple", "steps": execution_profile["steps"], "denoise": 1.0}},
             "7": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "res_multistep"}},
-            "8": {"class_type": "MiniMaxH3ImageToVideo", "inputs": {"clip": ["2", 0], "vae": ["3", 0], "prompt": prompt, "width": 864, "height": 480, "length": 124}},
+            "8": {"class_type": "MiniMaxH3ImageToVideo", "inputs": {"clip": ["2", 0], "vae": ["3", 0], "prompt": prompt, "width": execution_profile["width"], "height": execution_profile["height"], "length": 124}},
             "9": {"class_type": "BasicGuider", "inputs": {"model": ["1", 0], "conditioning": ["8", 0]}},
             "10": {"class_type": "SamplerCustomAdvanced", "inputs": {"noise": ["5", 0], "guider": ["9", 0], "sampler": ["7", 0], "sigmas": ["6", 0], "latent_image": ["8", 1]}},
             "11": {"class_type": "VAEDecode", "inputs": {"samples": ["10", 0], "vae": ["3", 0]}},
@@ -378,6 +526,10 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "13": {"class_type": "CreateVideo", "inputs": {"images": ["11", 0], "audio": ["12", 0], "fps": 24.0, "bit_depth": 8}},
             "14": {"class_type": "SaveVideo", "inputs": {"video": ["13", 0], "filename_prefix": output_prefix, "format": "mp4", "codec": "auto"}},
         }
+        if first_frame_name is not None:
+            workflow["16"] = {"class_type": "LoadImage", "inputs": {"image": first_frame_name}}
+            workflow["8"]["inputs"]["first_frame"] = ["16", 0]
+        return apply_sageattention_auto(workflow) if execution_profile["sage_attention"] else workflow
 
     def start(self) -> dict[str, Any]:
         if self._is_reachable():
@@ -476,22 +628,75 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             return False
 
     def create_job(self, request: Mapping[str, Any]) -> str:
+        with self._submission_lock:
+            return self._create_job_locked(request)
+
+    def _create_job_locked(self, request: Mapping[str, Any]) -> str:
+        generation_request = request["generation_request"]
+        requested_profile = str(generation_request.get("profile", PROFILE))
+        execution_profile = self._workflow_profile(requested_profile)
         runtime = self.inspect_runtime()
-        assets = self.inspect_assets()
-        workflow = self.inspect_workflow()
         if runtime["state"] != "ready":
             raise BackendFailure("comfyui_dependency_required", "Required ComfyUI H3 nodes are unavailable.")
+        self._require_idle_queue({"busy": runtime.get("queue_busy")})
+        assets = self.inspect_assets()
+        workflow = self.inspect_workflow()
         if assets["state"] != "ready":
             raise BackendFailure("artifact_not_found", "Required local H3 model files are unavailable.")
         if workflow["state"] != "ready":
             raise BackendFailure("comfyui_api_workflow_required", "The approved H3 workflow cannot be converted safely.")
-        generation_request = request["generation_request"]
+        if execution_profile["sage_attention"]:
+            objects = self.client.json("GET", "/object_info")
+            node = objects.get(SAGE_NODE_CLASS) if isinstance(objects, dict) else None
+            choices = node.get("input", {}).get("required", {}).get("sage_attention") if isinstance(node, dict) else None
+            options = choices[0] if isinstance(choices, list) and choices else []
+            if not isinstance(options, list) or "auto" not in options:
+                raise BackendFailure(
+                    "comfyui_dependency_required",
+                    "The 2-minute candidate requires SageAttention auto support.",
+                )
         request_digest = sha256(json.dumps(generation_request, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
         output_prefix = f"hiveframe/p0-h3-{request_digest[:16]}"
-        prompt = self.build_api_workflow(generation_request, output_prefix=output_prefix)
+        first_frame_name = None
+        reference_image = request.get("reference_image")
+        if reference_image is not None:
+            if not isinstance(reference_image, Mapping):
+                raise BackendFailure("bad_input", "The first-frame payload is invalid.")
+            content = reference_image.get("content")
+            media_type = reference_image.get("media_type")
+            source_name = reference_image.get("filename")
+            suffix = Path(str(source_name)).suffix.lower()
+            if (
+                not isinstance(content, bytes)
+                or not content
+                or not isinstance(media_type, str)
+                or suffix not in ALLOWED_IMAGE_SUFFIXES
+                or media_type != IMAGE_MEDIA_TYPES[suffix]
+            ):
+                raise BackendFailure("bad_input", "The first-frame image is unsupported.")
+            objects = self.client.json("GET", "/object_info")
+            if not isinstance(objects, Mapping) or "LoadImage" not in objects:
+                raise BackendFailure("comfyui_dependency_required", "Image-to-video requires ComfyUI LoadImage support.")
+            upload_name = f"hiveframe-reference-{sha256(content).hexdigest()[:16]}{suffix}"
+            uploaded = self.client.upload_image(filename=upload_name, media_type=media_type, content=content)
+            if (
+                not isinstance(uploaded, Mapping)
+                or uploaded.get("name") != upload_name
+                or uploaded.get("type") != "input"
+                or uploaded.get("subfolder", "") not in {"", None}
+            ):
+                raise BackendFailure("comfyui_upload_failed", "ComfyUI returned an unsafe first-frame location.")
+            first_frame_name = upload_name
+        prompt = self.build_api_workflow(
+            generation_request,
+            output_prefix=output_prefix,
+            first_frame_name=first_frame_name,
+        )
+        self._require_idle_queue(self.inspect_queue())
         submitted_perf = time.monotonic()
         submitted_at = _utc_now()
         self._sample_resources(None)
+        self._increment_accounting("backend_prompt_submission_count")
         response = self.client.json("POST", "/prompt", {"prompt": prompt, "client_id": "hiveframe-p0"})
         prompt_id = response.get("prompt_id") if isinstance(response, dict) else None
         if not isinstance(prompt_id, str) or not prompt_id:
@@ -506,13 +711,15 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "completed_at": None,
             "request_sha256": request_digest,
             "workflow_sha256": workflow["workflow_sha256"],
-            "profile": workflow["execution_profile"],
+            "profile": execution_profile,
             "peak_vram_bytes": None,
             "peak_host_ram_bytes": None,
             "sample_count": 0,
             "retry_count": 0,
             "output_prefix": output_prefix,
             "node_errors": response.get("node_errors", {}) if isinstance(response, dict) else {},
+            "gpu_execution_counted": False,
+            "completion_counted": False,
         }
         self._sample_resources(prompt_id)
         return prompt_id
@@ -539,6 +746,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
                 if job["completed_perf"] is None:
                     job["completed_perf"] = time.monotonic()
                     job["completed_at"] = _utc_now()
+                if not job["completion_counted"]:
+                    self._increment_accounting("completed_generation_count")
+                    job["completion_counted"] = True
                 return "succeeded"
         queue = self.client.json("GET", "/queue")
         running_ids = self._queue_ids(queue.get("queue_running", []) if isinstance(queue, dict) else [])
@@ -548,6 +758,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             if job["first_running_perf"] is None:
                 job["first_running_perf"] = time.monotonic()
                 job["first_running_at"] = _utc_now()
+            if not job["gpu_execution_counted"]:
+                self._increment_accounting("gpu_execution_started_count")
+                job["gpu_execution_counted"] = True
             return "running"
         if backend_job_id in pending_ids:
             job["status"] = "queued"
@@ -662,7 +875,7 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "model_download_count": 0,
             "workflow_logical_id": workflow.get("workflow_logical_id"),
             "workflow_sha256": workflow.get("workflow_sha256"),
-            "execution_profile": workflow.get("execution_profile"),
+            "execution_profile": dict(job["profile"]) if job is not None else workflow.get("execution_profile"),
             "configuration": self.config.public_status(),
             "runtime": {
                 key: runtime.get(key)
@@ -676,6 +889,28 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
     def public_status(self) -> dict[str, Any]:
         assets = self.inspect_assets()
         workflow = self.inspect_workflow()
+        runtime = self.inspect_runtime()
+        model_ready = assets["state"] == "ready" and workflow["state"] == "ready"
+        gpu_ready = runtime.get("state") == "ready" and runtime.get("device_type") == "cuda"
+        runtime_busy = bool(runtime.get("queue_busy"))
+        readiness = {
+            "gpu": {
+                "state": "ready" if gpu_ready else "needs_attention",
+                "label": "준비됨" if gpu_ready else "확인 필요",
+            },
+            "local_ai": {
+                "state": "ready" if runtime.get("state") == "ready" else "start_required",
+                "label": "준비됨" if runtime.get("state") == "ready" else "실행 필요",
+            },
+            "model": {
+                "state": "ready" if model_ready else "missing",
+                "label": "준비됨" if model_ready else "누락",
+            },
+            "generation": {
+                "state": "busy" if runtime_busy else "ready" if runtime.get("state") == "ready" else "needs_attention",
+                "label": "다른 작업 실행 중" if runtime_busy else "준비됨" if runtime.get("state") == "ready" else "확인 필요",
+            },
+        }
         if assets["state"] != "ready" or workflow["state"] != "ready":
             reason = assets.get("reason") if assets["state"] != "ready" else workflow.get("reason")
             return {
@@ -684,23 +919,35 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
                 "state": "unavailable",
                 "selectable": True,
                 "can_generate": False,
-                "message": "Local H3 — ComfyUI unavailable",
+                "message": "필요한 모델 파일을 확인해주세요.",
                 "reason": reason,
+                "readiness": readiness,
                 "execution_profile": workflow.get("execution_profile"),
                 "configuration": self.config.public_status(),
             }
-        runtime = self.inspect_runtime()
-        can_generate = runtime["state"] == assets["state"] == workflow["state"] == "ready"
-        state = "ready" if can_generate else "unavailable"
-        reason = next((item.get("reason") for item in (runtime, assets, workflow) if item.get("state") != "ready"), None)
+        dependencies_ready = runtime["state"] == assets["state"] == workflow["state"] == "ready"
+        can_generate = dependencies_ready and not runtime_busy
+        state = "busy" if dependencies_ready and runtime_busy else "ready" if can_generate else "unavailable"
+        reason = (
+            "shared_runtime_busy"
+            if state == "busy"
+            else next((item.get("reason") for item in (runtime, assets, workflow) if item.get("state") != "ready"), None)
+        )
         return {
             "name": self.name,
             "display_name": self.display_name,
             "state": state,
             "selectable": True,
             "can_generate": can_generate,
-            "message": "Local H3 — ComfyUI ready" if can_generate else "Local H3 — ComfyUI unavailable",
+            "message": (
+                "영상 생성 준비가 완료되었습니다."
+                if can_generate
+                else SHARED_RUNTIME_BUSY_MESSAGE
+                if state == "busy"
+                else "Local AI 실행 환경을 확인해주세요."
+            ),
             "reason": reason,
+            "readiness": readiness,
             "execution_profile": workflow.get("execution_profile"),
             "configuration": self.config.public_status(),
         }

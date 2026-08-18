@@ -11,6 +11,11 @@ import re
 
 
 PROFILE = "standard"
+FAST_PROFILE = "fast_2m_candidate"
+PROFILES = {PROFILE, FAST_PROFILE}
+TEXT_TO_VIDEO = "text_to_video"
+IMAGE_TO_VIDEO = "image_to_video"
+GENERATION_MODES = {TEXT_TO_VIDEO, IMAGE_TO_VIDEO}
 MODEL = "MiniMax-H3"
 DEFAULT_RESOLUTION = "768P"
 DEFAULT_DURATION_SECONDS = 4
@@ -43,6 +48,12 @@ FEEDBACK_REASONS = {
     "face", "hands", "motion", "camera", "background", "prompt_mismatch", "other",
 }
 ALLOWED_REFERENCE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+REFERENCE_MEDIA_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
 SAFE_ID = re.compile(r"^[a-zA-Z0-9_-]{1,80}$")
 
 
@@ -82,9 +93,15 @@ def validate_prompt(prompt: Any) -> str:
 
 
 def validate_profile(profile: Any) -> str:
-    if profile != PROFILE:
-        raise ValueError(f"only the {PROFILE!r} profile is supported")
-    return PROFILE
+    if not isinstance(profile, str) or profile not in PROFILES:
+        raise ValueError(f"profile must be one of {sorted(PROFILES)!r}")
+    return str(profile)
+
+
+def validate_generation_mode(mode: Any) -> str:
+    if not isinstance(mode, str) or mode not in GENERATION_MODES:
+        raise ValueError("mode must be text_to_video or image_to_video")
+    return mode
 
 
 def validate_duration(value: Any) -> int:
@@ -103,6 +120,13 @@ def validate_reference_name(name: Any) -> str:
     if Path(name).suffix.lower() not in ALLOWED_REFERENCE_SUFFIXES:
         raise ValueError("reference image must be PNG, JPEG, or WebP")
     return name
+
+
+def validate_reference_media_type(name: str, media_type: Any) -> str:
+    expected = REFERENCE_MEDIA_TYPES[Path(name).suffix.lower()]
+    if not isinstance(media_type, str) or media_type.lower() != expected:
+        raise ValueError("reference image media type does not match PNG, JPEG, or WebP filename")
+    return expected
 
 
 def validate_public_id(value: str, label: str = "id") -> str:

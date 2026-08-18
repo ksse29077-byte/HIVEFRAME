@@ -159,12 +159,12 @@ itself. Full Compute remains independently available at every decision point.
 flowchart TB
     subgraph PRODUCT_ROADMAP["Product launch track"]
         P0["P0 Local H3 vertical slice\nmain integrated; external release not claimed"]
-        P1["P1 One-click Local H3 launcher\nplanned; separate approval"]
+        P1["P1-A Release Alpha shell\nT2V/I2V + one-click launcher verified"]
         P2["P2 Hardened real local flow\nplanned"]
         P3["P3 Selective runtime integration\nrequires admitted mechanism"]
         P4["P4 Internal alpha / commercial preparation\nnot started"]
 
-        P0 -. "separate approval" .-> P1
+        P0 --> P1
         P1 -.-> P2
         P2 -.-> P3
         P3 -.-> P4

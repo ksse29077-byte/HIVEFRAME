@@ -6,6 +6,7 @@ contains the runner contract, never a user prompt or machine-specific path.
 
 from __future__ import annotations
 
+from base64 import b64encode
 from hashlib import sha256
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -16,6 +17,7 @@ import threading
 import time
 
 from .comfyui_backend import MiniMaxH3ComfyUIBackend
+from .contracts import FAST_PROFILE, PROFILE
 from .server import create_server
 from .service import ProductService
 
@@ -71,16 +73,37 @@ def main() -> int:
     prompt = os.environ.get("HIVEFRAME_H3_SMOKE_PROMPT", "").strip()
     if not prompt:
         raise SystemExit("HIVEFRAME_H3_SMOKE_PROMPT is required")
+    profile = os.environ.get("HIVEFRAME_H3_SMOKE_PROFILE", PROFILE).strip()
+    if profile not in {PROFILE, FAST_PROFILE}:
+        raise SystemExit("HIVEFRAME_H3_SMOKE_PROFILE must be standard or fast_2m_candidate")
+    reference_path_value = os.environ.get("HIVEFRAME_H3_SMOKE_REFERENCE", "").strip()
+    reference = None
+    reference_sha256 = None
+    if reference_path_value:
+        reference_path = Path(reference_path_value).expanduser().resolve()
+        suffix = reference_path.suffix.lower()
+        media_types = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
+        if not reference_path.is_file() or suffix not in media_types:
+            raise SystemExit("HIVEFRAME_H3_SMOKE_REFERENCE must be a PNG, JPEG, or WebP file")
+        reference_bytes = reference_path.read_bytes()
+        reference_sha256 = sha256(reference_bytes).hexdigest()
+        reference = {
+            "name": reference_path.name,
+            "media_type": media_types[suffix],
+            "content_base64": b64encode(reference_bytes).decode("ascii"),
+        }
     backend = MiniMaxH3ComfyUIBackend()
     server = None
     server_thread = None
     summary: dict = {
         "run_kind": "p0_local_h3_comfyui_smoke",
         "prompt_sha256": sha256(prompt.encode("utf-8")).hexdigest(),
+        "requested_profile": profile,
         "external_api_call_count": 0,
         "model_download_count": 0,
         "workflow_submission_count": 0,
         "feedback_created": False,
+        "reference_sha256": reference_sha256,
     }
     exit_code = 1
     try:
@@ -97,18 +120,22 @@ def main() -> int:
         server_thread = threading.Thread(target=server.serve_forever, daemon=True)
         server_thread.start()
         base_url = f"http://127.0.0.1:{server.server_address[1]}"
+        generation_started = time.monotonic()
+        job_request = {
+            "backend": "minimax_h3_comfyui_local",
+            "prompt": prompt,
+            "resolution": "768P",
+            "duration_seconds": 4,
+            "ratio": "16:9",
+            "profile": profile,
+            "generation_consent": True,
+        }
+        if reference is not None:
+            job_request["reference"] = reference
         job = _json_request(
             base_url,
             "/api/jobs",
-            {
-                "backend": "minimax_h3_comfyui_local",
-                "prompt": prompt,
-                "resolution": "768P",
-                "duration_seconds": 4,
-                "ratio": "16:9",
-                "profile": "standard",
-                "generation_consent": True,
-            },
+            job_request,
         )
         summary["product_job_create_count"] = 1
         summary["job_id"] = job["job_id"]
@@ -123,6 +150,7 @@ def main() -> int:
                 observed.append(job["status"])
         summary["observed_product_states"] = observed
         summary["terminal_status"] = job["status"]
+        summary["generation_wall_seconds"] = time.monotonic() - generation_started
         summary["backend_prompt_id"] = job.get("backend_job_id")
         summary["error_code"] = job.get("error_code")
         summary["error_message"] = job.get("error_message")
@@ -172,11 +200,13 @@ def main() -> int:
         if output_root is not None:
             runtime_root = output_root / "runtime"
             runtime_root.mkdir(parents=True, exist_ok=True)
-            summary_path = runtime_root / "hiveframe-p0-h3-smoke-summary.json"
+            summary_path = runtime_root / f"hiveframe-p0-h3-{profile}-smoke-summary.json"
             summary_path.write_text(json.dumps(summary, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
         public = {
             "run_kind": summary["run_kind"],
+            "requested_profile": summary["requested_profile"],
             "terminal_status": summary.get("terminal_status", "failed"),
+            "generation_wall_seconds": summary.get("generation_wall_seconds"),
             "observed_product_states": summary.get("observed_product_states", []),
             "workflow_submission_count": summary["workflow_submission_count"],
             "result_sha256": summary.get("result", {}).get("sha256"),

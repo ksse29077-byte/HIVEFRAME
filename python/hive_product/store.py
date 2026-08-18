@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from hashlib import sha256
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 import json
 import sqlite3
 import threading
@@ -26,11 +27,16 @@ class ProductStore:
         self._lock = threading.RLock()
         self._initialize()
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
         connection = sqlite3.connect(self.database_path, timeout=30)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
-        return connection
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def _initialize(self) -> None:
         with self._connect() as connection:
@@ -101,6 +107,7 @@ class ProductStore:
                 "resolution": "TEXT NOT NULL DEFAULT '768P'",
                 "aspect_ratio": "TEXT NOT NULL DEFAULT '16:9'",
                 "backend_state": "TEXT NOT NULL DEFAULT 'queued'",
+                "generation_mode": "TEXT NOT NULL DEFAULT 'text_to_video'",
             }
             for name, declaration in migrations.items():
                 if name not in existing:
@@ -114,6 +121,7 @@ class ProductStore:
             "profile", "duration_seconds", "generation_consent",
             "backend_job_id", "request_json",
             "resolution", "aspect_ratio", "backend_state",
+            "generation_mode",
         )
         with self._lock, self._connect() as connection:
             connection.execute(
