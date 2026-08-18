@@ -1,4 +1,4 @@
-"""Repository-owned A3-G1 real-H3 conditional attention sampler node."""
+"""Repository-owned A3-G1C preplanned direct selective sampler node."""
 
 from __future__ import annotations
 
@@ -17,7 +17,6 @@ from hive_product.a3_g1_conditional_reuse import (
     CONTROL_MODE,
     SELECTIVE_MODE,
     H3A3G1Controller,
-    execution_island_source_admission,
     settings_digest as g1_settings_digest,
 )
 from hive_product.compound_eye_shadow import (
@@ -49,13 +48,13 @@ def _write_receipt(payload: dict[str, Any]) -> None:
     temporary.replace(target)
 
 
-class HIVEFRAMEH3ConditionalAttentionReuseSampler(io.ComfyNode):
-    """Run one bounded A3-G1 CONTROL or gated SELECTIVE sampler."""
+class HIVEFRAMEH3PreplanDirectSelectiveReuseSampler(io.ComfyNode):
+    """Run one bounded A3-G1C CONTROL or preplanned SELECTIVE sampler."""
 
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="HIVEFRAMEH3ConditionalAttentionReuseSampler",
+            node_id="HIVEFRAMEH3PreplanDirectSelectiveReuseSampler",
             category="hiveframe/a3-g1",
             inputs=[
                 io.Noise.Input("noise"),
@@ -111,11 +110,8 @@ class HIVEFRAMEH3ConditionalAttentionReuseSampler(io.ComfyNode):
         model_source = Path(h3_model.__file__).resolve()
         attention_source = model_source.parents[1] / "modules" / "attention.py"
         source_gate = inspect_installed_attention_source(model_source, attention_source)
-        island_gate = execution_island_source_admission(torch, h3_model.optimized_attention)
         if not source_gate.get("admitted") or source_gate.get("model_source_sha256") != MODEL_SOURCE_SHA256:
             raise RuntimeError("A3-G1 installed H3 source contract changed")
-        if not island_gate.get("admitted"):
-            raise RuntimeError("A3-G1 exact execution island is not source-admitted")
 
         shadow_bridge = CompoundEyeShadowBridge(
             ShadowContext(
@@ -148,7 +144,12 @@ class HIVEFRAMEH3ConditionalAttentionReuseSampler(io.ComfyNode):
             "settings_digest": settings_digest,
             "model_revision_digest": model_revision_digest,
             "source_admission": source_gate,
-            "execution_island_admission": island_gate,
+            "preplan_direct_admission": {
+                "conditional_graph_used": False,
+                "gpu_same_block_guard_used": False,
+                "static_qkv_used": False,
+                "fallback": "standard_full_compute",
+            },
             "candidate_blocks": list(candidates),
             "sampler_succeeded": False,
             "error_type": None,
@@ -190,10 +191,10 @@ class HIVEFRAMEH3ConditionalAttentionReuseSampler(io.ComfyNode):
             _ACTIVE = False
 
 
-class A3G1ConditionalReuseExtension(ComfyExtension):
+class A3G1PreplanDirectReuseExtension(ComfyExtension):
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
-        return [HIVEFRAMEH3ConditionalAttentionReuseSampler]
+        return [HIVEFRAMEH3PreplanDirectSelectiveReuseSampler]
 
 
-async def comfy_entrypoint() -> A3G1ConditionalReuseExtension:
-    return A3G1ConditionalReuseExtension()
+async def comfy_entrypoint() -> A3G1PreplanDirectReuseExtension:
+    return A3G1PreplanDirectReuseExtension()

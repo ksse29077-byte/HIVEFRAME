@@ -1,4 +1,4 @@
-"""Bounded A3-G1 CONTROL plus conditionally admitted SELECTIVE experiment."""
+"""Bounded A3-G1C CONTROL plus preplanned direct SELECTIVE experiment."""
 
 from __future__ import annotations
 
@@ -56,8 +56,10 @@ from .comfyui_backend import ComfyUIH3Config, MiniMaxH3ComfyUIBackend
 from .sageattention_probe import SAGE_NODE_CLASS, _decode_video, _load_private_prompt
 
 
-SCHEMA_VERSION = "a3-g1.h3.real-conditional-reuse.1"
-NODE_CLASS = "HIVEFRAMEH3ConditionalAttentionReuseSampler"
+SCHEMA_VERSION = "a3-g1c.h3.preplan-direct-selective.1"
+NODE_CLASS = "HIVEFRAMEH3PreplanDirectSelectiveReuseSampler"
+IMMUTABLE_STANDARD_SAMPLER_SECONDS = 488.847320
+IMMUTABLE_STANDARD_SUBMIT_SECONDS = 589.913016
 
 
 def _utc_now() -> str:
@@ -240,6 +242,12 @@ def _run_generation(
             "guard_d2h_zero": execution.get("guard", {}).get("d2h_bytes") == 0,
             "host_guard_read_zero": execution.get("guard", {}).get("host_reads") == 0,
             "hot_path_sync_zero": execution.get("guard", {}).get("explicit_hot_path_cpu_sync") == 0,
+            "conditional_graph_zero": execution.get("conditional_graph_used") is False,
+            "same_block_guard_zero": execution.get("gpu_same_block_guard_used") is False,
+            "static_qkv_zero": execution.get("static_qkv_used") is False,
+            "normal_double_attention_zero": execution.get("normal_partial_plus_full_count") == 0,
+            "exception_double_attention_zero": execution.get("exception_partial_then_full_count") == 0,
+            "full_size_gpu_staging_zero": execution.get("cache", {}).get("full_size_gpu_staging_count") == 0,
         }
         receipt["callback_instrumentation"] = callback
         receipt["execution_gate"] = {"checks": checks, "passed": all(checks.values())}
@@ -346,7 +354,7 @@ def run_experiment(
         "schema_version": SCHEMA_VERSION,
         "experiment_id": experiment_id,
         "started_at": _utc_now(),
-        "product_question": "Can real H3 conditional Attention reuse reduce actual work and accepted runtime while preserving automatic quality and Full Compute fallback?",
+        "product_question": "Can a pre-Attention Rust pre-plan omit real H3 Q work while preserving quality and reducing accepted runtime on RTX 3060 12GB?",
         "contract": fixed_contract(),
         "a2_evidence": {
             "private_receipt_sha256": a2_digest,
@@ -361,6 +369,10 @@ def run_experiment(
         "quality_promotion": 0,
         "product_promotion": 0,
         "final_2x_target_verified": False,
+        "immutable_standard": {
+            "sampler_seconds": IMMUTABLE_STANDARD_SAMPLER_SECONDS,
+            "submit_to_terminal_seconds": IMMUTABLE_STANDARD_SUBMIT_SECONDS,
+        },
     }
     if not cache.admitted:
         summary["decision"] = DECISION_ISLAND_NOT_ADMITTED
@@ -422,14 +434,18 @@ def run_experiment(
                         float(control["metrics"]["runner_total_seconds"]["value"])
                         / float(selective["metrics"]["runner_total_seconds"]["value"])
                     )
+                    sampler_speedup_vs_standard = IMMUTABLE_STANDARD_SAMPLER_SECONDS / _sampler_seconds(selective)
+                    submit_speedup_vs_standard = IMMUTABLE_STANDARD_SUBMIT_SECONDS / _submit_seconds(selective)
                     summary["quality"] = quality
                     summary["runtime_comparison"] = {
                         "control_sampler_seconds": _sampler_seconds(control),
                         "selective_sampler_seconds": _sampler_seconds(selective),
                         "sampler_speedup": sampler_speedup,
+                        "sampler_speedup_vs_immutable_standard": sampler_speedup_vs_standard,
                         "control_submit_to_terminal_seconds": _submit_seconds(control),
                         "selective_submit_to_terminal_seconds": _submit_seconds(selective),
                         "submit_speedup": submit_speedup,
+                        "submit_speedup_vs_immutable_standard": submit_speedup_vs_standard,
                         "runner_speedup": runner_speedup,
                     }
                     summary["actual_q_reduction"] = actual_reduction
@@ -437,6 +453,8 @@ def run_experiment(
                         int(work["reused_omitted_rows"]) > 0
                         and int(work["actual_current_q_rows"]) < int(work["full_q_rows_theoretical"])
                         and actual_reduction >= 0.03
+                        and int(execution.get("normal_partial_plus_full_count", -1)) == 0
+                        and int(execution.get("exception_partial_then_full_count", -1)) == 0
                     )
                     if not omission_proven:
                         summary["decision"] = DECISION_OMISSION_NOT_PROVEN
@@ -444,7 +462,12 @@ def run_experiment(
                     elif not quality["passed"]:
                         summary["decision"] = DECISION_QUALITY_REJECTED
                         summary["disposition"] = "FALLBACK_ONLY"
-                    elif sampler_speedup <= 1.0 or submit_speedup <= 1.0:
+                    elif (
+                        sampler_speedup <= 1.0
+                        or submit_speedup <= 1.0
+                        or sampler_speedup_vs_standard <= 1.0
+                        or submit_speedup_vs_standard <= 1.0
+                    ):
                         summary["decision"] = DECISION_RUNTIME_NOT_POSITIVE
                         summary["disposition"] = "KEEP_AS_OPTIONAL"
                     else:
@@ -471,7 +494,7 @@ def run_experiment(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run bounded A3-G1 CONTROL and conditional SELECTIVE H3 experiment.")
+    parser = argparse.ArgumentParser(description="Run bounded A3-G1C CONTROL and preplanned SELECTIVE H3 experiment.")
     parser.add_argument("--experiment-id", required=True)
     parser.add_argument("--p0-database", required=True, type=Path)
     parser.add_argument("--a2-private-receipt", required=True, type=Path)
