@@ -195,7 +195,11 @@ Gate. Quality failure overrides any observed speed or VRAM improvement.
   through the published ComfyUI path. External MiniMax API use is not implied.
 - Wan 2.1 T2V 1.3B remains the frozen M0 comparator; do not reinterpret or
   casually rerun its receipts.
-- LTX is inactive; historical assets remain preserved.
+- LTX-Video 0.9.8 Distilled 2B FP8 completed one bounded local admission on
+  RTX 3060 12 GB through Draft PR #99: 768x512, 33 frames, 24 FPS, 8 steps,
+  10.899082 seconds submit-to-terminal, OOM/retry/fallback zero, and output
+  integrity PASS. This is `verified_once` admission evidence only; LTX is not
+  a product backend and a normalized H3 comparison requires separate approval.
 - Model binaries, local H3 assets, user prompts, outputs, and full runtime
   receipts remain outside Git.
 - H3 output training eligibility defaults to `evaluation_only`; runtime
@@ -208,6 +212,7 @@ Gate. Quality failure overrides any observed speed or VRAM improvement.
 There is no automatically active next implementation stage at this snapshot.
 Each of the following requires separate explicit approval:
 
+- a normalized H3-versus-LTX formal comparison or any second LTX Generation;
 - P1 one-click Local H3 launcher;
 - M1-B1 backend capability admission or M1-B2 formal selective probe;
 - the C4-S0 mixed sub-block candidate or any other compute lever outside the

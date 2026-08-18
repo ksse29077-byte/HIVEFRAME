@@ -1,0 +1,88 @@
+{
+  "schema_version": "ltx.video.2b.fp8.admission.1",
+  "issue": 98,
+  "decision_dependency": "ENGINE_COMPETITIVENESS_SHORTLIST_READY_FOR_APPROVAL",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_mib": 12288
+  },
+  "runtime": {
+    "kind": "existing_loopback_comfyui_core_nodes",
+    "base_url": "http://127.0.0.1:8188",
+    "comfyui_version": "0.30.2",
+    "comfyui_commit": "dec5d9450a5290bcf63430409ea41018e67f41c3",
+    "custom_node_changes": 0,
+    "python_package_changes": 0,
+    "external_inference_api": false
+  },
+  "model": {
+    "repository": "Lightricks/LTX-Video",
+    "revision": "17037c8743450dc873046790dd96fa805ccfaf8d",
+    "filename": "ltxv-2b-0.9.8-distilled-fp8.safetensors",
+    "bytes": 4461695684,
+    "sha256": "d6d8fa8ed3a98346787c2503ac80fb5d7cebcf80e356b79a2ba361fbadf97e15",
+    "source_url": "https://huggingface.co/Lightricks/LTX-Video/resolve/17037c8743450dc873046790dd96fa805ccfaf8d/ltxv-2b-0.9.8-distilled-fp8.safetensors",
+    "license": "LTX Video Open Weights License 0.X"
+  },
+  "text_encoder": {
+    "repository": "comfyanonymous/flux_text_encoders",
+    "revision": "3bcfe977a9a2617a0b9025076030e217795fe028",
+    "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+    "bytes": 5157348688,
+    "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+    "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/3bcfe977a9a2617a0b9025076030e217795fe028/t5xxl_fp8_e4m3fn_scaled.safetensors",
+    "license": "Apache-2.0"
+  },
+  "profile": {
+    "mode": "I2V",
+    "input_sha256": "493ea036b4d5008c6ae7eaec772163527db1aed9457021a93ab922ee87dfb411",
+    "input_is_private": true,
+    "prompt_source": "HIVEFRAME_LTX_PROMPT private runtime environment variable",
+    "prompt_sha256": "e1c86816d98d8485e1ba98e246f2eff817df70c37339d312d958d60ee00d7da3",
+    "negative_prompt_source": "HIVEFRAME_LTX_NEGATIVE_PROMPT private runtime environment variable",
+    "negative_prompt_sha256": "22185ed52e438fd1539cec2c9579ed4ee7d4336dfcd27ff8c425675c39048fd2",
+    "seed": 101,
+    "width": 768,
+    "height": 512,
+    "frames": 33,
+    "fps": 24.0,
+    "duration_seconds": 1.375,
+    "steps": 8,
+    "sampler": "euler",
+    "scheduler": "LTXVScheduler",
+    "max_shift": 2.05,
+    "base_shift": 0.95,
+    "stretch": true,
+    "terminal": 0.1,
+    "guidance": 1.0,
+    "stg": false,
+    "precision": "FP8 model and FP8 scaled T5",
+    "quantization": "float8_e4m3fn checkpoint",
+    "cpu_offload": "ComfyUI automatic model management; no explicit offload node",
+    "vae": "embedded in the official single-file checkpoint",
+    "batch_size": 1,
+    "image_strength": 1.0,
+    "expected_peak_vram_gib": "8-10 official directional estimate",
+    "expected_peak_host_ram_gib": "UNKNOWN; upstream recommends 32+ system RAM",
+    "expected_runtime_seconds": "UNKNOWN"
+  },
+  "execution_budget": {
+    "maximum_product_or_test_jobs": 1,
+    "maximum_backend_submissions": 1,
+    "maximum_generations": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "wan_downloads_or_runs": 0,
+    "submit_to_terminal_stop_seconds": 900
+  },
+  "integrity_gate": {
+    "container": "mp4",
+    "codec": "h264",
+    "width": 768,
+    "height": 512,
+    "frames": 33,
+    "fps": 24.0,
+    "maximum_black_frames": 0,
+    "maximum_corrupt_frames": 0
+  }
+}

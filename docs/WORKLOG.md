@@ -25,6 +25,30 @@ their architecture documents.
 | `blocked` | an external requirement prevents progress |
 | `unsupported` | the current environment or backend cannot provide it |
 
+## 2026-08-18 - LTX-Video 2B FP8 one-run admission
+
+Issue #98, branch `admission/ltx-video-2b-fp8`, and Draft PR #99 isolate one
+approved local LTX-Video 0.9.8 Distilled 2B FP8 admission. Two pinned files
+totaling 9,619,044,372 bytes were installed outside Git and passed exact size
+and SHA-256 verification. ComfyUI 0.30.2 required no package, custom-node, H3
+workflow, or H3 checkpoint change.
+
+Exactly one 768x512, 33-frame, 24 FPS, 8-step I2V prompt ran on RTX 3060 12 GB.
+The lifecycle was queued -> running -> succeeded; submit-to-terminal was
+10.899082 seconds and total Admission E2E was 18.553888 seconds. Peak sampled
+NVIDIA memory was 11,207 MiB. The H.264 MP4 decoded 33/33 frames with zero
+black, corrupt, or adjacent duplicate frames. Retry, fallback, OOM, external
+inference API, external-job termination, and Wan2.2 work were all zero.
+
+The conservative visual grade is `PROMISING_FOR_FORMAL_GATE`, with stable dog
+identity, face, cone, and background across five sampled frames. Because this
+was a 1.375-second minimum Admission rather than the H3 profile, the comparison
+status is `FORMAL_NORMALIZED_COMPARISON_REQUIRED`. The bounded decision is
+`LTX_ADMISSION_READY_FOR_FORMAL_H3_COMPARISON`, disposition
+`KEEP_AS_OPTIONAL`. Commercial promotion and installer readiness are not
+claimed. Diagram impact is `updated`. See the detailed
+[LTX Admission worklog](worklogs/2026-08-18-ltx-video-2b-fp8-admission.md).
+
 ## 2026-08-18 - P1-A1 real Alpha end-to-end smoke
 
 The Release Alpha started through `scripts/hiveframe-local.cmd`, passed Local
