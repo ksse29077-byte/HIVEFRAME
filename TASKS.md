@@ -1,6 +1,6 @@
 # HIVEFRAME Tasks
 
-Status date: 2026-08-14
+Status date: 2026-08-18
 
 ## Status legend
 
@@ -26,7 +26,7 @@ expansion does not block the launch track.
 | A1 — Compound Eye regional active-query attention | `stopped` | Issue #82 / Draft PR #83; CONTROL valid and comparable, but Rust boundary p95 and block admission failed; SELECTIVE 0; `FALLBACK_ONLY` |
 | P0 — Local H3 vertical slice | `done` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) completed; PR #54 merged; `P0_LOCAL_H3_COMFYUI_READY` |
 | F0-SAGE — External SageAttention paired probe | `verified_once` | Issue #55; 1.207148× is below 1.3×; `F0_SAGE_NO_GAIN`; Draft review pending |
-| P1 — One-click Local H3 launcher | `planned` | separate approval; the P0 runtime/database isolation observation remains a non-promoted candidate |
+| P1-A - Release Alpha shell and one-click Local H3 launcher | `done` | Explicit T2V/I2V, fixed Standard Quality, Local H3 readiness, product status/error/result UX, dev-only Mock, and bounded Windows launcher verified by 52 focused tests plus desktop/mobile browser checks; Generation 0 |
 | P2 — Real local H3 product flow | `planned` | replace provisional pipeline/output details only after official artifact code exists |
 | P3 — Selective runtime integration | `planned` | requires backend-admitted partial-compute evidence and complete accepted-result costs |
 | P4 — Internal alpha/commercial preparation | `planned` | operational, rights, retention/deletion, terms, packaging, and release safeguards |
@@ -265,7 +265,7 @@ Bounded decision: `P0_LOCAL_H3_COMFYUI_READY`.
 | Run one actual Local H3 smoke | `verified_once` | one submission, 124 decoded frames, OOM 0, retry 0 |
 | Preserve H3 Knowledge Flywheel | `implemented` | workflow, runtime, failure, capability, and decision files; no automatic promotion |
 | Publish P0 through PR #54 | `published` | Issue #53 completed; PR #54 merged at `d716a22...` |
-| Start P1 one-click launcher | `planned` | separate user approval required; parallel-runtime database isolation remains a candidate |
+| Complete P1-A release shell and one-click launcher | `done` | Repository-owned `.cmd`/`.ps1`, owned-runtime lifecycle, Local H3 preflight, browser-after-ready ordering, and bounded failure paths verified without Generation |
 
 This result proves only the first Local H3 product path. It does not establish
 quality, speed, cost, cache, selective compute, or production-default settings.
