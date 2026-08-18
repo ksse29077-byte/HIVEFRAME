@@ -25,6 +25,29 @@ their architecture documents.
 | `blocked` | an external requirement prevents progress |
 | `unsupported` | the current environment or backend cannot provide it |
 
+## 2026-08-18 - P1-A1 real Alpha end-to-end smoke
+
+The Release Alpha started through `scripts/hiveframe-local.cmd`, passed Local
+H3 readiness, opened the browser after server readiness, and accepted one
+controlled private-reference Standard I2V request. The existing 52 focused
+tests passed before submission. The request preserved 864x480, 124 frames,
+24 FPS, 20 steps, `simple`, `res_multistep`, denoise 1.0, seed 101, native
+audio, and Sage disabled. The reference remained local and was uploaded once.
+
+The run did not reach a valid E2E result. A separate unattributed Standard T2V
+request already occupied the freshly launched runtime before the controlled
+I2V submit. The I2V prompt was removed from the pending ComfyUI queue before it
+ran, retry remained zero, and no output, receipt, result URL, integrity result,
+or human usability result exists. The bounded decision is
+`P1_A1_REAL_ALPHA_E2E_FAILED`; another Generation requires separate approval.
+
+Cancellation exposed that successful empty ComfyUI command responses were
+treated as JSON decode failures. The loopback client now accepts an empty 2xx
+body as `{}`; eight focused backend/product tests passed. No acceleration,
+profile reduction, model download, external API call, automatic fallback, or
+second P1-A1 Generation was used. Diagram impact: none. See the detailed
+[P1-A1 worklog](worklogs/2026-08-18-p1-a1-real-alpha-e2e-smoke.md).
+
 ## 2026-08-14 - P1-F standard-quality speed target check
 
 The bounded product question was whether the same local MiniMax H3 image-to-

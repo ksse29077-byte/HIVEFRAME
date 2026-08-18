@@ -27,6 +27,7 @@ expansion does not block the launch track.
 | P0 — Local H3 vertical slice | `done` | [Issue #53](https://github.com/ksse29077-byte/HIVEFRAME/issues/53) completed; PR #54 merged; `P0_LOCAL_H3_COMFYUI_READY` |
 | F0-SAGE — External SageAttention paired probe | `verified_once` | Issue #55; 1.207148× is below 1.3×; `F0_SAGE_NO_GAIN`; Draft review pending |
 | P1-A - Release Alpha shell and one-click Local H3 launcher | `done` | Explicit T2V/I2V, fixed Standard Quality, Local H3 readiness, product status/error/result UX, dev-only Mock, and bounded Windows launcher verified by 52 focused tests plus desktop/mobile browser checks; Generation 0 |
+| P1-A1 - Real Alpha end-to-end smoke | `blocked` | Actual launcher and Standard I2V submit verified once, but an unattributed T2V already occupied the fresh local runtime; the I2V prompt was removed before running, output is absent, retry is 0, and a clean rerun requires separate Generation approval; `P1_A1_REAL_ALPHA_E2E_FAILED` |
 | P2 — Real local H3 product flow | `planned` | replace provisional pipeline/output details only after official artifact code exists |
 | P3 — Selective runtime integration | `planned` | requires backend-admitted partial-compute evidence and complete accepted-result costs |
 | P4 — Internal alpha/commercial preparation | `planned` | operational, rights, retention/deletion, terms, packaging, and release safeguards |
