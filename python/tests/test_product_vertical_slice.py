@@ -95,7 +95,7 @@ class ProductLocalReadyTests(unittest.TestCase):
             )
         with TemporaryDirectory(prefix="hiveframe-fast-contract-") as temporary:
             with self.assertRaisesRegex(ValueError, "local ComfyUI"):
-                ProductService(artifact_root=Path(temporary)).create_job({
+                ProductService(artifact_root=Path(temporary), dev_mode=True).create_job({
                     "backend": "mock_h3",
                     "prompt": "A quiet street",
                     "profile": "fast_2m_candidate",
@@ -190,17 +190,16 @@ class ProductLocalReadyTests(unittest.TestCase):
         with TemporaryDirectory(prefix="hiveframe-p0-ui-") as temporary:
             service = ProductService(artifact_root=Path(temporary))
             config = service.public_config()
-            self.assertEqual(config["default_backend"], "mock_h3")
-            self.assertEqual(config["backends"]["local_h3"]["state"], "artifact_pending")
-            self.assertIn("Waiting for official model files", config["backends"]["local_h3"]["message"])
+            self.assertEqual(config["default_backend"], "minimax_h3_comfyui_local")
+            self.assertNotIn("mock_h3", config["backends"])
+            self.assertFalse(config["can_generate"])
             html = (ROOT / "python" / "hive_product" / "static" / "index.html").read_text(encoding="utf-8")
-            self.assertIn("Mock H3", html)
             self.assertIn("Local H3", html)
             self.assertNotIn("transferConsent", html)
 
     def test_mock_h3_end_to_end_once_and_feedback_remains_evaluation_only(self) -> None:
         with TemporaryDirectory(prefix="hiveframe-p0-e2e-") as temporary:
-            service = ProductService(artifact_root=Path(temporary))
+            service = ProductService(artifact_root=Path(temporary), dev_mode=True)
             with running_product(service) as base:
                 _, created = api(base, "/api/jobs", {
                     "backend": "mock_h3", "prompt": "A person waves", "generation_consent": True,
@@ -219,9 +218,10 @@ class ProductLocalReadyTests(unittest.TestCase):
 
     def test_first_frame_is_saved_by_asset_id_and_request_has_no_url(self) -> None:
         with TemporaryDirectory(prefix="hiveframe-p0-asset-") as temporary:
-            service = ProductService(artifact_root=Path(temporary))
+            service = ProductService(artifact_root=Path(temporary), dev_mode=True)
             job = service.create_job({
                 "backend": "mock_h3", "prompt": "First frame", "generation_consent": True,
+                "mode": "image_to_video",
                 "reference": {"name": "frame.png", "media_type": "image/png", "content_base64": base64.b64encode(b"png").decode()},
             })
             stored = service.store.get_job(job["job_id"])
@@ -234,7 +234,7 @@ class ProductLocalReadyTests(unittest.TestCase):
         secret = "must-not-persist"
         with patch.dict(os.environ, {"HIVEFRAME_H3_MODEL_SOURCE": secret, "MINIMAX_API_KEY": secret}, clear=False):
             with TemporaryDirectory(prefix="hiveframe-p0-security-") as temporary:
-                service = ProductService(artifact_root=Path(temporary))
+                service = ProductService(artifact_root=Path(temporary), dev_mode=True)
                 config_dump = json.dumps(service.public_config())
                 self.assertNotIn(secret, config_dump)
                 job = service.create_job({"backend": "mock_h3", "prompt": "safe", "generation_consent": True})
@@ -250,10 +250,11 @@ class ProductLocalReadyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "outside"):
             ProductService(artifact_root=ROOT / "hiveframe-product-data")
         with TemporaryDirectory(prefix="hiveframe-p0-path-") as temporary:
-            service = ProductService(artifact_root=Path(temporary))
+            service = ProductService(artifact_root=Path(temporary), dev_mode=True)
             with self.assertRaisesRegex(ValueError, "unsafe path"):
                 service.create_job({
                     "backend": "mock_h3", "prompt": "safe", "generation_consent": True,
+                    "mode": "image_to_video",
                     "reference": {"name": "../private.png", "media_type": "image/png", "content_base64": "aW1hZ2U="},
                 })
 

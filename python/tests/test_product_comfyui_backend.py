@@ -256,6 +256,7 @@ class ProductComfyUIBackendTests(unittest.TestCase):
             service = ProductService(artifact_root=Path(artifact), comfyui_backend=backend)
             job = service.create_job({
                 "backend": "minimax_h3_comfyui_local",
+                "mode": "image_to_video",
                 "prompt": "the dog blinks",
                 "generation_consent": True,
                 "reference": {
@@ -282,7 +283,7 @@ class ProductComfyUIBackendTests(unittest.TestCase):
             self.assertEqual(backend.cancel_job(prompt_id)["status"], "cancelled")
         html = (ROOT / "python" / "hive_product" / "static" / "index.html").read_text(encoding="utf-8")
         script = (ROOT / "python" / "hive_product" / "static" / "app.js").read_text(encoding="utf-8")
-        self.assertIn('value="mock_h3"', html)
+        self.assertNotIn('value="mock_h3"', html)
         self.assertIn('value="minimax_h3_comfyui_local"', html)
         self.assertIn("resultVideo", html)
         self.assertIn("/cancel", script)

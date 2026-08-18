@@ -258,7 +258,7 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
     """Real local H3 backend using one loopback ComfyUI workflow submission."""
 
     name = BACKEND_KEY
-    display_name = "Local H3 — ComfyUI"
+    display_name = "Local H3"
     poll_interval_seconds = 0.5
     experimental_capabilities = {
         "regional_attention_output_reuse_correction_v1": {
@@ -829,6 +829,23 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
     def public_status(self) -> dict[str, Any]:
         assets = self.inspect_assets()
         workflow = self.inspect_workflow()
+        runtime = self.inspect_runtime()
+        model_ready = assets["state"] == "ready" and workflow["state"] == "ready"
+        gpu_ready = runtime.get("state") == "ready" and runtime.get("device_type") == "cuda"
+        readiness = {
+            "gpu": {
+                "state": "ready" if gpu_ready else "needs_attention",
+                "label": "준비됨" if gpu_ready else "확인 필요",
+            },
+            "local_ai": {
+                "state": "ready" if runtime.get("state") == "ready" else "start_required",
+                "label": "준비됨" if runtime.get("state") == "ready" else "실행 필요",
+            },
+            "model": {
+                "state": "ready" if model_ready else "missing",
+                "label": "준비됨" if model_ready else "누락",
+            },
+        }
         if assets["state"] != "ready" or workflow["state"] != "ready":
             reason = assets.get("reason") if assets["state"] != "ready" else workflow.get("reason")
             return {
@@ -837,12 +854,12 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
                 "state": "unavailable",
                 "selectable": True,
                 "can_generate": False,
-                "message": "Local H3 — ComfyUI unavailable",
+                "message": "필요한 모델 파일을 확인해주세요.",
                 "reason": reason,
+                "readiness": readiness,
                 "execution_profile": workflow.get("execution_profile"),
                 "configuration": self.config.public_status(),
             }
-        runtime = self.inspect_runtime()
         can_generate = runtime["state"] == assets["state"] == workflow["state"] == "ready"
         state = "ready" if can_generate else "unavailable"
         reason = next((item.get("reason") for item in (runtime, assets, workflow) if item.get("state") != "ready"), None)
@@ -852,8 +869,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "state": state,
             "selectable": True,
             "can_generate": can_generate,
-            "message": "Local H3 — ComfyUI ready" if can_generate else "Local H3 — ComfyUI unavailable",
+            "message": "영상 생성 준비가 완료되었습니다." if can_generate else "Local AI 실행 환경을 확인해주세요.",
             "reason": reason,
+            "readiness": readiness,
             "execution_profile": workflow.get("execution_profile"),
             "configuration": self.config.public_status(),
         }

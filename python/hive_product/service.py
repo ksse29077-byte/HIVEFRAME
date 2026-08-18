@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 import binascii
 import json
+import os
 import threading
 import time
 import uuid
@@ -22,6 +23,7 @@ from .contracts import (
     FEEDBACK_DECISIONS,
     FEEDBACK_REASONS,
     FAST_PROFILE,
+    IMAGE_TO_VIDEO,
     H3ContentItem,
     H3GenerationRequest,
     MAX_REFERENCE_BYTES,
@@ -29,10 +31,13 @@ from .contracts import (
     MINIMAX_POLICY_STATE,
     MODEL,
     PROFILE,
+    TEXT_TO_VIDEO,
     derive_training_eligibility,
     default_artifact_root,
     utc_now,
+    validate_generation_mode,
     validate_prompt,
+    validate_reference_media_type,
     validate_reference_name,
 )
 from .store import ProductStore
@@ -47,6 +52,7 @@ class ProductService:
         local_backend: MiniMaxH3LocalBackend | None = None,
         comfyui_backend: MiniMaxH3ComfyUIBackend | H3Backend | None = None,
         fail_artifact_writes: bool = False,
+        dev_mode: bool | None = None,
     ) -> None:
         self.store = ProductStore(artifact_root or default_artifact_root())
         mock = backend or MockH3Backend()
@@ -56,25 +62,34 @@ class ProductService:
             COMFYUI_BACKEND_KEY: comfyui_backend or MiniMaxH3ComfyUIBackend(),
         }
         self.fail_artifact_writes = fail_artifact_writes
+        self.dev_mode = os.environ.get("HIVEFRAME_DEV_MODE") == "1" if dev_mode is None else dev_mode
 
     def create_job(self, request: dict[str, Any]) -> dict[str, Any]:
         prompt = validate_prompt(request.get("prompt"))
-        backend_name = request.get("backend", "mock_h3")
+        backend_name = request.get("backend", COMFYUI_BACKEND_KEY)
         if backend_name not in BACKENDS or backend_name not in self.backends:
             raise ValueError("backend must be mock_h3, local_h3, or minimax_h3_comfyui_local")
-        if request.get("profile", PROFILE) == FAST_PROFILE and backend_name != COMFYUI_BACKEND_KEY:
+        if backend_name == "mock_h3" and not self.dev_mode:
+            raise ValueError("Mock H3 is available only in developer mode")
+        requested_profile = request.get("profile", PROFILE)
+        if not self.dev_mode and requested_profile != PROFILE:
+            raise ValueError("the product release supports Standard Quality only")
+        if requested_profile == FAST_PROFILE and backend_name != COMFYUI_BACKEND_KEY:
             raise ValueError("fast_2m_candidate requires the local ComfyUI H3 backend")
         if request.get("generation_consent") is not True:
             raise ValueError("generation_consent must be accepted before creating a job")
-        prepared_reference = self._prepare_reference(request.get("reference"))
+        mode = validate_generation_mode(request.get("mode", TEXT_TO_VIDEO))
+        prepared_reference = self._prepare_reference(request.get("reference")) if mode == IMAGE_TO_VIDEO else None
+        if mode == IMAGE_TO_VIDEO and prepared_reference is None:
+            raise ValueError("image_to_video requires a first-frame image")
         content = [H3ContentItem("text", text=prompt)]
         generation_request = H3GenerationRequest.create(
             content=content,
-            resolution=request.get("resolution", DEFAULT_RESOLUTION),
-            duration_seconds=request.get("duration_seconds", DEFAULT_DURATION_SECONDS),
-            ratio=request.get("ratio", request.get("aspect_ratio", DEFAULT_ASPECT_RATIO)),
+            resolution=request.get("resolution", DEFAULT_RESOLUTION) if self.dev_mode else DEFAULT_RESOLUTION,
+            duration_seconds=request.get("duration_seconds", DEFAULT_DURATION_SECONDS) if self.dev_mode else DEFAULT_DURATION_SECONDS,
+            ratio=request.get("ratio", request.get("aspect_ratio", DEFAULT_ASPECT_RATIO)) if self.dev_mode else DEFAULT_ASPECT_RATIO,
             aigc_watermark=request.get("aigc_watermark", True),
-            profile=request.get("profile", PROFILE),
+            profile=requested_profile,
         )
         job_id = f"job_{uuid.uuid4().hex}"
         now = utc_now()
@@ -100,6 +115,7 @@ class ProductService:
             "request_json": json.dumps(generation_request.to_dict(), ensure_ascii=False, sort_keys=True),
             "generation_consent": True,
             "backend_state": "queued",
+            "generation_mode": mode,
         }
         job = self.store.create_job(values)
         if prepared_reference is not None:
@@ -136,11 +152,9 @@ class ProductService:
             raise ValueError("reference content_base64 is invalid") from error
         if not content or len(content) > MAX_REFERENCE_BYTES:
             raise ValueError(f"reference image must contain 1 to {MAX_REFERENCE_BYTES} bytes")
-        return (
-            validate_reference_name(reference.get("name")),
-            str(reference.get("media_type", "application/octet-stream")),
-            content,
-        )
+        name = validate_reference_name(reference.get("name"))
+        media_type = validate_reference_media_type(name, reference.get("media_type"))
+        return (name, media_type, content)
 
     def execute_job(self, job_id: str, *, fixture: str = "success") -> dict[str, Any]:
         job = self.store.get_job(job_id)
@@ -332,6 +346,7 @@ class ProductService:
             "status", "backend_job_id", "backend_state", "error_code", "error_message",
             "output_asset_id", "receipt_id", "retry_count", "profile", "duration_seconds",
             "resolution", "aspect_ratio", "generation_consent",
+            "generation_mode",
         )}
         public["result_url"] = f"/api/jobs/{job['job_id']}/result" if job["output_asset_id"] else None
         public["result_media_type"] = None
@@ -347,16 +362,39 @@ class ProductService:
         return public
 
     def public_config(self) -> dict[str, Any]:
+        local_backend = self.backends[COMFYUI_BACKEND_KEY]
+        local_status = local_backend.public_status()
         public_backends = {
             name: backend.public_status()
             for name, backend in self.backends.items()
-            if name in {"mock_h3", "local_h3", COMFYUI_BACKEND_KEY}
+            if name == COMFYUI_BACKEND_KEY or self.dev_mode and name == "mock_h3"
+        }
+        storage_ready = self.store.root.is_dir() and os.access(self.store.root, os.W_OK)
+        readiness = dict(local_status.get("readiness", {}))
+        readiness["storage"] = {
+            "state": "ready" if storage_ready else "error",
+            "label": "준비됨" if storage_ready else "오류",
         }
         return {
             "profile": PROFILE,
             "model_contract": MODEL,
-            "default_backend": "mock_h3",
+            "default_backend": COMFYUI_BACKEND_KEY,
+            "dev_mode": self.dev_mode,
             "backends": public_backends,
+            "readiness": readiness,
+            "can_generate": bool(local_status.get("can_generate")) and storage_ready,
+            "quality": {
+                "name": "Standard Quality",
+                "width": 864,
+                "height": 480,
+                "frames": 124,
+                "fps": 24,
+                "steps": 20,
+                "scheduler": "simple",
+                "sampler": "res_multistep",
+                "denoise": 1.0,
+                "native_audio": True,
+            },
             "resolution": DEFAULT_RESOLUTION,
             "duration_seconds": DEFAULT_DURATION_SECONDS,
             "ratio": DEFAULT_ASPECT_RATIO,

@@ -107,6 +107,7 @@ class ProductStore:
                 "resolution": "TEXT NOT NULL DEFAULT '768P'",
                 "aspect_ratio": "TEXT NOT NULL DEFAULT '16:9'",
                 "backend_state": "TEXT NOT NULL DEFAULT 'queued'",
+                "generation_mode": "TEXT NOT NULL DEFAULT 'text_to_video'",
             }
             for name, declaration in migrations.items():
                 if name not in existing:
@@ -120,6 +121,7 @@ class ProductStore:
             "profile", "duration_seconds", "generation_consent",
             "backend_job_id", "request_json",
             "resolution", "aspect_ratio", "backend_state",
+            "generation_mode",
         )
         with self._lock, self._connect() as connection:
             connection.execute(
