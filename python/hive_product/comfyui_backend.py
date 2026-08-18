@@ -207,7 +207,8 @@ class LoopbackComfyClient:
         )
         try:
             with urlopen(request, timeout=self.timeout_seconds) as response:
-                return json.loads(response.read().decode("utf-8"))
+                content = response.read()
+                return json.loads(content.decode("utf-8")) if content else {}
         except HTTPError as error:
             try:
                 detail = json.loads(error.read().decode("utf-8"))

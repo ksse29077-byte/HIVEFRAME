@@ -8,6 +8,7 @@ import json
 import threading
 import time
 import unittest
+from unittest.mock import patch
 
 from hive_product.comfyui_backend import (
     REQUIRED_MODELS,
@@ -15,6 +16,7 @@ from hive_product.comfyui_backend import (
     SAGE_NODE_CLASS,
     SAGE_NODE_ID,
     ComfyUIH3Config,
+    LoopbackComfyClient,
     MiniMaxH3ComfyUIBackend,
 )
 from hive_product.server import create_server
@@ -152,6 +154,22 @@ def api(base: str, path: str, body: dict | None = None) -> dict:
 
 
 class ProductComfyUIBackendTests(unittest.TestCase):
+    def test_loopback_client_accepts_empty_success_response(self) -> None:
+        class EmptyResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            @staticmethod
+            def read() -> bytes:
+                return b""
+
+        client = LoopbackComfyClient("http://127.0.0.1:8188")
+        with patch("hive_product.comfyui_backend.urlopen", return_value=EmptyResponse()):
+            self.assertEqual(client.json("POST", "/queue", {"delete": ["prompt-id"]}), {})
+
     def test_runtime_asset_workflow_and_api_copy_contract(self) -> None:
         with TemporaryDirectory(prefix="hiveframe-comfy-test-") as temporary:
             client = FakeComfyClient()
