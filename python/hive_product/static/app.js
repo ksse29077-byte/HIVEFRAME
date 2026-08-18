@@ -19,6 +19,7 @@ const ERROR_MESSAGES = {
   out_of_memory: "GPU 메모리가 부족합니다.",
   artifact_save_failed: "결과 파일을 저장하지 못했습니다.",
   timeout: "생성 시간이 제한을 초과했습니다.",
+  runtime_busy: "현재 다른 영상 생성 작업이 실행 중입니다. 작업이 완료된 후 다시 시도해주세요.",
 };
 
 const state = { config: null, job: null, mode: "text_to_video", file: null, pollTimer: null, elapsedTimer: null, startedAt: null };
@@ -52,6 +53,7 @@ function renderReadiness(config) {
   readinessItem("readyGpu", config.readiness?.gpu);
   readinessItem("readyLocalAi", config.readiness?.local_ai);
   readinessItem("readyModel", config.readiness?.model);
+  readinessItem("readyGeneration", config.readiness?.generation);
   readinessItem("readyStorage", config.readiness?.storage);
   const local = config.backends[LOCAL_BACKEND];
   byId("overallBadge").textContent = config.can_generate ? "사용 준비 완료" : "확인이 필요합니다";

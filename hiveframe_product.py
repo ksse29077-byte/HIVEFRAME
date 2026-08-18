@@ -64,7 +64,8 @@ def main() -> int:
             started = backend.start_runtime()
             runtime_owned = bool(started.get("started_here"))
         config = service.public_config()
-        if not config["can_generate"]:
+        local_status = config["backends"][BACKEND_KEY]
+        if not config["can_generate"] and local_status.get("state") != "busy":
             print(config["backends"][BACKEND_KEY]["message"], file=sys.stderr)
             return 2
 

@@ -63,6 +63,22 @@ class ProductService:
         }
         self.fail_artifact_writes = fail_artifact_writes
         self.dev_mode = os.environ.get("HIVEFRAME_DEV_MODE") == "1" if dev_mode is None else dev_mode
+        self._accounting_lock = threading.Lock()
+        self._accounting = {"product_job_create_count": 0, "retry_count": 0}
+
+    def _increment_accounting(self, key: str) -> None:
+        with self._accounting_lock:
+            self._accounting[key] += 1
+
+    def execution_accounting(self) -> dict[str, int]:
+        """Return product and local backend counters for bounded-run evidence."""
+        with self._accounting_lock:
+            result = dict(self._accounting)
+        backend = self.backends[COMFYUI_BACKEND_KEY]
+        backend_accounting = getattr(backend, "execution_accounting", None)
+        if callable(backend_accounting):
+            result.update(backend_accounting())
+        return result
 
     def create_job(self, request: dict[str, Any]) -> dict[str, Any]:
         prompt = validate_prompt(request.get("prompt"))
@@ -118,6 +134,7 @@ class ProductService:
             "generation_mode": mode,
         }
         job = self.store.create_job(values)
+        self._increment_accounting("product_job_create_count")
         if prepared_reference is not None:
             asset = self.store.save_reference(job_id, *prepared_reference)
             content.append(H3ContentItem("image", role="first_frame", asset_id=asset["asset_id"]))
@@ -285,6 +302,7 @@ class ProductService:
             job_id, updated_at=utc_now(), status="queued", retry_count=job["retry_count"] + 1,
             backend_job_id=None, backend_state="queued", error_code=None, error_message=None,
         )
+        self._increment_accounting("retry_count")
         return self.public_job(queued)
 
     def cancel_job(self, job_id: str) -> dict[str, Any]:

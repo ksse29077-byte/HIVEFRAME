@@ -75,6 +75,9 @@ class MockCaptureBackend(CaptureBackend):
 
 
 class FakeRuntimeHandler(BaseHTTPRequestHandler):
+    queue_running: list[Any] = []
+    queue_pending: list[Any] = []
+
     def log_message(self, format: str, *args: Any) -> None:
         return
 
@@ -82,7 +85,10 @@ class FakeRuntimeHandler(BaseHTTPRequestHandler):
         if self.path == "/system_stats":
             value = {"system": {"comfyui_version": "test"}, "devices": [{"name": "test GPU", "type": "cuda", "vram_total": 12_000}]}
         elif self.path == "/queue":
-            value = {"queue_running": [], "queue_pending": []}
+            value = {
+                "queue_running": type(self).queue_running,
+                "queue_pending": type(self).queue_pending,
+            }
         elif self.path == "/object_info":
             value = {name: {"input": {"required": {}}} for name in REQUIRED_NODES}
             value["UNETLoader"]["input"]["required"]["unet_name"] = [[REQUIRED_MODELS["diffusion_model"]]]
@@ -201,6 +207,12 @@ class P1ReleaseAlphaTests(unittest.TestCase):
     def test_24_save_failure_message(self) -> None: self._assert_script_text("결과 파일을 저장하지 못했습니다.")
     def test_25_timeout_message(self) -> None: self._assert_script_text("생성 시간이 제한을 초과했습니다.")
 
+    def test_25a_shared_runtime_busy_message(self) -> None:
+        self._assert_script_text("현재 다른 영상 생성 작업이 실행 중입니다. 작업이 완료된 후 다시 시도해주세요.")
+
+    def test_25b_generation_readiness_is_visible(self) -> None:
+        self.assertIn('id="readyGeneration"', HTML.read_text(encoding="utf-8"))
+
     def test_26_succeeded_real_video_has_result_url(self) -> None:
         job = self.create()
         result = self.service.execute_job(job["job_id"])
@@ -270,9 +282,10 @@ class P1ReleaseAlphaTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("포트", result.stdout)
 
-    def _successful_launcher_smoke(self, suffix: str) -> list[str]:
+    def _successful_launcher_smoke(self, suffix: str, *, busy: bool = False) -> list[str]:
         root = Path(self.temporary.name) / suffix
         root.mkdir()
+        FakeRuntimeHandler.queue_pending = [[1, "foreign-prompt"]] if busy else []
         runtime = ThreadingHTTPServer(("127.0.0.1", 0), FakeRuntimeHandler)
         thread = threading.Thread(target=runtime.serve_forever, daemon=True)
         thread.start()
@@ -288,6 +301,7 @@ class P1ReleaseAlphaTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout)
             return signal.read_text(encoding="utf-8").splitlines()
         finally:
+            FakeRuntimeHandler.queue_pending = []
             runtime.shutdown(); runtime.server_close(); thread.join(timeout=2)
 
     def test_31_successful_server_ready_smoke(self) -> None:
@@ -295,6 +309,9 @@ class P1ReleaseAlphaTests(unittest.TestCase):
 
     def test_32_browser_open_occurs_after_ready_signal(self) -> None:
         self.assertEqual(self._successful_launcher_smoke("browser-order"), ["server_ready", "browser_open"])
+
+    def test_33_busy_runtime_still_opens_product(self) -> None:
+        self.assertIn("server_ready", self._successful_launcher_smoke("busy-ready", busy=True))
 
 
 if __name__ == "__main__":

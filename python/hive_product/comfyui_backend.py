@@ -21,6 +21,7 @@ import json
 import os
 import socket
 import subprocess
+import threading
 import time
 
 from .backends import H3Backend
@@ -28,6 +29,7 @@ from .contracts import BackendFailure, BackendResult, FAST_PROFILE, MINIMAX_POLI
 
 
 BACKEND_KEY = "minimax_h3_comfyui_local"
+SHARED_RUNTIME_BUSY_MESSAGE = "현재 다른 영상 생성 작업이 실행 중입니다. 작업이 완료된 후 다시 시도해주세요."
 REQUIRED_MODELS = {
     "diffusion_model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
     "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
@@ -290,6 +292,46 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
         self._process: subprocess.Popen[bytes] | None = None
         self._log_handle: Any | None = None
         self._runtime_started_here = False
+        self._accounting_lock = threading.Lock()
+        self._submission_lock = threading.Lock()
+        self._accounting = {
+            "backend_prompt_submission_count": 0,
+            "gpu_execution_started_count": 0,
+            "completed_generation_count": 0,
+            "foreign_job_termination_count": 0,
+        }
+
+    @staticmethod
+    def _queue_state(queue: Any) -> dict[str, Any]:
+        running = queue.get("queue_running") if isinstance(queue, Mapping) else None
+        pending = queue.get("queue_pending") if isinstance(queue, Mapping) else None
+        if not isinstance(running, list) or not isinstance(pending, list):
+            raise BackendFailure("runtime_incompatible", "The local generation queue returned an invalid state.")
+        running_count = len(running)
+        pending_count = len(pending)
+        return {
+            "running_count": running_count,
+            "pending_count": pending_count,
+            "busy": running_count > 0 or pending_count > 0,
+        }
+
+    def inspect_queue(self) -> dict[str, Any]:
+        """Read the shared runtime queue without mutating any queued work."""
+        return self._queue_state(self.client.json("GET", "/queue"))
+
+    @staticmethod
+    def _require_idle_queue(queue_state: Mapping[str, Any]) -> None:
+        if queue_state.get("busy"):
+            raise BackendFailure("runtime_busy", SHARED_RUNTIME_BUSY_MESSAGE, True)
+
+    def _increment_accounting(self, key: str) -> None:
+        with self._accounting_lock:
+            self._accounting[key] += 1
+
+    def execution_accounting(self) -> dict[str, int]:
+        """Return process-local execution counters for product evidence."""
+        with self._accounting_lock:
+            return dict(self._accounting)
 
     def inspect_runtime(self) -> dict[str, Any]:
         try:
@@ -317,6 +359,7 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             devices = system.get("devices")
             if isinstance(devices, list) and devices:
                 device = devices[0]
+        queue_state = self._queue_state(queue)
         return {
             "state": "ready" if not missing and not unrecognized else "runtime_incompatible",
             "reason": None if not missing and not unrecognized else "required_nodes_missing" if missing else "model_paths_unrecognized",
@@ -331,8 +374,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "device_name": device.get("name") if isinstance(device, dict) else None,
             "device_type": device.get("type") if isinstance(device, dict) else None,
             "vram_total_bytes": device.get("vram_total") if isinstance(device, dict) else None,
-            "queue_running": len(queue.get("queue_running", [])) if isinstance(queue, dict) else None,
-            "queue_pending": len(queue.get("queue_pending", [])) if isinstance(queue, dict) else None,
+            "queue_running": queue_state["running_count"],
+            "queue_pending": queue_state["pending_count"],
+            "queue_busy": queue_state["busy"],
         }
 
     @staticmethod
@@ -584,14 +628,19 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             return False
 
     def create_job(self, request: Mapping[str, Any]) -> str:
+        with self._submission_lock:
+            return self._create_job_locked(request)
+
+    def _create_job_locked(self, request: Mapping[str, Any]) -> str:
         generation_request = request["generation_request"]
         requested_profile = str(generation_request.get("profile", PROFILE))
         execution_profile = self._workflow_profile(requested_profile)
         runtime = self.inspect_runtime()
-        assets = self.inspect_assets()
-        workflow = self.inspect_workflow()
         if runtime["state"] != "ready":
             raise BackendFailure("comfyui_dependency_required", "Required ComfyUI H3 nodes are unavailable.")
+        self._require_idle_queue({"busy": runtime.get("queue_busy")})
+        assets = self.inspect_assets()
+        workflow = self.inspect_workflow()
         if assets["state"] != "ready":
             raise BackendFailure("artifact_not_found", "Required local H3 model files are unavailable.")
         if workflow["state"] != "ready":
@@ -643,9 +692,11 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             output_prefix=output_prefix,
             first_frame_name=first_frame_name,
         )
+        self._require_idle_queue(self.inspect_queue())
         submitted_perf = time.monotonic()
         submitted_at = _utc_now()
         self._sample_resources(None)
+        self._increment_accounting("backend_prompt_submission_count")
         response = self.client.json("POST", "/prompt", {"prompt": prompt, "client_id": "hiveframe-p0"})
         prompt_id = response.get("prompt_id") if isinstance(response, dict) else None
         if not isinstance(prompt_id, str) or not prompt_id:
@@ -667,6 +718,8 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "retry_count": 0,
             "output_prefix": output_prefix,
             "node_errors": response.get("node_errors", {}) if isinstance(response, dict) else {},
+            "gpu_execution_counted": False,
+            "completion_counted": False,
         }
         self._sample_resources(prompt_id)
         return prompt_id
@@ -693,6 +746,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
                 if job["completed_perf"] is None:
                     job["completed_perf"] = time.monotonic()
                     job["completed_at"] = _utc_now()
+                if not job["completion_counted"]:
+                    self._increment_accounting("completed_generation_count")
+                    job["completion_counted"] = True
                 return "succeeded"
         queue = self.client.json("GET", "/queue")
         running_ids = self._queue_ids(queue.get("queue_running", []) if isinstance(queue, dict) else [])
@@ -702,6 +758,9 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             if job["first_running_perf"] is None:
                 job["first_running_perf"] = time.monotonic()
                 job["first_running_at"] = _utc_now()
+            if not job["gpu_execution_counted"]:
+                self._increment_accounting("gpu_execution_started_count")
+                job["gpu_execution_counted"] = True
             return "running"
         if backend_job_id in pending_ids:
             job["status"] = "queued"
@@ -833,6 +892,7 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
         runtime = self.inspect_runtime()
         model_ready = assets["state"] == "ready" and workflow["state"] == "ready"
         gpu_ready = runtime.get("state") == "ready" and runtime.get("device_type") == "cuda"
+        runtime_busy = bool(runtime.get("queue_busy"))
         readiness = {
             "gpu": {
                 "state": "ready" if gpu_ready else "needs_attention",
@@ -845,6 +905,10 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "model": {
                 "state": "ready" if model_ready else "missing",
                 "label": "준비됨" if model_ready else "누락",
+            },
+            "generation": {
+                "state": "busy" if runtime_busy else "ready" if runtime.get("state") == "ready" else "needs_attention",
+                "label": "다른 작업 실행 중" if runtime_busy else "준비됨" if runtime.get("state") == "ready" else "확인 필요",
             },
         }
         if assets["state"] != "ready" or workflow["state"] != "ready":
@@ -861,16 +925,27 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
                 "execution_profile": workflow.get("execution_profile"),
                 "configuration": self.config.public_status(),
             }
-        can_generate = runtime["state"] == assets["state"] == workflow["state"] == "ready"
-        state = "ready" if can_generate else "unavailable"
-        reason = next((item.get("reason") for item in (runtime, assets, workflow) if item.get("state") != "ready"), None)
+        dependencies_ready = runtime["state"] == assets["state"] == workflow["state"] == "ready"
+        can_generate = dependencies_ready and not runtime_busy
+        state = "busy" if dependencies_ready and runtime_busy else "ready" if can_generate else "unavailable"
+        reason = (
+            "shared_runtime_busy"
+            if state == "busy"
+            else next((item.get("reason") for item in (runtime, assets, workflow) if item.get("state") != "ready"), None)
+        )
         return {
             "name": self.name,
             "display_name": self.display_name,
             "state": state,
             "selectable": True,
             "can_generate": can_generate,
-            "message": "영상 생성 준비가 완료되었습니다." if can_generate else "Local AI 실행 환경을 확인해주세요.",
+            "message": (
+                "영상 생성 준비가 완료되었습니다."
+                if can_generate
+                else SHARED_RUNTIME_BUSY_MESSAGE
+                if state == "busy"
+                else "Local AI 실행 환경을 확인해주세요."
+            ),
             "reason": reason,
             "readiness": readiness,
             "execution_profile": workflow.get("execution_profile"),
