@@ -1,0 +1,150 @@
+schema_version: hiveframe.h3.a3-g1d-mixed-state-regional-reuse.1
+knowledge_status: observed
+recorded_at: 2026-08-18
+base_head: a342f9d2f8fb6d3ec15301929087f973560b085f
+source_pr: 91
+branch: accel/a3-g1-h3-conditional-attention-reuse
+implementation_commit: fa792f7468996d3ad9f1366d7d344241d1c0aa12
+
+mechanism: REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1
+execution_authority: RUST_METADATA_PREPLAN_DIRECT_SELECTIVE_V1
+mixed_state_enabled: true
+whole_block_uncertain_fallback_removed: true
+
+stable_candidates: 23
+stable_events: 10
+mixed_stable_uncertain_events: 10
+mixed_stable_active_events: 0
+executable_stable_events: 10
+active_exact_rows: null
+uncertain_exact_rows: null
+halo_exact_rows: null
+
+candidate_blocks:
+  - 0
+  - 48
+  - 16
+  - 10
+  - 4
+  - 11
+  - 17
+  - 13
+  - 49
+  - 15
+  - 12
+  - 14
+admitted_blocks:
+  - 0
+  - 10
+  - 4
+  - 11
+  - 13
+  - 12
+false_safe_count: 2
+false_safe_blocks:
+  - block_index: 48
+    false_safe_count: 1
+    p95_normalized_l2: 0.27016422152519226
+    p05_cosine: 0.9628159999847412
+  - block_index: 49
+    false_safe_count: 1
+    p95_normalized_l2: 0.3195900022983551
+    p05_cosine: 0.9476526975631714
+
+control_generation_count: 1
+selective_generation_count: 0
+retry_count: 0
+
+cache_refresh_count: 192
+cache_refresh_count_g1c: 240
+cache_d2h_bytes: 33098956800
+cache_d2h_bytes_g1c: 41373696000
+cache_d2h_reduction_bytes: 8274739200
+cache_d2h_reduction_ratio: 0.2
+cache_h2d_bytes: 6651617280
+eligible_source_step_count: 16
+skipped_ineligible_source_refresh_count: 48
+region_upload_count: 144
+region_staging_peak: 48269312
+
+full_q_rows: 15424000
+actual_q_rows: 15424000
+stable_omitted_rows: 0
+q_reduction_ratio: 0.0
+planned_q_reduction_ratio: 0.010204745850622407
+full_attention_calls: 1000
+partial_attention_calls: 0
+normal_double_work: 0
+exception_double_work: 0
+
+control_sampler: 494.99024720001034
+selective_sampler: null
+control_submit: 594.598531799973
+selective_submit: null
+control_runner: 606.3842536000302
+selective_runner: null
+
+immutable_standard_sampler: 488.847320
+immutable_standard_submit: 589.913016
+control_sampler_regression_ratio: 0.012566146828850933
+control_submit_regression_ratio: 0.007942723203064661
+control_sampler_comparable: true
+control_submit_comparable: true
+
+latency_diagnostics:
+  total_shadow_callback_p95_ns: 347569456
+  total_shadow_callback_is_admission_gate: false
+  gpu_sketch_p95_ns: 223680
+  gpu_to_host_p95_ns: 223680
+  rust_boundary_p95_ns: 24300
+  rust_policy_p95_ns: 6700
+  rust_boundary_target_ns: 100000
+
+memory:
+  host_cache_bytes: 2068684800
+  correction_temp_peak: 14708736
+  correction_temp_limit: 33554432
+  actual_peak_allocated: 3145350951
+  actual_peak_reserved: 3523215360
+  full_size_gpu_staging_count: 0
+  oom_count: 0
+
+control_output:
+  integrity_pass: true
+  codec: h264
+  width: 864
+  height: 480
+  frames: 124
+  fps: 24
+  audio_stream_count: 1
+  black_frame_count: 0
+  corrupted_frame_count: 0
+  sha256: 87eb74dd23560d9ea7557b734be06b75f1bc22980759955b860d2f4abe65af6e
+
+automatic_quality_pass: false
+automatic_quality_status: NOT_COLLECTED
+human_quality: NOT_COLLECTED
+
+fallback_verified: true
+fallback_observation:
+  exact_full_blocks: 1000
+  control_output_completed: true
+  standard_full_compute_default: true
+  experimental_capability_default_enabled: false
+
+private_evidence_sha256:
+  experiment_receipt: f5ee202d1b3ce8acc7122aed1c9b80ecb2a18235a297cf43c13f9ce117a77c47
+  callback_receipt: f79ffd2d41b285d8cf0e9ce98de9371da836d97d276a634f157ea90456c43bf8
+  control_receipt: f6b82ba40acad490a8c691b15a77c58a8e56e0baf6bcce8ed619c201b06efbf1
+  runtime_log: e222917d954831b55dbf079dc9b5ed966587a775b28976d8a9b008bcd511ab35
+
+claims:
+  actual_h3_attention_omission_proven: false
+  speedup_claim: 0
+  quality_promotion: 0
+  product_promotion: 0
+
+decision: A3_G1D_PREPLAN_NOT_SAFE
+disposition: FALLBACK_ONLY
+attention_family_stop_rule_applied: true
+automatic_revision_started: false

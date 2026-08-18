@@ -1,0 +1,121 @@
+schema_version: hiveframe.h3.a3-g1-real-conditional-reuse.1
+knowledge_status: observed
+recorded_at: 2026-08-10
+base_main: f5d2bf8c2f80612909eef21c555d764a116f7062
+g0_merge_sha: f5d2bf8c2f80612909eef21c555d764a116f7062
+issue: 90
+branch: accel/a3-g1-h3-conditional-attention-reuse
+draft_pr: 91
+implementation_commit: 5fa85ce31cd33d6f3296e5d32719f1ba01fc04dc
+
+mechanism: REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1
+correction: REGION_CHANNEL_MEAN_DELTA
+execution_authority: GPU_NATIVE_CONDITIONAL_KERNEL_OMISSION_V1
+exact_attention_backend: attention_pytorch
+execution_island_method: PYTORCH_CUDAGRAPH_CONDITIONAL_IF_EXACT_SDPA_V1
+
+installed_source:
+  model_sha256: 882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024
+  attention_sha256: a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9
+  source_modified: false
+  sage_enabled: false
+
+native_full_parity:
+  value: null
+  status: not_collected
+  reason: exact attention graph capture failed before the fixed parity sample completed
+
+control:
+  generation_attempt_count: 1
+  generation_success_count: 0
+  model_forward_count: 1
+  block_call_count: 1
+  sampler_seconds:
+    value: 6.3265067000174895
+    status: partial_failure_path
+  submit_seconds:
+    value: 40.989023500005715
+    status: partial_failure_path
+  runner_seconds:
+    value: 50.60882500000298
+    status: partial_failure_path
+  stable_plan_events: 0
+  admitted_blocks: []
+  false_safe_count: 0
+  output: not_created
+
+selective:
+  generation_attempt_count: 0
+  generation_success_count: 0
+  reason: frozen CONTROL admission Gate did not pass
+  full_q_rows: null
+  actual_q_rows: null
+  reused_rows: null
+  q_reduction_ratio: null
+  full_attention_executions: null
+  reuse_executions: null
+  sampler_seconds: null
+  submit_seconds: null
+
+cache:
+  hits: 0
+  misses: 0
+  invalidations: 0
+  full_refreshes: 0
+  host_cache_bytes: 0
+  gpu_staging_peak_bytes: 172390400
+  h2d_bytes: 0
+  d2h_bytes: 0
+
+guard:
+  d2h_bytes: 0
+  host_reads: 0
+  hot_path_cpu_sync_count: 0
+  rust_calls: 0
+  tensor_bytes_to_rust: 0
+
+failure:
+  stage: control_step_0_block_0_exact_attention_graph_capture
+  error_type: AcceleratorError
+  primary_cuda_error: cudaErrorStreamCaptureIsolation
+  primary_reason: dependency created on uncaptured work in another stream
+  capture_end_error: cudaErrorStreamCaptureInvalidated
+  allocator_backend: cudaMallocAsync
+  allocator_warning: freeAsync called on an uncaptured allocation during graph capture
+  process_terminated: true
+  retry_count: 0
+
+private_evidence_sha256:
+  callback_receipt: e499f8c2ad2b9f20185c63bf8c23c98cb6dcef67d7164f075814868467ccc735
+  runner_receipt: 6e1afa9dd1bf53dc1d3c12e73191c48f5082290faf8e945afd1bad418b92a2de
+  runtime_log: 3bb5a7e461dc1e2dd8526267d1f43a2836a33419fbf4c90107b0fdd404b70d6b
+  public_summary: f4599257e72572c2234fd9458922bf98fca63dde14f075d49e8b703000b35842
+
+quality_metrics:
+  value: null
+  status: not_collected
+  reason: CONTROL output was not created and SELECTIVE was prohibited
+automatic_quality_pass: false
+human_quality: not_collected
+
+runtime_comparison:
+  sampler_speedup: null
+  submit_speedup: null
+  runner_speedup: null
+  status: not_collected
+
+fallback_verified:
+  standard_full_compute_independently_callable: true
+  experimental_selective_default_enabled: false
+  partial_attempt_native_error_fallback_count: 1
+  note: capture invalidation poisoned the live CUDA process, so this attempt did not produce an output
+
+claims:
+  speedup_claim: 0
+  quality_promotion: 0
+  product_promotion: 0
+  actual_h3_attention_omission_proven: false
+
+decision: A3_G1_REAL_H3_EXECUTION_ISLAND_NOT_ADMITTED
+disposition: FALLBACK_ONLY
+automatic_revision_started: false

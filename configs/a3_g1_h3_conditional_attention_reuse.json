@@ -1,0 +1,138 @@
+{
+  "schema_version": "a3-g1d.h3.mixed-state-regional-reuse-config.1",
+  "mechanism": "REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1",
+  "correction": "REGION_CHANNEL_MEAN_DELTA",
+  "execution_authority": "RUST_METADATA_PREPLAN_DIRECT_SELECTIVE_V1",
+  "conditional_graph_used": false,
+  "gpu_same_block_guard_used": false,
+  "static_qkv_used": false,
+  "mixed_state_enabled": true,
+  "whole_block_uncertain_fallback_removed": true,
+  "removed_static_qkv_bytes": 663355392,
+  "product_default_enabled": false,
+  "modes": {
+    "control": "CONTROL_A3_G1D_MIXED_STATE_REGIONAL_REUSE",
+    "selective": "SELECTIVE_A3_G1D_MIXED_STATE_REGIONAL_REUSE"
+  },
+  "profile": {
+    "seed": 101,
+    "width": 864,
+    "height": 480,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "scheduler": "simple",
+    "sampler": "res_multistep",
+    "denoise": 1.0,
+    "native_audio": true,
+    "codec": "h264",
+    "sage": false,
+    "fresh_owned_comfyui_process": true,
+    "retry_budget": 0
+  },
+  "rust_authority": {
+    "directives": [
+      "FORCE_FULL",
+      "REGIONAL_SELECTIVE"
+    ],
+    "decision_point": "BEFORE_ATTENTION",
+    "tensor_bytes": 0,
+    "calls_per_block": 0,
+    "calls_per_token": 0
+  },
+  "attention_path_contract": {
+    "full": "PARTIAL_0_FULL_1",
+    "selective": "PARTIAL_1_FULL_0",
+    "normal_partial_plus_full": 0,
+    "cache_source": "ACTUAL_FULL_ATTENTION_CORE_OUTPUT_ONLY"
+  },
+  "cache": {
+    "source": "ACTUAL_FULL_ATTENTION_CORE_OUTPUT_ONLY",
+    "location": "PINNED_HOST_MEMORY",
+    "age_source_intervals": 1,
+    "approximation_chaining": false,
+    "maximum_host_bytes": 2147483648,
+    "host_safety_reserve_bytes": 8589934592,
+    "maximum_candidate_blocks": 16,
+    "minimum_cache_capable_blocks": 3,
+    "maximum_gpu_staging_bytes": 48269312,
+    "maximum_correction_temporary_bytes": 33554432,
+    "correction_chunk_rows": 64,
+    "d2h": "PINNED_NONBLOCKING",
+    "h2d": "PINNED_NONBLOCKING",
+    "eligible_source_steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+    "g1c_refresh_count_comparator": 240,
+    "g1c_d2h_bytes_comparator": 41373696000,
+    "h2d_regions": "TARGET_STABLE_MASK_ONLY"
+  },
+  "candidate_blocks_from_a2_frozen_ranking": [
+    0,
+    48,
+    16,
+    10,
+    4,
+    11,
+    17,
+    13,
+    49,
+    15,
+    12,
+    14
+  ],
+  "block_admission": {
+    "valid_observations_min": 3,
+    "mean_cosine_min": 0.98,
+    "p05_cosine_min": 0.95,
+    "mean_normalized_l2_max": 0.12,
+    "p95_normalized_l2_max": 0.25,
+    "mean_energy_ratio_min": 0.85,
+    "mean_energy_ratio_max": 1.15,
+    "nonfinite_count": 0,
+    "corrected_l2_must_not_exceed_raw_l2": true
+  },
+  "false_safe": {
+    "corrected_cosine_min": 0.95,
+    "corrected_normalized_l2_max": 0.25,
+    "nonfinite_count": 0,
+    "allowed_count": 0
+  },
+  "opportunity": {
+    "admitted_blocks_min": 3,
+    "planned_actual_semantics_q_reduction_min": 0.03,
+    "actual_q_reduction_min": 0.03,
+    "affected_non_anchor_steps_min": 3,
+    "stable_plan_events_min": 3,
+    "control_sampler_regression_max": 0.05,
+    "control_submit_regression_max": 0.05,
+    "total_shadow_callback": "DIAGNOSTIC_ONLY",
+    "rust_boundary_p95_ns_target": 100000
+  },
+  "automatic_quality": {
+    "mean_ssim_min": 0.95,
+    "p05_ssim_min": 0.9,
+    "min_ssim_min": 0.85,
+    "ssim_below_0_85_rate_max": 0.02,
+    "normalized_mae_max": 0.03,
+    "motion_energy_ratio": [0.9, 1.1],
+    "gradient_energy_ratio": [0.9, 1.1],
+    "temporal_consistency_ratio": [0.9, 1.1]
+  },
+  "generation_budget": {
+    "control": 1,
+    "selective": 1,
+    "retry": 0
+  },
+  "decision_matrix": [
+    "A3_G1D_MIXED_STATE_MAPPING_NOT_ADMITTED",
+    "A3_G1D_PREPLAN_NOT_SAFE",
+    "A3_G1D_OPPORTUNITY_NOT_ADMITTED",
+    "A3_G1D_CONTROL_OVERHEAD_TOO_HIGH",
+    "A3_G1D_REAL_WORK_OMISSION_NOT_PROVEN",
+    "A3_G1D_QUALITY_REJECTED",
+    "A3_G1D_WORK_REDUCTION_VERIFIED_RUNTIME_NOT_POSITIVE",
+    "A3_G1D_REAL_H3_MIXED_STATE_SELECTIVE_READY_FOR_VISUAL_REVIEW"
+  ],
+  "speedup_claim": 0,
+  "quality_promotion": 0,
+  "product_promotion": 0
+}

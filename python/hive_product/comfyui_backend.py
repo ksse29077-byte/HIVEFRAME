@@ -191,6 +191,17 @@ class MiniMaxH3ComfyUIBackend(H3Backend):
             "state": "synthetic_verified_once",
             "actual_h3_attention_connected": False,
             "fallback": "standard_full_compute",
+        },
+        "real_h3_preplan_direct_selective_reuse_v1": {
+            "default_enabled": False,
+            "state": "a3_g1d_experiment_only",
+            "execution_authority": "rust_metadata_preplan",
+            "mixed_state_enabled": True,
+            "whole_block_uncertain_fallback_removed": True,
+            "conditional_graph_used": False,
+            "gpu_same_block_guard_used": False,
+            "static_qkv_used": False,
+            "fallback": "standard_full_compute",
         }
     }
 

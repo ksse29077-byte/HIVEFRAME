@@ -629,12 +629,12 @@ runtime experiment. Full Compute remains the default. See the detailed
 
 ## A3-G0 — GPU-Native Conditional Kernel Omission Primitive
 
-Overall status: `verified_once`; publication status: `draft_pr`. Bounded
+Overall status: `verified_once`; publication status: `merged`. Bounded
 decision: `A3_G0_GPU_CONDITIONAL_OMISSION_READY`.
 
 | Task | Status | Evidence or blocker |
 |---|---|---|
-| Track isolated A3-G0 work | `draft_pr` | [Issue #88](https://github.com/ksse29077-byte/HIVEFRAME/issues/88); branch `runtime/a3-g0-gpu-conditional-omission`; Draft PR [#89](https://github.com/ksse29077-byte/HIVEFRAME/pull/89) |
+| Track isolated A3-G0 work | `merged` | [Issue #88](https://github.com/ksse29077-byte/HIVEFRAME/issues/88) completed; branch `runtime/a3-g0-gpu-conditional-omission`; PR [#89](https://github.com/ksse29077-byte/HIVEFRAME/pull/89); merge `f5d2bf8...` |
 | Admit a native Windows CUDA build path | `verified_once` | Official CUDA 13.0.2 minimal developer components; NVCC 13.0 V13.0.88; conditional-device source compiled and linked |
 | Freeze the bounded primitive | `verified` | Two complementary CUDA Graph IF nodes, one GPU guard, fixed SAFE/UNSAFE/SAFE/UNSAFE replay, preallocated buffers, exact fail-closed fallback |
 | Execute the fixed synthetic primitive | `verified_once` | One fixed native sequence; reuse/exact body evidence 2/2; branch history 0/1/0/1; no state leak |
@@ -646,8 +646,32 @@ decision: `A3_G0_GPU_CONDITIONAL_OMISSION_READY`.
 A3-G0 closes only the missing GPU-native conditional execution primitive. It
 does not revive A3 V1 automatically and does not authorize A3-G1. Standard
 Full Compute remains the product default, and the experimental adapter
-capability is disabled by default. See the detailed
+capability is disabled by default. A3-G1 was subsequently approved as a
+separate bounded integration and is recorded below. See the detailed
 [A3-G0 worklog](docs/worklogs/2026-08-10-a3-g0-gpu-conditional-omission.md).
+
+## A3-G1 — Real H3 Conditional Attention Reuse
+
+Overall status: `stopped`; publication status: `draft_pr`. Bounded decision:
+`A3_G1_REAL_H3_EXECUTION_ISLAND_NOT_ADMITTED`; disposition: `FALLBACK_ONLY`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Track isolated A3-G1 work | `draft_pr` | [Issue #90](https://github.com/ksse29077-byte/HIVEFRAME/issues/90); branch `accel/a3-g1-h3-conditional-attention-reuse`; Draft PR [#91](https://github.com/ksse29077-byte/HIVEFRAME/pull/91) |
+| Freeze real-H3 integration before runtime | `verified` | Commit `5fa85ce...`; frozen A3 mechanism/correction, G0 authority, exact `attention_pytorch` backend, conservative block dispatch, age-one actual-Full cache, fixed Gates |
+| Verify changed surface | `verified_once` | 15 focused model-free tests passed with one opt-in skip; the separately opted-in CUDA focused test passed; syntax/import/custom-node checks passed; G0 evidence sequence was not rerun |
+| Execute CONTROL | `failed_once` | One attempt reached step 0/block 0; exact SDPA graph capture failed with `cudaErrorStreamCaptureIsolation`, then `cudaErrorStreamCaptureInvalidated`; runtime terminated; retry 0; output 0 |
+| Establish native Full parity | `not_collected` | Capture failed before the fixed parity sample completed |
+| Admit SELECTIVE | `stopped` | CONTROL did not complete; admitted blocks, opportunity, output integrity, and false-safe Gate could not be established; SELECTIVE attempts 0 |
+| Claim quality, omitted work, or speedup | `stopped` | Paired output and SELECTIVE execution do not exist; metrics remain `not_collected`; speedup, quality, and product promotion are zero |
+
+The failure is limited to capture compatibility between the live H3 exact
+Attention stream/allocator state and the chosen PyTorch CUDA Graph execution
+island. It does not reject the correction formula or the Attention surface.
+Standard Full Compute remains independently callable and the product default.
+No automatic A3-G1-R1 work is active. See the detailed
+[A3-G1 worklog](docs/worklogs/2026-08-10-a3-g1-h3-conditional-attention-reuse.md)
+and [decision report](reports/a3_g1/decision-report.md).
 
 ## Maintenance checklist
 
