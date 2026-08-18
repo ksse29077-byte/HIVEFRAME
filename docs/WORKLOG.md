@@ -103,6 +103,28 @@ push was not attempted because exact repository
 authorization is required. See the detailed
 [P1-F worklog](worklogs/2026-08-13-p1-h3-two-minute-range-preview.md).
 
+## 2026-08-18 - Engine competitiveness gate before installer
+
+Issue #96 and branch `research/engine-competitiveness-gate` isolate a
+source-readonly comparison of public local T2V/I2V engines for the RTX 3060
+12 GB product target. The P1-A2 H3 Standard baseline remains unchanged at
+559.990 seconds product E2E for 864x480, 124 frames, 24 FPS, and 20 steps, with
+visual rating `LOW_QUALITY_BUT_FUNCTIONAL`.
+
+No matched public RTX 3060 timing was found for a stronger current candidate,
+so cross-hardware claims are graded and marked `NORMALIZATION REQUIRED`.
+LTX-Video 0.9.8 distilled 2B FP8 is shortlisted for the speed role, and
+Wan2.2 TI2V-5B is shortlisted for the balance/quality role. Five candidates
+remain reserves; candidates that fail 12 GB, product-license, contract, or
+credible competitiveness requirements are excluded. The proposed admission,
+competitive, and installer gates are not final without user approval.
+
+The decision is `ENGINE_COMPETITIVENESS_SHORTLIST_READY_FOR_APPROVAL`.
+Model download, installation, ComfyUI modification, video Generation, external
+inference, installer work, roadmap edits, and changes to PR #91/#92/#94/#95
+are all zero. Diagram impact is `none`. See the detailed
+[research worklog](worklogs/2026-08-18-engine-competitiveness-gate.md).
+
 ---
 
 ## 2026-07-31 — M0 evidence preserved
