@@ -1,0 +1,66 @@
+{
+  "record_id": "model-ltx-video-2b-0.9.8-distilled-fp8",
+  "status": "approved_for_one_admission",
+  "reviewed_at": "2026-08-18",
+  "scope": "Issue #98 RTX 3060 12GB local I2V admission only",
+  "artifact": {
+    "type": "model_checkpoint",
+    "name": "LTX-Video 0.9.8 Distilled 2B FP8",
+    "repository": "Lightricks/LTX-Video",
+    "source_url": "https://huggingface.co/Lightricks/LTX-Video",
+    "revision": "17037c8743450dc873046790dd96fa805ccfaf8d",
+    "filename": "ltxv-2b-0.9.8-distilled-fp8.safetensors",
+    "bytes": 4461695684,
+    "sha256": "d6d8fa8ed3a98346787c2503ac80fb5d7cebcf80e356b79a2ba361fbadf97e15",
+    "gated": false,
+    "private": false
+  },
+  "checkpoint_license": {
+    "name": "LTX Video Open Weights License 0.X",
+    "source_url": "https://huggingface.co/Lightricks/LTX-Video/blob/17037c8743450dc873046790dd96fa805ccfaf8d/LTX-Video-Open-Weights-License-0.X.txt",
+    "rights_holder": "Lightricks Ltd.",
+    "research_use": true,
+    "commercial_use": "allowed below USD 10M annual revenue subject to the license; paid commercial terms required at or above the threshold",
+    "modification": "allowed subject to the license",
+    "redistribution": "allowed subject to license, notice, attribution, and pass-through obligations",
+    "saas": "allowed subject to the license and revenue threshold",
+    "output_rights": "licensor does not claim rights in outputs; restricted-use duties still apply",
+    "accept_or_login_required": false,
+    "acceptable_use": "license restricted-use policy applies",
+    "legal_review_required_before_installer": true
+  },
+  "text_encoder": {
+    "repository": "comfyanonymous/flux_text_encoders",
+    "revision": "3bcfe977a9a2617a0b9025076030e217795fe028",
+    "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+    "bytes": 5157348688,
+    "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+    "license": "Apache-2.0",
+    "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/3bcfe977a9a2617a0b9025076030e217795fe028/t5xxl_fp8_e4m3fn_scaled.safetensors"
+  },
+  "provenance": {
+    "publisher": "Lightricks",
+    "verification_method": "Official Hugging Face model card, pinned file history, official license text, installed ComfyUI core workflow template and node inventory",
+    "verified_by": "Codex-assisted source verification",
+    "consent": "not applicable to public model weights",
+    "personal_data": "no personal data in the model record; the private admission image remains outside Git"
+  },
+  "download": {
+    "approved": true,
+    "approval_scope": "Two exact pinned files for one local admission",
+    "completed": false,
+    "local_destination": "<comfyui-root>/models/checkpoints and <comfyui-root>/models/text_encoders",
+    "retention": "retain outside Git until the user decides the formal comparison",
+    "deletion": "when ComfyUI is idle, remove only the two exact LTX admission files"
+  },
+  "dependent_records": [
+    "Issue #96",
+    "Issue #98",
+    "docs/worklogs/2026-08-18-engine-competitiveness-gate.md"
+  ],
+  "product_boundary": {
+    "commercial_engine_ready": false,
+    "installer_ready": false,
+    "formal_h3_comparison_authorized": false
+  }
+}
