@@ -1,0 +1,139 @@
+schema_version: hiveframe.h3.a3-g1c-preplan-direct-selective-reuse.1
+knowledge_status: observed
+recorded_at: 2026-08-18
+base_main: f5d2bf8c2f80612909eef21c555d764a116f7062
+source_pr: 91
+w0_decision: W0_PREPLAN_DIRECT_SELECTIVE_READY
+branch: accel/a3-g1-h3-conditional-attention-reuse
+starting_head: 43967b6992d6beb8c1c172bf4bbbeb4b8ca4c1c4
+implementation_commit: 934e2f0eea3b4484d8d894eb07866d381e3da621
+
+mechanism: REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1
+correction: REGION_CHANNEL_MEAN_DELTA
+execution_authority: RUST_METADATA_PREPLAN_DIRECT_SELECTIVE_V1
+conditional_graph_used: false
+gpu_same_block_guard_used: false
+static_qkv_used: false
+removed_duplicate_vram_bytes: 663355392
+
+candidate_blocks:
+  - 0
+  - 48
+  - 16
+  - 10
+  - 4
+  - 11
+  - 17
+  - 13
+  - 49
+  - 15
+  - 12
+  - 14
+admitted_blocks: []
+false_safe_count: 0
+
+control_generation_count: 1
+selective_generation_count: 0
+retry_count: 0
+
+full_q_rows: 15424000
+actual_q_rows: 15424000
+reused_rows: 0
+q_reduction_ratio: 0.0
+full_attention_calls: 1000
+partial_attention_calls: 0
+normal_partial_plus_full_count: 0
+exception_partial_then_full_count: 0
+
+host_cache_bytes: 2068684800
+cache_d2h_bytes: 41373696000
+cache_h2d_bytes: 0
+region_staging_peak: 48269312
+correction_temp_peak: 0
+actual_peak_allocated: 3145345911
+actual_peak_reserved: 3523215360
+
+control_sampler: 490.8482296000002
+selective_sampler: null
+sampler_speedup: null
+control_submit: 596.0584233999834
+selective_submit: null
+submit_speedup: null
+immutable_standard_sampler: 488.847320
+immutable_standard_submit: 589.913016
+
+control_vs_immutable_standard:
+  sampler_speedup_x: 0.9959235676542406
+  sampler_regression_percent: 0.4093117662995821
+  submit_speedup_x: 0.9896899244122256
+  submit_regression_percent: 1.0417480600196605
+  runner_seconds: 609.9063048000098
+
+preplan_observation:
+  compound_eye_callback_count: 20
+  region_plan_event_count: 18
+  rust_metadata_call_count: 18
+  lagged_stable_candidate_count: 23
+  executable_stable_plan_event_count: 0
+  affected_non_anchor_steps: []
+  planned_q_reduction_ratio: 0.0
+  callback_p95_ns: 349114868
+  callback_p95_gate_ns: 3000000
+  failure_reason: every candidate-bearing step also contained an uncertain region
+
+cache:
+  source: ACTUAL_FULL_ATTENTION_CORE_OUTPUT_ONLY
+  required_age_intervals: 1
+  approximation_chaining: false
+  full_refresh_count: 240
+  hit_count: 0
+  miss_count: 0
+  invalidation_count: 0
+  full_size_gpu_staging_count: 0
+
+memory:
+  projected_incremental_bytes: 255110464
+  region_staging_limit_bytes: 48269312
+  correction_temporary_limit_bytes: 33554432
+  oom_count: 0
+
+control_output:
+  integrity_pass: true
+  codec: h264
+  width: 864
+  height: 480
+  frames: 124
+  fps: 24
+  audio_stream_count: 1
+  black_frame_count: 0
+  corrupted_frame_count: 0
+  sha256: 659dd5363320c5d1af2c73c70e594d5e6b8279aab2f77c67c2c74ee59e579b2e
+
+automatic_quality_pass: false
+human_quality: NOT_COLLECTED
+quality_reason: SELECTIVE was prohibited by the CONTROL opportunity Gate
+
+fallback_verified: true
+fallback_observation:
+  exact_full_blocks: 1000
+  native_error_fallbacks: 0
+  wrapper_failures: 0
+  output_completed: true
+  standard_full_compute_default: true
+  experimental_capability_default_enabled: false
+
+private_evidence_sha256:
+  experiment_receipt: 1cab0f0729cca3ed7a50efe1e8cb99a6701e81205b41216b3685ae32f1ed72a2
+  callback_receipt: c4b3619f3f214fefe31c1d0fc857750c063cfc39cebcb6ef0119b22bbc0526eb
+  control_receipt: cf774ba05dd98a6b95bfcc9b1ccf45355f1c4a08b2e6629c15e4edf709803049
+  runtime_log: 9a6a9ff7c49c4ac50c80552ba06a06e3164f4f6b4f81b29fb514a06083d8ebf7
+
+claims:
+  actual_h3_attention_omission_proven: false
+  speedup_claim: 0
+  quality_promotion: 0
+  product_promotion: 0
+
+decision: A3_G1C_REUSE_NOT_ADMITTED
+disposition: FALLBACK_ONLY
+automatic_revision_started: false
