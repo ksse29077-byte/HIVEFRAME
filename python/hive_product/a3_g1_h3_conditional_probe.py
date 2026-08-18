@@ -1,4 +1,4 @@
-"""Bounded A3-G1C CONTROL plus preplanned direct SELECTIVE experiment."""
+"""Bounded A3-G1D mixed-state regional CONTROL and SELECTIVE experiment."""
 
 from __future__ import annotations
 
@@ -24,11 +24,13 @@ from .a1_h3_active_query_probe import (
 from .a3_g1_conditional_reuse import (
     A2_RANKED_BLOCKS,
     CONTROL_MODE,
-    DECISION_ISLAND_NOT_ADMITTED,
+    DECISION_MAPPING_NOT_ADMITTED,
     DECISION_OMISSION_NOT_PROVEN,
     DECISION_QUALITY_REJECTED,
     DECISION_READY_FOR_VISUAL,
     DECISION_RUNTIME_NOT_POSITIVE,
+    IMMUTABLE_STANDARD_SAMPLER_SECONDS,
+    IMMUTABLE_STANDARD_SUBMIT_SECONDS,
     SELECTIVE_MODE,
     control_opportunity_gate,
     fixed_contract,
@@ -56,10 +58,8 @@ from .comfyui_backend import ComfyUIH3Config, MiniMaxH3ComfyUIBackend
 from .sageattention_probe import SAGE_NODE_CLASS, _decode_video, _load_private_prompt
 
 
-SCHEMA_VERSION = "a3-g1c.h3.preplan-direct-selective.1"
-NODE_CLASS = "HIVEFRAMEH3PreplanDirectSelectiveReuseSampler"
-IMMUTABLE_STANDARD_SAMPLER_SECONDS = 488.847320
-IMMUTABLE_STANDARD_SUBMIT_SECONDS = 589.913016
+SCHEMA_VERSION = "a3-g1d.h3.mixed-state-regional-reuse.1"
+NODE_CLASS = "HIVEFRAMEH3MixedStateRegionalReuseSampler"
 
 
 def _utc_now() -> str:
@@ -354,7 +354,7 @@ def run_experiment(
         "schema_version": SCHEMA_VERSION,
         "experiment_id": experiment_id,
         "started_at": _utc_now(),
-        "product_question": "Can a pre-Attention Rust pre-plan omit real H3 Q work while preserving quality and reducing accepted runtime on RTX 3060 12GB?",
+        "product_question": "Can mixed-state regional reuse omit only Stable H3 Q rows while Active and Uncertain rows remain exact, preserving quality and reducing runtime on RTX 3060 12GB?",
         "contract": fixed_contract(),
         "a2_evidence": {
             "private_receipt_sha256": a2_digest,
@@ -375,7 +375,7 @@ def run_experiment(
         },
     }
     if not cache.admitted:
-        summary["decision"] = DECISION_ISLAND_NOT_ADMITTED
+        summary["decision"] = DECISION_MAPPING_NOT_ADMITTED
         summary["disposition"] = "FALLBACK_ONLY"
     else:
         candidates = cache.candidate_blocks
@@ -390,7 +390,7 @@ def run_experiment(
         summary["control"] = sanitize_public(control)
         summary["generation_attempt_count"] += int(control.get("generation_attempt_count", 0))
         if control.get("exit_code") != 0:
-            summary["decision"] = DECISION_ISLAND_NOT_ADMITTED
+            summary["decision"] = DECISION_MAPPING_NOT_ADMITTED
             summary["disposition"] = "FALLBACK_ONLY"
         else:
             callback = control["callback_instrumentation"]
@@ -400,6 +400,8 @@ def run_experiment(
                 c2_shadow=callback["c2_shadow"],
                 output_integrity=True,
                 cache_capacity=len(candidates),
+                control_sampler_seconds=_sampler_seconds(control),
+                control_submit_seconds=_submit_seconds(control),
             )
             summary["control_admission"] = admission
             if not admission["passed"]:
@@ -450,7 +452,7 @@ def run_experiment(
                     }
                     summary["actual_q_reduction"] = actual_reduction
                     omission_proven = (
-                        int(work["reused_omitted_rows"]) > 0
+                        int(work["stable_omitted_rows"]) > 0
                         and int(work["actual_current_q_rows"]) < int(work["full_q_rows_theoretical"])
                         and actual_reduction >= 0.03
                         and int(execution.get("normal_partial_plus_full_count", -1)) == 0
@@ -494,7 +496,7 @@ def run_experiment(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run bounded A3-G1C CONTROL and preplanned SELECTIVE H3 experiment.")
+    parser = argparse.ArgumentParser(description="Run bounded A3-G1D mixed-state regional H3 experiment.")
     parser.add_argument("--experiment-id", required=True)
     parser.add_argument("--p0-database", required=True, type=Path)
     parser.add_argument("--a2-private-receipt", required=True, type=Path)

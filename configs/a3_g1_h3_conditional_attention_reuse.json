@@ -1,16 +1,18 @@
 {
-  "schema_version": "a3-g1c.h3.preplan-direct-selective-config.1",
+  "schema_version": "a3-g1d.h3.mixed-state-regional-reuse-config.1",
   "mechanism": "REGIONAL_ATTENTION_OUTPUT_REUSE_WITH_CORRECTION_V1",
   "correction": "REGION_CHANNEL_MEAN_DELTA",
   "execution_authority": "RUST_METADATA_PREPLAN_DIRECT_SELECTIVE_V1",
   "conditional_graph_used": false,
   "gpu_same_block_guard_used": false,
   "static_qkv_used": false,
+  "mixed_state_enabled": true,
+  "whole_block_uncertain_fallback_removed": true,
   "removed_static_qkv_bytes": 663355392,
   "product_default_enabled": false,
   "modes": {
-    "control": "CONTROL_A3_G1C_PREPLAN_DIRECT_REUSE",
-    "selective": "SELECTIVE_A3_G1C_PREPLAN_DIRECT_REUSE"
+    "control": "CONTROL_A3_G1D_MIXED_STATE_REGIONAL_REUSE",
+    "selective": "SELECTIVE_A3_G1D_MIXED_STATE_REGIONAL_REUSE"
   },
   "profile": {
     "seed": 101,
@@ -31,7 +33,7 @@
   "rust_authority": {
     "directives": [
       "FORCE_FULL",
-      "SELECTIVE_CANDIDATE"
+      "REGIONAL_SELECTIVE"
     ],
     "decision_point": "BEFORE_ATTENTION",
     "tensor_bytes": 0,
@@ -57,7 +59,11 @@
     "maximum_correction_temporary_bytes": 33554432,
     "correction_chunk_rows": 64,
     "d2h": "PINNED_NONBLOCKING",
-    "h2d": "PINNED_NONBLOCKING"
+    "h2d": "PINNED_NONBLOCKING",
+    "eligible_source_steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+    "g1c_refresh_count_comparator": 240,
+    "g1c_d2h_bytes_comparator": 41373696000,
+    "h2d_regions": "TARGET_STABLE_MASK_ONLY"
   },
   "candidate_blocks_from_a2_frozen_ranking": [
     0,
@@ -96,7 +102,10 @@
     "actual_q_reduction_min": 0.03,
     "affected_non_anchor_steps_min": 3,
     "stable_plan_events_min": 3,
-    "callback_p95_ns_max": 3000000
+    "control_sampler_regression_max": 0.05,
+    "control_submit_regression_max": 0.05,
+    "total_shadow_callback": "DIAGNOSTIC_ONLY",
+    "rust_boundary_p95_ns_target": 100000
   },
   "automatic_quality": {
     "mean_ssim_min": 0.95,
@@ -114,12 +123,14 @@
     "retry": 0
   },
   "decision_matrix": [
-    "A3_G1C_PREPLAN_NOT_SAFE",
-    "A3_G1C_REUSE_NOT_ADMITTED",
-    "A3_G1C_REAL_WORK_OMISSION_NOT_PROVEN",
-    "A3_G1C_QUALITY_REJECTED",
-    "A3_G1C_WORK_REDUCTION_VERIFIED_RUNTIME_NOT_POSITIVE",
-    "A3_G1C_REAL_H3_SELECTIVE_ACCELERATION_READY_FOR_VISUAL_REVIEW"
+    "A3_G1D_MIXED_STATE_MAPPING_NOT_ADMITTED",
+    "A3_G1D_PREPLAN_NOT_SAFE",
+    "A3_G1D_OPPORTUNITY_NOT_ADMITTED",
+    "A3_G1D_CONTROL_OVERHEAD_TOO_HIGH",
+    "A3_G1D_REAL_WORK_OMISSION_NOT_PROVEN",
+    "A3_G1D_QUALITY_REJECTED",
+    "A3_G1D_WORK_REDUCTION_VERIFIED_RUNTIME_NOT_POSITIVE",
+    "A3_G1D_REAL_H3_MIXED_STATE_SELECTIVE_READY_FOR_VISUAL_REVIEW"
   ],
   "speedup_claim": 0,
   "quality_promotion": 0,

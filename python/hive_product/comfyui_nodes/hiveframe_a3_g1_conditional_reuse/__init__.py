@@ -1,4 +1,4 @@
-"""Repository-owned A3-G1C preplanned direct selective sampler node."""
+"""Repository-owned A3-G1D mixed-state regional reuse sampler node."""
 
 from __future__ import annotations
 
@@ -48,13 +48,13 @@ def _write_receipt(payload: dict[str, Any]) -> None:
     temporary.replace(target)
 
 
-class HIVEFRAMEH3PreplanDirectSelectiveReuseSampler(io.ComfyNode):
-    """Run one bounded A3-G1C CONTROL or preplanned SELECTIVE sampler."""
+class HIVEFRAMEH3MixedStateRegionalReuseSampler(io.ComfyNode):
+    """Run one bounded A3-G1D CONTROL or regional SELECTIVE sampler."""
 
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="HIVEFRAMEH3PreplanDirectSelectiveReuseSampler",
+            node_id="HIVEFRAMEH3MixedStateRegionalReuseSampler",
             category="hiveframe/a3-g1",
             inputs=[
                 io.Noise.Input("noise"),
@@ -137,7 +137,7 @@ class HIVEFRAMEH3PreplanDirectSelectiveReuseSampler(io.ComfyNode):
             candidate_blocks=candidates,
         )
         payload: dict[str, Any] = {
-            "schema_version": "a3-g1.h3.callback.1",
+            "schema_version": "a3-g1d.h3.callback.1",
             "mode": mode,
             "run_digest": run_digest,
             "workflow_revision_digest": workflow_revision_digest,
@@ -148,6 +148,8 @@ class HIVEFRAMEH3PreplanDirectSelectiveReuseSampler(io.ComfyNode):
                 "conditional_graph_used": False,
                 "gpu_same_block_guard_used": False,
                 "static_qkv_used": False,
+                "mixed_state_enabled": True,
+                "whole_block_uncertain_fallback_removed": True,
                 "fallback": "standard_full_compute",
             },
             "candidate_blocks": list(candidates),
@@ -191,10 +193,10 @@ class HIVEFRAMEH3PreplanDirectSelectiveReuseSampler(io.ComfyNode):
             _ACTIVE = False
 
 
-class A3G1PreplanDirectReuseExtension(ComfyExtension):
+class A3G1MixedStateRegionalReuseExtension(ComfyExtension):
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
-        return [HIVEFRAMEH3PreplanDirectSelectiveReuseSampler]
+        return [HIVEFRAMEH3MixedStateRegionalReuseSampler]
 
 
-async def comfy_entrypoint() -> A3G1PreplanDirectReuseExtension:
-    return A3G1PreplanDirectReuseExtension()
+async def comfy_entrypoint() -> A3G1MixedStateRegionalReuseExtension:
+    return A3G1MixedStateRegionalReuseExtension()

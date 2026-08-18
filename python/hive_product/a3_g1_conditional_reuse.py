@@ -1,8 +1,8 @@
-"""A3-G1C real-H3 attention reuse with preplanned direct selection.
+"""A3-G1D real-H3 mixed-state regional Attention reuse.
 
-The metadata-only Rust plan chooses Full or Selective before Attention starts.
-Selective executes subset-Q Attention exactly once and reconstructs omitted
-rows from the previous actual Full output. Ambiguous state fails open before
+The metadata-only Rust plan chooses Full or regional Selective before Attention.
+Selective omits only Stable interior rows while Active, Uncertain, halo, and
+non-video rows execute exact subset-Q Attention. Invalid state fails open before
 partial work begins.
 """
 
@@ -21,6 +21,7 @@ from .active_query_attention import (
     REGION_COUNT,
     REGION_MASK,
     REGIONAL_ACTIVE_QUERY,
+    REGION_LOCAL_ROWS,
     TOTAL_STEPS,
     VIDEO_TOKEN_COUNT,
 )
@@ -47,22 +48,22 @@ from .regional_query_prototype_attention import (
 )
 
 
-CONTROL_MODE = "CONTROL_A3_G1C_PREPLAN_DIRECT_REUSE"
-SELECTIVE_MODE = "SELECTIVE_A3_G1C_PREPLAN_DIRECT_REUSE"
+CONTROL_MODE = "CONTROL_A3_G1D_MIXED_STATE_REGIONAL_REUSE"
+SELECTIVE_MODE = "SELECTIVE_A3_G1D_MIXED_STATE_REGIONAL_REUSE"
 EXECUTION_AUTHORITY = "RUST_METADATA_PREPLAN_DIRECT_SELECTIVE_V1"
 FORCE_FULL = "FORCE_FULL"
-SELECTIVE_CANDIDATE = "SELECTIVE_CANDIDATE"
+REGIONAL_SELECTIVE = "REGIONAL_SELECTIVE"
 
-DECISION_REUSE_NOT_ADMITTED = "A3_G1C_REUSE_NOT_ADMITTED"
-DECISION_ISLAND_NOT_ADMITTED = DECISION_REUSE_NOT_ADMITTED
-DECISION_PREPLAN_NOT_SAFE = "A3_G1C_PREPLAN_NOT_SAFE"
-DECISION_GUARD_NOT_SAFE = DECISION_PREPLAN_NOT_SAFE
-DECISION_OMISSION_NOT_PROVEN = "A3_G1C_REAL_WORK_OMISSION_NOT_PROVEN"
-DECISION_QUALITY_REJECTED = "A3_G1C_QUALITY_REJECTED"
-DECISION_RUNTIME_NOT_POSITIVE = "A3_G1C_WORK_REDUCTION_VERIFIED_RUNTIME_NOT_POSITIVE"
-DECISION_READY_FOR_VISUAL = "A3_G1C_REAL_H3_SELECTIVE_ACCELERATION_READY_FOR_VISUAL_REVIEW"
-DECISION_DOUBLE_WORK = "A3_G1C_DOUBLE_ATTENTION_WORK_DETECTED"
-DECISION_CORRECTION_MEMORY = "A3_G1C_CORRECTION_MEMORY_NOT_ADMITTED"
+DECISION_MAPPING_NOT_ADMITTED = "A3_G1D_MIXED_STATE_MAPPING_NOT_ADMITTED"
+DECISION_PREPLAN_NOT_SAFE = "A3_G1D_PREPLAN_NOT_SAFE"
+DECISION_OPPORTUNITY_NOT_ADMITTED = "A3_G1D_OPPORTUNITY_NOT_ADMITTED"
+DECISION_CONTROL_OVERHEAD = "A3_G1D_CONTROL_OVERHEAD_TOO_HIGH"
+DECISION_OMISSION_NOT_PROVEN = "A3_G1D_REAL_WORK_OMISSION_NOT_PROVEN"
+DECISION_QUALITY_REJECTED = "A3_G1D_QUALITY_REJECTED"
+DECISION_RUNTIME_NOT_POSITIVE = "A3_G1D_WORK_REDUCTION_VERIFIED_RUNTIME_NOT_POSITIVE"
+DECISION_READY_FOR_VISUAL = "A3_G1D_REAL_H3_MIXED_STATE_SELECTIVE_READY_FOR_VISUAL_REVIEW"
+DECISION_DOUBLE_WORK = "A3_G1D_DOUBLE_ATTENTION_WORK_DETECTED"
+DECISION_CORRECTION_MEMORY = "A3_G1D_CORRECTION_MEMORY_NOT_ADMITTED"
 
 REMOVED_STATIC_QKV_BYTES = 663_355_392
 PROJECTED_INCREMENTAL_BYTES = 255_110_464
@@ -70,12 +71,18 @@ MAX_REGION_STAGING_BYTES = 48_269_312
 MAX_CORRECTION_TEMP_BYTES = 32 * 1024**2
 CORRECTION_CHUNK_ROWS = 64
 
-CALLBACK_P95_NS_MAX = 3_000_000
+CONTROL_COMPARABILITY_RELATIVE_LIMIT = 0.05
+IMMUTABLE_STANDARD_SAMPLER_SECONDS = 488.847320
+IMMUTABLE_STANDARD_SUBMIT_SECONDS = 589.913016
+RUST_BOUNDARY_TARGET_NS = 100_000
 MIN_PLANNED_Q_REDUCTION = 0.03
 MIN_ACTUAL_Q_REDUCTION = 0.03
 MIN_AFFECTED_NON_ANCHOR_STEPS = 3
 MIN_STABLE_PLAN_EVENTS = 3
 MIN_ADMITTED_BLOCKS = 3
+ELIGIBLE_CACHE_SOURCE_STEPS = tuple(range(1, 17))
+G1C_CACHE_REFRESH_COUNT = 240
+G1C_CACHE_D2H_BYTES = 41_373_696_000
 
 # Immutable order derived from the complete private A2 calibration receipt.
 # It is evidence input, not a new measurement or a claim that A2 passed.
@@ -108,7 +115,7 @@ def fixed_contract() -> dict[str, Any]:
         "correction": CORRECTION_ID,
         "execution_authority": EXECUTION_AUTHORITY,
         "product_default_enabled": False,
-        "rust_directives": [FORCE_FULL, SELECTIVE_CANDIDATE],
+        "rust_directives": [FORCE_FULL, REGIONAL_SELECTIVE],
         "execution_decision_point": "BEFORE_ATTENTION",
         "cache_source": "ACTUAL_FULL_ATTENTION_CORE_OUTPUT_ONLY",
         "cache_age_source_intervals": 1,
@@ -123,6 +130,9 @@ def fixed_contract() -> dict[str, Any]:
         "conditional_graph_used": False,
         "gpu_same_block_guard_used": False,
         "static_qkv_used": False,
+        "mixed_state_enabled": True,
+        "whole_block_uncertain_fallback_removed": True,
+        "eligible_cache_source_steps": list(ELIGIBLE_CACHE_SOURCE_STEPS),
         "maximum_region_staging_bytes": MAX_REGION_STAGING_BYTES,
         "maximum_correction_temporary_bytes": MAX_CORRECTION_TEMP_BYTES,
         "tensor_bytes_to_rust": 0,
@@ -155,9 +165,114 @@ def settings_digest(*, mode: str, candidate_blocks: Sequence[int]) -> str:
             "affected_non_anchor_steps_min": MIN_AFFECTED_NON_ANCHOR_STEPS,
             "stable_plan_events_min": MIN_STABLE_PLAN_EVENTS,
             "false_safe_count": 0,
+            "control_sampler_regression_max": CONTROL_COMPARABILITY_RELATIVE_LIMIT,
+            "control_submit_regression_max": CONTROL_COMPARABILITY_RELATIVE_LIMIT,
+            "total_shadow_callback": "DIAGNOSTIC_ONLY",
+            "rust_boundary_p95_ns_target": RUST_BOUNDARY_TARGET_NS,
         },
     }
     return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _mask_value(plan: Mapping[str, Any], name: str) -> int | None:
+    value = plan.get(name, 0)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0 or value & ~REGION_MASK:
+        return None
+    return value
+
+
+def regional_masks(plan: Mapping[str, Any] | None) -> tuple[int, int, int, int] | None:
+    """Validate a mixed-state plan and return stable/active/uncertain/refresh masks."""
+
+    if plan is None:
+        return None
+    required_masks = (
+        "stable_region_mask",
+        "full_compute_region_mask",
+        "active_mask",
+        "uncertain_mask",
+        "refresh_region_mask",
+        "overlap_conflict_mask",
+    )
+    if any(name not in plan for name in required_masks):
+        return None
+    values = tuple(_mask_value(plan, name) for name in (
+        "stable_region_mask",
+        "active_mask",
+        "uncertain_mask",
+        "refresh_region_mask",
+    ))
+    if any(value is None for value in values):
+        return None
+    stable, active, uncertain, refresh = (int(value) for value in values)
+    if stable == 0:
+        return None
+    if stable & active or stable & uncertain or active & uncertain:
+        return None
+    if stable & refresh:
+        return None
+    if bool(plan.get("global_invalidation", False)):
+        return None
+    overlap = _mask_value(plan, "overlap_conflict_mask")
+    if overlap is None or overlap != 0:
+        return None
+    full = _mask_value(plan, "full_compute_region_mask")
+    if full is None or stable & full or (stable | full) != REGION_MASK:
+        return None
+    if (active | uncertain | refresh) & ~full:
+        return None
+    return stable, active, uncertain, refresh
+
+
+def source_step_cache_eligible(step: int) -> bool:
+    return int(step) in ELIGIBLE_CACHE_SOURCE_STEPS
+
+
+def stable_region_ids(stable_mask: int) -> tuple[int, ...]:
+    if isinstance(stable_mask, bool) or not isinstance(stable_mask, int) or stable_mask & ~REGION_MASK:
+        raise ValueError("stable region mask is invalid")
+    return tuple(region for region in range(REGION_COUNT) if stable_mask & (1 << region))
+
+
+def mixed_state_row_safety(
+    *, sequence_length: int, stable_mask: int, active_mask: int, uncertain_mask: int
+) -> dict[str, Any]:
+    """Prove that only Stable interior rows are omitted by the frozen A2 plan."""
+
+    plan = CPU_PROTOTYPE_PLANS[stable_mask]
+    omitted = set(plan.omitted_local_rows)
+    active = {
+        row
+        for region, rows in enumerate(REGION_LOCAL_ROWS)
+        if active_mask & (1 << region)
+        for row in rows
+    }
+    uncertain = {
+        row
+        for region, rows in enumerate(REGION_LOCAL_ROWS)
+        if uncertain_mask & (1 << region)
+        for row in rows
+    }
+    regional = {row for rows in REGION_LOCAL_ROWS for row in rows}
+    halo = set(range(VIDEO_TOKEN_COUNT)) - regional
+    representatives = set(plan.representative_local_rows)
+    nonvideo = max(0, int(sequence_length) - VIDEO_TOKEN_COUNT)
+    mapping_safe = not (
+        omitted & active
+        or omitted & uncertain
+        or omitted & halo
+        or omitted & representatives
+    )
+    return {
+        "mapping_safe": mapping_safe,
+        "stable_omitted_rows": len(omitted),
+        "active_exact_rows": len(active),
+        "uncertain_exact_rows": len(uncertain),
+        "halo_exact_rows": len(halo),
+        "nonvideo_exact_rows": nonvideo,
+        "representative_exact_rows": len(representatives),
+        "kernel_q_rows": len(plan.kernel_local_rows) + nonvideo,
+    }
 
 
 def rust_directive(
@@ -176,26 +291,21 @@ def rust_directive(
         return FORCE_FULL, "anchor_step"
     if plan is None:
         return FORCE_FULL, "plan_missing_or_late"
-    if int(plan.get("target_step", -1)) != step:
+    target_step = plan.get("target_step")
+    if isinstance(target_step, bool) or not isinstance(target_step, int) or target_step != step:
         return FORCE_FULL, "plan_target_mismatch_or_late"
     if plan.get("source_valid") is not True or plan.get("prediction_valid") is not True:
         return FORCE_FULL, "plan_source_or_prediction_invalid"
     if bool(plan.get("fallback_used", False)):
         return FORCE_FULL, "plan_fallback"
-    if int(plan.get("decision_code", ESCALATE_FULL_COMPUTE)) != REGIONAL_ACTIVE_QUERY:
+    decision_code = plan.get("decision_code", ESCALATE_FULL_COMPUTE)
+    if isinstance(decision_code, bool) or not isinstance(decision_code, int) or decision_code != REGIONAL_ACTIVE_QUERY:
         return FORCE_FULL, "plan_requires_full"
-    stable = int(plan.get("stable_region_mask", 0))
-    if stable == 0 or stable & ~REGION_MASK:
-        return FORCE_FULL, "stable_mask_missing_or_invalid"
-    if int(plan.get("uncertain_mask", 0)) != 0:
-        return FORCE_FULL, "uncertain_region_present"
-    if int(plan.get("active_mask", 0)) & stable:
-        return FORCE_FULL, "active_region_would_be_omitted"
-    if int(plan.get("refresh_region_mask", 0)) & stable:
-        return FORCE_FULL, "refresh_required"
+    if regional_masks(plan) is None:
+        return FORCE_FULL, "mixed_state_mask_invalid"
     if not cache_ready:
         return FORCE_FULL, "cache_missing_stale_or_not_ready"
-    return SELECTIVE_CANDIDATE, "preplanned_stable_cache_candidate"
+    return REGIONAL_SELECTIVE, "preplanned_mixed_state_regional_candidate"
 
 
 def work_accounting(
@@ -254,7 +364,7 @@ class HostCacheEntry:
 
 
 class H3A3G1Controller:
-    """H3 block wrapper with a pre-Attention Full-or-Selective decision."""
+    """H3 block wrapper with a pre-Attention Full-or-regional decision."""
 
     def __init__(
         self,
@@ -266,10 +376,10 @@ class H3A3G1Controller:
         candidate_blocks: Sequence[int],
     ) -> None:
         if mode not in {CONTROL_MODE, SELECTIVE_MODE}:
-            raise ValueError("unsupported A3-G1C mode")
+            raise ValueError("unsupported A3-G1D mode")
         candidates = tuple(int(value) for value in candidate_blocks)
         if len(set(candidates)) != len(candidates) or any(not 0 <= value < BLOCK_COUNT for value in candidates):
-            raise ValueError("A3-G1C candidate block list is malformed")
+            raise ValueError("A3-G1D candidate block list is malformed")
         self.mode = mode
         self.plan_bridge = plan_bridge
         self.h3 = h3_model
@@ -299,6 +409,11 @@ class H3A3G1Controller:
         self.forced_full_q_rows = 0
         self.partial_q_rows = 0
         self.reused_omitted_rows = 0
+        self.stable_omitted_rows = 0
+        self.active_exact_rows = 0
+        self.uncertain_exact_rows = 0
+        self.halo_exact_rows = 0
+        self.nonvideo_exact_rows = 0
         self.representative_q_rows = 0
         self.full_k_rows = 0
         self.actual_k_rows = 0
@@ -308,6 +423,9 @@ class H3A3G1Controller:
         self.cache_misses = 0
         self.cache_invalidations = 0
         self.full_refreshes = 0
+        self.skipped_ineligible_source_refreshes = 0
+        self.eligible_source_steps_seen: set[int] = set()
+        self.region_upload_count = 0
         self.host_cache_bytes = 0
         self.h2d_bytes = 0
         self.d2h_bytes = 0
@@ -317,6 +435,7 @@ class H3A3G1Controller:
         self.guard_d2h_bytes = 0
         self.host_guard_reads = 0
         self.explicit_hot_path_cpu_sync = 0
+        self.invalid_mask_count = 0
         self.per_step: dict[int, dict[str, Any]] = {}
         self._memory_tracking = False
         try:
@@ -351,7 +470,7 @@ class H3A3G1Controller:
         signature = (tuple(int(value) for value in full_core.shape), full_core.dtype, str(full_core.device))
         if self._core_signature is not None:
             if signature != self._core_signature:
-                raise ValueError("A3-G1C runtime tensor metadata changed")
+                raise ValueError("A3-G1D runtime tensor metadata changed")
             return
         self._core_signature = signature
         device = full_core.device
@@ -382,7 +501,7 @@ class H3A3G1Controller:
         staging = int(self._region_staging.numel()) * int(self._region_staging.element_size())
         self.region_staging_peak_bytes = staging
         if staging > MAX_REGION_STAGING_BYTES:
-            raise RuntimeError("A3-G1C region staging exceeds the W0 budget")
+            raise RuntimeError("A3-G1D region staging exceeds the W0 budget")
 
     def _cache_entry(self, block_index: int, full_core: Any) -> HostCacheEntry:
         entry = self._host_cache.get(block_index)
@@ -412,9 +531,13 @@ class H3A3G1Controller:
         staging = self._region_staging[: int(source.shape[0])]
         staging.copy_(source, non_blocking=True)
         self.h2d_bytes += int(source.numel()) * int(source.element_size())
+        self.region_upload_count += 1
         return staging
 
     def _refresh_cache(self, *, block_index: int, step: int, full_core: Any) -> None:
+        if not source_step_cache_eligible(step):
+            self.skipped_ineligible_source_refreshes += 1
+            return
         entry = self._cache_entry(block_index, full_core)
         for region in range(REGION_COUNT):
             indices = self._region_cache_indices[region]
@@ -428,19 +551,20 @@ class H3A3G1Controller:
         entry.source_kind = "ACTUAL_FULL_ATTENTION_CORE_OUTPUT"
         entry.valid = True
         self.full_refreshes += 1
+        self.eligible_source_steps_seen.add(step)
 
     def _track_correction_temp(self, *, rows: int, width: int, float_buffers: int) -> None:
         estimate = correction_temp_bytes(rows=rows, width=width, float_buffers=float_buffers)
         self.correction_temp_peak_bytes = max(self.correction_temp_peak_bytes, estimate)
         if estimate > MAX_CORRECTION_TEMP_BYTES:
-            raise RuntimeError("A3-G1C bounded correction exceeds 32 MiB")
+            raise RuntimeError("A3-G1D bounded correction exceeds 32 MiB")
 
     def _channel_mean_delta(self, *, full_core: Any, staging: Any, rows: Mapping[str, Any], positions: Mapping[str, Any]) -> Any:
         current_indices = rows["representative_indices"]
         cached_positions = positions["representative"]
         count = int(current_indices.numel())
         if count == 0:
-            raise ValueError("A3-G1C representative rows are empty")
+            raise ValueError("A3-G1D representative rows are empty")
         width = int(full_core.shape[-1])
         delta = self.torch.zeros((width,), dtype=self.torch.float32, device=full_core.device)
         for start in range(0, count, CORRECTION_CHUNK_ROWS):
@@ -545,9 +669,7 @@ class H3A3G1Controller:
         if entry is None or not entry.ready_for(target_step=step):
             return
         self.cache_hits += 1
-        for region in range(REGION_COUNT):
-            if not stable_mask & (1 << region):
-                continue
+        for region in stable_region_ids(stable_mask):
             staging = self._upload_region(entry=entry, region=region)
             rows = self.plan_cache.get(1 << region).region_rows[region]
             positions = self._region_cache_positions[region]
@@ -591,7 +713,7 @@ class H3A3G1Controller:
         entry = self._host_cache.get(block_index)
         if entry is None or not entry.ready_for(target_step=step):
             self.cache_misses += 1
-            raise RuntimeError("A3-G1C host cache is missing, stale, or not ready")
+            raise RuntimeError("A3-G1D host cache is missing, stale, or not ready")
         plan = self.plan_cache.get(stable_mask)
         selected_core = attention_core(
             q=q,
@@ -606,13 +728,27 @@ class H3A3G1Controller:
         selected_rows = int(plan.kernel_indices.numel())
         self.partial_q_rows += selected_rows
         self.representative_q_rows += int(plan.representative_indices.numel())
+        masks = regional_masks(self.plan_bridge.plans.get(step))
+        if masks is None:
+            raise RuntimeError("A3-G1D mixed-state masks changed after admission")
+        _, active_mask, uncertain_mask, _ = masks
+        safety = mixed_state_row_safety(
+            sequence_length=int(q.shape[0]),
+            stable_mask=stable_mask,
+            active_mask=active_mask,
+            uncertain_mask=uncertain_mask,
+        )
+        if not safety["mapping_safe"] or selected_rows != int(safety["kernel_q_rows"]):
+            raise RuntimeError("A3-G1D mixed-state row mapping is not admitted")
+        self.active_exact_rows += int(safety["active_exact_rows"])
+        self.uncertain_exact_rows += int(safety["uncertain_exact_rows"])
+        self.halo_exact_rows += int(safety["halo_exact_rows"])
+        self.nonvideo_exact_rows += int(safety["nonvideo_exact_rows"])
         full_core = reconstruct_selected_core(selected_core, plan.kernel_indices, int(q.shape[0]))
         del selected_core
         self.cache_hits += 1
         omitted_total = 0
-        for region in range(REGION_COUNT):
-            if not stable_mask & (1 << region):
-                continue
+        for region in stable_region_ids(stable_mask):
             staging = self._upload_region(entry=entry, region=region)
             rows = self.plan_cache.get(1 << region).region_rows[region]
             positions = self._region_cache_positions[region]
@@ -630,6 +766,7 @@ class H3A3G1Controller:
         entry.invalidate()
         self.cache_invalidations += 1
         self.reused_omitted_rows += omitted_total
+        self.stable_omitted_rows += omitted_total
         return full_core
 
     def _exact_full(self, *, q: Any, k: Any, v: Any, attention: Any, options: Mapping[str, Any]) -> Any:
@@ -665,7 +802,7 @@ class H3A3G1Controller:
         try:
             if step >= TOTAL_STEPS or options.get("optimized_attention_override") is not None:
                 self.mapping_error_count += 1
-                raise ValueError("A3-G1C execution mapping or attention backend changed")
+                raise ValueError("A3-G1D execution mapping or attention backend changed")
             video_start, video_stop = self._video_segment(x, mod_segments)
             self.plan_cache.materialize_all(
                 sequence_length=int(x.shape[0]),
@@ -674,11 +811,13 @@ class H3A3G1Controller:
                 device=x.device,
             )
             plan = self.plan_bridge.plans.get(step)
-            stable_mask = (
-                int(plan["stable_region_mask"])
-                if plan is not None and int(plan["decision_code"]) == REGIONAL_ACTIVE_QUERY
-                else 0
-            )
+            masks = regional_masks(plan)
+            stable_mask = masks[0] if masks is not None else 0
+            active_mask = masks[1] if masks is not None else 0
+            uncertain_mask = masks[2] if masks is not None else 0
+            plan_code = plan.get("decision_code") if plan is not None else None
+            if plan is not None and plan_code == REGIONAL_ACTIVE_QUERY and masks is None:
+                self.invalid_mask_count += 1
             shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = block.adaln_proj(t_emb)
             attention_h = self.h3._mod_scale_shift(block.norm1(x), shift_msa, scale_msa, mod_segments)
             q, k, v = _project_qkv(block.attn, attention_h, rope_freqs, **self._attention_kwargs())
@@ -693,6 +832,11 @@ class H3A3G1Controller:
                 {
                     "step": step,
                     "stable_region_mask": stable_mask,
+                    "active_region_mask": active_mask,
+                    "uncertain_region_mask": uncertain_mask,
+                    "mixed_stable_uncertain": bool(stable_mask and uncertain_mask),
+                    "mixed_stable_active": bool(stable_mask and active_mask),
+                    "stable_regional_event": bool(masks is not None and step not in ANCHOR_STEPS),
                     "forced_full_blocks": 0,
                     "selective_candidate_blocks": 0,
                     "full_attention_calls": 0,
@@ -717,7 +861,7 @@ class H3A3G1Controller:
                 record["full_attention_calls"] += 1
                 if block_index in self.candidate_blocks:
                     self._ensure_buffers(full_core=full_core, video_start=video_start)
-                    if directive == SELECTIVE_CANDIDATE:
+                    if directive == REGIONAL_SELECTIVE:
                         self.selective_candidate_blocks += 1
                         record["selective_candidate_blocks"] += 1
                         self._observe_control(
@@ -756,9 +900,9 @@ class H3A3G1Controller:
             partial_delta = self.partial_attention_calls - partial_before
             if full_delta and partial_delta:
                 self.normal_partial_plus_full_count += 1
-                raise RuntimeError("A3-G1C normal path executed both Partial and Full Attention")
+                raise RuntimeError("A3-G1D normal path executed both Partial and Full Attention")
             if not attention_path_is_xor(full_calls=full_delta, partial_calls=partial_delta):
-                raise RuntimeError("A3-G1C Attention path accounting is not XOR")
+                raise RuntimeError("A3-G1D Attention path accounting is not XOR")
 
             attention_output = block.attn.out_proj(full_core)
             x = self.h3._mod_gate(x, gate_msa, attention_output, mod_segments)
@@ -893,6 +1037,7 @@ class H3A3G1Controller:
         candidate_events = [
             record for record in self.per_step.values() if int(record["selective_candidate_blocks"]) > 0
         ]
+        stable_events = [record for record in self.per_step.values() if record["stable_regional_event"]]
         affected = sorted(record["step"] for record in candidate_events if record["step"] not in ANCHOR_STEPS)
         planned_omitted = sum(
             len(CPU_PROTOTYPE_PLANS[int(record["stable_region_mask"])].omitted_local_rows)
@@ -907,7 +1052,7 @@ class H3A3G1Controller:
             except (AttributeError, RuntimeError):
                 pass
         return {
-            "schema_version": "a3-g1c.h3.preplan-direct-selective.1",
+            "schema_version": "a3-g1d.h3.mixed-state-regional-reuse.1",
             "mode": self.mode,
             "mechanism": MECHANISM_ID,
             "correction": CORRECTION_ID,
@@ -922,6 +1067,14 @@ class H3A3G1Controller:
             "admitted_block_count": len(admitted),
             "false_safe_count": false_safe,
             "stable_plan_event_count": len(candidate_events),
+            "stable_regional_event_count": len(stable_events),
+            "executable_stable_event_count": len(candidate_events),
+            "mixed_stable_uncertain_event_count": sum(
+                bool(record["mixed_stable_uncertain"]) for record in stable_events
+            ),
+            "mixed_stable_active_event_count": sum(
+                bool(record["mixed_stable_active"]) for record in stable_events
+            ),
             "affected_non_anchor_steps": affected,
             "planned_q_reduction_ratio": planned_omitted / max(1, self.full_q_rows_theoretical),
             "forced_full_blocks": self.forced_full_blocks,
@@ -934,6 +1087,11 @@ class H3A3G1Controller:
             "work": {
                 **accounting,
                 "representative_q_rows": self.representative_q_rows,
+                "stable_omitted_rows": self.stable_omitted_rows,
+                "active_exact_rows": self.active_exact_rows,
+                "uncertain_exact_rows": self.uncertain_exact_rows,
+                "halo_exact_rows": self.halo_exact_rows,
+                "nonvideo_exact_rows": self.nonvideo_exact_rows,
                 "full_k_rows": self.full_k_rows,
                 "actual_k_rows": self.actual_k_rows,
                 "full_v_rows": self.full_v_rows,
@@ -944,9 +1102,14 @@ class H3A3G1Controller:
                 "misses": self.cache_misses,
                 "invalidations": self.cache_invalidations,
                 "full_refreshes": self.full_refreshes,
+                "cache_refresh_count": self.full_refreshes,
+                "eligible_source_step_count": len(self.eligible_source_steps_seen),
+                "eligible_source_steps": sorted(self.eligible_source_steps_seen),
+                "skipped_ineligible_source_refresh_count": self.skipped_ineligible_source_refreshes,
                 "host_cache_bytes": self.host_cache_bytes,
                 "h2d_bytes": self.h2d_bytes,
                 "d2h_bytes": self.d2h_bytes,
+                "region_upload_count": self.region_upload_count,
                 "max_region_staging_bytes": self.region_staging_peak_bytes,
                 "full_size_gpu_staging_count": self.full_size_gpu_staging_count,
             },
@@ -972,6 +1135,18 @@ class H3A3G1Controller:
             "conditional_graph_used": False,
             "gpu_same_block_guard_used": False,
             "static_qkv_used": False,
+            "mixed_state_enabled": True,
+            "whole_block_uncertain_fallback_removed": True,
+            "invalid_mask_count": self.invalid_mask_count,
+            "mixed_state_mapping_admitted": (
+                self.invalid_mask_count == 0
+                and prototype_mapping_contract().get("all_rows_in_range") is True
+                and all(
+                    region.get("exact_partition") is True
+                    and region.get("neighbor_rows_same_region") is True
+                    for region in prototype_mapping_contract().get("regions", [])
+                )
+            ),
             "runtime_capture_count": 0,
             "control_full_output_original": self.mode == CONTROL_MODE,
             "duplicate_subset_attention_calls": (
@@ -990,11 +1165,22 @@ def control_opportunity_gate(
     c2_shadow: Mapping[str, Any],
     output_integrity: bool,
     cache_capacity: int,
+    control_sampler_seconds: float,
+    control_submit_seconds: float,
 ) -> dict[str, Any]:
-    callback_p95 = c2_shadow.get("total_shadow_callback", {}).get("p95_ns")
     memory = execution.get("memory", {})
     cache = execution.get("cache", {})
+    rust_boundary = region_plan.get("boundary_roundtrip", {})
+    rust_policy = region_plan.get("rust_policy", {})
+    sampler_comparable = control_sampler_seconds <= IMMUTABLE_STANDARD_SAMPLER_SECONDS * (
+        1.0 + CONTROL_COMPARABILITY_RELATIVE_LIMIT
+    )
+    submit_comparable = control_submit_seconds <= IMMUTABLE_STANDARD_SUBMIT_SECONDS * (
+        1.0 + CONTROL_COMPARABILITY_RELATIVE_LIMIT
+    )
     checks = {
+        "mixed_state_mapping": execution.get("mixed_state_mapping_admitted") is True,
+        "invalid_mask_zero": int(execution.get("invalid_mask_count", -1)) == 0,
         "control_full_output_original": execution.get("control_full_output_original") is True,
         "control_partial_attention_zero": int(execution.get("partial_attention_calls", -1)) == 0,
         "conditional_graph_removed": execution.get("conditional_graph_used") is False,
@@ -1008,7 +1194,8 @@ def control_opportunity_gate(
         "cache_capacity": int(cache_capacity) >= MIN_ADMITTED_BLOCKS,
         "output_integrity": bool(output_integrity),
         "full_fallback": execution.get("full_compute_fallback_preserved") is True,
-        "callback_p95": isinstance(callback_p95, int) and callback_p95 <= CALLBACK_P95_NS_MAX,
+        "control_sampler_comparable": sampler_comparable,
+        "control_submit_comparable": submit_comparable,
         "tensor_to_rust_zero": region_plan.get("tensor_bytes_to_rust") == 0,
         "per_block_rust_zero": execution.get("rust", {}).get("per_block_calls") == 0,
         "per_token_rust_zero": execution.get("rust", {}).get("per_token_calls") == 0,
@@ -1017,18 +1204,60 @@ def control_opportunity_gate(
         "full_size_staging_zero": int(cache.get("full_size_gpu_staging_count", -1)) == 0,
         "region_staging_bounded": int(cache.get("max_region_staging_bytes", MAX_REGION_STAGING_BYTES + 1)) <= MAX_REGION_STAGING_BYTES,
         "correction_temporary_bounded": int(memory.get("correction_temp_peak", MAX_CORRECTION_TEMP_BYTES + 1)) <= MAX_CORRECTION_TEMP_BYTES,
+        "cache_refresh_reduced": int(cache.get("cache_refresh_count", G1C_CACHE_REFRESH_COUNT)) < G1C_CACHE_REFRESH_COUNT,
     }
-    if not checks["false_safe_zero"]:
+    mapping_checks = ("mixed_state_mapping", "invalid_mask_zero")
+    opportunity_checks = (
+        "admitted_blocks",
+        "planned_q_reduction",
+        "affected_non_anchor_steps",
+        "stable_plan_events",
+        "cache_capacity",
+        "cache_refresh_reduced",
+        "output_integrity",
+        "full_fallback",
+        "full_size_staging_zero",
+        "region_staging_bounded",
+        "tensor_to_rust_zero",
+        "per_block_rust_zero",
+        "per_token_rust_zero",
+    )
+    performance_checks = ("control_sampler_comparable", "control_submit_comparable")
+    if not all(checks[name] for name in mapping_checks):
+        decision = DECISION_MAPPING_NOT_ADMITTED
+    elif not checks["false_safe_zero"]:
         decision = DECISION_PREPLAN_NOT_SAFE
     elif not checks["correction_temporary_bounded"]:
-        decision = DECISION_CORRECTION_MEMORY
+        decision = DECISION_MAPPING_NOT_ADMITTED
     elif not checks["normal_double_work_zero"] or not checks["exception_double_work_zero"]:
-        decision = DECISION_DOUBLE_WORK
+        decision = DECISION_MAPPING_NOT_ADMITTED
+    elif not all(checks[name] for name in opportunity_checks):
+        decision = DECISION_OPPORTUNITY_NOT_ADMITTED
+    elif not all(checks[name] for name in performance_checks):
+        decision = DECISION_CONTROL_OVERHEAD
     elif not all(checks.values()):
-        decision = DECISION_REUSE_NOT_ADMITTED
+        decision = DECISION_MAPPING_NOT_ADMITTED
     else:
-        decision = "A3_G1C_SELECTIVE_ADMITTED"
-    return {"checks": checks, "passed": all(checks.values()), "decision": decision}
+        decision = "A3_G1D_SELECTIVE_ADMITTED"
+    diagnostics = {
+        "host_enqueue_build_latency": c2_shadow.get("callback_shadow_cpu"),
+        "observation_build_latency": c2_shadow.get("observation_build"),
+        "gpu_sketch_elapsed": c2_shadow.get("cuda_async_sketch"),
+        "gpu_to_host_sketch_elapsed": c2_shadow.get("gpu_to_host"),
+        "rust_boundary": rust_boundary,
+        "rust_policy": rust_policy,
+        "rust_boundary_p95_ns": rust_boundary.get("p95_ns"),
+        "rust_policy_p95_ns": rust_policy.get("p95_ns"),
+        "rust_boundary_target_ns": RUST_BOUNDARY_TARGET_NS,
+        "total_diagnostic_latency": c2_shadow.get("total_shadow_callback"),
+        "total_shadow_callback_is_admission_gate": False,
+    }
+    return {
+        "checks": checks,
+        "passed": all(checks.values()),
+        "decision": decision,
+        "latency_diagnostics": diagnostics,
+    }
 
 
 __all__ = [
@@ -1038,23 +1267,28 @@ __all__ = [
     "CONTROL_MODE",
     "DECISION_CORRECTION_MEMORY",
     "DECISION_DOUBLE_WORK",
-    "DECISION_GUARD_NOT_SAFE",
-    "DECISION_ISLAND_NOT_ADMITTED",
+    "DECISION_CONTROL_OVERHEAD",
+    "DECISION_MAPPING_NOT_ADMITTED",
     "DECISION_OMISSION_NOT_PROVEN",
     "DECISION_PREPLAN_NOT_SAFE",
     "DECISION_QUALITY_REJECTED",
     "DECISION_READY_FOR_VISUAL",
-    "DECISION_REUSE_NOT_ADMITTED",
+    "DECISION_OPPORTUNITY_NOT_ADMITTED",
     "DECISION_RUNTIME_NOT_POSITIVE",
     "EXECUTION_AUTHORITY",
+    "ELIGIBLE_CACHE_SOURCE_STEPS",
     "FORCE_FULL",
     "H3A3G1Controller",
     "MAX_CORRECTION_TEMP_BYTES",
     "MAX_REGION_STAGING_BYTES",
     "PROJECTED_INCREMENTAL_BYTES",
     "REMOVED_STATIC_QKV_BYTES",
-    "SELECTIVE_CANDIDATE",
+    "REGIONAL_SELECTIVE",
     "SELECTIVE_MODE",
+    "mixed_state_row_safety",
+    "regional_masks",
+    "source_step_cache_eligible",
+    "stable_region_ids",
     "control_opportunity_gate",
     "correction_temp_bytes",
     "fixed_contract",
