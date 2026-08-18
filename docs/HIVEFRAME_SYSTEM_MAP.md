@@ -186,6 +186,15 @@ flowchart TB
         M0 -. "same-condition cost truth required" .-> M1B2
     end
 
+    subgraph ENGINE_GATE["Local engine competitiveness"]
+        SHORTLIST["Engine shortlist\nLTX 2B FP8 + Wan2.2 5B"]
+        LTXADM["LTX 2B FP8 Admission\nverified_once; integrity PASS"]
+        FORMAL["Normalized H3 comparison\nseparate approval required"]
+
+        SHORTLIST --> LTXADM
+        LTXADM -.-> FORMAL
+    end
+
     M1B2 -. "quality-preserving admission only" .-> P3
     AUTH["Current authorization\nno next stage automatically active"]
 
@@ -195,16 +204,22 @@ flowchart TB
     classDef active fill:#fff0bd,stroke:#9a7300,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
     class P0 done;
-    class M1P0,M1B0 evidence;
+    class M1P0,M1B0,SHORTLIST,LTXADM evidence;
     class M1A2 revise;
     class M0 active;
-    class P1,P2,P3,P4,M1B1,M1B2,M2M5,AUTH planned;
+    class P1,P2,P3,P4,M1B1,M1B2,M2M5,FORMAL,AUTH planned;
 ```
 
 Arrows between completed research entries show chronology, not automatic Gate
 passage. Every dashed transition requires a separately approved product
 question. M0 remains open even though later model-free evidence exists, and
 P3 cannot begin merely because an execution hook or opportunity was observed.
+
+The LTX admission is a separate model-candidate result, not a HIVEFRAME Core
+speedup or product integration. Its 768x512, 33-frame, 8-step result cannot be
+ranked directly against the 864x480, 124-frame, 20-step H3 product baseline.
+The solid product path remains Local H3 until a separately approved normalized
+comparison and product promotion Gate pass.
 
 ## 4. Current H3 Core-evidence progression
 

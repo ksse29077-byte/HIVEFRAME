@@ -1,6 +1,6 @@
 {
   "record_id": "model-ltx-video-2b-0.9.8-distilled-fp8",
-  "status": "approved_for_one_admission",
+  "status": "admission_ready_for_formal_comparison",
   "reviewed_at": "2026-08-18",
   "scope": "Issue #98 RTX 3060 12GB local I2V admission only",
   "artifact": {
@@ -48,8 +48,11 @@
   "download": {
     "approved": true,
     "approval_scope": "Two exact pinned files for one local admission",
-    "completed": false,
+    "completed": true,
+    "model_completed_at": "2026-08-18T09:29:29.8498818Z",
+    "text_encoder_completed_at": "2026-08-18T09:32:46.2989238Z",
     "local_destination": "<comfyui-root>/models/checkpoints and <comfyui-root>/models/text_encoders",
+    "verification_receipt": "data_ledger/downloads/ltx_video_2b_fp8_admission.json",
     "retention": "retain outside Git until the user decides the formal comparison",
     "deletion": "when ComfyUI is idle, remove only the two exact LTX admission files"
   },
@@ -61,6 +64,7 @@
   "product_boundary": {
     "commercial_engine_ready": false,
     "installer_ready": false,
-    "formal_h3_comparison_authorized": false
+    "formal_h3_comparison_authorized": false,
+    "admission_decision": "LTX_ADMISSION_READY_FOR_FORMAL_H3_COMPARISON"
   }
 }

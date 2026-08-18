@@ -372,6 +372,7 @@ def integrity_passed(metrics: Mapping[str, Any], gate: Mapping[str, Any], http_s
 
 def decide(receipt: Mapping[str, Any]) -> str:
     counters = receipt["counters"]
+    submit_to_terminal = (receipt.get("timings") or {}).get("submit_to_terminal_seconds")
     if receipt.get("blocked_before_submit"):
         return "LTX_ADMISSION_BLOCKED"
     if (
@@ -380,6 +381,8 @@ def decide(receipt: Mapping[str, Any]) -> str:
         and counters["backend_submission_count"] == 1
         and counters["gpu_execution_started_count"] == 1
         and counters["completed_count"] == 1
+        and isinstance(submit_to_terminal, (int, float))
+        and submit_to_terminal <= receipt["admission_stop_seconds"]
         and all(counters[key] == 0 for key in ("retry_count", "fallback_count", "external_api_call_count", "external_job_termination_count", "oom_count"))
     ):
         return "LTX_ADMISSION_READY_FOR_FORMAL_H3_COMPARISON"
@@ -387,7 +390,17 @@ def decide(receipt: Mapping[str, Any]) -> str:
 
 
 def public_projection(value: Any) -> Any:
-    private_keys = {"private_path", "private_run_root", "prompt", "negative_prompt", "input_path", "result_url"}
+    private_keys = {
+        "private_path",
+        "private_run_root",
+        "prompt",
+        "negative_prompt",
+        "input_path",
+        "result_url",
+        "workflow",
+        "system_stats",
+        "prompt_id",
+    }
     if isinstance(value, Mapping):
         return {key: public_projection(item) for key, item in value.items() if key not in private_keys}
     if isinstance(value, list):
@@ -429,6 +442,7 @@ def run_admission(
         },
         "lifecycle": [],
         "blocked_before_submit": False,
+        "admission_stop_seconds": config["execution_budget"]["submit_to_terminal_stop_seconds"],
     }
     receipt_path = private_run_root / "private-receipt.json"
     client = LoopbackClient(config["runtime"]["base_url"])

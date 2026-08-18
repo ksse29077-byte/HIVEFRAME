@@ -106,6 +106,8 @@ class LTXAdmissionTests(unittest.TestCase):
             "blocked_before_submit": False,
             "terminal_status": "succeeded",
             "output_integrity_passed": True,
+            "admission_stop_seconds": 900,
+            "timings": {"submit_to_terminal_seconds": 100.0},
             "counters": {
                 "backend_submission_count": 1,
                 "gpu_execution_started_count": 1,
@@ -118,6 +120,9 @@ class LTXAdmissionTests(unittest.TestCase):
             },
         }
         self.assertEqual(decide(receipt), "LTX_ADMISSION_READY_FOR_FORMAL_H3_COMPARISON")
+        receipt["timings"]["submit_to_terminal_seconds"] = 901.0
+        self.assertEqual(decide(receipt), "LTX_ADMISSION_FAILED")
+        receipt["timings"]["submit_to_terminal_seconds"] = 100.0
         receipt["counters"]["oom_count"] = 1
         self.assertEqual(decide(receipt), "LTX_ADMISSION_FAILED")
         receipt["blocked_before_submit"] = True
@@ -129,6 +134,9 @@ class LTXAdmissionTests(unittest.TestCase):
                 "private_run_root": "C:/private",
                 "input_path": "C:/private/dog.png",
                 "profile": {"prompt": "private prompt", "seed": 101},
+                "workflow": {"4": {"inputs": {"text": "private prompt"}}},
+                "runtime_inspection": {"system_stats": {"system": {"argv": ["C:/private/runtime"]}}},
+                "prompt_id": "private-id",
                 "result": {"private_path": "C:/private/out.mp4", "sha256": "a" * 64},
             }
         )

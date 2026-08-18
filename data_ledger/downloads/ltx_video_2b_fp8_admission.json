@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "hiveframe.model_download_receipt",
+  "status": "verified",
+  "verified_at": "2026-08-18T09:34:40.183Z",
+  "scope": "Issue #98 one local LTX admission",
+  "files": [
+    {
+      "repository": "Lightricks/LTX-Video",
+      "revision": "17037c8743450dc873046790dd96fa805ccfaf8d",
+      "filename": "ltxv-2b-0.9.8-distilled-fp8.safetensors",
+      "started_at": "2026-08-18T09:25:54.4664411Z",
+      "completed_at": "2026-08-18T09:29:29.8498818Z",
+      "bytes": 4461695684,
+      "sha256": "d6d8fa8ed3a98346787c2503ac80fb5d7cebcf80e356b79a2ba361fbadf97e15",
+      "source_url": "https://huggingface.co/Lightricks/LTX-Video/resolve/17037c8743450dc873046790dd96fa805ccfaf8d/ltxv-2b-0.9.8-distilled-fp8.safetensors",
+      "logical_destination": "<comfyui-root>/models/checkpoints"
+    },
+    {
+      "repository": "comfyanonymous/flux_text_encoders",
+      "revision": "3bcfe977a9a2617a0b9025076030e217795fe028",
+      "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "started_at": "2026-08-18T09:29:29.8528818Z",
+      "completed_at": "2026-08-18T09:32:46.2989238Z",
+      "bytes": 5157348688,
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/3bcfe977a9a2617a0b9025076030e217795fe028/t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "logical_destination": "<comfyui-root>/models/text_encoders"
+    }
+  ],
+  "download": {
+    "payload_bytes": 9619044372,
+    "payload_file_count": 2,
+    "retry_option_used": false,
+    "gated_or_authenticated_download": false,
+    "partial_files_remaining": 0,
+    "disk_free_before_gib": 540.61
+  },
+  "runtime": {
+    "comfyui_version": "0.30.2",
+    "comfyui_commit": "dec5d9450a5290bcf63430409ea41018e67f41c3",
+    "python": "3.13.12",
+    "pytorch": "2.12.1+cu130",
+    "cuda": "13.0",
+    "gpu": "NVIDIA GeForce RTX 3060 12GB",
+    "custom_node_changes": 0,
+    "python_package_changes": 0
+  },
+  "repository_safety": {
+    "weights_outside_git": true,
+    "private_input_outside_git": true,
+    "generated_video_outside_git": true,
+    "private_receipt_outside_git": true
+  },
+  "execution": {
+    "generation_count": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "external_api_call_count": 0,
+    "decision": "LTX_ADMISSION_READY_FOR_FORMAL_H3_COMPARISON"
+  }
+}
