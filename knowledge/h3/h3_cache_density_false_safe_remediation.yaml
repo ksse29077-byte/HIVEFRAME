@@ -1,0 +1,130 @@
+schema_version: hiveframe.h3.cache-density-remediation.1
+knowledge_status: model_free_failed
+recorded_at: 2026-08-19
+
+scope:
+  issue: 100
+  draft_pr: 101
+  branch: codex/h3-cache-density-false-safe-remediation
+  base_head: e83c40f2ffba1d237c98e3f02f4d113fd9e50e22
+  depends_on_pr: 91
+  generation_count: 0
+  control_generation_count: 0
+  selective_generation_count: 0
+  retry_count: 0
+
+frozen_control:
+  full_q_rows: 15424000
+  candidate_blocks: [0, 48, 16, 10, 4, 11, 17, 13, 49, 15, 12, 14]
+  admitted_blocks: [0, 10, 4, 11, 13, 12]
+  rejected_false_safe_blocks: [48, 49]
+  rejected_quality_blocks: [16, 17, 15, 14]
+  original_false_safe_count: 2
+  remediated_false_safe_count: 0
+  false_unsafe_count: null
+  false_unsafe_status: not_collected
+  stable_candidates: 23
+  stable_regional_events: 10
+  stable_region_occurrences: 12
+  active_region_occurrences: 4
+  uncertain_region_occurrences: 45
+  fallback_events: 0
+  raw_case_coordinates_preserved: false
+  raw_case_replay_status: unavailable_without_new_model_execution
+
+false_safe_cases:
+  - block_index: 48
+    count: 1
+    corrected_p05_cosine: 0.9628159999847412
+    corrected_p95_normalized_l2: 0.27016422152519226
+    direct_violation: normalized_l2
+    frame: null
+    target_step: null
+    region: null
+    packed_q_row: null
+    uncertainty: null
+    motion_activation: null
+    cache_source: ACTUAL_FULL_ATTENTION_CORE_OUTPUT
+    cache_age_source_intervals: 1
+  - block_index: 49
+    count: 1
+    corrected_p05_cosine: 0.9476526975631714
+    corrected_p95_normalized_l2: 0.3195900022983551
+    direct_violation: cosine_and_normalized_l2
+    frame: null
+    target_step: null
+    region: null
+    packed_q_row: null
+    uncertainty: null
+    motion_activation: null
+    cache_source: ACTUAL_FULL_ATTENTION_CORE_OUTPUT
+    cache_age_source_intervals: 1
+
+cache_ledger:
+  hard_cap_bytes: 2147483648
+  dtype: bfloat16
+  dtype_bytes: 2
+  attention_core_width: 7168
+  region_interior_rows: [3367, 3108, 2886, 2664]
+  region_payload_bytes: [48269312, 44556288, 41373696, 38191104]
+  per_block_tensor_payload_bytes: 172390400
+  twelve_block_tensor_payload_bytes: 2068684800
+  eighteen_block_tensor_payload_bytes: 3103027200
+  selected_safe_region_payload_bytes: 805195776
+  q_bytes: 0
+  k_bytes: 0
+  v_bytes: 0
+  residual_bytes: 0
+  ff_output_bytes: 0
+  allocator_overhead_bytes: null
+  python_metadata_overhead_bytes: null
+  cuda_event_overhead_bytes: null
+  three_point_one_gb_meaning: actual_pinned_host_tensor_payload_only
+
+selected_mechanism:
+  id: REGION_SPARSE_BF16_EFFECT_PER_BYTE_ADMISSION
+  runtime_connected: false
+  product_connected: false
+  budget_injected: true
+  hardware_name_hardcoded: false
+  same_lineage_required: true
+  cache_age_source_intervals: 1
+  partial_full_xor: true
+  cache_miss_action: FULL_COMPUTE
+  lineage_mismatch_action: FULL_COMPUTE
+  scene_cut_action: FULL_COMPUTE
+  cache_error_action: FULL_COMPUTE
+  nonfinite_action: FULL_COMPUTE
+
+frozen_replay:
+  selected_blocks: [0, 4, 10, 11, 12, 13]
+  selected_regions: [0, 1, 2]
+  planned_omitted_q_rows: 157398
+  planned_q_reduction_ratio: 0.010204745850622407
+  cache_hard_cap_pass: true
+  false_safe_zero_pass: true
+  planned_q_reduction_pass: false
+  byte_ledger_pass: true
+  lineage_validation_pass: true
+  partial_full_xor_pass: true
+  exact_fallback_pass: true
+  frozen_control_replay_pass: false
+
+verification:
+  focused_and_existing_test_count: 36
+  focused_and_existing_tests: pass
+  full_python_suite: skipped
+  full_python_suite_reason: no_common_runtime_or_contract_connected
+  rust_suite: skipped
+  rust_suite_reason: no_rust_change
+
+claims:
+  actual_gpu_work_reduction: not_collected
+  quality: not_collected
+  runtime: not_collected
+  product_promotion: 0
+  speedup_claim: 0
+
+decision: H3_COMPOUND_EYE_CACHE_DENSITY_REMEDIATION_FAILED
+next_stage_automatic: false
+diagram_impact: none
