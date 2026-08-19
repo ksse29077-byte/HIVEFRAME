@@ -12,6 +12,7 @@ import asyncio
 import copy
 import json
 import os
+import re
 import shutil
 import socket
 import sqlite3
@@ -32,6 +33,8 @@ from .active_query_attention import (
 from .c0_h3_phase_probe import EventTimeline, ResourceSampler, _collect_websocket_run, measured, sanitize_public
 from .comfyui_backend import ComfyUIH3Config, MiniMaxH3ComfyUIBackend
 from .comfyui_process_ownership import (
+    build_post_shutdown_receipt,
+    build_pre_launch_receipt,
     build_process_ownership_receipt,
     collect_comfy_runtime_processes,
 )
@@ -66,6 +69,8 @@ FAILED = "H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_FAILED"
 ADMISSION_BLOCKED = "H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_ADMISSION_BLOCKED"
 PROJECTED_CUDA_PEAK_BYTES = 12_514_625_897
 MINIMUM_VRAM_HEADROOM_BYTES = 256 * 1024**2
+PREFLIGHT_AVAILABLE_RAM_BYTES = 47_136_583_680
+RTX_3060_LUID_FRAGMENT = "luid_0x00000000_0x000114d9"
 
 
 def _utc_now() -> str:
@@ -145,6 +150,38 @@ def _nvidia_memory() -> dict[str, int]:
     )
     total_mib, used_mib = [int(value.strip()) for value in result.stdout.splitlines()[0].split(",")]
     return {"total_bytes": total_mib * 1024**2, "used_bytes": used_mib * 1024**2}
+
+
+def _gpu_process_memory() -> list[dict[str, int]]:
+    powershell = shutil.which("powershell.exe") or r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+    script = (
+        "Get-Counter '\\GPU Process Memory(*)\\Dedicated Usage' "
+        "-ErrorAction Stop | Select-Object -ExpandProperty CounterSamples | "
+        "Select-Object InstanceName,CookedValue | ConvertTo-Json -Compress"
+    )
+    result = subprocess.run(
+        [powershell, "-NoLogo", "-NoProfile", "-Command", script],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    decoded = json.loads(result.stdout or "[]")
+    samples = decoded if isinstance(decoded, list) else [decoded]
+    by_pid: dict[int, int] = {}
+    for sample in samples:
+        instance = str(sample.get("InstanceName", ""))
+        if RTX_3060_LUID_FRAGMENT not in instance.lower():
+            continue
+        match = re.search(r"pid_(\d+)", instance, re.IGNORECASE)
+        if match is None:
+            continue
+        pid = int(match.group(1))
+        by_pid[pid] = by_pid.get(pid, 0) + max(0, round(float(sample["CookedValue"])))
+    return [
+        {"pid": pid, "dedicated_bytes": dedicated}
+        for pid, dedicated in sorted(by_pid.items())
+    ]
 
 
 def build_workflow(
@@ -321,12 +358,23 @@ def run_control(
     timeline: EventTimeline | None = None
     sampler: ResourceSampler | None = None
     submitted = False
+    runtime_started = False
+    owned_runtime_pid = -1
+    baseline_gpu: dict[str, int] | None = None
+    baseline_gpu_processes: list[dict[str, int]] = []
+    post_launch_ownership: dict[str, Any] | None = None
     runner_started = time.monotonic()
     exit_code = 1
     try:
         external_jobs = inspect_external_jobs(external_product_databases)
-        foreign_comfy = inspect_comfy_processes()
+        pre_launch_ownership = build_pre_launch_receipt(
+            run_id=run_id,
+            host="127.0.0.1",
+            port=int(base_url.rsplit(":", 1)[1]),
+        )
+        foreign_comfy = pre_launch_ownership["candidate_summaries"]
         baseline_gpu = _nvidia_memory()
+        baseline_gpu_processes = _gpu_process_memory()
         projected_headroom = PHYSICAL_VRAM_BYTES - PROJECTED_CUDA_PEAK_BYTES
         admission_projection = build_runtime_admission(
             physical_ram_bytes=int(psutil.virtual_memory().total),
@@ -363,14 +411,18 @@ def run_control(
             "workflow_digest": sha256(workflow_path.read_bytes()).hexdigest() == APPROVED_WORKFLOW_SHA256,
             "projected_peak_below_physical": PROJECTED_CUDA_PEAK_BYTES < PHYSICAL_VRAM_BYTES,
             "headroom_at_least_256_mib": projected_headroom >= MINIMUM_VRAM_HEADROOM_BYTES,
+            "fragmentation_guard": baseline_gpu["used_bytes"] <= projected_headroom,
+            "gpu_process_counter_available": bool(baseline_gpu_processes),
             "balanced_projection_pass": admission_projection["control_submission_allowed"] is True,
             "synthetic_oracle_pass": all(synthetic_checks.values()),
             "release_pyo3_and_rust_pass": all(verification_checks.values()),
+            "pre_launch_ownership_pass": pre_launch_ownership["passed"] is True,
         }
         receipt["pre_start_admission"] = {
             "external_jobs": external_jobs,
             "foreign_comfy_processes": foreign_comfy,
             "baseline_gpu": baseline_gpu,
+            "baseline_gpu_processes": baseline_gpu_processes,
             "physical_vram_bytes": PHYSICAL_VRAM_BYTES,
             "projected_cuda_peak_bytes": PROJECTED_CUDA_PEAK_BYTES,
             "projected_headroom_bytes": projected_headroom,
@@ -378,6 +430,7 @@ def run_control(
             "projection": admission_projection,
             "synthetic": synthetic_checks,
             "release_verification": verification_checks,
+            "process_ownership": pre_launch_ownership,
             "checks": pre_start_checks,
             "passed": all(pre_start_checks.values()),
         }
@@ -387,6 +440,7 @@ def run_control(
         receipt["runtime_start"] = backend.start_runtime()
         if receipt["runtime_start"].get("started_here") is not True:
             raise RuntimeError("CONTROL V2 requires a fresh owned runtime")
+        runtime_started = True
         objects = backend.client.json("GET", "/object_info")
         queue = backend.client.json("GET", "/queue")
         if not node_admission_path.is_file():
@@ -401,6 +455,18 @@ def run_control(
             runtime_output=runtime_output,
             host="127.0.0.1",
             port=int(base_url.rsplit(":", 1)[1]),
+            run_id=run_id,
+            phase="POST_LAUNCH",
+        )
+        post_launch_ownership = ownership
+        post_launch_gpu_processes = _gpu_process_memory()
+        baseline_external_gpu_bytes = sum(
+            item["dedicated_bytes"] for item in baseline_gpu_processes
+        )
+        post_launch_external_gpu_bytes = sum(
+            item["dedicated_bytes"]
+            for item in post_launch_gpu_processes
+            if item["pid"] != owned_runtime_pid
         )
         post_start_checks = {
             "node_loaded": isinstance(objects, Mapping) and NODE_CLASS in objects,
@@ -410,6 +476,13 @@ def run_control(
             "page_locked": node_admission.get("page_locked") is True,
             "pinned_bytes_exact": node_admission.get("pinned_host_bytes") == PINNED_HOST_TOTAL_BYTES,
             "host_reserve_after_future_source_cache": host_available - HOST_SOURCE_CACHE_BYTES >= HOST_OS_COMFY_RESERVE_BYTES,
+            "external_gpu_usage_not_increased": post_launch_external_gpu_bytes
+            <= baseline_external_gpu_bytes,
+            "persistent_full_source_cuda_zero": admission_projection["balanced_12gb"][
+                "persistent_full_source_cuda_bytes"
+            ]
+            == 0,
+            "allocator_admission_pass": admission_projection["control_submission_allowed"] is True,
             "owned_runtime_receipt_pass": ownership["passed"] is True,
         }
         receipt["post_start_admission"] = {
@@ -417,6 +490,11 @@ def run_control(
             "owned_runtime_pid": owned_runtime_pid,
             "process_ownership": ownership,
             "available_after_future_source_cache_bytes": host_available - HOST_SOURCE_CACHE_BYTES,
+            "host_available_change_from_preflight_bytes": host_available
+            - PREFLIGHT_AVAILABLE_RAM_BYTES,
+            "post_launch_gpu_processes": post_launch_gpu_processes,
+            "baseline_external_gpu_bytes": baseline_external_gpu_bytes,
+            "post_launch_external_gpu_bytes": post_launch_external_gpu_bytes,
             "checks": post_start_checks,
             "passed": all(post_start_checks.values()),
         }
@@ -574,10 +652,73 @@ def run_control(
                 PHYSICAL_VRAM_BYTES - int(peak_vram) if isinstance(peak_vram, int) else None
             )
             receipt["resource_sampling"] = resource_summary
-        try:
-            receipt["runtime_stop"] = backend.stop_runtime()
-        except BaseException as error:
-            receipt["runtime_stop"] = {"status": "failed", "error_type": type(error).__name__}
+        shutdown_passed = True
+        if runtime_started:
+            try:
+                pre_shutdown = build_process_ownership_receipt(
+                    backend_process=backend._process,
+                    node_pid=owned_runtime_pid,
+                    comfyui_root=comfyui_root,
+                    runtime_output=runtime_output,
+                    host="127.0.0.1",
+                    port=int(base_url.rsplit(":", 1)[1]),
+                    run_id=run_id,
+                    phase="PRE_SHUTDOWN",
+                )
+                launch_owned = (post_launch_ownership or {}).get("owned_process") or {}
+                shutdown_owned = pre_shutdown.get("owned_process") or {}
+                continuity_checks = {
+                    "run_id_matches_post_launch": pre_shutdown.get("runtime_run_id")
+                    == (post_launch_ownership or {}).get("runtime_run_id"),
+                    "root_pid_matches_post_launch": pre_shutdown.get("backend_pid")
+                    == (post_launch_ownership or {}).get("backend_pid"),
+                    "creation_time_matches_post_launch": pre_shutdown.get("backend_create_time")
+                    == (post_launch_ownership or {}).get("backend_create_time"),
+                    "command_digest_matches_post_launch": shutdown_owned.get("command_digest")
+                    == launch_owned.get("command_digest"),
+                    "executable_digest_matches_post_launch": shutdown_owned.get(
+                        "executable_digest"
+                    )
+                    == launch_owned.get("executable_digest"),
+                }
+                pre_shutdown["continuity_checks"] = continuity_checks
+                pre_shutdown["passed"] = bool(
+                    pre_shutdown["passed"] and all(continuity_checks.values())
+                )
+                receipt["pre_shutdown_ownership"] = pre_shutdown
+                if pre_shutdown["passed"] is not True:
+                    shutdown_passed = False
+                    receipt["runtime_stop"] = {
+                        "status": "blocked_unverified_ownership",
+                        "stopped": False,
+                    }
+                else:
+                    receipt["runtime_stop"] = backend.stop_runtime()
+                    post_gpu = _nvidia_memory()
+                    post_shutdown = build_post_shutdown_receipt(
+                        run_id=run_id,
+                        owned_pid=owned_runtime_pid,
+                        host="127.0.0.1",
+                        port=int(base_url.rsplit(":", 1)[1]),
+                        baseline_gpu_bytes=(baseline_gpu or {}).get("used_bytes"),
+                        current_gpu_bytes=post_gpu.get("used_bytes"),
+                    )
+                    receipt["post_shutdown_ownership"] = post_shutdown
+                    shutdown_passed = bool(
+                        receipt["runtime_stop"].get("stopped") is True
+                        and post_shutdown["passed"] is True
+                    )
+            except BaseException as error:
+                shutdown_passed = False
+                receipt["runtime_stop"] = {
+                    "status": "failed",
+                    "error_type": type(error).__name__,
+                }
+        else:
+            receipt["runtime_stop"] = {"status": "not_started", "stopped": False}
+        if not shutdown_passed:
+            receipt["decision"] = FAILED if submitted else ADMISSION_BLOCKED
+            exit_code = 1
         for name, value in prior_environment.items():
             if value is None:
                 os.environ.pop(name, None)
