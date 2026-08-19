@@ -12,6 +12,7 @@ import copy
 import json
 import os
 import shutil
+import sqlite3
 import sys
 import time
 
@@ -36,7 +37,7 @@ from .h3_row_region_safety import (
     settings_digest,
 )
 from .rust_cache_plan_v2 import PLAN_READY, RustCachePlanV2Bridge
-from .sageattention_probe import SAGE_NODE_CLASS, _decode_video, _load_private_prompt
+from .sageattention_probe import SAGE_NODE_CLASS, _decode_video
 
 
 SCHEMA_VERSION = "h3.row-region-safety-control.1"
@@ -56,6 +57,36 @@ def _json_safe(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [_json_safe(item) for item in value]
     return value
+
+
+def _load_p1_a2_prompt(database: Path) -> tuple[str, str]:
+    if not database.is_file():
+        raise ValueError("private P1-A2 database is unavailable")
+    connection = sqlite3.connect(database)
+    try:
+        return _select_p1_a2_prompt(connection)
+    finally:
+        connection.close()
+
+
+def _select_p1_a2_prompt(connection: sqlite3.Connection) -> tuple[str, str]:
+    rows = connection.execute(
+        """
+        SELECT prompt
+        FROM jobs
+        WHERE backend = ?
+          AND status = ?
+          AND profile = ?
+          AND generation_mode = ?
+          AND reference_asset_id IS NOT NULL
+        ORDER BY created_at
+        """,
+        ("minimax_h3_comfyui_local", "succeeded", "standard", "image_to_video"),
+    ).fetchall()
+    if len(rows) != 1 or not isinstance(rows[0][0], str) or not rows[0][0].strip():
+        raise ValueError("private database must identify exactly one P1-A2 Standard I2V prompt")
+    prompt = rows[0][0].strip()
+    return prompt, sha256(prompt.encode("utf-8")).hexdigest()
 
 
 def build_workflow(
@@ -121,7 +152,7 @@ def run_control(
     if root.exists():
         raise ValueError("private CONTROL run directory already exists")
     root.mkdir(parents=True)
-    prompt, prompt_hash = _load_private_prompt(p0_database)
+    prompt, prompt_hash = _load_p1_a2_prompt(p0_database)
     image_content = input_image.read_bytes()
     image_digest = sha256(image_content).hexdigest()
     if image_digest != input_image_sha256:
@@ -384,10 +415,24 @@ def run_control(
         receipt["finished_at"] = _utc_now()
         receipt["exit_code"] = exit_code
         receipt["metrics"] = {
-            "runtime_startup_seconds": measured(startup_seconds, "seconds", "runner monotonic span"),
-            "result_collection_seconds": measured(collection_seconds, "seconds", "runner monotonic span"),
-            "shutdown_seconds": measured(shutdown_seconds, "seconds", "runner monotonic span"),
-            "runner_total_seconds": measured(time.monotonic() - runner_started, "seconds", "runner monotonic span"),
+            "runtime_startup_seconds": measured(
+                startup_seconds, "seconds", "runner monotonic span", scope="owned runtime launch to ready"
+            ),
+            "result_collection_seconds": measured(
+                collection_seconds,
+                "seconds",
+                "runner monotonic span",
+                scope="terminal event to local result collection",
+            ),
+            "shutdown_seconds": measured(
+                shutdown_seconds, "seconds", "runner monotonic span", scope="owned runtime stop"
+            ),
+            "runner_total_seconds": measured(
+                time.monotonic() - runner_started,
+                "seconds",
+                "runner monotonic span",
+                scope="runner entry through runtime stop",
+            ),
         }
         if timeline is not None:
             receipt["node_timeline"] = timeline.node_timeline()
@@ -395,6 +440,8 @@ def run_control(
             receipt["websocket_terminal_event"] = timeline.terminal_event
         if "callback_instrumentation" not in receipt and callback_path.is_file():
             receipt["callback_instrumentation"] = json.loads(callback_path.read_text(encoding="utf-8"))
+        if receipt.get("callback_instrumentation", {}).get("error_type") == "EvidenceBudgetError":
+            receipt["decision"] = "H3_ROW_REGION_TRANSFER_BUDGET_FAILED"
         (root / "private-receipt.json").write_text(
             json.dumps(_json_safe(receipt), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",

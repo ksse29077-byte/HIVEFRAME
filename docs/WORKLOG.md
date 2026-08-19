@@ -2028,6 +2028,29 @@ decision is `H3_RUST_REGION_SPARSE_CACHE_PLAN_ABI_V2_READY`; diagram impact is
 `none`. See the detailed
 [ABI V2 worklog](worklogs/2026-08-19-h3-rust-region-sparse-cache-plan-abi-v2.md).
 
+## 2026-08-19 - H3 row/region safety evidence CONTROL retry
+
+A user-approved one-time constitution exception allowed one isolated H3 Full
+Compute CONTROL on top of Draft PR #103. The dedicated branch implemented a
+40-key, maximum-640-record GPU regional observer with a 2 GiB pinned-host cache
+cap, 40 GiB transfer cap, compact scalar D2H, and generation-batched Rust ABI
+V2 boundary. Model-free, G1D regression, PyO3, and Rust preflight tests passed.
+
+The only submitted CONTROL stopped at 17/20 model forwards after 850 exact
+Full Attention calls and zero partial calls. Actual observation transfer had
+reached 42,914,600,960 bytes; the next region transfer would exceed the fixed
+42,949,672,960-byte cap, so evidence collection raised
+`EvidenceBudgetError` without truncating or compiling Rust. The incomplete
+279-record diagnostic set also contained 19 false-safe observations. No MP4,
+output-integrity result, GenerationEvidenceBatch, Rust plan, replay, planned-Q
+claim, retry, fallback, SELECTIVE, or product change exists.
+
+The decision is `H3_ROW_REGION_TRANSFER_BUDGET_FAILED`. The one-time exception
+ended and no follow-up was started. GitHub Issue and Draft PR creation remain
+pending authentication; the isolated implementation branch was pushed.
+Diagram impact is `none`. See the detailed
+[CONTROL retry worklog](worklogs/2026-08-19-h3-row-region-safety-evidence-control-retry.md).
+
 ---
 
 ## Entry template

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
+import sqlite3
 import unittest
 
 from hive_product.a3_g1_conditional_reuse import CONTROL_MODE
@@ -18,7 +19,11 @@ from hive_product.h3_row_region_safety import (
     generation_identity,
     settings_digest,
 )
-from hive_product.h3_row_region_safety_control_probe import NODE_CLASS, build_workflow
+from hive_product.h3_row_region_safety_control_probe import (
+    NODE_CLASS,
+    _select_p1_a2_prompt,
+    build_workflow,
+)
 from hive_product.rust_cache_plan_v2 import PLAN_READY, RustCachePlanV2Bridge
 
 
@@ -91,6 +96,26 @@ class H3RowRegionSafetyControlTests(unittest.TestCase):
         values = [evidence(0, index % 16) for index in range(MAX_EVIDENCE_RECORDS + 1)]
         with self.assertRaises(ValueError):
             generation_candidates(identity(), values)
+
+    def test_p1_a2_prompt_selection_is_exact_and_not_first_success(self):
+        connection = sqlite3.connect(":memory:")
+        connection.execute(
+            """CREATE TABLE jobs (
+                created_at TEXT, backend TEXT, status TEXT, profile TEXT,
+                generation_mode TEXT, reference_asset_id TEXT, prompt TEXT
+            )"""
+        )
+        connection.executemany(
+            "INSERT INTO jobs VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                ("1", "minimax_h3_comfyui_local", "succeeded", "standard", "text_to_video", None, "wrong"),
+                ("2", "minimax_h3_comfyui_local", "succeeded", "standard", "image_to_video", "asset", "fixed"),
+            ),
+        )
+        prompt, digest = _select_p1_a2_prompt(connection)
+        connection.close()
+        self.assertEqual(prompt, "fixed")
+        self.assertEqual(len(digest), 64)
 
     def test_candidate_lineage_and_scalar_layout_are_complete(self):
         record = generation_candidates(identity(), [evidence(0, 1)])[0]
