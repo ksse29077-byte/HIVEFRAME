@@ -2128,6 +2128,25 @@ integration was not started. See the detailed
 
 ---
 
+## 2026-08-19 - H3 ComfyUI process ownership receipt remediation
+
+Issue #111 and branch
+`codex/h3-comfyui-process-ownership-receipt-remediation` start at Draft PR
+#110 head. The broad command-line substring count is replaced by an exact argv
+parser and an ownership receipt that binds backend `Popen.pid`, node PID,
+loopback listener PID, executable, `main.py`, port, config, and dedicated
+runtime paths. Receipts retain only safe basenames and digests instead of raw
+private argv/path values.
+
+Seven new model-free tests and 37 related tests passed. A read-only live scan
+found zero Comfy runtime candidates and zero access failures. H3/model/
+Generation/CONTROL/SELECTIVE/partial-Q/omission counts remain zero. The
+decision is `H3_COMFYUI_PROCESS_OWNERSHIP_RECEIPT_REMEDIATION_READY`; no
+CONTROL retry is authorized. See the detailed
+[remediation worklog](worklogs/2026-08-19-h3-comfyui-process-ownership-receipt-remediation.md).
+
+---
+
 ## Entry template
 
 ```markdown
