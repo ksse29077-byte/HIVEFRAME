@@ -2009,6 +2009,25 @@ case replay Gates fail. The decision is
 remain unchanged; diagram impact is `none`. See the detailed
 [remediation worklog](worklogs/2026-08-19-h3-cache-density-false-safe-remediation.md).
 
+## 2026-08-19 - H3 Rust region-sparse cache plan ABI V2
+
+Issue #102 and Draft PR #103 add a model-free, generation-batched CachePlan
+ABI V2 on top of Draft PR #101. Typed Rust contracts now validate complete
+generation lineage, bounded region evidence, Balanced12GB and Quality24GBPlus
+profiles, cache and transfer budgets, deterministic effect/byte admission and
+eviction, the unchanged 3% pre-gate, and status-bearing performance receipts.
+
+The in-process PyO3/Python boundary makes at most one V2 call per generation,
+passes fixed metadata only, and adds zero block, region, row, subprocess, or
+tensor calls. The PR #101 frozen set remains Full Compute at 1.0204%; a
+model-free 29-region fixture reaches 3.0679% and proves only contract
+representability. Twelve Rust V2 tests, eight new Python/PyO3 tests, 70 combined
+new and related Python tests, and 50 workspace Rust tests passed. No model,
+Generation, CUDA, product, LTX, Wan, or installer work ran. The contract-only
+decision is `H3_RUST_REGION_SPARSE_CACHE_PLAN_ABI_V2_READY`; diagram impact is
+`none`. See the detailed
+[ABI V2 worklog](worklogs/2026-08-19-h3-rust-region-sparse-cache-plan-abi-v2.md).
+
 ---
 
 ## Entry template

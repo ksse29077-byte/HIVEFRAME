@@ -1,5 +1,6 @@
 #![doc = "Model-free Compound I/O routing, fusion, planning, and admission evidence."]
 
+pub mod cache_plan_v2;
 pub mod locality;
 
 use serde::{Deserialize, Serialize};

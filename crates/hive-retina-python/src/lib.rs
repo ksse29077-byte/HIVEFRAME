@@ -1,5 +1,14 @@
 #![doc = "Bounded Python 3.12 shared-buffer adapter for the model-free R3 probe."]
 
+use hive_retina_runtime::cache_plan_v2::{
+    compile_cache_plan_v2 as compile_cache_plan_v2_core, fail_open_cache_plan_v2, CacheCandidateV2,
+    CacheInventoryEntryV2, CachePlanPerformanceReceiptV2, GenerationCachePlanRequest,
+    GenerationCachePlanV2, GenerationEvidenceBatchHeader, GenerationEvidenceBatchV2,
+    GenerationIdentityV2, HardwareProfileV2, ReceiptMetricU64, CACHE_PLAN_ABI_V2_VERSION,
+    CACHE_PLAN_V2_CONTRACT_VERSION, CACHE_PLAN_V2_MAX_BATCH_BYTES, CACHE_PLAN_V2_MAX_INVENTORY,
+    CACHE_PLAN_V2_MAX_RECORDS, CACHE_PLAN_V2_REASON_BATCH_MALFORMED,
+    CACHE_PLAN_V2_REASON_RUST_PANIC,
+};
 use hive_retina_runtime::{
     evaluate_attention_region_plan as evaluate_attention_region_plan_core,
     evaluate_c3_frozen_block_plan as evaluate_c3_frozen_block_plan_core,
@@ -22,9 +31,13 @@ use hive_retina_runtime::{
 use pyo3::buffer::PyBuffer;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyBytes, PyDict, PyModule};
+use pyo3::types::{PyAny, PyBytes, PyDict, PyList, PyModule};
 use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
+
+static MODULE_LOAD_COUNT: AtomicU64 = AtomicU64::new(0);
+static MODULE_LOAD_TIME_NS: AtomicU64 = AtomicU64::new(0);
 
 const WIDTH: usize = 1920;
 const HEIGHT: usize = 1080;
@@ -1004,8 +1017,456 @@ fn correction_plan_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>
     Ok(result)
 }
 
+fn required_item<'py>(dict: &Bound<'py, PyDict>, name: &str) -> PyResult<Bound<'py, PyAny>> {
+    dict.get_item(name)?
+        .ok_or_else(|| PyValueError::new_err(format!("missing required field: {name}")))
+}
+
+fn dict_u32(dict: &Bound<'_, PyDict>, name: &str) -> PyResult<u32> {
+    required_item(dict, name)?.extract::<u32>()
+}
+
+fn dict_i32(dict: &Bound<'_, PyDict>, name: &str) -> PyResult<i32> {
+    required_item(dict, name)?.extract::<i32>()
+}
+
+fn dict_u64(dict: &Bound<'_, PyDict>, name: &str) -> PyResult<u64> {
+    required_item(dict, name)?.extract::<u64>()
+}
+
+fn dict_digest(dict: &Bound<'_, PyDict>, name: &str) -> PyResult<[u8; 32]> {
+    let value = required_item(dict, name)?;
+    let bytes = value
+        .cast::<PyBytes>()
+        .map_err(|_| PyTypeError::new_err(format!("{name} must be bytes")))?;
+    fixed_digest(bytes, name)
+}
+
+fn parse_cache_plan_request(dict: &Bound<'_, PyDict>) -> PyResult<GenerationCachePlanRequest> {
+    Ok(GenerationCachePlanRequest {
+        abi_version: dict_u32(dict, "abi_version")?,
+        struct_size: dict_u32(dict, "struct_size")?,
+        contract_version: dict_u32(dict, "contract_version")?,
+        overflow_policy: dict_u32(dict, "overflow_policy")?,
+        generation_id: dict_u64(dict, "generation_id")?,
+        current_step: dict_u32(dict, "current_step")?,
+        maximum_batch_records: dict_u32(dict, "maximum_batch_records")?,
+        maximum_batch_bytes: dict_u64(dict, "maximum_batch_bytes")?,
+        total_full_q_rows: dict_u64(dict, "total_full_q_rows")?,
+        unsupported_flags: dict_u32(dict, "unsupported_flags")?,
+    })
+}
+
+fn parse_generation_identity(dict: &Bound<'_, PyDict>) -> PyResult<GenerationIdentityV2> {
+    Ok(GenerationIdentityV2 {
+        run_digest: dict_digest(dict, "run_digest")?,
+        workflow_digest: dict_digest(dict, "workflow_digest")?,
+        model_digest: dict_digest(dict, "model_digest")?,
+        model_revision_digest: dict_digest(dict, "model_revision_digest")?,
+        settings_digest: dict_digest(dict, "settings_digest")?,
+        source_plan_digest: dict_digest(dict, "source_plan_digest")?,
+        layout_digest: dict_digest(dict, "layout_digest")?,
+        input_identity_digest: dict_digest(dict, "input_identity_digest")?,
+        generation_id: dict_u64(dict, "generation_id")?,
+        scheduler_id: dict_u32(dict, "scheduler_id")?,
+        total_steps: dict_u32(dict, "total_steps")?,
+        width: dict_u32(dict, "width")?,
+        height: dict_u32(dict, "height")?,
+        frame_count: dict_u32(dict, "frame_count")?,
+        fps_numerator: dict_u32(dict, "fps_numerator")?,
+        fps_denominator: dict_u32(dict, "fps_denominator")?,
+    })
+}
+
+fn parse_hardware_profile(dict: &Bound<'_, PyDict>) -> PyResult<HardwareProfileV2> {
+    Ok(HardwareProfileV2 {
+        abi_version: dict_u32(dict, "abi_version")?,
+        struct_size: dict_u32(dict, "struct_size")?,
+        profile_id: dict_u32(dict, "profile_id")?,
+        precision: dict_u32(dict, "precision")?,
+        quantization: dict_u32(dict, "quantization")?,
+        offload_policy: dict_u32(dict, "offload_policy")?,
+        resolution_class: dict_u32(dict, "resolution_class")?,
+        cache_age: dict_u32(dict, "cache_age")?,
+        vram_budget_bytes: dict_u64(dict, "vram_budget_bytes")?,
+        host_cache_budget_bytes: dict_u64(dict, "host_cache_budget_bytes")?,
+        gpu_staging_budget_bytes: dict_u64(dict, "gpu_staging_budget_bytes")?,
+        minimum_reserve_bytes: dict_u64(dict, "minimum_reserve_bytes")?,
+        maximum_transfer_bytes: dict_u64(dict, "maximum_transfer_bytes")?,
+        maximum_candidates: dict_u32(dict, "maximum_candidates")?,
+        maximum_selected_regions: dict_u32(dict, "maximum_selected_regions")?,
+        maximum_batch_bytes: dict_u64(dict, "maximum_batch_bytes")?,
+        maximum_work_units: dict_u32(dict, "maximum_work_units")?,
+        resolution_width: dict_u32(dict, "resolution_width")?,
+        resolution_height: dict_u32(dict, "resolution_height")?,
+        frame_budget: dict_u32(dict, "frame_budget")?,
+    })
+}
+
+fn parse_batch_header(dict: &Bound<'_, PyDict>) -> PyResult<GenerationEvidenceBatchHeader> {
+    Ok(GenerationEvidenceBatchHeader {
+        abi_version: dict_u32(dict, "abi_version")?,
+        struct_size: dict_u32(dict, "struct_size")?,
+        generation_id: dict_u64(dict, "generation_id")?,
+        record_count: dict_u32(dict, "record_count")?,
+        maximum_records: dict_u32(dict, "maximum_records")?,
+        batch_bytes: dict_u64(dict, "batch_bytes")?,
+        overflowed: dict_u32(dict, "overflowed")?,
+        truncated: dict_u32(dict, "truncated")?,
+        tensor_bytes: dict_u64(dict, "tensor_bytes")?,
+        unsupported_flags: dict_u32(dict, "unsupported_flags")?,
+    })
+}
+
+fn parse_cache_candidate(dict: &Bound<'_, PyDict>) -> PyResult<CacheCandidateV2> {
+    Ok(CacheCandidateV2 {
+        target_step: dict_u32(dict, "target_step")?,
+        source_step: dict_u32(dict, "source_step")?,
+        block_index: dict_u32(dict, "block_index")?,
+        region: dict_u32(dict, "region")?,
+        packed_row_start: dict_u32(dict, "packed_row_start")?,
+        packed_row_count: dict_u32(dict, "packed_row_count")?,
+        state: dict_u32(dict, "state")?,
+        actual_safety_state: dict_u32(dict, "actual_safety_state")?,
+        safety_evidence_present: dict_u32(dict, "safety_evidence_present")?,
+        uncertainty_ppm: dict_u32(dict, "uncertainty_ppm")?,
+        motion_ppm: dict_u32(dict, "motion_ppm")?,
+        cosine_ppm: dict_i32(dict, "cosine_ppm")?,
+        corrected_nl2_ppm: dict_u32(dict, "corrected_nl2_ppm")?,
+        false_safe_count: dict_u32(dict, "false_safe_count")?,
+        nonfinite_count: dict_u32(dict, "nonfinite_count")?,
+        cache_age: dict_u32(dict, "cache_age")?,
+        source_kind: dict_u32(dict, "source_kind")?,
+        shape_rows: dict_u32(dict, "shape_rows")?,
+        shape_width: dict_u32(dict, "shape_width")?,
+        dtype: dict_u32(dict, "dtype")?,
+        device_class: dict_u32(dict, "device_class")?,
+        precision: dict_u32(dict, "precision")?,
+        quantization: dict_u32(dict, "quantization")?,
+        admission_eligible: dict_u32(dict, "admission_eligible")?,
+        rejection_reason: dict_u32(dict, "rejection_reason")?,
+        planned_q_rows: dict_u64(dict, "planned_q_rows")?,
+        full_q_rows: dict_u64(dict, "full_q_rows")?,
+        payload_bytes: dict_u64(dict, "payload_bytes")?,
+        effect_numerator: dict_u64(dict, "effect_numerator")?,
+        effect_denominator: dict_u64(dict, "effect_denominator")?,
+        planned_d2h_bytes: dict_u64(dict, "planned_d2h_bytes")?,
+        planned_h2d_bytes: dict_u64(dict, "planned_h2d_bytes")?,
+        shape_digest: dict_digest(dict, "shape_digest")?,
+        packed_row_digest: dict_digest(dict, "packed_row_digest")?,
+        lineage_digest: dict_digest(dict, "lineage_digest")?,
+    })
+}
+
+fn parse_inventory_entry(dict: &Bound<'_, PyDict>) -> PyResult<CacheInventoryEntryV2> {
+    Ok(CacheInventoryEntryV2 {
+        block_index: dict_u32(dict, "block_index")?,
+        region: dict_u32(dict, "region")?,
+        source_step: dict_u32(dict, "source_step")?,
+        cache_age: dict_u32(dict, "cache_age")?,
+        valid: dict_u32(dict, "valid")?,
+        payload_bytes: dict_u64(dict, "payload_bytes")?,
+        planned_q_rows: dict_u64(dict, "planned_q_rows")?,
+        lineage_digest: dict_digest(dict, "lineage_digest")?,
+    })
+}
+
+fn parse_dict_list<T>(
+    values: &Bound<'_, PyList>,
+    parser: impl Fn(&Bound<'_, PyDict>) -> PyResult<T>,
+) -> PyResult<Vec<T>> {
+    values
+        .iter()
+        .map(|value| {
+            let dict = value
+                .cast::<PyDict>()
+                .map_err(|_| PyTypeError::new_err("batch records must be dictionaries"))?;
+            parser(dict)
+        })
+        .collect()
+}
+
+fn metric_status_label(status: u32) -> &'static str {
+    match status {
+        1 => "MEASURED",
+        2 => "STRUCTURAL_ZERO",
+        3 => "UNKNOWN",
+        4 => "NOT_EXECUTED",
+        _ => "INVALID",
+    }
+}
+
+fn set_receipt_metric(
+    parent: &Bound<'_, PyDict>,
+    name: &str,
+    metric: ReceiptMetricU64,
+) -> PyResult<()> {
+    let item = PyDict::new(parent.py());
+    match metric.value {
+        Some(value) => item.set_item("value", value)?,
+        None => item.set_item("value", parent.py().None())?,
+    }
+    item.set_item("status", metric_status_label(metric.status))?;
+    parent.set_item(name, item)
+}
+
+fn performance_receipt_dict<'py>(
+    py: Python<'py>,
+    receipt: &CachePlanPerformanceReceiptV2,
+) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    for (name, metric) in [
+        ("rust_module_load_count", receipt.rust_module_load_count),
+        ("rust_module_load_time_ns", receipt.rust_module_load_time_ns),
+        ("rust_process_spawn_count", receipt.rust_process_spawn_count),
+        ("calls_per_generation", receipt.calls_per_generation),
+        ("calls_per_step", receipt.calls_per_step),
+        ("calls_per_block", receipt.calls_per_block),
+        ("calls_per_region", receipt.calls_per_region),
+        ("calls_per_row", receipt.calls_per_row),
+        ("evidence_record_count", receipt.evidence_record_count),
+        ("evidence_batch_bytes", receipt.evidence_batch_bytes),
+        ("pyo3_conversion_time_ns", receipt.pyo3_conversion_time_ns),
+        ("rust_plan_time_ns", receipt.rust_plan_time_ns),
+        ("ffi_total_time_ns", receipt.ffi_total_time_ns),
+        ("serialization_time_ns", receipt.serialization_time_ns),
+        ("rust_transfer_bytes", receipt.rust_transfer_bytes),
+        (
+            "gpu_to_cpu_metadata_bytes",
+            receipt.gpu_to_cpu_metadata_bytes,
+        ),
+        ("gpu_to_cpu_tensor_bytes", receipt.gpu_to_cpu_tensor_bytes),
+        (
+            "cpu_to_gpu_metadata_bytes",
+            receipt.cpu_to_gpu_metadata_bytes,
+        ),
+        ("cpu_to_gpu_tensor_bytes", receipt.cpu_to_gpu_tensor_bytes),
+        ("cuda_sync_count", receipt.cuda_sync_count),
+        ("selected_payload_bytes", receipt.selected_payload_bytes),
+        ("planned_d2h_bytes", receipt.planned_d2h_bytes),
+        ("planned_h2d_bytes", receipt.planned_h2d_bytes),
+        ("actual_d2h_bytes", receipt.actual_d2h_bytes),
+        ("actual_h2d_bytes", receipt.actual_h2d_bytes),
+        ("d2h_estimate_error_bytes", receipt.d2h_estimate_error_bytes),
+        ("h2d_estimate_error_bytes", receipt.h2d_estimate_error_bytes),
+        ("fallback_count", receipt.fallback_count),
+        (
+            "partial_full_recovery_count",
+            receipt.partial_full_recovery_count,
+        ),
+        ("rust_overhead_ratio_ppm", receipt.rust_overhead_ratio_ppm),
+    ] {
+        set_receipt_metric(&result, name, metric)?;
+    }
+    Ok(result)
+}
+
+fn cache_plan_result<'py>(
+    py: Python<'py>,
+    plan: &GenerationCachePlanV2,
+    ffi_status: u32,
+) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    result.set_item("ffi_status", ffi_status)?;
+    result.set_item("abi_version", plan.abi_version)?;
+    result.set_item("decision_code", plan.decision_code)?;
+    result.set_item("reason_code", plan.reason_code)?;
+    result.set_item("fallback_required", plan.fallback_required)?;
+    result.set_item("total_selected_bytes", plan.total_selected_bytes)?;
+    result.set_item("total_planned_q_rows", plan.total_planned_q_rows)?;
+    result.set_item("total_full_q_rows", plan.total_full_q_rows)?;
+    result.set_item("planned_reduction_ppm", plan.planned_reduction_ppm)?;
+    result.set_item("total_planned_d2h_bytes", plan.total_planned_d2h_bytes)?;
+    result.set_item("total_planned_h2d_bytes", plan.total_planned_h2d_bytes)?;
+    result.set_item("plan_digest", PyBytes::new(py, &plan.plan_digest))?;
+    result.set_item("lineage_digest", PyBytes::new(py, &plan.lineage_digest))?;
+
+    let selected = PyList::empty(py);
+    for item in &plan.selected {
+        let row = PyDict::new(py);
+        row.set_item("block_index", item.block_index)?;
+        row.set_item("region", item.region)?;
+        row.set_item("payload_bytes", item.payload_bytes)?;
+        row.set_item("planned_q_rows", item.planned_q_rows)?;
+        row.set_item("planned_d2h_bytes", item.planned_d2h_bytes)?;
+        row.set_item("planned_h2d_bytes", item.planned_h2d_bytes)?;
+        row.set_item("effect_numerator", item.effect_numerator)?;
+        row.set_item("effect_denominator", item.effect_denominator)?;
+        row.set_item("transfer_effect_numerator", item.transfer_effect_numerator)?;
+        row.set_item(
+            "transfer_effect_denominator",
+            item.transfer_effect_denominator,
+        )?;
+        row.set_item(
+            "selection_lineage_digest",
+            PyBytes::new(py, &item.selection_lineage_digest),
+        )?;
+        selected.append(row)?;
+    }
+    result.set_item("selected", selected)?;
+
+    let rejected = PyList::empty(py);
+    for item in &plan.rejected {
+        let row = PyDict::new(py);
+        row.set_item("block_index", item.block_index)?;
+        row.set_item("region", item.region)?;
+        row.set_item("reason_code", item.reason_code)?;
+        rejected.append(row)?;
+    }
+    result.set_item("rejected", rejected)?;
+
+    let evictions = PyList::empty(py);
+    for item in &plan.eviction_order {
+        let row = PyDict::new(py);
+        row.set_item("block_index", item.block_index)?;
+        row.set_item("region", item.region)?;
+        row.set_item("reason_code", item.reason_code)?;
+        evictions.append(row)?;
+    }
+    result.set_item("eviction_order", evictions)?;
+    result.set_item(
+        "performance_receipt",
+        performance_receipt_dict(py, &plan.receipt)?,
+    )?;
+    Ok(result)
+}
+
+fn profile_dict<'py>(py: Python<'py>, profile: &HardwareProfileV2) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    result.set_item("abi_version", profile.abi_version)?;
+    result.set_item("struct_size", profile.struct_size)?;
+    result.set_item("profile_id", profile.profile_id)?;
+    result.set_item("precision", profile.precision)?;
+    result.set_item("quantization", profile.quantization)?;
+    result.set_item("offload_policy", profile.offload_policy)?;
+    result.set_item("resolution_class", profile.resolution_class)?;
+    result.set_item("cache_age", profile.cache_age)?;
+    result.set_item("vram_budget_bytes", profile.vram_budget_bytes)?;
+    result.set_item("host_cache_budget_bytes", profile.host_cache_budget_bytes)?;
+    result.set_item("gpu_staging_budget_bytes", profile.gpu_staging_budget_bytes)?;
+    result.set_item("minimum_reserve_bytes", profile.minimum_reserve_bytes)?;
+    result.set_item("maximum_transfer_bytes", profile.maximum_transfer_bytes)?;
+    result.set_item("maximum_candidates", profile.maximum_candidates)?;
+    result.set_item("maximum_selected_regions", profile.maximum_selected_regions)?;
+    result.set_item("maximum_batch_bytes", profile.maximum_batch_bytes)?;
+    result.set_item("maximum_work_units", profile.maximum_work_units)?;
+    result.set_item("resolution_width", profile.resolution_width)?;
+    result.set_item("resolution_height", profile.resolution_height)?;
+    result.set_item("frame_budget", profile.frame_budget)?;
+    Ok(result)
+}
+
+#[pyfunction]
+fn cache_plan_v2_contract<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+    let result = PyDict::new(py);
+    result.set_item("abi_version", CACHE_PLAN_ABI_V2_VERSION)?;
+    result.set_item("contract_version", CACHE_PLAN_V2_CONTRACT_VERSION)?;
+    result.set_item(
+        "request_struct_size",
+        GenerationCachePlanRequest::contract_size(),
+    )?;
+    result.set_item(
+        "identity_struct_size",
+        GenerationIdentityV2::contract_size(),
+    )?;
+    result.set_item("profile_struct_size", HardwareProfileV2::contract_size())?;
+    result.set_item(
+        "batch_header_struct_size",
+        GenerationEvidenceBatchHeader::contract_size(),
+    )?;
+    result.set_item("candidate_struct_size", CacheCandidateV2::contract_size())?;
+    result.set_item(
+        "inventory_struct_size",
+        CacheInventoryEntryV2::contract_size(),
+    )?;
+    result.set_item("maximum_records", CACHE_PLAN_V2_MAX_RECORDS)?;
+    result.set_item("maximum_inventory_records", CACHE_PLAN_V2_MAX_INVENTORY)?;
+    result.set_item("maximum_batch_bytes", CACHE_PLAN_V2_MAX_BATCH_BYTES)?;
+    result.set_item("tensor_bytes_per_call", 0)?;
+    result.set_item("maximum_calls_per_generation", 1)?;
+    result.set_item("maximum_calls_per_step", 0)?;
+    result.set_item("maximum_calls_per_block", 0)?;
+    result.set_item("maximum_calls_per_region", 0)?;
+    result.set_item("maximum_calls_per_row", 0)?;
+    result.set_item(
+        "balanced_12gb",
+        profile_dict(py, &HardwareProfileV2::balanced_12gb())?,
+    )?;
+    result.set_item(
+        "quality_24gb_plus",
+        profile_dict(py, &HardwareProfileV2::quality_24gb_plus())?,
+    )?;
+    Ok(result)
+}
+
+#[pyfunction]
+fn compile_cache_plan_v2<'py>(
+    py: Python<'py>,
+    request: &Bound<'py, PyDict>,
+    identity: &Bound<'py, PyDict>,
+    profile: &Bound<'py, PyDict>,
+    batch_header: &Bound<'py, PyDict>,
+    candidates: &Bound<'py, PyList>,
+    inventory: &Bound<'py, PyList>,
+) -> PyResult<Bound<'py, PyDict>> {
+    let ffi_started = Instant::now();
+    let conversion_started = Instant::now();
+    let parsed = (|| -> PyResult<_> {
+        let request = parse_cache_plan_request(request)?;
+        let identity = parse_generation_identity(identity)?;
+        let profile = parse_hardware_profile(profile)?;
+        let header = parse_batch_header(batch_header)?;
+        let records = parse_dict_list(candidates, parse_cache_candidate)?;
+        let inventory = parse_dict_list(inventory, parse_inventory_entry)?;
+        Ok((
+            request,
+            identity,
+            profile,
+            GenerationEvidenceBatchV2 { header, records },
+            inventory,
+        ))
+    })();
+    let conversion_ns = conversion_started.elapsed().as_nanos() as u64;
+    let plan_started = Instant::now();
+    let (mut plan, ffi_status) = match parsed {
+        Ok((request, identity, profile, batch, inventory)) => {
+            match catch_unwind(AssertUnwindSafe(|| {
+                compile_cache_plan_v2_core(&request, &identity, &profile, &batch, &inventory)
+            })) {
+                Ok(plan) => (plan, 0),
+                Err(_) => (fail_open_cache_plan_v2(CACHE_PLAN_V2_REASON_RUST_PANIC), 1),
+            }
+        }
+        Err(_) => (
+            fail_open_cache_plan_v2(CACHE_PLAN_V2_REASON_BATCH_MALFORMED),
+            1,
+        ),
+    };
+    let plan_ns = plan_started.elapsed().as_nanos() as u64;
+    plan.receipt.rust_module_load_count =
+        ReceiptMetricU64::measured(MODULE_LOAD_COUNT.load(Ordering::Relaxed));
+    plan.receipt.rust_module_load_time_ns =
+        ReceiptMetricU64::measured(MODULE_LOAD_TIME_NS.load(Ordering::Relaxed));
+    plan.receipt.pyo3_conversion_time_ns = ReceiptMetricU64::measured(conversion_ns);
+    plan.receipt.rust_plan_time_ns = ReceiptMetricU64::measured(plan_ns);
+    plan.receipt.ffi_total_time_ns =
+        ReceiptMetricU64::measured(ffi_started.elapsed().as_nanos() as u64);
+    cache_plan_result(py, &plan, ffi_status)
+}
+
+#[pyfunction]
+fn cache_plan_v2_panic_boundary_probe<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+    let evaluated = catch_unwind(AssertUnwindSafe(|| panic!("cache plan V2 panic probe")));
+    let plan = match evaluated {
+        Ok(()) => fail_open_cache_plan_v2(CACHE_PLAN_V2_REASON_BATCH_MALFORMED),
+        Err(_) => fail_open_cache_plan_v2(CACHE_PLAN_V2_REASON_RUST_PANIC),
+    };
+    cache_plan_result(py, &plan, 1)
+}
+
 #[pymodule]
 fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    let load_started = Instant::now();
     module.add_function(wrap_pyfunction!(run_candidate, module)?)?;
     module.add_function(wrap_pyfunction!(empty_boundary_probe, module)?)?;
     module.add_function(wrap_pyfunction!(evaluate_step_policy, module)?)?;
@@ -1024,8 +1485,16 @@ fn _hive_retina_boundary(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(reuse_plan_contract, module)?)?;
     module.add_function(wrap_pyfunction!(evaluate_correction_plan, module)?)?;
     module.add_function(wrap_pyfunction!(correction_plan_contract, module)?)?;
+    module.add_function(wrap_pyfunction!(compile_cache_plan_v2, module)?)?;
+    module.add_function(wrap_pyfunction!(cache_plan_v2_contract, module)?)?;
+    module.add_function(wrap_pyfunction!(
+        cache_plan_v2_panic_boundary_probe,
+        module
+    )?)?;
     module.add("__version__", env!("CARGO_PKG_VERSION"))?;
     module.add("pyo3_version", "0.29.0")?;
     module.add("python_abi", "abi3-py312")?;
+    MODULE_LOAD_COUNT.fetch_add(1, Ordering::Relaxed);
+    MODULE_LOAD_TIME_NS.store(load_started.elapsed().as_nanos() as u64, Ordering::Relaxed);
     Ok(())
 }
