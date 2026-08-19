@@ -2051,6 +2051,35 @@ pending authentication; the isolated implementation branch was pushed.
 Diagram impact is `none`. See the detailed
 [CONTROL retry worklog](worklogs/2026-08-19-h3-row-region-safety-evidence-control-retry.md).
 
+## 2026-08-19 - H3 GPU-local evidence and transfer V2 preflight
+
+Issue #105 and Draft PR #106 isolate a no-Generation preflight from the failed
+row/region CONTROL retry head. The incomplete 279-record receipt remains
+`CALIBRATION_ONLY`; all 19 false-safe cases were attributed and the exact
+42,914,600,960-byte transfer ledger was reproduced. The next complete CONTROL
+remains an `UNKNOWN` holdout and partial evidence was not sent to Rust.
+
+A conservative pre-Attention veto sends blocks 30, 31, 48, and 49 to Full
+Compute. The remaining 30-block region-zero geometry has false-safe zero in
+calibration and reaches a bounded 3.173690% potential over seven age-one
+events, while its 1,448,079,360-byte persistent payload remains below 2 GiB.
+This is geometry potential, not a quality or performance claim.
+
+The new GPU-local collector preallocates measured-free-VRAM-admitted source
+slots and a maximum-640 compact metric matrix. Payload stays on GPU; the hot
+path has zero `.cpu()`/`.numpy()`/`.item()`/forced sync, and finalization uses
+one bounded flush. Projected 20/20 evidence plus known C2 transfer is 32,000
+bytes with structural-zero cache payload D2H/H2D. Balanced12GB and simulated
+Quality24GBPlus use one algorithm.
+
+Six new tests, 17 combined Python tests, 12 Rust CachePlan ABI V2 tests,
+formatting, bytecode compile, and a bounded 96x32 CUDA CPU/GPU fixture passed.
+H3/Comfy Generation, CONTROL, SELECTIVE, and partial-Q counts are zero. The
+decision is `H3_GPU_LOCAL_EVIDENCE_TRANSFER_V2_PREFLIGHT_READY`; the separately
+approvable `H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2` was not started. Diagram
+impact is `none`. See the detailed
+[preflight worklog](worklogs/2026-08-19-h3-gpu-local-evidence-transfer-v2-preflight.md).
+
 ---
 
 ## Entry template
