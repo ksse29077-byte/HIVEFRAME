@@ -2108,6 +2108,26 @@ See the detailed [worklog](worklogs/2026-08-19-h3-12gb-hybrid-cache-staging-pref
 
 ---
 
+## 2026-08-19 - H3 row/region safety evidence CONTROL V2
+
+Issue #109 and branch `codex/h3-row-region-safety-evidence-control-v2` started
+at the exact Draft PR #108 head. A real-row Balanced12GB observer was added for
+blocks 0-29 with async D2H, a two-slot pinned ring, in-place pageable BF16
+sources, background exact CPU metrics, and a generation-batched Rust ABI V2
+boundary. It cannot alter Full Attention output or execute Selective/partial-Q.
+
+Model-free BF16 and metric validation passed with 6.4682552e-8 maximum CPU/GPU
+error. Related Python passed 30/30, release PyO3 passed 15/15 with skip 0, and
+Rust CachePlan V2 passed 12/12. Pre-start admission and pinned allocation
+passed. The final owned-runtime process cardinality check failed, so the runner
+stopped before submission. Submission/GPU start/completion is 0/0/0 and no
+retry occurred. The decision is
+`H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_ADMISSION_BLOCKED`; executor
+integration was not started. See the detailed
+[CONTROL V2 worklog](worklogs/2026-08-19-h3-row-region-safety-evidence-control-v2.md).
+
+---
+
 ## Entry template
 
 ```markdown

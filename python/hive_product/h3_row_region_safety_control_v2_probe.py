@@ -258,7 +258,7 @@ def run_control(
         raise RuntimeError("P1-A2 input image identity changed")
     prompt, prompt_digest = _load_prompt(p0_database)
     synthetic = json.loads(synthetic_receipt.read_text(encoding="utf-8"))
-    verification = json.loads(verification_receipt.read_text(encoding="utf-8"))
+    verification = json.loads(verification_receipt.read_text(encoding="utf-8-sig"))
     repository_root = Path(__file__).resolve().parents[2]
     runtime_output = root / "comfy-output"
     config = ComfyUIH3Config(
@@ -398,6 +398,8 @@ def run_control(
             raise RuntimeError("pinned-host admission receipt is missing")
         node_admission = json.loads(node_admission_path.read_text(encoding="utf-8"))
         host_available = int(node_admission.get("available_ram_after_pinned_bytes", 0))
+        observed_comfy_processes = inspect_comfy_processes()
+        owned_runtime_pid = int(node_admission.get("process_id", -1))
         post_start_checks = {
             "node_loaded": isinstance(objects, Mapping) and NODE_CLASS in objects,
             "queue_running_zero": isinstance(queue, Mapping) and len(queue.get("queue_running", [])) == 0,
@@ -406,10 +408,13 @@ def run_control(
             "page_locked": node_admission.get("page_locked") is True,
             "pinned_bytes_exact": node_admission.get("pinned_host_bytes") == PINNED_HOST_TOTAL_BYTES,
             "host_reserve_after_future_source_cache": host_available - HOST_SOURCE_CACHE_BYTES >= HOST_OS_COMFY_RESERVE_BYTES,
-            "foreign_comfy_still_owned_only": len(inspect_comfy_processes()) == 1,
+            "owned_runtime_is_only_comfy_process": len(observed_comfy_processes) == 1
+            and observed_comfy_processes[0].get("pid") == owned_runtime_pid,
         }
         receipt["post_start_admission"] = {
             "node": node_admission,
+            "owned_runtime_pid": owned_runtime_pid,
+            "observed_comfy_processes": observed_comfy_processes,
             "available_after_future_source_cache_bytes": host_available - HOST_SOURCE_CACHE_BYTES,
             "checks": post_start_checks,
             "passed": all(post_start_checks.values()),
