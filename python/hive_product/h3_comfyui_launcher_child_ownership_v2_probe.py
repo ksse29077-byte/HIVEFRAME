@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
@@ -17,6 +18,7 @@ from .comfyui_process_ownership import (
     build_process_ownership_receipt,
     collect_listener_pids,
     stop_verified_runtime_descendants,
+    wait_for_console_helper_exit,
 )
 
 
@@ -56,6 +58,10 @@ def _continuity(
         == _role_identity(post_launch, "runtime"),
         "listener_identity_matches": _role_identity(pre_shutdown, "listener")
         == _role_identity(post_launch, "listener"),
+        "console_helper_identity_matches": _role_identity(
+            pre_shutdown, "console_helper"
+        )
+        == _role_identity(post_launch, "console_helper"),
         "process_tree_identity_matches": pre_shutdown.get("process_tree", {}).get(
             "identity_digest"
         )
@@ -63,7 +69,13 @@ def _continuity(
     }
 
 
-def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
+def run(
+    args: argparse.Namespace,
+    *,
+    ready_decision: str = READY,
+    blocked_decision: str = BLOCKED,
+    schema_version: str = "h3.comfyui-launcher-child-ownership-v2-probe.2",
+) -> tuple[int, dict[str, Any]]:
     started_at = _utc_now()
     parsed = urlparse(args.base_url)
     port = int(parsed.port or -1)
@@ -71,10 +83,10 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     private_root = args.private_run_root.resolve() / args.run_id
     runtime_output = private_root / "comfy-output"
     receipt: dict[str, Any] = {
-        "schema_version": "h3.comfyui-launcher-child-ownership-v2-probe.1",
+        "schema_version": schema_version,
         "run_id": args.run_id,
         "started_at": started_at,
-        "decision": BLOCKED,
+        "decision": blocked_decision,
         "runtime_start_count": 0,
         "runtime_ready_count": 0,
         "runtime_shutdown_count": 0,
@@ -139,6 +151,39 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             run_id=args.run_id,
             phase="POST_LAUNCH",
         )
+        initial_snapshot = {
+            "schema_version": post_launch.get("schema_version"),
+            "runtime_run_identity_digest": post_launch.get(
+                "runtime_run_identity_digest"
+            ),
+            "launcher_pid": post_launch.get("launcher_pid"),
+            "launcher_create_time": post_launch.get("launcher_create_time"),
+            "runtime_pid": post_launch.get("runtime_pid"),
+            "runtime_create_time": post_launch.get("runtime_create_time"),
+            "listener_pid": post_launch.get("listener_pid"),
+            "listener_create_time": post_launch.get("listener_create_time"),
+            "listener_owner_pid": post_launch.get("listener_owner_pid"),
+            "console_helper_pid": post_launch.get("console_helper_pid"),
+            "console_helper_create_time": post_launch.get(
+                "console_helper_create_time"
+            ),
+            "console_helper_process": deepcopy(
+                post_launch.get("console_helper_process")
+            ),
+            "console_helper_admission": deepcopy(
+                post_launch.get("console_helper_admission")
+            ),
+            "role_ancestry": deepcopy(post_launch.get("role_ancestry")),
+            "process_tree": deepcopy(post_launch.get("process_tree")),
+            "unexpected_tree_members": deepcopy(
+                post_launch.get("unexpected_tree_members")
+            ),
+        }
+        snapshot_bytes = json.dumps(
+            initial_snapshot, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        receipt["initial_topology_snapshot"] = initial_snapshot
+        receipt["initial_topology_snapshot_digest"] = sha256(snapshot_bytes).hexdigest()
         if post_launch.get("passed") is True:
             verified_receipt = post_launch
         ready_checks = {
@@ -187,6 +232,12 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         if stop.get("stopped") is not True:
             raise RuntimeError("launcher shutdown failed")
         receipt["runtime_shutdown_count"] = 1
+        natural_exit = wait_for_console_helper_exit(
+            pre_shutdown.get("console_helper_process")
+        )
+        receipt["console_helper_natural_exit"] = natural_exit
+        if natural_exit.get("passed") is not True:
+            raise RuntimeError("console helper did not exit naturally")
         post_shutdown = build_post_shutdown_receipt(
             run_id=args.run_id,
             owned_processes=pre_shutdown.get("owned_processes", []),
@@ -195,12 +246,13 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             baseline_gpu_bytes=None,
             current_gpu_bytes=None,
             require_gpu_baseline=False,
+            console_helper_process=pre_shutdown.get("console_helper_process"),
         )
         receipt["post_shutdown_ownership"] = post_shutdown
         if post_shutdown.get("passed") is not True:
             raise RuntimeError("POST_SHUTDOWN ownership Gate failed")
         shutdown_complete = True
-        receipt["decision"] = READY
+        receipt["decision"] = ready_decision
     except BaseException as caught:
         error = caught
     finally:
@@ -212,6 +264,11 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
                         stop_verified_runtime_descendants(cleanup_receipt)
                     )
                     receipt["failure_cleanup_launcher"] = backend.stop_runtime()
+                    receipt["failure_cleanup_console_helper"] = (
+                        wait_for_console_helper_exit(
+                            cleanup_receipt.get("console_helper_process")
+                        )
+                    )
                     runtime_started = False
                 except BaseException as cleanup_error:
                     receipt["failure_cleanup_error_type"] = type(cleanup_error).__name__
@@ -219,26 +276,31 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
                 receipt["failure_cleanup"] = "BLOCKED_UNVERIFIED_PROCESS_TREE"
         if error is not None:
             receipt["error_type"] = type(error).__name__
-            receipt["decision"] = BLOCKED
+            receipt["decision"] = blocked_decision
         receipt["shutdown_complete"] = shutdown_complete
         receipt["finished_at"] = _utc_now()
         private_root.mkdir(parents=True, exist_ok=True)
         payload = json.dumps(receipt, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
         (private_root / "private-receipt.json").write_text(payload, encoding="utf-8")
         (private_root / "public-summary.json").write_text(payload, encoding="utf-8")
-    return (0 if receipt["decision"] == READY else 1), receipt
+    return (0 if receipt["decision"] == ready_decision else 1), receipt
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Verify one model-free ComfyUI launcher/child ownership lifecycle."
-    )
+def build_parser(description: str) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--comfyui-root", type=Path, required=True)
     parser.add_argument("--asset-root", type=Path, required=True)
     parser.add_argument("--private-run-root", type=Path, required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8191")
     parser.add_argument("--timeout-seconds", type=float, default=180.0)
+    return parser
+
+
+def main() -> int:
+    parser = build_parser(
+        description="Verify one model-free ComfyUI launcher/child ownership lifecycle."
+    )
     args = parser.parse_args()
     code, receipt = run(args)
     print(json.dumps(receipt, ensure_ascii=True, sort_keys=True))
