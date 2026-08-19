@@ -38,6 +38,7 @@ from .comfyui_process_ownership import (
     build_process_ownership_receipt,
     collect_comfy_runtime_processes,
     stop_verified_runtime_descendants,
+    wait_for_console_helper_exit,
 )
 from .h3_hybrid_cache_staging import (
     CONTROL_ORACLE_D2H_BYTES,
@@ -677,6 +678,14 @@ def run_control(
                     == (post_launch_ownership or {}).get("runtime_pid"),
                     "listener_pid_matches_post_launch": pre_shutdown.get("listener_pid")
                     == (post_launch_ownership or {}).get("listener_pid"),
+                    "console_helper_pid_matches_post_launch": pre_shutdown.get(
+                        "console_helper_pid"
+                    )
+                    == (post_launch_ownership or {}).get("console_helper_pid"),
+                    "console_helper_creation_time_matches_post_launch": pre_shutdown.get(
+                        "console_helper_create_time"
+                    )
+                    == (post_launch_ownership or {}).get("console_helper_create_time"),
                     "launcher_creation_time_matches_post_launch": pre_shutdown.get(
                         "launcher_create_time"
                     )
@@ -710,6 +719,11 @@ def run_control(
                         pre_shutdown
                     )
                     receipt["runtime_stop"] = backend.stop_runtime()
+                    receipt["console_helper_natural_exit"] = (
+                        wait_for_console_helper_exit(
+                            pre_shutdown.get("console_helper_process")
+                        )
+                    )
                     post_gpu = _nvidia_memory()
                     post_shutdown = build_post_shutdown_receipt(
                         run_id=run_id,
@@ -718,10 +732,12 @@ def run_control(
                         port=int(base_url.rsplit(":", 1)[1]),
                         baseline_gpu_bytes=(baseline_gpu or {}).get("used_bytes"),
                         current_gpu_bytes=post_gpu.get("used_bytes"),
+                        console_helper_process=pre_shutdown.get("console_helper_process"),
                     )
                     receipt["post_shutdown_ownership"] = post_shutdown
                     shutdown_passed = bool(
                         receipt["runtime_stop"].get("stopped") is True
+                        and receipt["console_helper_natural_exit"].get("passed") is True
                         and post_shutdown["passed"] is True
                     )
             except BaseException as error:

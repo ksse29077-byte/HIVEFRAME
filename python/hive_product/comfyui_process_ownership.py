@@ -7,11 +7,12 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 import json
 import os
+import time
 
 import psutil
 
 
-SCHEMA_VERSION = "h3.comfyui-process-ownership-receipt.3"
+SCHEMA_VERSION = "h3.comfyui-process-ownership-receipt.4"
 
 
 def _normalized_path(value: str | Path) -> str:
@@ -83,6 +84,25 @@ def _safe_process(process: Any) -> dict[str, Any]:
         executable = process.exe()
     except (psutil.AccessDenied, psutil.NoSuchProcess):
         executable = ""
+    try:
+        arguments = [str(value) for value in process.cmdline()]
+        command_accessible = True
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        arguments = []
+        command_accessible = False
+    comfy_markers = any(
+        Path(value).name.lower() == "main.py"
+        or value in {
+            "--listen",
+            "--port",
+            "--extra-model-paths-config",
+            "--input-directory",
+            "--output-directory",
+            "--temp-directory",
+            "--user-directory",
+        }
+        for value in arguments
+    )
     return {
         "pid": int(process.pid),
         "parent_pid": int(process.ppid()),
@@ -90,6 +110,12 @@ def _safe_process(process: Any) -> dict[str, Any]:
         "executable_name": Path(executable).name if executable else "",
         "executable_digest": _path_digest(executable) if executable else None,
         "create_time": float(process.create_time()),
+        "command_accessible": command_accessible,
+        "command_digest": sha256("\0".join(arguments).encode("utf-8")).hexdigest()
+        if command_accessible
+        else None,
+        "argument_count": len(arguments) if command_accessible else None,
+        "comfy_argument_markers_present": comfy_markers,
     }
 
 
@@ -112,8 +138,22 @@ def _process_tree(root_pid: int) -> dict[str, Any]:
         "members": safe,
         "member_count": len(safe),
         "identity_digest": sha256(identity).hexdigest(),
+        "observed_at_unix": time.time(),
         "error_type": None,
     }
+
+
+def trusted_console_helper_paths() -> tuple[Path, ...]:
+    """Return existing exact Windows console-host executables trusted by policy."""
+
+    windows_root = os.environ.get("SystemRoot") or os.environ.get("WINDIR")
+    if not windows_root:
+        return ()
+    candidates = (
+        Path(windows_root) / "System32" / "conhost.exe",
+        Path(windows_root) / "SysWOW64" / "conhost.exe",
+    )
+    return tuple(path.resolve() for path in candidates if path.is_file())
 
 
 def collect_comfy_runtime_processes() -> dict[str, Any]:
@@ -151,9 +191,8 @@ def collect_comfy_runtime_processes() -> dict[str, Any]:
     }
 
 
-def _listener_pids(host: str, port: int) -> tuple[list[int], int]:
-    pids: set[int] = set()
-    access_errors = 0
+def _tcp_listener_bindings() -> tuple[list[dict[str, Any]], int]:
+    bindings: list[dict[str, Any]] = []
     try:
         connections = psutil.net_connections(kind="tcp")
     except psutil.AccessDenied:
@@ -161,9 +200,25 @@ def _listener_pids(host: str, port: int) -> tuple[list[int], int]:
     for connection in connections:
         if connection.status != psutil.CONN_LISTEN or not connection.laddr:
             continue
-        address = str(connection.laddr.ip)
-        if address == host and int(connection.laddr.port) == int(port) and connection.pid:
-            pids.add(int(connection.pid))
+        if connection.pid:
+            bindings.append(
+                {
+                    "pid": int(connection.pid),
+                    "address": str(connection.laddr.ip),
+                    "port": int(connection.laddr.port),
+                }
+            )
+    bindings.sort(key=lambda item: (item["pid"], item["address"], item["port"]))
+    return bindings, 0
+
+
+def _listener_pids(host: str, port: int) -> tuple[list[int], int]:
+    bindings, access_errors = _tcp_listener_bindings()
+    pids = {
+        int(binding["pid"])
+        for binding in bindings
+        if binding["address"] == host and int(binding["port"]) == int(port)
+    }
     return sorted(pids), access_errors
 
 
@@ -215,6 +270,21 @@ def _run_id_in_path(run_id: str, value: str | Path) -> bool:
     return expected in {os.path.normcase(part) for part in Path(value).parts}
 
 
+def _ancestry_pids(
+    pid: int, launcher_pid: int, members: Mapping[int, Mapping[str, Any]]
+) -> list[int]:
+    result: list[int] = []
+    current = int(pid)
+    visited: set[int] = set()
+    while current in members and current not in visited:
+        result.append(current)
+        if current == int(launcher_pid):
+            return result
+        visited.add(current)
+        current = int(members[current].get("parent_pid", -1))
+    return result
+
+
 def analyze_process_ownership(
     *,
     candidates: Sequence[Mapping[str, Any]],
@@ -236,8 +306,10 @@ def analyze_process_ownership(
     expected_output: Path,
     expected_temp: Path,
     expected_user: Path,
+    listener_bindings: Sequence[Mapping[str, Any]] = (),
+    trusted_console_executables: Sequence[Path] = (),
 ) -> dict[str, Any]:
-    """Bind launcher, runtime, and listener roles to one verified process tree."""
+    """Bind runtime and optional Windows console-helper roles to one tree."""
 
     tree_members = {
         int(item["pid"]): item
@@ -257,6 +329,87 @@ def analyze_process_ownership(
     launcher = candidates_by_pid.get(int(launcher_pid))
     runtime = candidates_by_pid.get(int(runtime_pid))
     listener = candidates_by_pid.get(listener_pid)
+    nonruntime_members = [
+        tree_members[pid] for pid in sorted(tree_pids - candidate_pids)
+    ]
+    console_candidates = [
+        member
+        for member in nonruntime_members
+        if str(member.get("process_name", "")).lower() == "conhost.exe"
+        and str(member.get("executable_name", "")).lower() == "conhost.exe"
+    ]
+    console_helper = console_candidates[0] if len(console_candidates) == 1 else None
+    console_helper_pid = (
+        int(console_helper["pid"]) if console_helper is not None else -1
+    )
+    trusted_console_digests = {
+        _path_digest(path)
+        for path in trusted_console_executables
+        if path.name.lower() == "conhost.exe"
+    }
+    console_listener_bindings = [
+        dict(binding)
+        for binding in listener_bindings
+        if console_helper_pid > 0
+        and int(binding.get("pid", -1)) == console_helper_pid
+    ]
+    observed_at = process_tree.get("observed_at_unix")
+    console_time = console_helper.get("create_time") if console_helper else None
+    console_helper_checks = {
+        "count_at_most_one": len(console_candidates) <= 1,
+        "verified_descendant": console_helper is None
+        or _verified_descendant(console_helper_pid, int(launcher_pid), tree_members),
+        "creation_time_present": console_helper is None
+        or isinstance(console_time, (int, float)),
+        "trusted_windows_executable": console_helper is None
+        or console_helper.get("executable_digest") in trusted_console_digests,
+        "command_line_accessible": console_helper is None
+        or console_helper.get("command_accessible") is True,
+        "no_comfy_argument_markers": console_helper is None
+        or console_helper.get("comfy_argument_markers_present") is False,
+        "owns_no_tcp_listener": console_helper is None
+        or len(console_listener_bindings) == 0,
+        "not_runtime_or_listener": console_helper is None
+        or console_helper_pid not in {int(runtime_pid), listener_pid},
+        "same_launcher_lifecycle": console_helper is None
+        or (
+            isinstance(console_time, (int, float))
+            and isinstance(launcher_create_time, (int, float))
+            and isinstance(observed_at, (int, float))
+            and float(launcher_create_time) <= float(console_time) <= float(observed_at)
+        ),
+    }
+    console_helper_admitted = len(console_candidates) in {0, 1} and all(
+        console_helper_checks.values()
+    )
+    if not console_candidates:
+        console_reason = "NOT_PRESENT_OPTIONAL"
+    elif len(console_candidates) > 1:
+        console_reason = "MULTIPLE_CONSOLE_HELPERS"
+    elif not console_helper_checks["trusted_windows_executable"]:
+        console_reason = "UNTRUSTED_WINDOWS_SYSTEM_PATH"
+    elif not console_helper_checks["verified_descendant"]:
+        console_reason = "NOT_VERIFIED_DESCENDANT"
+    elif not console_helper_checks["creation_time_present"]:
+        console_reason = "CREATION_TIME_MISSING"
+    elif not console_helper_checks["same_launcher_lifecycle"]:
+        console_reason = "LIFECYCLE_IDENTITY_MISMATCH"
+    elif not console_helper_checks["command_line_accessible"]:
+        console_reason = "COMMAND_IDENTITY_UNKNOWN"
+    elif not console_helper_checks["no_comfy_argument_markers"]:
+        console_reason = "COMFYUI_ARGUMENT_IMPERSONATION"
+    elif not console_helper_checks["owns_no_tcp_listener"]:
+        console_reason = "CONSOLE_HELPER_OWNS_LISTENER"
+    elif not console_helper_checks["not_runtime_or_listener"]:
+        console_reason = "CONSOLE_HELPER_ROLE_COLLISION"
+    else:
+        console_reason = "TRUSTED_WINDOWS_CONSOLE_HELPER"
+    approved_helper_pids = (
+        {console_helper_pid}
+        if console_helper is not None and console_helper_admitted
+        else set()
+    )
+    unexpected_tree_pids = tree_pids - candidate_pids - approved_helper_pids
 
     def paths_match(name: str, expected: Path) -> bool:
         return bool(owned_pids) and all(
@@ -279,7 +432,6 @@ def analyze_process_ownership(
         for pid in owned_pids
     )
     role_pids = {int(launcher_pid), int(runtime_pid), listener_pid}
-
     checks = {
         "phase_known": phase in {"POST_LAUNCH", "PRE_SHUTDOWN"},
         "runtime_run_id_present": bool(run_id),
@@ -302,8 +454,9 @@ def analyze_process_ownership(
         "runtime_candidate_present": runtime is not None,
         "listener_candidate_present": listener is not None,
         "foreign_runtime_count_zero": len(foreign) == 0,
-        "tree_members_are_runtime_candidates": bool(tree_pids)
-        and tree_pids == candidate_pids,
+        "tree_members_have_approved_roles": bool(tree_pids)
+        and len(unexpected_tree_pids) == 0,
+        "console_helper_admission_pass": console_helper_admitted,
         "role_pids_inside_tree": listener_pid > 0 and role_pids <= tree_pids,
         "runtime_is_launcher_or_verified_descendant": _verified_descendant(
             int(runtime_pid), int(launcher_pid), tree_members
@@ -324,10 +477,10 @@ def analyze_process_ownership(
             int(candidates_by_pid[pid].get("disable_auto_launch_count", 0)) == 1
             for pid in owned_pids
         ),
-        "tree_processes_are_python": bool(tree_members)
+        "runtime_tree_processes_are_python": bool(owned_pids)
         and all(
-            str(member.get("process_name", "")).lower() == "python.exe"
-            for member in tree_members.values()
+            str(tree_members[pid].get("process_name", "")).lower() == "python.exe"
+            for pid in owned_pids
         ),
         "creation_times_present": bool(tree_members)
         and all(
@@ -357,17 +510,48 @@ def analyze_process_ownership(
         "schema_version": SCHEMA_VERSION,
         "phase": phase,
         "runtime_run_id": run_id,
+        "runtime_run_identity_digest": sha256(run_id.encode("utf-8")).hexdigest(),
         "launcher_pid": int(launcher_pid),
         "launcher_create_time": launcher_create_time,
         "runtime_pid": int(runtime_pid),
+        "runtime_create_time": runtime.get("create_time") if runtime else None,
         "listener_pid": listener_pid if listener_pid > 0 else None,
+        "listener_create_time": listener.get("create_time") if listener else None,
+        "console_helper_pid": console_helper_pid if console_helper_pid > 0 else None,
+        "console_helper_create_time": console_time,
         "runner_pid": int(runner_pid),
+        "listener_owner_pid": listener_pid if listener_pid > 0 else None,
         "listener_pids": [int(value) for value in listener_pids],
         "launcher_process": _safe_candidate(launcher) if launcher is not None else None,
         "runtime_process": _safe_candidate(runtime) if runtime is not None else None,
         "listener_process": _safe_candidate(listener) if listener is not None else None,
+        "console_helper_process": dict(console_helper) if console_helper else None,
+        "console_helper_admission": {
+            "admitted": console_helper_admitted,
+            "reason": console_reason,
+            "checks": console_helper_checks,
+            "listener_bindings": console_listener_bindings,
+        },
+        "role_ancestry": {
+            "runtime_to_launcher": _ancestry_pids(
+                int(runtime_pid), int(launcher_pid), tree_members
+            ),
+            "listener_to_launcher": _ancestry_pids(
+                listener_pid, int(launcher_pid), tree_members
+            )
+            if listener_pid > 0
+            else [],
+            "console_helper_to_launcher": _ancestry_pids(
+                console_helper_pid, int(launcher_pid), tree_members
+            )
+            if console_helper_pid > 0
+            else [],
+        },
         "owned_processes": [
             _safe_candidate(candidates_by_pid[pid]) for pid in sorted(owned_pids)
+        ],
+        "unexpected_tree_members": [
+            dict(tree_members[pid]) for pid in sorted(unexpected_tree_pids)
         ],
         "foreign_processes": [_safe_candidate(value) for value in foreign],
         "process_tree": dict(process_tree),
@@ -383,6 +567,7 @@ def analyze_process_ownership(
             "output_directory_digest": _path_digest(expected_output),
             "temp_directory_digest": _path_digest(expected_temp),
             "user_directory_digest": _path_digest(expected_user),
+            "trusted_console_helper_digests": sorted(trusted_console_digests),
         },
         "checks": checks,
         "passed": all(checks.values()),
@@ -409,8 +594,15 @@ def build_process_ownership_receipt(
     except (psutil.AccessDenied, psutil.NoSuchProcess, ValueError):
         launcher_create_time = None
     collection = collect_comfy_runtime_processes()
-    listener_pids, listener_access_errors = _listener_pids(host, port)
     process_tree = _process_tree(launcher_pid)
+    listener_bindings, listener_access_errors = _tcp_listener_bindings()
+    listener_pids = sorted(
+        {
+            int(binding["pid"])
+            for binding in listener_bindings
+            if binding["address"] == host and int(binding["port"]) == int(port)
+        }
+    )
     runtime_root = runtime_output / "runtime"
     receipt = analyze_process_ownership(
         candidates=collection["candidates"],
@@ -432,6 +624,8 @@ def build_process_ownership_receipt(
         expected_output=runtime_output / "output",
         expected_temp=runtime_output / "temp",
         expected_user=runtime_output / "user",
+        listener_bindings=listener_bindings,
+        trusted_console_executables=trusted_console_helper_paths(),
     )
     receipt["collection"] = {
         "candidate_count": collection["candidate_count"],
@@ -439,6 +633,16 @@ def build_process_ownership_receipt(
         "access_error_count": collection["access_error_count"],
         "disappeared_process_count": collection["disappeared_process_count"],
         "listener_access_error_count": listener_access_errors,
+        "tree_listener_bindings": [
+            binding
+            for binding in listener_bindings
+            if int(binding["pid"])
+            in {
+                int(member["pid"])
+                for member in process_tree.get("members", [])
+                if isinstance(member, Mapping) and isinstance(member.get("pid"), int)
+            }
+        ],
     }
     receipt["checks"]["listener_collection_accessible"] = listener_access_errors == 0
     receipt["passed"] = all(receipt["checks"].values())
@@ -486,6 +690,7 @@ def build_post_shutdown_receipt(
     baseline_gpu_bytes: int | None,
     current_gpu_bytes: int | None,
     require_gpu_baseline: bool = True,
+    console_helper_process: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Prove the owned runtime and listener are gone after normal shutdown."""
 
@@ -505,11 +710,28 @@ def build_post_shutdown_receipt(
             continue
         except (psutil.AccessDenied, ValueError, TypeError):
             identity_access_errors += 1
+    live_console_helper_identity: dict[str, Any] | None = None
+    if console_helper_process is not None:
+        helper_pid = int(console_helper_process.get("pid", -1))
+        try:
+            helper = psutil.Process(helper_pid)
+            if _same_creation_time(
+                helper.create_time(), console_helper_process.get("create_time")
+            ):
+                live_console_helper_identity = {
+                    "pid": helper_pid,
+                    "create_time": console_helper_process.get("create_time"),
+                }
+        except psutil.NoSuchProcess:
+            pass
+        except (psutil.AccessDenied, ValueError, TypeError):
+            identity_access_errors += 1
     gpu_known = isinstance(baseline_gpu_bytes, int) and isinstance(current_gpu_bytes, int)
     checks = {
         "runtime_run_id_present": bool(run_id),
         "owned_processes_declared": len(owned_processes) >= 1,
         "owned_process_identities_absent": len(live_owned_identities) == 0,
+        "console_helper_naturally_absent": live_console_helper_identity is None,
         "owned_identity_collection_accessible": identity_access_errors == 0,
         "listener_count_zero": len(listener_pids) == 0,
         "foreign_runtime_count_zero": collection["candidate_count"] == 0,
@@ -532,6 +754,15 @@ def build_post_shutdown_receipt(
             for identity in owned_processes
         ],
         "live_owned_identities": live_owned_identities,
+        "console_helper_process": {
+            "pid": int(console_helper_process.get("pid", -1)),
+            "create_time": console_helper_process.get("create_time"),
+            "executable_name": console_helper_process.get("executable_name"),
+            "executable_digest": console_helper_process.get("executable_digest"),
+        }
+        if console_helper_process is not None
+        else None,
+        "live_console_helper_identity": live_console_helper_identity,
         "candidate_summaries": collection["candidate_summaries"],
         "listener_pids": listener_pids,
         "baseline_gpu_bytes": baseline_gpu_bytes,
@@ -543,28 +774,35 @@ def build_post_shutdown_receipt(
 
 
 def stop_verified_runtime_descendants(receipt: Mapping[str, Any]) -> dict[str, Any]:
-    """Stop only creation-time-bound descendants from a passing ownership receipt."""
+    """Stop only verified Python descendants, never a console helper directly."""
 
     if receipt.get("passed") is not True:
         raise RuntimeError("process-tree shutdown requires a passing ownership receipt")
     launcher_pid = int(receipt.get("launcher_pid", -1))
-    members = [
-        item
+    tree_by_pid = {
+        int(item["pid"]): item
         for item in receipt.get("process_tree", {}).get("members", [])
-        if isinstance(item, Mapping) and int(item.get("pid", -1)) != launcher_pid
+        if isinstance(item, Mapping) and isinstance(item.get("pid"), int)
+    }
+    owned_python_pids = {
+        int(item["pid"])
+        for item in receipt.get("owned_processes", [])
+        if isinstance(item, Mapping)
+        and isinstance(item.get("pid"), int)
+        and str(item.get("process_name", "")).lower() == "python.exe"
+    }
+    members = [
+        tree_by_pid[pid]
+        for pid in sorted(owned_python_pids)
+        if pid != launcher_pid and pid in tree_by_pid
     ]
 
     def depth(identity: Mapping[str, Any]) -> int:
-        by_pid = {
-            int(item["pid"]): item
-            for item in receipt.get("process_tree", {}).get("members", [])
-            if isinstance(item, Mapping) and isinstance(item.get("pid"), int)
-        }
         current = int(identity["pid"])
         result = 0
-        while current != launcher_pid and current in by_pid:
+        while current != launcher_pid and current in tree_by_pid:
             result += 1
-            current = int(by_pid[current].get("parent_pid", -1))
+            current = int(tree_by_pid[current].get("parent_pid", -1))
         return result
 
     stopped: list[int] = []
@@ -592,8 +830,62 @@ def stop_verified_runtime_descendants(receipt: Mapping[str, Any]) -> dict[str, A
         "launcher_pid": launcher_pid,
         "stopped_pids": stopped,
         "already_absent_pids": already_absent,
+        "console_helper_pid": receipt.get("console_helper_pid"),
+        "console_helper_direct_termination_count": 0,
         "foreign_process_termination_count": 0,
     }
+
+
+def wait_for_console_helper_exit(
+    console_helper_process: Mapping[str, Any] | None,
+    *,
+    timeout_seconds: float = 5.0,
+) -> dict[str, Any]:
+    """Observe natural helper exit without searching for or terminating by name."""
+
+    if console_helper_process is None:
+        return {
+            "status": "not_present",
+            "passed": True,
+            "console_helper_pid": None,
+            "direct_termination_count": 0,
+        }
+    pid = int(console_helper_process.get("pid", -1))
+    create_time = console_helper_process.get("create_time")
+    deadline = time.monotonic() + max(0.0, float(timeout_seconds))
+    while True:
+        try:
+            process = psutil.Process(pid)
+            if not _same_creation_time(process.create_time(), create_time):
+                return {
+                    "status": "original_identity_absent_pid_reused",
+                    "passed": True,
+                    "console_helper_pid": pid,
+                    "direct_termination_count": 0,
+                }
+        except psutil.NoSuchProcess:
+            return {
+                "status": "natural_exit_observed",
+                "passed": True,
+                "console_helper_pid": pid,
+                "direct_termination_count": 0,
+            }
+        except (psutil.AccessDenied, ValueError, TypeError) as error:
+            return {
+                "status": "identity_unknown",
+                "passed": False,
+                "console_helper_pid": pid,
+                "error_type": type(error).__name__,
+                "direct_termination_count": 0,
+            }
+        if time.monotonic() >= deadline:
+            return {
+                "status": "natural_exit_timeout",
+                "passed": False,
+                "console_helper_pid": pid,
+                "direct_termination_count": 0,
+            }
+        time.sleep(0.1)
 
 
 __all__ = [
@@ -606,4 +898,6 @@ __all__ = [
     "collect_comfy_runtime_processes",
     "parse_comfy_runtime",
     "stop_verified_runtime_descendants",
+    "trusted_console_helper_paths",
+    "wait_for_console_helper_exit",
 ]

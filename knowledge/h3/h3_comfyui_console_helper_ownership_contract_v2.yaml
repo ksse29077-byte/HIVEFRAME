@@ -1,0 +1,86 @@
+schema_version: hiveframe.knowledge.h3-comfyui-console-helper-ownership-contract-v2.1
+recorded_at: 2026-08-20
+issue: 117
+base_pr: 116
+base_commit: 8b08f14f99e5e270813abe52687ba3dab8a84591
+implementation_commit: 62182e65f7d8016c7409083cd103c9962ad8ed58
+decision: H3_COMFYUI_CONSOLE_HELPER_OWNERSHIP_CONTRACT_V2_READY
+scope:
+  model_free: true
+  runtime_lifecycle_authorized: 1
+  runtime_lifecycle_started: 1
+  runtime_lifecycle_ready: 1
+  runtime_lifecycle_shutdown: 1
+  runtime_lifecycle_retry: 0
+  h3_model_load_request: 0
+  generation: 0
+  control_submission: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+contract:
+  schema_version: h3.comfyui-process-ownership-receipt.4
+  roles: [launcher_pid, runtime_pid, listener_pid, console_helper_pid]
+  console_helper_optional: true
+  console_helper_executable: conhost.exe
+  basename_only_admission: false
+  trusted_windows_system_path_required: true
+  verified_descendant_required: true
+  pid_creation_time_bound: true
+  same_lifecycle_required: true
+  console_helper_may_own_listener: false
+  runtime_role_collision_allowed: false
+  unexpected_tree_child_allowed: false
+  outside_tree_conhost_ignored: true
+  outside_tree_runtime_allowed: false
+  direct_console_helper_termination_allowed: false
+  initial_snapshot_preserved: true
+privacy:
+  raw_command_line_recorded: false
+  raw_private_absolute_path_recorded: false
+  executable_basename_recorded: true
+  executable_path_digest_recorded: true
+  command_digest_recorded: true
+  run_identity_digest_recorded: true
+tests:
+  focused_and_control_structure_passed: 33
+  focused_and_control_structure_failed: 0
+  python_compile: PASS
+  diff_check: PASS
+  required_fixture_count: 12
+preflight:
+  runtime_candidate_count: 0
+  listener_8191_count: 0
+  access_error_count: 0
+  trusted_console_helper_path_count: 1
+  unrelated_console_helper_samples: 7
+  unrelated_samples_parsed_as_comfy: 0
+lifecycle:
+  run_id: h3-comfyui-console-helper-ownership-v2-20260820-1
+  pre_launch: PASS
+  post_launch: PASS
+  pre_shutdown: PASS
+  post_shutdown: PASS
+  launcher_pid: 41300
+  runtime_pid: 38204
+  listener_pid: 38204
+  listener_owner_pid: 38204
+  console_helper_pid: 41140
+  console_helper_admission_reason: TRUSTED_WINDOWS_CONSOLE_HELPER
+  console_helper_admission_checks_passed: 9
+  unexpected_tree_member_count: 0
+  initial_topology_snapshot_digest: a3691840c3cdf645544206f5c7fd3b2f8d5a209041ada6280f6a41e1ff660b57
+shutdown:
+  verified_python_descendants_stopped: 1
+  console_helper_direct_termination_count: 0
+  console_helper_exit: natural_exit_observed
+  foreign_process_termination_count: 0
+  final_run_python_count: 0
+  final_listener_8191_count: 0
+receipt:
+  private_sha256: b1ba518a9391700c786fafe7fd7b3df556a24bba0b544966469da8e0cce794c1
+  public_sha256: b1ba518a9391700c786fafe7fd7b3df556a24bba0b544966469da8e0cce794c1
+authorization:
+  second_lifecycle: false
+  control: false
+  next_step_automatic: none

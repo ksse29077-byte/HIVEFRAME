@@ -2200,6 +2200,31 @@ The decision is
 
 ---
 
+## 2026-08-20 - H3 ComfyUI console-helper ownership contract V2
+
+Issue #117 and branch
+`codex/h3-comfyui-console-helper-ownership-contract-v2` start at exact Draft
+PR #116 head `8b08f14f99e5e270813abe52687ba3dab8a84591`. Ownership
+receipt V4 adds an optional `console_helper_pid` and admits `conhost.exe` only
+when its trusted Windows executable, launcher ancestry, PID plus creation time,
+listener exclusion, and lifecycle identity all pass. Unrelated external console
+hosts are ignored; private-path lookalikes and unknown tree children fail
+closed.
+
+Focused ownership and unchanged CONTROL V2 structure tests passed 33/33. The
+one authorized model-free lifecycle passed start, ready, POST_LAUNCH,
+PRE_SHUTDOWN, Python-tree shutdown, console-helper natural exit, and
+POST_SHUTDOWN. Runtime start/ready/shutdown was 1/1/1 with retry zero. Direct
+console-helper and foreign-process termination were zero; final run Python
+processes and port 8191 listeners were zero.
+
+H3 model load, Generation, CONTROL submission, SELECTIVE, partial-Q, and
+Attention omission remained zero. The decision is
+`H3_COMFYUI_CONSOLE_HELPER_OWNERSHIP_CONTRACT_V2_READY`; no CONTROL was started.
+See the detailed [console-helper ownership worklog](worklogs/2026-08-20-h3-comfyui-console-helper-ownership-contract-v2.md).
+
+---
+
 ## Entry template
 
 ```markdown
