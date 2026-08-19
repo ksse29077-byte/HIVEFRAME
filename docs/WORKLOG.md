@@ -1984,6 +1984,30 @@ promotion are zero; no automatic revision was started. Diagram impact is
 [A3-G1 worklog](worklogs/2026-08-10-a3-g1-h3-conditional-attention-reuse.md)
 and [decision report](../reports/a3_g1/decision-report.md).
 
+## 2026-08-19 - H3 cache density and false-safe remediation
+
+Issue #100 and branch `codex/h3-cache-density-false-safe-remediation` isolate
+one model-free follow-up from Draft PR #91 G1D head `e83c40f...`. The immutable
+G1D receipt was reused; H3, CUDA, CONTROL, SELECTIVE, retry, and Generation
+counts are zero.
+
+The frozen callback receipt preserved block-level calibration but not the
+per-observation step, region, packed row, state scores, or lineage fields
+needed to replay the two false-safe cases. Conservative exclusion of blocks 48
+and 49 produces false-safe zero, but only six previously admitted blocks remain.
+A byte-accurate BF16 `(block, region)` admission uses 805,195,776 bytes and
+plans 157,398 omitted Q rows, or 1.020475% of 15,424,000 Full Q rows.
+
+The selected model-free contract is region-sparse BF16 payload plus exact
+effect/byte admission, deterministic eviction, age-one lineage, and Full
+Compute on miss, mismatch, scene cut, error, interruption, or nonfinite data.
+Thirty-six new and existing focused tests passed. The 2 GiB cap, ledger,
+lineage, XOR, and fallback Gates pass; the 3% opportunity and complete frozen
+case replay Gates fail. The decision is
+`H3_COMPOUND_EYE_CACHE_DENSITY_REMEDIATION_FAILED`. Runtime and product paths
+remain unchanged; diagram impact is `none`. See the detailed
+[remediation worklog](worklogs/2026-08-19-h3-cache-density-false-safe-remediation.md).
+
 ---
 
 ## Entry template
