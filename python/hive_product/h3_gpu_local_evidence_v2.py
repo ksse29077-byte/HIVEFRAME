@@ -42,6 +42,7 @@ EXPECTED_H2D_BYTES = 12_856_610_816
 EXPECTED_TRANSFER_BYTES = 42_914_600_960
 TRANSFER_PREFLIGHT_LIMIT_BYTES = 32 * 1024**3
 TRANSFER_HEADROOM_MIN_BYTES = 8 * 1024**3
+KNOWN_C2_METADATA_D2H_BYTES = 3_840
 METRIC_COLUMNS = (
     "raw_cosine",
     "raw_normalized_l2",
@@ -212,7 +213,7 @@ def analyze_partial_control_receipt(receipt: Mapping[str, Any]) -> dict[str, Any
         raise PreflightInvariantError("safe geometry exceeds the two-GiB cache cap")
 
     metadata_bytes = MAX_EVIDENCE_RECORDS * len(METRIC_COLUMNS) * METRIC_DTYPE_BYTES
-    projected_transfer = metadata_bytes
+    projected_transfer = metadata_bytes + KNOWN_C2_METADATA_D2H_BYTES
     projected_headroom = TRANSFER_BUDGET_BYTES - projected_transfer
     if projected_transfer > TRANSFER_PREFLIGHT_LIMIT_BYTES:
         raise PreflightInvariantError("projected V2 CONTROL transfer exceeds 32 GiB")
@@ -278,6 +279,13 @@ def analyze_partial_control_receipt(receipt: Mapping[str, Any]) -> dict[str, Any
             "actual_h3_vram_admission": "NOT_EXECUTED",
         },
         "failed_control_transfer_ledger": transfer,
+        "projected_control_transfer_ledger": {
+            "evidence_metadata_d2h_bytes": metadata_bytes,
+            "known_c2_metadata_d2h_bytes": KNOWN_C2_METADATA_D2H_BYTES,
+            "cache_payload_d2h_bytes": 0,
+            "cache_payload_h2d_bytes": 0,
+            "total_bytes": projected_transfer,
+        },
         "profiles": _profile_receipts(cache_bytes),
         "performance_receipt": {
             "EVIDENCE_METADATA_D2H_BYTES": metric(metadata_bytes, "PROJECTED", "bytes"),
