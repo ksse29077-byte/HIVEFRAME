@@ -243,6 +243,10 @@ flowchart LR
     A3G0G["SAFE omission + exact fallback\nverified_once; H3 not connected"]
     A3G1["A3-G1 real H3 attention reuse\nCONTROL attempted once"]
     A3G1G["CUDA Graph capture isolation failed\nCONTROL incomplete; SELECTIVE 0"]
+    ROWCTRL["Row/region CONTROL retry\n17/20; transfer and false-safe Gate failed"]
+    GPUV2["GPU-local evidence V2\n3.173690% geometry; full CUDA source too large"]
+    HYBRID["12 GB hybrid staging preflight\nhost BF16 CONTROL oracle; READY"]
+    CONTROLV2["H3 CONTROL V2\nseparate approval; not started"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -275,6 +279,10 @@ flowchart LR
     A3G0 --> A3G0G
     A3G0G -. "separately approved A3-G1" .-> A3G1
     A3G1 --> A3G1G
+    A3G1G -. "separately approved evidence retry" .-> ROWCTRL
+    ROWCTRL -. "model-free transfer redesign" .-> GPUV2
+    GPUV2 -. "12 GB residency remediation" .-> HYBRID
+    HYBRID -. "separate approval required" .-> CONTROLV2
     R1Q --> DEFAULT
     R2G --> DEFAULT
     R3G --> DEFAULT
@@ -288,14 +296,18 @@ flowchart LR
     A3G --> DEFAULT
     A3G0G --> DEFAULT
     A3G1G --> DEFAULT
+    ROWCTRL --> DEFAULT
+    GPUV2 --> DEFAULT
+    HYBRID --> DEFAULT
+    CONTROLV2 --> DEFAULT
 
     classDef verified fill:#dcecff,stroke:#2d65a3,color:#111;
     classDef rejected fill:#ffd9d9,stroke:#ad2e2e,color:#111;
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
-    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3,A3G0,A3G0G,A3G1 verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G,A3G1G rejected;
-    class C4A,C4F,A0G planned;
+    class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3,A3G0,A3G0G,A3G1,HYBRID verified;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G,A3G1G,ROWCTRL,GPUV2 rejected;
+    class C4A,C4F,A0G,CONTROLV2 planned;
     class DEFAULT safe;
 ```
 
@@ -377,6 +389,16 @@ collected, so SELECTIVE was prohibited and no retry occurred. This rejects the
 current live-capture execution-island integration, not the Attention surface
 or correction hypothesis. Standard Full Compute remains the solid product
 path and all acceleration, quality, and product claims remain zero.
+
+The later row/region CONTROL retry completed 17 of 20 forwards before its
+fixed transfer budget failed and exposed 19 false-safe calibration records.
+GPU-local V2 attributed those records and preserved a 3.173690% geometry
+potential, but full source residency is not admissible on the measured 12 GB
+peak. The bounded hybrid preflight now keeps the Full Compute CONTROL source in
+host BF16, uses two pinned ingress slots, and leaves only shared staging and
+compact metrics on CUDA. Its model-free CUDA, RAM, VRAM, Rust, and PyO3 Gates
+pass, but the 2 GiB VRAM reserve remains unsatisfied. CONTROL V2 is therefore a
+dashed, separately approved holdout; Full Compute remains the product default.
 
 ## 5. Module ownership
 
