@@ -2080,6 +2080,32 @@ approvable `H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2` was not started. Diagram
 impact is `none`. See the detailed
 [preflight worklog](worklogs/2026-08-19-h3-gpu-local-evidence-transfer-v2-preflight.md).
 
+## 2026-08-19 - H3 12 GB hybrid cache staging preflight
+
+Issue #107 and branch `codex/h3-12gb-hybrid-cache-staging-preflight` start at
+the exact Draft PR #106 head. Balanced12GB replaces persistent full-source CUDA
+residency with a 1,448,079,360-byte pageable-host BF16 source cache and two
+48,269,312-byte pinned ingress slots. One dedicated stream performs at most one
+async D2H per candidate/step; CPU oracle work waits only in a background worker.
+Busy slots, allocation/page-lock failures, timeout, overflow, nonfinite data,
+lineage mismatch, and step disorder block CONTROL submission.
+
+The allocator-adjusted projected CUDA peak is 12,514,625,897 bytes, below the
+12,884,377,600-byte RTX 3060 capacity by 369,751,703 bytes. The existing 2 GiB
+reserve policy remains explicitly unsatisfied. Host admission passes with a
+projected 64,354,144,256-byte peak and 180,908,032 bytes remaining after the
+declared 1.5 GiB OS/Comfy reserve, so the next Gate must repeat live admission.
+Projected CONTROL D2H is 28,961,587,200 bytes and H2D is structural zero.
+
+A bounded 96x32 BF16 CUDA fixture preserved bits, matched CPU/GPU metrics
+within 2.3841858e-7, preserved threshold classification, and proved dedup and
+overwrite-blocking backpressure. New Python passed 8/8; related Python passed
+29/29; release PyO3 passed 15/15 with skip 0; Rust CachePlan V2 passed 12/12.
+H3/model/Generation/CONTROL/SELECTIVE/partial-Q/Attention omission counts are
+all zero. The decision is
+`H3_12GB_HYBRID_CACHE_STAGING_PREFLIGHT_READY`; CONTROL V2 was not started.
+See the detailed [worklog](worklogs/2026-08-19-h3-12gb-hybrid-cache-staging-preflight.md).
+
 ---
 
 ## Entry template
