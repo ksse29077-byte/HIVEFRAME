@@ -11,7 +11,7 @@ import os
 import psutil
 
 
-SCHEMA_VERSION = "h3.comfyui-process-ownership-receipt.2"
+SCHEMA_VERSION = "h3.comfyui-process-ownership-receipt.3"
 
 
 def _normalized_path(value: str | Path) -> str:
@@ -167,13 +167,61 @@ def _listener_pids(host: str, port: int) -> tuple[list[int], int]:
     return sorted(pids), access_errors
 
 
+def collect_listener_pids(host: str, port: int) -> dict[str, Any]:
+    """Collect the exact listener identities for one loopback endpoint."""
+
+    pids, access_errors = _listener_pids(host, port)
+    return {"listener_pids": pids, "access_error_count": access_errors}
+
+
+def _same_creation_time(left: Any, right: Any) -> bool:
+    return (
+        isinstance(left, (int, float))
+        and isinstance(right, (int, float))
+        and abs(float(left) - float(right)) <= 1e-6
+    )
+
+
+def _verified_descendant(
+    pid: int, launcher_pid: int, members: Mapping[int, Mapping[str, Any]]
+) -> bool:
+    if int(pid) == int(launcher_pid):
+        return int(launcher_pid) in members
+    current = int(pid)
+    visited: set[int] = set()
+    while current != int(launcher_pid):
+        if current in visited or current not in members:
+            return False
+        visited.add(current)
+        child = members[current]
+        parent_pid = int(child.get("parent_pid", -1))
+        parent = members.get(parent_pid)
+        if parent is None:
+            return False
+        child_time = child.get("create_time")
+        parent_time = parent.get("create_time")
+        if not _same_creation_time(child_time, child_time) or not _same_creation_time(
+            parent_time, parent_time
+        ):
+            return False
+        if float(child_time) + 1e-6 < float(parent_time):
+            return False
+        current = parent_pid
+    return True
+
+
+def _run_id_in_path(run_id: str, value: str | Path) -> bool:
+    expected = os.path.normcase(str(run_id))
+    return expected in {os.path.normcase(part) for part in Path(value).parts}
+
+
 def analyze_process_ownership(
     *,
     candidates: Sequence[Mapping[str, Any]],
-    backend_pid: int,
-    node_pid: int,
-    backend_alive: bool,
-    backend_create_time: float | None,
+    launcher_pid: int,
+    runtime_pid: int,
+    launcher_alive: bool,
+    launcher_create_time: float | None,
     runner_pid: int,
     listener_pids: Sequence[int],
     run_id: str,
@@ -189,64 +237,138 @@ def analyze_process_ownership(
     expected_temp: Path,
     expected_user: Path,
 ) -> dict[str, Any]:
-    """Bind all independent ownership signals to one exact process."""
+    """Bind launcher, runtime, and listener roles to one verified process tree."""
 
-    owned = [item for item in candidates if int(item["pid"]) == int(backend_pid)]
-    foreign = [item for item in candidates if int(item["pid"]) != int(backend_pid)]
-    item = owned[0] if len(owned) == 1 else None
+    tree_members = {
+        int(item["pid"]): item
+        for item in process_tree.get("members", [])
+        if isinstance(item, Mapping) and isinstance(item.get("pid"), int)
+    }
+    candidates_by_pid = {
+        int(item["pid"]): item
+        for item in candidates
+        if isinstance(item.get("pid"), int)
+    }
+    tree_pids = set(tree_members)
+    candidate_pids = set(candidates_by_pid)
+    owned_pids = tree_pids & candidate_pids
+    foreign = [item for item in candidates if int(item["pid"]) not in tree_pids]
+    listener_pid = int(listener_pids[0]) if len(listener_pids) == 1 else -1
+    launcher = candidates_by_pid.get(int(launcher_pid))
+    runtime = candidates_by_pid.get(int(runtime_pid))
+    listener = candidates_by_pid.get(listener_pid)
 
-    def path_matches(name: str, expected: Path) -> bool:
-        value = item.get(name) if item is not None else None
-        return isinstance(value, str) and _normalized_path(value) == _normalized_path(expected)
+    def paths_match(name: str, expected: Path) -> bool:
+        return bool(owned_pids) and all(
+            isinstance(candidates_by_pid[pid].get(name), str)
+            and _normalized_path(str(candidates_by_pid[pid][name]))
+            == _normalized_path(expected)
+            for pid in owned_pids
+        )
+
+    def values_match(name: str, expected: Any) -> bool:
+        return bool(owned_pids) and all(
+            candidates_by_pid[pid].get(name) == expected for pid in owned_pids
+        )
+
+    candidate_creation_times_match_tree = bool(owned_pids) and all(
+        _same_creation_time(
+            candidates_by_pid[pid].get("create_time"),
+            tree_members[pid].get("create_time"),
+        )
+        for pid in owned_pids
+    )
+    role_pids = {int(launcher_pid), int(runtime_pid), listener_pid}
 
     checks = {
         "phase_known": phase in {"POST_LAUNCH", "PRE_SHUTDOWN"},
         "runtime_run_id_present": bool(run_id),
-        "backend_pid_positive": int(backend_pid) > 0,
-        "backend_process_alive": bool(backend_alive),
-        "node_pid_matches_backend_pid": int(node_pid) == int(backend_pid),
-        "owned_candidate_exactly_one": len(owned) == 1,
+        "run_id_bound_to_dedicated_paths": bool(run_id)
+        and all(
+            _run_id_in_path(run_id, value)
+            for value in (
+                expected_extra_config,
+                expected_input,
+                expected_output,
+                expected_temp,
+                expected_user,
+            )
+        ),
+        "launcher_pid_positive": int(launcher_pid) > 0,
+        "runtime_pid_positive": int(runtime_pid) > 0,
+        "launcher_process_alive": bool(launcher_alive),
+        "listener_count_exactly_one": len(listener_pids) == 1,
+        "launcher_candidate_present": launcher is not None,
+        "runtime_candidate_present": runtime is not None,
+        "listener_candidate_present": listener is not None,
         "foreign_runtime_count_zero": len(foreign) == 0,
-        "listener_pid_matches_backend_pid": list(listener_pids) == [int(backend_pid)],
-        "python_executable_matches": path_matches("executable", expected_executable),
-        "main_script_matches": path_matches("main_script", expected_main),
-        "loopback_host_matches": item is not None and item.get("listen") == expected_host,
-        "port_matches": item is not None and int(item.get("port", -1)) == int(expected_port),
-        "extra_config_matches": path_matches("extra_config", expected_extra_config),
-        "input_directory_matches": path_matches("input_directory", expected_input),
-        "output_directory_matches": path_matches("output_directory", expected_output),
-        "temp_directory_matches": path_matches("temp_directory", expected_temp),
-        "user_directory_matches": path_matches("user_directory", expected_user),
-        "auto_launch_disabled_once": item is not None
-        and int(item.get("disable_auto_launch_count", 0)) == 1,
-        "creation_time_present": item is not None
-        and isinstance(item.get("create_time"), (int, float))
-        and isinstance(backend_create_time, (int, float)),
-        "creation_time_matches": item is not None
-        and isinstance(item.get("create_time"), (int, float))
-        and isinstance(backend_create_time, (int, float))
-        and abs(float(item["create_time"]) - float(backend_create_time)) <= 1e-6,
-        "root_parent_is_runner": item is not None
-        and int(item.get("parent_pid", -1)) == int(runner_pid),
-        "process_tree_root_matches": int(process_tree.get("root_pid", -1)) == int(backend_pid),
+        "tree_members_are_runtime_candidates": bool(tree_pids)
+        and tree_pids == candidate_pids,
+        "role_pids_inside_tree": listener_pid > 0 and role_pids <= tree_pids,
+        "runtime_is_launcher_or_verified_descendant": _verified_descendant(
+            int(runtime_pid), int(launcher_pid), tree_members
+        ),
+        "listener_is_launcher_or_verified_descendant": listener_pid > 0
+        and _verified_descendant(listener_pid, int(launcher_pid), tree_members),
+        "python_executable_matches": paths_match("executable", expected_executable),
+        "main_script_matches": paths_match("main_script", expected_main),
+        "loopback_host_matches": values_match("listen", expected_host),
+        "port_matches": values_match("port", int(expected_port)),
+        "extra_config_matches": paths_match("extra_config", expected_extra_config),
+        "input_directory_matches": paths_match("input_directory", expected_input),
+        "output_directory_matches": paths_match("output_directory", expected_output),
+        "temp_directory_matches": paths_match("temp_directory", expected_temp),
+        "user_directory_matches": paths_match("user_directory", expected_user),
+        "auto_launch_disabled_once": bool(owned_pids)
+        and all(
+            int(candidates_by_pid[pid].get("disable_auto_launch_count", 0)) == 1
+            for pid in owned_pids
+        ),
+        "tree_processes_are_python": bool(tree_members)
+        and all(
+            str(member.get("process_name", "")).lower() == "python.exe"
+            for member in tree_members.values()
+        ),
+        "creation_times_present": bool(tree_members)
+        and all(
+            isinstance(member.get("create_time"), (int, float))
+            for member in tree_members.values()
+        )
+        and all(
+            isinstance(candidates_by_pid[pid].get("create_time"), (int, float))
+            for pid in owned_pids
+        )
+        and isinstance(launcher_create_time, (int, float)),
+        "candidate_creation_times_match_tree": candidate_creation_times_match_tree,
+        "launcher_creation_time_matches_popen": launcher is not None
+        and _same_creation_time(launcher.get("create_time"), launcher_create_time),
+        "root_parent_is_runner": launcher is not None
+        and int(launcher.get("parent_pid", -1)) == int(runner_pid)
+        and int(tree_members.get(int(launcher_pid), {}).get("parent_pid", -1))
+        == int(runner_pid),
+        "process_tree_root_matches_launcher": int(process_tree.get("root_pid", -1))
+        == int(launcher_pid),
+        "process_tree_collection_succeeded": process_tree.get("error_type") is None,
         "process_tree_identity_present": isinstance(process_tree.get("identity_digest"), str)
         and len(str(process_tree["identity_digest"])) == 64,
-        "process_tree_contains_root": any(
-            int(member.get("pid", -1)) == int(backend_pid)
-            for member in process_tree.get("members", [])
-            if isinstance(member, Mapping)
-        ),
+        "process_tree_contains_launcher": int(launcher_pid) in tree_members,
     }
     return {
         "schema_version": SCHEMA_VERSION,
         "phase": phase,
         "runtime_run_id": run_id,
-        "backend_pid": int(backend_pid),
-        "backend_create_time": backend_create_time,
+        "launcher_pid": int(launcher_pid),
+        "launcher_create_time": launcher_create_time,
+        "runtime_pid": int(runtime_pid),
+        "listener_pid": listener_pid if listener_pid > 0 else None,
         "runner_pid": int(runner_pid),
-        "node_pid": int(node_pid),
         "listener_pids": [int(value) for value in listener_pids],
-        "owned_process": _safe_candidate(item) if item is not None else None,
+        "launcher_process": _safe_candidate(launcher) if launcher is not None else None,
+        "runtime_process": _safe_candidate(runtime) if runtime is not None else None,
+        "listener_process": _safe_candidate(listener) if listener is not None else None,
+        "owned_processes": [
+            _safe_candidate(candidates_by_pid[pid]) for pid in sorted(owned_pids)
+        ],
         "foreign_processes": [_safe_candidate(value) for value in foreign],
         "process_tree": dict(process_tree),
         "expected": {
@@ -270,7 +392,7 @@ def analyze_process_ownership(
 def build_process_ownership_receipt(
     *,
     backend_process: Any,
-    node_pid: int,
+    runtime_pid: int,
     comfyui_root: Path,
     runtime_output: Path,
     host: str,
@@ -280,22 +402,22 @@ def build_process_ownership_receipt(
 ) -> dict[str, Any]:
     """Collect and analyze the live runtime in one bounded read-only pass."""
 
-    backend_pid = int(getattr(backend_process, "pid", -1))
-    backend_alive = backend_process is not None and backend_process.poll() is None
+    launcher_pid = int(getattr(backend_process, "pid", -1))
+    launcher_alive = backend_process is not None and backend_process.poll() is None
     try:
-        backend_create_time = float(psutil.Process(backend_pid).create_time())
+        launcher_create_time = float(psutil.Process(launcher_pid).create_time())
     except (psutil.AccessDenied, psutil.NoSuchProcess, ValueError):
-        backend_create_time = None
+        launcher_create_time = None
     collection = collect_comfy_runtime_processes()
     listener_pids, listener_access_errors = _listener_pids(host, port)
-    process_tree = _process_tree(backend_pid)
+    process_tree = _process_tree(launcher_pid)
     runtime_root = runtime_output / "runtime"
     receipt = analyze_process_ownership(
         candidates=collection["candidates"],
-        backend_pid=backend_pid,
-        node_pid=int(node_pid),
-        backend_alive=backend_alive,
-        backend_create_time=backend_create_time,
+        launcher_pid=launcher_pid,
+        runtime_pid=int(runtime_pid),
+        launcher_alive=launcher_alive,
+        launcher_create_time=launcher_create_time,
         runner_pid=os.getpid(),
         listener_pids=listener_pids,
         run_id=run_id,
@@ -358,43 +480,119 @@ def build_pre_launch_receipt(*, run_id: str, host: str, port: int) -> dict[str, 
 def build_post_shutdown_receipt(
     *,
     run_id: str,
-    owned_pid: int,
+    owned_processes: Sequence[Mapping[str, Any]],
     host: str,
     port: int,
     baseline_gpu_bytes: int | None,
     current_gpu_bytes: int | None,
+    require_gpu_baseline: bool = True,
 ) -> dict[str, Any]:
     """Prove the owned runtime and listener are gone after normal shutdown."""
 
     collection = collect_comfy_runtime_processes()
     listener_pids, listener_access_errors = _listener_pids(host, port)
-    owned = [item for item in collection["candidates"] if int(item["pid"]) == int(owned_pid)]
-    try:
-        process_exists = psutil.pid_exists(int(owned_pid))
-    except (TypeError, ValueError):
-        process_exists = True
+    live_owned_identities: list[dict[str, Any]] = []
+    identity_access_errors = 0
+    for identity in owned_processes:
+        pid = int(identity.get("pid", -1))
+        try:
+            process = psutil.Process(pid)
+            if _same_creation_time(process.create_time(), identity.get("create_time")):
+                live_owned_identities.append(
+                    {"pid": pid, "create_time": identity.get("create_time")}
+                )
+        except psutil.NoSuchProcess:
+            continue
+        except (psutil.AccessDenied, ValueError, TypeError):
+            identity_access_errors += 1
     gpu_known = isinstance(baseline_gpu_bytes, int) and isinstance(current_gpu_bytes, int)
     checks = {
         "runtime_run_id_present": bool(run_id),
-        "owned_process_absent": not process_exists and len(owned) == 0,
+        "owned_processes_declared": len(owned_processes) >= 1,
+        "owned_process_identities_absent": len(live_owned_identities) == 0,
+        "owned_identity_collection_accessible": identity_access_errors == 0,
         "listener_count_zero": len(listener_pids) == 0,
         "foreign_runtime_count_zero": collection["candidate_count"] == 0,
         "listener_collection_accessible": listener_access_errors == 0,
-        "gpu_measurements_known": gpu_known,
-        "gpu_returned_to_baseline": gpu_known
-        and int(current_gpu_bytes) <= max(int(baseline_gpu_bytes), 16 * 1024**2),
+        "gpu_measurements_satisfied": not require_gpu_baseline
+        or (
+            gpu_known
+            and int(current_gpu_bytes) <= max(int(baseline_gpu_bytes), 16 * 1024**2)
+        ),
     }
     return {
         "schema_version": SCHEMA_VERSION,
         "phase": "POST_SHUTDOWN",
         "runtime_run_id": run_id,
-        "owned_pid": int(owned_pid),
+        "owned_processes": [
+            {
+                "pid": int(identity.get("pid", -1)),
+                "create_time": identity.get("create_time"),
+            }
+            for identity in owned_processes
+        ],
+        "live_owned_identities": live_owned_identities,
         "candidate_summaries": collection["candidate_summaries"],
         "listener_pids": listener_pids,
         "baseline_gpu_bytes": baseline_gpu_bytes,
         "current_gpu_bytes": current_gpu_bytes,
+        "gpu_baseline_required": require_gpu_baseline,
         "checks": checks,
         "passed": all(checks.values()),
+    }
+
+
+def stop_verified_runtime_descendants(receipt: Mapping[str, Any]) -> dict[str, Any]:
+    """Stop only creation-time-bound descendants from a passing ownership receipt."""
+
+    if receipt.get("passed") is not True:
+        raise RuntimeError("process-tree shutdown requires a passing ownership receipt")
+    launcher_pid = int(receipt.get("launcher_pid", -1))
+    members = [
+        item
+        for item in receipt.get("process_tree", {}).get("members", [])
+        if isinstance(item, Mapping) and int(item.get("pid", -1)) != launcher_pid
+    ]
+
+    def depth(identity: Mapping[str, Any]) -> int:
+        by_pid = {
+            int(item["pid"]): item
+            for item in receipt.get("process_tree", {}).get("members", [])
+            if isinstance(item, Mapping) and isinstance(item.get("pid"), int)
+        }
+        current = int(identity["pid"])
+        result = 0
+        while current != launcher_pid and current in by_pid:
+            result += 1
+            current = int(by_pid[current].get("parent_pid", -1))
+        return result
+
+    stopped: list[int] = []
+    already_absent: list[int] = []
+    for identity in sorted(members, key=depth, reverse=True):
+        pid = int(identity["pid"])
+        try:
+            process = psutil.Process(pid)
+            if not _same_creation_time(process.create_time(), identity.get("create_time")):
+                raise RuntimeError("process creation time changed before shutdown")
+            process.terminate()
+            process.wait(timeout=20)
+            stopped.append(pid)
+        except psutil.NoSuchProcess:
+            already_absent.append(pid)
+        except psutil.TimeoutExpired:
+            process = psutil.Process(pid)
+            if not _same_creation_time(process.create_time(), identity.get("create_time")):
+                raise RuntimeError("process creation time changed before forced shutdown")
+            process.kill()
+            process.wait(timeout=10)
+            stopped.append(pid)
+    return {
+        "status": "verified_descendants_stopped",
+        "launcher_pid": launcher_pid,
+        "stopped_pids": stopped,
+        "already_absent_pids": already_absent,
+        "foreign_process_termination_count": 0,
     }
 
 
@@ -404,6 +602,8 @@ __all__ = [
     "build_post_shutdown_receipt",
     "build_pre_launch_receipt",
     "build_process_ownership_receipt",
+    "collect_listener_pids",
     "collect_comfy_runtime_processes",
     "parse_comfy_runtime",
+    "stop_verified_runtime_descendants",
 ]

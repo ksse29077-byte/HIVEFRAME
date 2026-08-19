@@ -37,6 +37,7 @@ from .comfyui_process_ownership import (
     build_pre_launch_receipt,
     build_process_ownership_receipt,
     collect_comfy_runtime_processes,
+    stop_verified_runtime_descendants,
 )
 from .h3_hybrid_cache_staging import (
     CONTROL_ORACLE_D2H_BYTES,
@@ -450,7 +451,7 @@ def run_control(
         owned_runtime_pid = int(node_admission.get("process_id", -1))
         ownership = build_process_ownership_receipt(
             backend_process=backend._process,
-            node_pid=owned_runtime_pid,
+            runtime_pid=owned_runtime_pid,
             comfyui_root=comfyui_root,
             runtime_output=runtime_output,
             host="127.0.0.1",
@@ -657,7 +658,7 @@ def run_control(
             try:
                 pre_shutdown = build_process_ownership_receipt(
                     backend_process=backend._process,
-                    node_pid=owned_runtime_pid,
+                    runtime_pid=owned_runtime_pid,
                     comfyui_root=comfyui_root,
                     runtime_output=runtime_output,
                     host="127.0.0.1",
@@ -665,15 +666,27 @@ def run_control(
                     run_id=run_id,
                     phase="PRE_SHUTDOWN",
                 )
-                launch_owned = (post_launch_ownership or {}).get("owned_process") or {}
-                shutdown_owned = pre_shutdown.get("owned_process") or {}
+                launch_owned = (post_launch_ownership or {}).get("launcher_process") or {}
+                shutdown_owned = pre_shutdown.get("launcher_process") or {}
                 continuity_checks = {
                     "run_id_matches_post_launch": pre_shutdown.get("runtime_run_id")
                     == (post_launch_ownership or {}).get("runtime_run_id"),
-                    "root_pid_matches_post_launch": pre_shutdown.get("backend_pid")
-                    == (post_launch_ownership or {}).get("backend_pid"),
-                    "creation_time_matches_post_launch": pre_shutdown.get("backend_create_time")
-                    == (post_launch_ownership or {}).get("backend_create_time"),
+                    "launcher_pid_matches_post_launch": pre_shutdown.get("launcher_pid")
+                    == (post_launch_ownership or {}).get("launcher_pid"),
+                    "runtime_pid_matches_post_launch": pre_shutdown.get("runtime_pid")
+                    == (post_launch_ownership or {}).get("runtime_pid"),
+                    "listener_pid_matches_post_launch": pre_shutdown.get("listener_pid")
+                    == (post_launch_ownership or {}).get("listener_pid"),
+                    "launcher_creation_time_matches_post_launch": pre_shutdown.get(
+                        "launcher_create_time"
+                    )
+                    == (post_launch_ownership or {}).get("launcher_create_time"),
+                    "process_tree_identity_matches_post_launch": pre_shutdown.get(
+                        "process_tree", {}
+                    ).get("identity_digest")
+                    == (post_launch_ownership or {}).get("process_tree", {}).get(
+                        "identity_digest"
+                    ),
                     "command_digest_matches_post_launch": shutdown_owned.get("command_digest")
                     == launch_owned.get("command_digest"),
                     "executable_digest_matches_post_launch": shutdown_owned.get(
@@ -693,11 +706,14 @@ def run_control(
                         "stopped": False,
                     }
                 else:
+                    receipt["runtime_descendant_stop"] = stop_verified_runtime_descendants(
+                        pre_shutdown
+                    )
                     receipt["runtime_stop"] = backend.stop_runtime()
                     post_gpu = _nvidia_memory()
                     post_shutdown = build_post_shutdown_receipt(
                         run_id=run_id,
-                        owned_pid=owned_runtime_pid,
+                        owned_processes=pre_shutdown.get("owned_processes", []),
                         host="127.0.0.1",
                         port=int(base_url.rsplit(":", 1)[1]),
                         baseline_gpu_bytes=(baseline_gpu or {}).get("used_bytes"),
