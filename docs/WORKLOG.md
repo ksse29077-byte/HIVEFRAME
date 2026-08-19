@@ -2173,6 +2173,33 @@ executor integration was started. See the detailed
 
 ---
 
+## 2026-08-19 - H3 ComfyUI launcher-child ownership contract V2
+
+Issue #115 and branch
+`codex/h3-comfyui-launcher-child-ownership-contract-v2` start at the exact
+Draft PR #114 head. Ownership receipt V3 separates launcher, runtime, and
+listener roles and binds each to a launcher-rooted process tree with PID plus
+creation time, exact run/path/command identity, one in-tree listener, and zero
+outside-tree runtime candidates. Single-PID and verified descendant topologies
+are supported; unexpected children and PID reuse fail closed.
+
+Focused ownership and CONTROL V2 structure tests passed 25/25. The one
+authorized model-free lifecycle passed PRE_LAUNCH, ready, empty queues, exact
+listener, two Python role identities, and descendant lineage. Windows also
+created a direct `conhost.exe` child, making the three-member tree differ from
+the two exact runtime candidates. The unexpected-child Gate therefore blocked
+before contract shutdown. No retry occurred and no H3 model, Generation,
+CONTROL, SELECTIVE, partial-Q, or omission path ran.
+
+After a separate exact Python-role and empty-queue check, only the two owned
+Python roles were stopped; the console host was not directly terminated and
+exited with its owner. Final run processes and port 8191 listeners were zero.
+The decision is
+`H3_COMFYUI_LAUNCHER_CHILD_OWNERSHIP_CONTRACT_V2_BLOCKED`. See the detailed
+[V2 ownership worklog](worklogs/2026-08-19-h3-comfyui-launcher-child-ownership-contract-v2.md).
+
+---
+
 ## Entry template
 
 ```markdown
