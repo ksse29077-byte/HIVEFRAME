@@ -264,7 +264,9 @@ class H3RustRegionSparseCachePlanV2Tests(unittest.TestCase):
         self.assertEqual(receipt["rust_process_spawn_count"]["value"], 0)
         self.assertEqual(receipt["calls_per_generation"]["value"], 1)
         self.assertEqual(receipt["calls_per_block"]["value"], 0)
+        self.assertEqual(receipt["rust_transfer_bytes"]["value"], 18_488)
         self.assertEqual(receipt["gpu_to_cpu_tensor_bytes"]["status"], "NOT_EXECUTED")
+        self.assertEqual(result["bridge_contract"]["tensor_bytes_per_call"], 0)
 
     @unittest.skipUnless(importlib.util.find_spec("_hive_retina_boundary"), "PyO3 extension not built")
     def test_real_pyo3_three_percent_fixture_is_plan_ready(self):

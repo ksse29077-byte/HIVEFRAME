@@ -470,7 +470,7 @@ impl CachePlanPerformanceReceiptV2 {
             rust_plan_time_ns: ReceiptMetricU64::unknown(),
             ffi_total_time_ns: ReceiptMetricU64::unknown(),
             serialization_time_ns: ReceiptMetricU64::structural_zero(),
-            rust_transfer_bytes: ReceiptMetricU64::structural_zero(),
+            rust_transfer_bytes: ReceiptMetricU64::measured(batch.header.batch_bytes),
             gpu_to_cpu_metadata_bytes: ReceiptMetricU64::not_executed(),
             gpu_to_cpu_tensor_bytes: ReceiptMetricU64::not_executed(),
             cpu_to_gpu_metadata_bytes: ReceiptMetricU64::not_executed(),
@@ -1258,7 +1258,10 @@ mod tests {
             first.total_selected_bytes
                 <= HardwareProfileV2::balanced_12gb().host_cache_budget_bytes
         );
-        assert_eq!(first.receipt.rust_transfer_bytes.value, Some(0));
+        assert_eq!(
+            first.receipt.rust_transfer_bytes.value,
+            Some(records.header.batch_bytes)
+        );
         assert_eq!(first.receipt.calls_per_block.value, Some(0));
         assert_eq!(first.receipt.calls_per_region.value, Some(0));
     }

@@ -127,8 +127,9 @@ GPU/CPU transfer bytes, CUDA synchronization, selected payload, planned and
 actual D2H/H2D, estimate error, fallback, partial-to-full recovery, and Rust
 overhead fields.
 
-In this model-free phase, Rust process spawning, serialization, Rust tensor
-transfer, and block/region/row calls are structural zero. GPU transfer, CUDA,
+In this model-free phase, `rust_transfer_bytes` measures the canonical fixed
+metadata batch size. Rust process spawning, serialization, tensor bytes per
+call, and block/region/row calls are structural zero. GPU transfer, CUDA,
 actual cache transfer, recovery, and estimate-error metrics are
 `NOT_EXECUTED`. Rust overhead ratio remains `UNKNOWN` until a real generation
 defines the denominator.
