@@ -1986,8 +1986,9 @@ and [decision report](../reports/a3_g1/decision-report.md).
 
 ## 2026-08-19 - H3 cache density and false-safe remediation
 
-Issue #100 and branch `codex/h3-cache-density-false-safe-remediation` isolate
-one model-free follow-up from Draft PR #91 G1D head `e83c40f...`. The immutable
+Issue #100, branch `codex/h3-cache-density-false-safe-remediation`, and Draft
+PR #101 isolate one model-free follow-up from Draft PR #91 G1D head
+`e83c40f...`. The immutable
 G1D receipt was reused; H3, CUDA, CONTROL, SELECTIVE, retry, and Generation
 counts are zero.
 

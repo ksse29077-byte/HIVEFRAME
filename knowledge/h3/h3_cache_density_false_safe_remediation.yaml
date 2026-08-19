@@ -4,7 +4,7 @@ recorded_at: 2026-08-19
 
 scope:
   issue: 100
-  draft_pr: pending
+  draft_pr: 101
   branch: codex/h3-cache-density-false-safe-remediation
   base_head: e83c40f2ffba1d237c98e3f02f4d113fd9e50e22
   depends_on_pr: 91
