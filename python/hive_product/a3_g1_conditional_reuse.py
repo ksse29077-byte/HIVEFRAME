@@ -698,6 +698,27 @@ class H3A3G1Controller:
                 }
             )
 
+    def _observe_full_compute_control(
+        self,
+        *,
+        block_index: int,
+        step: int,
+        plan: Mapping[str, Any] | None,
+        directive: str,
+        stable_mask: int,
+        full_core: Any,
+    ) -> None:
+        """Observe a completed Full Attention call without changing its output."""
+
+        del plan
+        if directive == REGIONAL_SELECTIVE:
+            self._observe_control(
+                block_index=block_index,
+                step=step,
+                stable_mask=stable_mask,
+                full_core=full_core,
+            )
+
     def _prepare_direct_reuse(
         self,
         *,
@@ -864,12 +885,14 @@ class H3A3G1Controller:
                     if directive == REGIONAL_SELECTIVE:
                         self.selective_candidate_blocks += 1
                         record["selective_candidate_blocks"] += 1
-                        self._observe_control(
-                            block_index=block_index,
-                            step=step,
-                            stable_mask=stable_mask,
-                            full_core=full_core,
-                        )
+                    self._observe_full_compute_control(
+                        block_index=block_index,
+                        step=step,
+                        plan=plan,
+                        directive=directive,
+                        stable_mask=stable_mask,
+                        full_core=full_core,
+                    )
                     self._refresh_cache(block_index=block_index, step=step, full_core=full_core)
             elif directive == FORCE_FULL:
                 full_core = self._exact_full(q=q, k=k, v=v, attention=block.attn, options=options)
