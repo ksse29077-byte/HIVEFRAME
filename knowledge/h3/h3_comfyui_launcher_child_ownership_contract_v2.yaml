@@ -1,0 +1,73 @@
+schema_version: hiveframe.knowledge.h3-comfyui-launcher-child-ownership-contract-v2.1
+recorded_at: 2026-08-19
+issue: 115
+base_commit: 47609d1cf1b03b3ff56496a4d64c438d4e7976a0
+implementation_commit: a3e2595e200e6a18939c48b23f85da3d652228be
+decision: H3_COMFYUI_LAUNCHER_CHILD_OWNERSHIP_CONTRACT_V2_BLOCKED
+scope:
+  model_free: true
+  runtime_lifecycle_authorized: 1
+  runtime_lifecycle_started: 1
+  runtime_lifecycle_retry: 0
+  h3_model_load_request: 0
+  generation: 0
+  control_submission: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+contract:
+  schema_version: h3.comfyui-process-ownership-receipt.3
+  roles: [launcher_pid, runtime_pid, listener_pid]
+  single_pid_supported: true
+  direct_child_supported: true
+  verified_descendant_supported: true
+  pid_creation_time_bound: true
+  exact_listener_count: 1
+  outside_tree_runtime_allowed: false
+  unexpected_tree_child_allowed: false
+  shutdown_requires_passing_receipt: true
+tests:
+  focused_and_control_structure_passed: 25
+  focused_and_control_structure_failed: 0
+  related_total_attempted: 29
+  related_passed: 28
+  related_teardown_errors: 1
+  teardown_error_scope: existing_product_http_sqlite_connection_cleanup
+lifecycle:
+  pre_launch: PASS
+  candidate_count_before_launch: 0
+  listener_count_before_launch: 0
+  runtime_start_count: 1
+  system_ready: true
+  queue_running: 0
+  queue_pending: 0
+  launcher_runtime_identity: PASS
+  runtime_listener_identity: PASS
+  creation_time_identity: PASS
+  process_tree_lineage: PASS
+  observed_exact_runtime_candidates: 2
+  observed_process_tree_members: 3
+  unexpected_member: conhost.exe
+  tree_members_are_runtime_candidates: false
+  tree_processes_are_python: false
+  pre_shutdown_contract: NOT_ADMITTED
+  contract_shutdown_count: 0
+  retry: 0
+cleanup:
+  automatic_cleanup: BLOCKED_UNVERIFIED_PROCESS_TREE
+  separate_python_role_identity_check: PASS
+  queue_running_before_cleanup: 0
+  queue_pending_before_cleanup: 0
+  verified_python_roles_stopped: 2
+  conhost_direct_termination_count: 0
+  foreign_process_termination_count: 0
+  run_python_after: 0
+  run_conhost_after: 0
+  listener_8191_after: 0
+receipt:
+  private_sha256: bdf73334131a8e08d0a94fd9e754db8eeb325aeeddc5ab12833b25545415ba07
+  public_sha256: bdf73334131a8e08d0a94fd9e754db8eeb325aeeddc5ab12833b25545415ba07
+authorization:
+  second_lifecycle: false
+  control: false
+  next_step_automatic: none
