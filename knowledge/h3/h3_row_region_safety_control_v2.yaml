@@ -1,0 +1,62 @@
+schema_version: hiveframe.knowledge.h3-row-region-safety-control-v2.1
+recorded_at: 2026-08-19
+issue: 109
+base_commit: 42dbf2415a50a6351c2025efab9f32b47c7eda3f
+decision: H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_ADMISSION_BLOCKED
+scope:
+  engine: H3
+  profile: Standard Full Compute
+  mode: I2V
+  generation_authorized_maximum: 1
+  generation_submitted: 0
+  retry: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+oracle:
+  profile: Balanced12GB
+  candidate_blocks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+  veto_blocks: [30, 31, 48, 49]
+  region: 0
+  representative_rows: 1036
+  omitted_rows: 2331
+  pinned_ring_bytes: 96538624
+  pageable_source_cache_bytes: 1448079360
+  expected_d2h_bytes: 28961587200
+  h2d_bytes: 0
+  persistent_gpu_source_bytes: 0
+preflight:
+  bf16_bit_preservation: PASS
+  cpu_gpu_metric_max_abs_error: 0.00000006468255198122108
+  metric_error_limit: 0.000001
+  hot_path_forced_sync_count: 0
+  release_pyo3_tests: 15
+  release_pyo3_skips: 0
+  rust_cache_plan_v2_tests: 12
+runtime_admission:
+  pre_start: PASS
+  node_loaded: true
+  queue_running: 0
+  queue_pending: 0
+  page_locked: true
+  pinned_bytes: 96538624
+  process_ownership_cardinality: FAIL
+  diagnostic_gap: observed_process_list_not_recorded_in_original_receipt
+lifecycle:
+  submission: 0
+  gpu_start: 0
+  completion: 0
+  rust_live_compile: 0
+  rust_offline_replay: 0
+  output: NOT_EXECUTED
+holdout:
+  label: HOLDOUT_CONTROL_V2
+  records: 0
+  false_safe: NOT_EXECUTED
+  false_unsafe: NOT_EXECUTED
+  planned_q_reduction: NOT_EXECUTED
+next_step:
+  automatic: none
+  separately_approvable: H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_RUNTIME_OWNERSHIP_REVIEW
+  executor_integration_authorized: false
+
