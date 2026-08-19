@@ -1,0 +1,65 @@
+schema_version: hiveframe.knowledge.h3-comfyui-process-ownership-receipt.1
+recorded_at: 2026-08-19
+issue: 111
+base_commit: aacaf761889e25277b2cfdb3519dfa4ffa3a2268
+decision: H3_COMFYUI_PROCESS_OWNERSHIP_RECEIPT_REMEDIATION_READY
+scope:
+  model_free: true
+  h3_model_load: 0
+  generation: 0
+  control_submission: 0
+  gpu_start: 0
+  completion: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+  retry: 0
+  fallback: 0
+prior_gate:
+  classifier: broad_command_line_substring
+  ownership_bound_to_backend_pid: false
+  observed_candidates_retained: false
+  result: fail_closed_before_submission
+remediated_candidate_parser:
+  argv_0: python_executable
+  argv_1_basename: main.py
+  required_flags: [--listen, --port]
+  embedded_shell_text_is_candidate: false
+ownership_signals:
+  - backend_popen_pid_alive
+  - node_pid_equals_backend_pid
+  - exactly_one_owned_candidate
+  - foreign_runtime_count_zero
+  - listener_pid_equals_backend_pid
+  - python_executable_matches
+  - main_script_matches
+  - loopback_host_and_port_match
+  - extra_config_matches
+  - input_output_temp_user_paths_match
+  - auto_launch_disabled_once
+receipt_privacy:
+  raw_argv_retained: false
+  full_private_paths_retained_in_candidate_summary: false
+  retained_fields:
+    - pid
+    - parent_pid
+    - process_name
+    - executable_basename_and_digest
+    - main_script_basename_and_digest
+    - listen_host
+    - port
+    - command_digest
+    - argument_count
+    - create_time
+verification:
+  focused_tests_passed: 7
+  related_tests_passed: 37
+  current_runtime_candidates: 0
+  process_access_errors: 0
+  current_8191_listener: false
+  nvidia_vram_used_mib: 10
+authorization:
+  control_retry: false
+  executor_integration: false
+  next_step_automatic: none
+

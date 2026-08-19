@@ -31,6 +31,10 @@ from .active_query_attention import (
 )
 from .c0_h3_phase_probe import EventTimeline, ResourceSampler, _collect_websocket_run, measured, sanitize_public
 from .comfyui_backend import ComfyUIH3Config, MiniMaxH3ComfyUIBackend
+from .comfyui_process_ownership import (
+    build_process_ownership_receipt,
+    collect_comfy_runtime_processes,
+)
 from .h3_hybrid_cache_staging import (
     CONTROL_ORACLE_D2H_BYTES,
     CONTROL_TRANSFER_LIMIT_BYTES,
@@ -118,16 +122,7 @@ def inspect_external_jobs(databases: Sequence[Path]) -> dict[str, Any]:
 
 
 def inspect_comfy_processes() -> list[dict[str, Any]]:
-    found = []
-    for process in psutil.process_iter(("pid", "name", "cmdline")):
-        try:
-            command = " ".join(process.info.get("cmdline") or [])
-        except (psutil.AccessDenied, psutil.NoSuchProcess):
-            continue
-        lowered = command.lower()
-        if "comfyui" in lowered and ("main.py" in lowered or "--listen" in lowered):
-            found.append({"pid": int(process.info["pid"]), "name": process.info.get("name")})
-    return found
+    return list(collect_comfy_runtime_processes()["candidate_summaries"])
 
 
 def _port_open(base_url: str) -> bool:
@@ -398,8 +393,15 @@ def run_control(
             raise RuntimeError("pinned-host admission receipt is missing")
         node_admission = json.loads(node_admission_path.read_text(encoding="utf-8"))
         host_available = int(node_admission.get("available_ram_after_pinned_bytes", 0))
-        observed_comfy_processes = inspect_comfy_processes()
         owned_runtime_pid = int(node_admission.get("process_id", -1))
+        ownership = build_process_ownership_receipt(
+            backend_process=backend._process,
+            node_pid=owned_runtime_pid,
+            comfyui_root=comfyui_root,
+            runtime_output=runtime_output,
+            host="127.0.0.1",
+            port=int(base_url.rsplit(":", 1)[1]),
+        )
         post_start_checks = {
             "node_loaded": isinstance(objects, Mapping) and NODE_CLASS in objects,
             "queue_running_zero": isinstance(queue, Mapping) and len(queue.get("queue_running", [])) == 0,
@@ -408,13 +410,12 @@ def run_control(
             "page_locked": node_admission.get("page_locked") is True,
             "pinned_bytes_exact": node_admission.get("pinned_host_bytes") == PINNED_HOST_TOTAL_BYTES,
             "host_reserve_after_future_source_cache": host_available - HOST_SOURCE_CACHE_BYTES >= HOST_OS_COMFY_RESERVE_BYTES,
-            "owned_runtime_is_only_comfy_process": len(observed_comfy_processes) == 1
-            and observed_comfy_processes[0].get("pid") == owned_runtime_pid,
+            "owned_runtime_receipt_pass": ownership["passed"] is True,
         }
         receipt["post_start_admission"] = {
             "node": node_admission,
             "owned_runtime_pid": owned_runtime_pid,
-            "observed_comfy_processes": observed_comfy_processes,
+            "process_ownership": ownership,
             "available_after_future_source_cache_bytes": host_available - HOST_SOURCE_CACHE_BYTES,
             "checks": post_start_checks,
             "passed": all(post_start_checks.values()),
