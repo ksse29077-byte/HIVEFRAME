@@ -1,0 +1,93 @@
+schema_version: hiveframe.knowledge.h3-row-region-safety-control-v2-admission-retry.1
+recorded_at: 2026-08-19
+issue: 113
+base_commit: bbf7910d992e8fbceddbe8664d8dd89d75572cb6
+implementation_commit: 273d1fea4d025d5200b463b0a135b977a520784a
+decision: H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_ADMISSION_BLOCKED
+scope:
+  engine: H3
+  profile: Standard Full Compute
+  mode: I2V
+  generation_authorized_maximum: 1
+  submission: 0
+  gpu_start: 0
+  completion: 0
+  retry: 0
+  fallback_generation: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+fixed_profile:
+  width: 864
+  height: 480
+  frames: 124
+  fps: 24
+  steps: 20
+  seed: 101
+  sampler: res_multistep
+  scheduler: simple
+  sage_enabled: false
+verification:
+  related_python_tests: 41
+  release_pyo3_tests: 15
+  release_pyo3_skips: 0
+  rust_cache_plan_v2_tests: 12
+  rust_tensor_bytes: 0
+  rust_calls_per_generation_max: 1
+  rust_hot_path_calls: 0
+  bf16_bit_preservation: PASS
+  cpu_gpu_metric_max_abs_error: 0.00000006468255198122108
+runtime_admission:
+  pre_launch: PASS
+  queue_running: 0
+  queue_pending: 0
+  foreign_runtime_before_launch: 0
+  listener_8191_before_launch: 0
+  projected_cuda_peak_bytes: 12514625897
+  physical_vram_bytes: 12884377600
+  projected_headroom_bytes: 369751703
+  minimum_headroom_bytes: 268435456
+  two_gib_reserve_satisfied: false
+  pinned_ring_bytes: 96538624
+  pinned_allocation: PASS
+  page_lock: PASS
+  host_available_after_future_source_cache_bytes: 41522282496
+  external_gpu_bytes_before: 14209024
+  external_gpu_bytes_after_launch: 14209024
+  post_launch: FAIL
+ownership_failure:
+  topology: popen_launcher_with_direct_listener_child
+  candidate_count: 2
+  backend_candidate_count: 1
+  backend_process_alive: true
+  process_tree_contains_backend: true
+  process_tree_identity_present: true
+  node_pid_matches_backend_pid: false
+  listener_pid_matches_backend_pid: false
+  foreign_runtime_count_zero: false
+  cause: contract_requires_single_process_pid_identity
+evidence:
+  holdout_label: HOLDOUT_CONTROL_V2
+  records: NOT_EXECUTED
+  false_safe: NOT_EXECUTED
+  false_unsafe: NOT_EXECUTED
+  planned_q_reduction: NOT_EXECUTED
+  rust_live_compile: 0
+  rust_offline_replay: 0
+  output_integrity: NOT_EXECUTED
+cleanup:
+  automatic_runner_shutdown: blocked_unverified_ownership
+  separate_multisignal_ownership_check: PASS
+  queue_running_before_cleanup: 0
+  queue_pending_before_cleanup: 0
+  foreign_process_termination: 0
+  listener_8191_after_cleanup: 0
+  nvidia_vram_used_mib_after_cleanup: 10
+  nvidia_utilization_percent_after_cleanup: 0
+receipt:
+  public_summary_sha256: 5e3453a10279a5f87ef2b1e99caa83fa44d7230430d0cad742c44345942cface
+  private_receipt_sha256: 5e3453a10279a5f87ef2b1e99caa83fa44d7230430d0cad742c44345942cface
+authorization:
+  control_retry: false
+  executor_integration: false
+  next_step_automatic: none

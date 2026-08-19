@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 from hive_product.comfyui_process_ownership import (
     analyze_process_ownership,
+    build_post_shutdown_receipt,
+    build_pre_launch_receipt,
     parse_comfy_runtime,
 )
 
@@ -50,7 +53,18 @@ def analyze(candidates, *, backend_pid: int = 42, node_pid: int = 42, listeners=
         backend_pid=backend_pid,
         node_pid=node_pid,
         backend_alive=True,
+        backend_create_time=1.0,
+        runner_pid=7,
         listener_pids=listeners,
+        run_id="control-v2-run-1",
+        phase="POST_LAUNCH",
+        process_tree={
+            "root_pid": backend_pid,
+            "members": [{"pid": backend_pid}],
+            "member_count": 1,
+            "identity_digest": "aa" * 32,
+            "error_type": None,
+        },
         expected_executable=PYTHON,
         expected_main=MAIN,
         expected_host="127.0.0.1",
@@ -110,7 +124,63 @@ class ComfyUIProcessOwnershipTests(unittest.TestCase):
         self.assertFalse(path_receipt["checks"]["output_directory_matches"])
         self.assertFalse(port_receipt["checks"]["port_matches"])
 
+    def test_creation_time_and_runner_parent_are_bound(self):
+        wrong_parent = candidate()
+        wrong_parent["parent_pid"] = 8
+        wrong_time = candidate()
+        wrong_time["create_time"] = 2.0
+        parent_receipt = analyze([wrong_parent])
+        time_receipt = analyze([wrong_time])
+        self.assertFalse(parent_receipt["checks"]["root_parent_is_runner"])
+        self.assertFalse(time_receipt["checks"]["creation_time_matches"])
+
+    def test_receipt_carries_run_phase_and_process_tree_identity(self):
+        receipt = analyze([candidate()])
+        self.assertEqual(receipt["runtime_run_id"], "control-v2-run-1")
+        self.assertEqual(receipt["phase"], "POST_LAUNCH")
+        self.assertTrue(receipt["checks"]["process_tree_identity_present"])
+
+    @patch("hive_product.comfyui_process_ownership.os.getpid", return_value=7)
+    @patch("hive_product.comfyui_process_ownership._process_tree")
+    @patch("hive_product.comfyui_process_ownership._listener_pids", return_value=([], 0))
+    @patch("hive_product.comfyui_process_ownership.collect_comfy_runtime_processes")
+    def test_pre_launch_requires_zero_candidates_and_listener(
+        self, collect, _listeners, tree, _pid
+    ):
+        collect.return_value = {
+            "candidate_summaries": [],
+            "candidate_count": 0,
+            "access_error_count": 0,
+        }
+        tree.return_value = {
+            "root_pid": 7,
+            "members": [{"pid": 7, "create_time": 1.0}],
+            "identity_digest": "bb" * 32,
+        }
+        receipt = build_pre_launch_receipt(
+            run_id="control-v2-run-1", host="127.0.0.1", port=8191
+        )
+        self.assertTrue(receipt["passed"])
+        self.assertEqual(receipt["phase"], "PRE_LAUNCH")
+
+    @patch("hive_product.comfyui_process_ownership.psutil.pid_exists", return_value=False)
+    @patch("hive_product.comfyui_process_ownership._listener_pids", return_value=([], 0))
+    @patch("hive_product.comfyui_process_ownership.collect_comfy_runtime_processes")
+    def test_post_shutdown_requires_process_listener_and_gpu_idle(
+        self, collect, _listeners, _pid_exists
+    ):
+        collect.return_value = {"candidates": [], "candidate_summaries": [], "candidate_count": 0}
+        receipt = build_post_shutdown_receipt(
+            run_id="control-v2-run-1",
+            owned_pid=42,
+            host="127.0.0.1",
+            port=8191,
+            baseline_gpu_bytes=10 * 1024**2,
+            current_gpu_bytes=10 * 1024**2,
+        )
+        self.assertTrue(receipt["passed"])
+        self.assertEqual(receipt["phase"], "POST_SHUTDOWN")
+
 
 if __name__ == "__main__":
     unittest.main()
-

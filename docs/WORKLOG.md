@@ -2147,6 +2147,32 @@ CONTROL retry is authorized. See the detailed
 
 ---
 
+## 2026-08-19 - H3 row/region CONTROL V2 admission retry
+
+Issue #113 and branch `codex/h3-row-region-control-v2-admission-retry`
+started at the exact Draft PR #112 head. Lifecycle receipts were extended to
+bind PRE_LAUNCH through POST_SHUTDOWN state, process-tree identity, creation
+time, run ID, dedicated path digests, and RTX 3060 external process memory.
+Forty-one related Python tests, the required release PyO3 15/15 with skip 0,
+and Rust CachePlan ABI V2 12/12 passed.
+
+PRE_LAUNCH, VRAM, host RAM, page-lock, queue, and node-load checks passed. The
+POST_LAUNCH ownership Gate found a `Popen` launcher and its direct listener
+child with identical exact runtime arguments. Because the contract requires
+node and listener PID equality with `Popen.pid`, it classified the child as a
+foreign candidate and failed closed before workflow submission. Submission/
+GPU start/completion is 0/0/0; holdout, Rust plan/replay, output, retry,
+fallback, SELECTIVE, partial-Q, and omission are all unexecuted.
+
+After an independent multi-signal ownership and empty-queue check, only the
+unique run's launcher-child tree was stopped. Port 8191 returned free and the
+GPU returned to 10 MiB at zero utilization. The decision is
+`H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_ADMISSION_BLOCKED`; no retry or
+executor integration was started. See the detailed
+[admission retry worklog](worklogs/2026-08-19-h3-row-region-safety-evidence-control-v2-admission-retry.md).
+
+---
+
 ## Entry template
 
 ```markdown

@@ -5,12 +5,13 @@ from __future__ import annotations
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+import json
 import os
 
 import psutil
 
 
-SCHEMA_VERSION = "h3.comfyui-process-ownership-receipt.1"
+SCHEMA_VERSION = "h3.comfyui-process-ownership-receipt.2"
 
 
 def _normalized_path(value: str | Path) -> str:
@@ -77,6 +78,44 @@ def _safe_candidate(candidate: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _safe_process(process: Any) -> dict[str, Any]:
+    try:
+        executable = process.exe()
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        executable = ""
+    return {
+        "pid": int(process.pid),
+        "parent_pid": int(process.ppid()),
+        "process_name": str(process.name()),
+        "executable_name": Path(executable).name if executable else "",
+        "executable_digest": _path_digest(executable) if executable else None,
+        "create_time": float(process.create_time()),
+    }
+
+
+def _process_tree(root_pid: int) -> dict[str, Any]:
+    try:
+        root = psutil.Process(int(root_pid))
+        members = [root, *root.children(recursive=True)]
+        safe = sorted((_safe_process(process) for process in members), key=lambda item: item["pid"])
+    except (psutil.AccessDenied, psutil.NoSuchProcess) as error:
+        return {
+            "root_pid": int(root_pid),
+            "members": [],
+            "member_count": 0,
+            "identity_digest": None,
+            "error_type": type(error).__name__,
+        }
+    identity = json.dumps(safe, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return {
+        "root_pid": int(root_pid),
+        "members": safe,
+        "member_count": len(safe),
+        "identity_digest": sha256(identity).hexdigest(),
+        "error_type": None,
+    }
+
+
 def collect_comfy_runtime_processes() -> dict[str, Any]:
     """Collect exact Comfy runtime candidates without retaining private argv."""
 
@@ -134,7 +173,12 @@ def analyze_process_ownership(
     backend_pid: int,
     node_pid: int,
     backend_alive: bool,
+    backend_create_time: float | None,
+    runner_pid: int,
     listener_pids: Sequence[int],
+    run_id: str,
+    phase: str,
+    process_tree: Mapping[str, Any],
     expected_executable: Path,
     expected_main: Path,
     expected_host: str,
@@ -156,6 +200,8 @@ def analyze_process_ownership(
         return isinstance(value, str) and _normalized_path(value) == _normalized_path(expected)
 
     checks = {
+        "phase_known": phase in {"POST_LAUNCH", "PRE_SHUTDOWN"},
+        "runtime_run_id_present": bool(run_id),
         "backend_pid_positive": int(backend_pid) > 0,
         "backend_process_alive": bool(backend_alive),
         "node_pid_matches_backend_pid": int(node_pid) == int(backend_pid),
@@ -173,14 +219,36 @@ def analyze_process_ownership(
         "user_directory_matches": path_matches("user_directory", expected_user),
         "auto_launch_disabled_once": item is not None
         and int(item.get("disable_auto_launch_count", 0)) == 1,
+        "creation_time_present": item is not None
+        and isinstance(item.get("create_time"), (int, float))
+        and isinstance(backend_create_time, (int, float)),
+        "creation_time_matches": item is not None
+        and isinstance(item.get("create_time"), (int, float))
+        and isinstance(backend_create_time, (int, float))
+        and abs(float(item["create_time"]) - float(backend_create_time)) <= 1e-6,
+        "root_parent_is_runner": item is not None
+        and int(item.get("parent_pid", -1)) == int(runner_pid),
+        "process_tree_root_matches": int(process_tree.get("root_pid", -1)) == int(backend_pid),
+        "process_tree_identity_present": isinstance(process_tree.get("identity_digest"), str)
+        and len(str(process_tree["identity_digest"])) == 64,
+        "process_tree_contains_root": any(
+            int(member.get("pid", -1)) == int(backend_pid)
+            for member in process_tree.get("members", [])
+            if isinstance(member, Mapping)
+        ),
     }
     return {
         "schema_version": SCHEMA_VERSION,
+        "phase": phase,
+        "runtime_run_id": run_id,
         "backend_pid": int(backend_pid),
+        "backend_create_time": backend_create_time,
+        "runner_pid": int(runner_pid),
         "node_pid": int(node_pid),
         "listener_pids": [int(value) for value in listener_pids],
         "owned_process": _safe_candidate(item) if item is not None else None,
         "foreign_processes": [_safe_candidate(value) for value in foreign],
+        "process_tree": dict(process_tree),
         "expected": {
             "executable_name": expected_executable.name,
             "executable_digest": _path_digest(expected_executable),
@@ -207,20 +275,32 @@ def build_process_ownership_receipt(
     runtime_output: Path,
     host: str,
     port: int,
+    run_id: str,
+    phase: str,
 ) -> dict[str, Any]:
     """Collect and analyze the live runtime in one bounded read-only pass."""
 
     backend_pid = int(getattr(backend_process, "pid", -1))
     backend_alive = backend_process is not None and backend_process.poll() is None
+    try:
+        backend_create_time = float(psutil.Process(backend_pid).create_time())
+    except (psutil.AccessDenied, psutil.NoSuchProcess, ValueError):
+        backend_create_time = None
     collection = collect_comfy_runtime_processes()
     listener_pids, listener_access_errors = _listener_pids(host, port)
+    process_tree = _process_tree(backend_pid)
     runtime_root = runtime_output / "runtime"
     receipt = analyze_process_ownership(
         candidates=collection["candidates"],
         backend_pid=backend_pid,
         node_pid=int(node_pid),
         backend_alive=backend_alive,
+        backend_create_time=backend_create_time,
+        runner_pid=os.getpid(),
         listener_pids=listener_pids,
+        run_id=run_id,
+        phase=phase,
+        process_tree=process_tree,
         expected_executable=comfyui_root / ".venv/Scripts/python.exe",
         expected_main=comfyui_root / "main.py",
         expected_host=host,
@@ -243,11 +323,87 @@ def build_process_ownership_receipt(
     return receipt
 
 
+def build_pre_launch_receipt(*, run_id: str, host: str, port: int) -> dict[str, Any]:
+    """Freeze the no-runtime/no-listener state before starting ComfyUI."""
+
+    collection = collect_comfy_runtime_processes()
+    listener_pids, listener_access_errors = _listener_pids(host, port)
+    runner_tree = _process_tree(os.getpid())
+    checks = {
+        "runtime_run_id_present": bool(run_id),
+        "runtime_candidate_count_zero": collection["candidate_count"] == 0,
+        "listener_count_zero": len(listener_pids) == 0,
+        "listener_collection_accessible": listener_access_errors == 0,
+        "runner_root_pid_present": runner_tree["root_pid"] == os.getpid(),
+        "runner_creation_time_present": bool(runner_tree.get("members"))
+        and isinstance(runner_tree["members"][0].get("create_time"), (int, float)),
+        "runner_process_tree_identity_present": isinstance(runner_tree.get("identity_digest"), str),
+    }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "phase": "PRE_LAUNCH",
+        "runtime_run_id": run_id,
+        "runner_pid": os.getpid(),
+        "runner_process_tree": runner_tree,
+        "candidate_summaries": collection["candidate_summaries"],
+        "candidate_count": collection["candidate_count"],
+        "listener_pids": listener_pids,
+        "access_error_count": collection["access_error_count"],
+        "listener_access_error_count": listener_access_errors,
+        "checks": checks,
+        "passed": all(checks.values()),
+    }
+
+
+def build_post_shutdown_receipt(
+    *,
+    run_id: str,
+    owned_pid: int,
+    host: str,
+    port: int,
+    baseline_gpu_bytes: int | None,
+    current_gpu_bytes: int | None,
+) -> dict[str, Any]:
+    """Prove the owned runtime and listener are gone after normal shutdown."""
+
+    collection = collect_comfy_runtime_processes()
+    listener_pids, listener_access_errors = _listener_pids(host, port)
+    owned = [item for item in collection["candidates"] if int(item["pid"]) == int(owned_pid)]
+    try:
+        process_exists = psutil.pid_exists(int(owned_pid))
+    except (TypeError, ValueError):
+        process_exists = True
+    gpu_known = isinstance(baseline_gpu_bytes, int) and isinstance(current_gpu_bytes, int)
+    checks = {
+        "runtime_run_id_present": bool(run_id),
+        "owned_process_absent": not process_exists and len(owned) == 0,
+        "listener_count_zero": len(listener_pids) == 0,
+        "foreign_runtime_count_zero": collection["candidate_count"] == 0,
+        "listener_collection_accessible": listener_access_errors == 0,
+        "gpu_measurements_known": gpu_known,
+        "gpu_returned_to_baseline": gpu_known
+        and int(current_gpu_bytes) <= max(int(baseline_gpu_bytes), 16 * 1024**2),
+    }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "phase": "POST_SHUTDOWN",
+        "runtime_run_id": run_id,
+        "owned_pid": int(owned_pid),
+        "candidate_summaries": collection["candidate_summaries"],
+        "listener_pids": listener_pids,
+        "baseline_gpu_bytes": baseline_gpu_bytes,
+        "current_gpu_bytes": current_gpu_bytes,
+        "checks": checks,
+        "passed": all(checks.values()),
+    }
+
+
 __all__ = [
     "SCHEMA_VERSION",
     "analyze_process_ownership",
+    "build_post_shutdown_receipt",
+    "build_pre_launch_receipt",
     "build_process_ownership_receipt",
     "collect_comfy_runtime_processes",
     "parse_comfy_runtime",
 ]
-
