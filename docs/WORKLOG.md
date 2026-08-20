@@ -2225,6 +2225,32 @@ See the detailed [console-helper ownership worklog](worklogs/2026-08-20-h3-comfy
 
 ---
 
+## 2026-08-20 - H3 row/region CONTROL V2 execution
+
+Issue #119 and Draft PR #120 started from exact Draft PR #118 head
+`aaf4e325c511860a5d5b5f6579cea18f270425d6`. Model-free and dedicated-runtime
+Admission passed, including console-helper ownership V2, empty queues, exact
+96,538,624-byte page-locked ring, host reserve, fixed P1-A2 identities, and the
+256 MiB VRAM headroom Gate. The 2 GiB reserve remained the authorized
+`UNSATISFIED_BY_BASELINE` condition.
+
+The one authorized H3 Standard Full Compute CONTROL was submitted once. All
+20 sampler steps completed, but evidence finalization failed because the D2H
+completion CUDA event did not enable timing while the worker called
+`elapsed_time`. The terminal event was `execution_error`; submission/GPU
+start/completion was 1/1/0 and retry/fallback/SELECTIVE/partial-Q/omission was
+0/0/0/0/0. Holdout, false-safe, planned Q reduction, Rust replay, and output
+integrity remain unestablished and no partial evidence was admitted.
+
+Verified shutdown passed with no direct console-helper or foreign-process
+termination, no remaining owned identity, no 8191 listener, and GPU memory at
+the 10 MiB baseline. The decision is
+`H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_FAILED`; remediation, retry, and
+executor integration were not started. See the detailed
+[execution worklog](worklogs/2026-08-20-h3-row-region-safety-evidence-control-v2-execution.md).
+
+---
+
 ## Entry template
 
 ```markdown

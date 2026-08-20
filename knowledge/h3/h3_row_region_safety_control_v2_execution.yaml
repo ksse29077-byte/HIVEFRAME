@@ -1,0 +1,90 @@
+schema_version: hiveframe.knowledge.h3-row-region-safety-control-v2-execution.1
+recorded_at: 2026-08-20
+issue: 119
+pull_request: 120
+exact_base_commit: aaf4e325c511860a5d5b5f6579cea18f270425d6
+decision: H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_FAILED
+scope:
+  engine: H3
+  mode: I2V
+  profile: Standard Full Compute
+  submission: 1
+  gpu_start: 1
+  completion: 0
+  retry: 0
+  fallback_generation: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+fixed_profile:
+  width: 864
+  height: 480
+  frames: 124
+  fps: 24
+  steps: 20
+  seed: 101
+  sampler: res_multistep
+  scheduler: simple
+  sage_enabled: false
+admission:
+  model_free: PASS
+  runtime_ownership_v2: PASS
+  queue_before_submission: 0/0
+  pinned_allocation: PASS
+  page_locked: true
+  pinned_ring_bytes: 96538624
+  host_source_cache_budget_bytes: 1448079360
+  projected_cuda_peak_bytes: 12514625897
+  physical_vram_bytes: 12884377600
+  projected_headroom_bytes: 369751703
+  minimum_headroom_bytes: 268435456
+  two_gib_reserve: UNSATISFIED_BY_BASELINE
+execution:
+  full_compute_steps: 20/20
+  comfy_prompt_seconds: 784
+  final_progress_seconds_since_submit: 779.7896572999889
+  runner_wall_seconds: 808.6215707999654
+  terminal_event: execution_error
+failure:
+  phase: background_cpu_oracle_finalize
+  error_type: ControlV2EvidenceError
+  error_message: background CPU oracle failed
+  root_exception: ValueError
+  root_message: Both events must be created with argument enable_timing=True
+  source_file: python/hive_product/h3_row_region_safety_v2.py
+  source_line: 291
+  cause: transfer completion event was created without CUDA event timing enabled
+evidence:
+  bounded_holdout_records: NOT_ESTABLISHED
+  false_safe: NOT_ESTABLISHED
+  false_unsafe: NOT_ESTABLISHED
+  planned_q_reduction: NOT_ESTABLISHED
+  rust_live_compile: 0
+  rust_offline_replay: 0
+  output_integrity: NOT_ESTABLISHED
+  partial_worker_state_admitted: false
+resources:
+  peak_nvidia_sampled_vram_bytes: 11724128256
+  peak_comfyui_sampled_vram_bytes: 12004259239
+  physical_vram_headroom_bytes: 1160249344
+  peak_process_tree_rss_bytes: 43216089088
+  peak_system_used_ram_bytes: 62878056448
+cleanup:
+  post_shutdown_ownership: PASS
+  listener_8191_after: 0
+  owned_process_identities_after: 0
+  foreign_runtime_after: 0
+  foreign_process_termination: 0
+  console_helper_direct_termination: 0
+  gpu_used_mib_after: 10
+receipts:
+  private_receipt_sha256: b51398700b169f32b2ed5fd29532288e6554946ffd00c32ce3c19e012c309bf6
+  public_summary_sha256: b51398700b169f32b2ed5fd29532288e6554946ffd00c32ce3c19e012c309bf6
+  callback_sha256: a7263727c3cf33f0bc9e3cc64af5a2c7bd993f71db32671a030eb433cd6d3954
+  pinned_admission_sha256: e65ac8fa8db72ba063a9fc288f87257d6e5939a4b6f54535c61cb64befc281d1
+authorization:
+  exception_ended: true
+  remediation_started: false
+  retry_authorized: false
+  executor_integration_started: false
+  next_step_automatic: none
