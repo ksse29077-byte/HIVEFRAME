@@ -261,3 +261,38 @@ SELECTIVE/partial-Q/Attention omission:        0/0/0
 cumulative prior Formal CONTROL submissions:  3
 H3_V4_INFRASTRUCTURE_REMEDIATION_BUDGET_EXHAUSTED
 ```
+
+## Approved Baseline Lint Resolution
+
+The continuation approval reclassified a pre-existing static warning as lint
+hygiene rather than a fourth V4 functional remediation. Exact base
+`cabe03127ff1e7ee1503861ca62515e3dd40afce` contains the same eight-argument
+`run_candidate` function, and PR #138 changes did not alter that file or its
+argument count. A detached base worktree reproduced the strict workspace's
+older `manual_div_ceil` findings first; an isolated no-dependency PyO3 Clippy
+run then reproduced `clippy::too_many_arguments` at the same function. The
+classification is therefore:
+
+```text
+BASELINE_PREEXISTING_ABI_LINT
+```
+
+`run_candidate` is a directly registered `#[pyfunction]`. A function-scoped
+allow with the reason `PyO3 ABI boundary; argument order and cardinality are
+contract-bound.` was added. No function body, Python argument, argument order,
+ABI structure, or crate/workspace lint policy changed.
+
+Verification after the scoped resolution:
+
+```text
+cargo fmt:                         PASS
+strict workspace Clippy:           PASS, new lint 0
+Rust workspace tests:              50 PASS
+release PyO3 focused tests:         29 PASS, skip 0
+release PyO3 load:                  PASS
+Python signature before/after:      identical
+CachePlan ABI before/after:         2 / 2
+old release SHA-256:                0758bba92c7f0f60e9f85a90fee30582a3cee758b567cb8326ef567a3e86d3b5
+new release SHA-256:                60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+Formal CONTROL submission:          0
+```

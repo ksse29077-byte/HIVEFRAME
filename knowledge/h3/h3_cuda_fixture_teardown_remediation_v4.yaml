@@ -59,7 +59,7 @@ post_stop:
   port_8191_listener_count: 0
   comfyui_runtime_candidate_count: 0
 decision:
-  code: H3_V4_INFRASTRUCTURE_REMEDIATION_BUDGET_EXHAUSTED
+  code: BASELINE_PREEXISTING_ABI_LINT_RESOLVED
   automatic_retry_allowed: false
   v4_preflight_started: true
   formal_control_allowed: false
@@ -107,3 +107,19 @@ v4_preflight:
   formal_control_submission_count: 0
   gpu_start_count: 0
   completion_count: 0
+baseline_lint_resolution:
+  exact_base: cabe03127ff1e7ee1503861ca62515e3dd40afce
+  classification: BASELINE_PREEXISTING_ABI_LINT
+  function: run_candidate
+  function_argument_count_changed_by_pr_138: false
+  scope: function_only
+  function_body_changed: false
+  python_signature_changed: false
+  rust_cache_plan_abi_changed: false
+  strict_clippy_passed: true
+  rust_workspace_tests_passed: 50
+  release_pyo3_tests_passed: 29
+  release_pyo3_tests_skipped: 0
+  prior_binary_sha256: 0758bba92c7f0f60e9f85a90fee30582a3cee758b567cb8326ef567a3e86d3b5
+  current_binary_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+  formal_control_submission_count: 0

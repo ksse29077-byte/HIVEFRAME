@@ -66,6 +66,8 @@ fn set_summary(dict: &Bound<'_, PyDict>, summary: &R3CandidateSummary) -> PyResu
     Ok(())
 }
 
+// PyO3 ABI boundary; argument order and cardinality are contract-bound.
+#[allow(clippy::too_many_arguments)]
 #[pyfunction]
 fn run_candidate<'py>(
     py: Python<'py>,
