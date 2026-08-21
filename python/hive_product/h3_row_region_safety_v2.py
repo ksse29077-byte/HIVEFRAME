@@ -116,12 +116,15 @@ class PinnedSlot:
     state: str = "FREE"
     metadata: dict[str, Any] | None = None
     ring_generation: int = 0
+    occupied_started_at: float | None = None
 
 
 class PreallocatedPinnedRing:
     """Pinned memory allocated by the node module before workflow submission."""
 
-    def __init__(self, torch_module: Any) -> None:
+    def __init__(self, torch_module: Any, *, slot_count: int = PINNED_RING_DEPTH) -> None:
+        if slot_count < 2:
+            raise ControlV2EvidenceError("pinned ring requires at least two slots")
         self.torch = torch_module
         self.slots = [
             PinnedSlot(
@@ -132,12 +135,12 @@ class PreallocatedPinnedRing:
                     pin_memory=True,
                 )
             )
-            for _ in range(PINNED_RING_DEPTH)
+            for _ in range(int(slot_count))
         ]
         self.allocated_bytes = sum(
             int(slot.payload.numel()) * int(slot.payload.element_size()) for slot in self.slots
         )
-        if self.allocated_bytes != PINNED_HOST_TOTAL_BYTES:
+        if self.allocated_bytes != CANDIDATE_SLOT_BYTES * int(slot_count):
             raise ControlV2EvidenceError("pinned ring allocation size changed")
 
 
@@ -156,8 +159,8 @@ class D2HEventFinalizer:
     def try_finalize(self, slot: PinnedSlot) -> dict[str, Any]:
         """Return pending until D2H completion; timing can fail independently."""
 
-        if slot.state != "PENDING" or slot.metadata is None:
-            raise ControlV2EvidenceError("event finalizer received a non-pending slot")
+        if slot.state != "D2H_IN_FLIGHT" or slot.metadata is None:
+            raise ControlV2EvidenceError("event finalizer received an invalid D2H slot")
         if slot.completion_event is None:
             raise ControlV2EvidenceError("D2H completion event is missing")
         self.completion_query_count += 1
@@ -168,6 +171,7 @@ class D2HEventFinalizer:
         if not completed:
             self.completion_not_ready_count += 1
             return {"admitted": False, "completion": "PENDING", "timing": None}
+        slot.state = "CPU_READY"
 
         timing: dict[str, Any]
         if slot.timing_start_event is None or slot.timing_end_event is None:
@@ -214,6 +218,17 @@ class D2HEventFinalizer:
                 self.cleaned_event_count += 1
             setattr(slot, name, None)
         slot.metadata = None
+        slot.occupied_started_at = None
+        slot.state = "FREE"
+
+    @staticmethod
+    def release_slot(slot: PinnedSlot) -> None:
+        """Release a finalized slot while retaining its reusable CUDA events."""
+
+        if slot.state != "FINALIZED":
+            raise ControlV2EvidenceError("only a finalized slot may be released")
+        slot.metadata = None
+        slot.occupied_started_at = None
         slot.state = "FREE"
 
     def receipt(self) -> dict[str, Any]:
@@ -266,6 +281,26 @@ def _evidence_integrity_checks(
         is True,
         "hot_path_forced_sync_zero": receipt.get("hot_path_forced_sync_count")
         == 0,
+    }
+
+
+def _timing_summary(samples: Sequence[float]) -> dict[str, Any]:
+    if not samples:
+        return {"count": 0, "min": None, "median": None, "p95": None, "max": None}
+    ordered = sorted(float(value) for value in samples)
+    middle = len(ordered) // 2
+    median_value = (
+        ordered[middle]
+        if len(ordered) % 2
+        else (ordered[middle - 1] + ordered[middle]) / 2.0
+    )
+    p95_index = min(len(ordered) - 1, max(0, (95 * len(ordered) + 99) // 100 - 1))
+    return {
+        "count": len(ordered),
+        "min": ordered[0],
+        "median": median_value,
+        "p95": ordered[p95_index],
+        "max": ordered[-1],
     }
 
 
@@ -336,7 +371,7 @@ class HybridControlOracleWorker:
         self.lineage_base = lineage_base
         self.diagnostic = diagnostic
         self.transfer_stream: Any | None = None
-        self._queue: Queue[int | None] = Queue(maxsize=PINNED_RING_DEPTH)
+        self._queue: Queue[int | None] = Queue(maxsize=len(resources.slots))
         self._lock = Lock()
         self._worker = Thread(target=self._run, name="hiveframe-h3-control-v2-oracle", daemon=True)
         self._write_index = 0
@@ -364,6 +399,10 @@ class HybridControlOracleWorker:
         self.lineage_mismatch_count = 0
         self.nonfinite_count = 0
         self.cpu_oracle_time_ms = 0.0
+        self.cpu_service_seconds: list[float] = []
+        self.slot_occupancy_seconds: list[float] = []
+        self.enqueue_host_times: list[float] = []
+        self.ring_high_water_mark = 0
         self._worker.start()
 
     def _raise_worker_failure(self) -> None:
@@ -377,6 +416,7 @@ class HybridControlOracleWorker:
     def enqueue(self, *, payload: Any, metadata: Mapping[str, Any], producer_event: Any) -> Any:
         """Schedule D2H without a host read or wait; return the transfer completion event."""
 
+        enqueue_host_time = perf_counter()
         self._raise_worker_failure()
         identity = str(metadata["source_identity"])
         if identity in self.source_identities:
@@ -400,9 +440,18 @@ class HybridControlOracleWorker:
                     enable_timing=True, blocking=False
                 )
         with self._lock:
-            slot_index = self._write_index
-            slot = self.resources.slots[slot_index]
-            if slot.state != "FREE":
+            slot_index = next(
+                (
+                    (self._write_index + offset) % len(self.resources.slots)
+                    for offset in range(len(self.resources.slots))
+                    if self.resources.slots[
+                        (self._write_index + offset) % len(self.resources.slots)
+                    ].state
+                    == "FREE"
+                ),
+                None,
+            )
+            if slot_index is None:
                 self.ring_backpressure_count += 1
                 self.ring_overflow_count += 1
                 self._capture_enqueue_failure(
@@ -413,6 +462,7 @@ class HybridControlOracleWorker:
                         "lineage diagnostic captured ring backpressure"
                     )
                 raise ControlV2EvidenceError("CPU oracle lag would overwrite the pinned ring")
+            slot = self.resources.slots[slot_index]
             next_enqueue = self.enqueue_count + 1
             slot.ring_generation += 1
             prepared = dict(metadata)
@@ -424,9 +474,14 @@ class HybridControlOracleWorker:
                     ring_slot_generation=slot.ring_generation,
                     ring_write_sequence=next_enqueue,
                 )
-            slot.state = "PENDING"
+            slot.state = "D2H_IN_FLIGHT"
             slot.metadata = prepared
+            slot.occupied_started_at = enqueue_host_time
             self._write_index = (self._write_index + 1) % len(self.resources.slots)
+            self.ring_high_water_mark = max(
+                self.ring_high_water_mark,
+                sum(candidate.state != "FREE" for candidate in self.resources.slots),
+            )
         with self.torch.cuda.stream(self.transfer_stream):
             self.transfer_stream.wait_event(producer_event)
             slot.timing_start_event.record(self.transfer_stream)
@@ -447,6 +502,7 @@ class HybridControlOracleWorker:
                 ) from error
             raise ControlV2EvidenceError("CPU oracle queue overflow") from error
         self.source_identities.add(identity)
+        self.enqueue_host_times.append(enqueue_host_time)
         self.enqueue_count += 1
         self.d2h_bytes += CANDIDATE_SLOT_BYTES
         self.ring_write_sequence.append(
@@ -508,11 +564,15 @@ class HybridControlOracleWorker:
 
     def _consume(self, slot_index: int) -> bool:
         slot = self.resources.slots[slot_index]
-        if slot.state != "PENDING" or slot.metadata is None:
+        if slot.state != "D2H_IN_FLIGHT" or slot.metadata is None:
             raise ControlV2EvidenceError("worker received an invalid pinned slot")
         finalized = self.event_finalizer.try_finalize(slot)
         if finalized["admitted"] is not True:
             return False
+        if slot.state != "CPU_READY":
+            raise ControlV2EvidenceError("completed D2H slot did not become CPU ready")
+        slot.state = "PROCESSING"
+        service_started = perf_counter()
         self.background_event_wait_count += 1
         metadata = slot.metadata
         if self.diagnostic is not None:
@@ -597,8 +657,13 @@ class HybridControlOracleWorker:
             )
         )
         with self._lock:
-            slot.metadata = None
-            slot.state = "FREE"
+            occupied_started_at = slot.occupied_started_at
+            slot.state = "FINALIZED"
+            self.event_finalizer.release_slot(slot)
+        service_finished = perf_counter()
+        self.cpu_service_seconds.append(service_finished - service_started)
+        if occupied_started_at is not None:
+            self.slot_occupancy_seconds.append(service_finished - occupied_started_at)
         return True
 
     def _completed_after_mismatch(self, current_slot_index: int) -> list[dict[str, Any]]:
@@ -606,7 +671,7 @@ class HybridControlOracleWorker:
         if self.diagnostic is None:
             return completed
         for index, candidate in enumerate(self.resources.slots):
-            if index == current_slot_index or candidate.state != "PENDING":
+            if index == current_slot_index or candidate.state != "D2H_IN_FLIGHT":
                 continue
             if candidate.metadata is None or candidate.completion_event is None:
                 continue
@@ -650,11 +715,25 @@ class HybridControlOracleWorker:
         """Drain already-enqueued D2H work without a forced CUDA synchronization."""
 
         deadline = perf_counter() + timeout_seconds
+        while (
+            self._worker.is_alive()
+            and self._failure is None
+            and self._queue.unfinished_tasks
+            and perf_counter() < deadline
+        ):
+            sleep(0.001)
+        if self._worker.is_alive() and self._failure is None:
+            self._queue.put_nowait(None)
+            self._worker.join(timeout=max(0.0, deadline - perf_counter()))
+        if self._worker.is_alive():
+            raise ControlV2EvidenceError(
+                "diagnostic CPU oracle did not stop before cleanup"
+            )
         while perf_counter() < deadline:
             pending = [
                 slot
                 for slot in self.resources.slots
-                if slot.state == "PENDING" and slot.completion_event is not None
+                if slot.state == "D2H_IN_FLIGHT" and slot.completion_event is not None
             ]
             if not pending:
                 break
@@ -662,7 +741,7 @@ class HybridControlOracleWorker:
                 break
             sleep(0.001)
         for slot in self.resources.slots:
-            if slot.state == "PENDING" and slot.completion_event is not None:
+            if slot.state == "D2H_IN_FLIGHT" and slot.completion_event is not None:
                 if not bool(slot.completion_event.query()):
                     raise ControlV2EvidenceError(
                         "diagnostic D2H cleanup did not complete before timeout"
@@ -722,6 +801,17 @@ class HybridControlOracleWorker:
             "d2h_transfer_time_ms": timing["timing_total_ms"],
             "d2h_timing_telemetry": timing,
             "cpu_oracle_time_ms": self.cpu_oracle_time_ms,
+            "cpu_service_seconds": _timing_summary(self.cpu_service_seconds),
+            "slot_occupancy_seconds": _timing_summary(self.slot_occupancy_seconds),
+            "enqueue_interval_seconds": _timing_summary(
+                [
+                    current - previous
+                    for previous, current in zip(
+                        self.enqueue_host_times, self.enqueue_host_times[1:]
+                    )
+                ]
+            ),
+            "ring_high_water_mark": self.ring_high_water_mark,
             "persistent_gpu_source_bytes": 0,
             "rust_tensor_bytes": 0,
             "ring_write_sequence": list(self.ring_write_sequence),

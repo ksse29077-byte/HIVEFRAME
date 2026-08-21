@@ -47,7 +47,9 @@ CANDIDATE_AGGREGATE_BYTES = 1_448_079_360
 CONTROL_STEP_UPPER_BOUND = 20
 CONTROL_ORACLE_D2H_BYTES = CANDIDATE_AGGREGATE_BYTES * CONTROL_STEP_UPPER_BOUND
 CONTROL_TRANSFER_LIMIT_BYTES = 32 * 1024**3
-PINNED_RING_DEPTH = 2
+TRACE_MEASURED_MAX_IN_FLIGHT = 3
+RING_SAFETY_SLOT_COUNT = 1
+PINNED_RING_DEPTH = TRACE_MEASURED_MAX_IN_FLIGHT + RING_SAFETY_SLOT_COUNT
 PINNED_HOST_TOTAL_BYTES = CANDIDATE_SLOT_BYTES * PINNED_RING_DEPTH
 HOST_SOURCE_CACHE_BYTES = CANDIDATE_AGGREGATE_BYTES
 GPU_SHARED_STAGING_BYTES = CANDIDATE_SLOT_BYTES
@@ -323,11 +325,47 @@ def _allocator_adjusted_incremental_bytes() -> int:
     )
 
 
+def build_ring_capacity_admission(
+    *,
+    current_available_ram_bytes: int,
+    required_slots: int = PINNED_RING_DEPTH,
+    actual_slot_bytes: int = CANDIDATE_SLOT_BYTES,
+    required_host_reserve_bytes: int = HOST_OS_COMFY_RESERVE_BYTES,
+    non_ring_runtime_reserve_bytes: int = HOST_SOURCE_CACHE_BYTES,
+) -> dict[str, Any]:
+    """Admit the trace-derived ring without double-counting existing pinned RAM."""
+
+    if required_slots < 2 or actual_slot_bytes <= 0:
+        raise ValueError("ring capacity inputs must be positive")
+    available_ring_bytes = max(
+        0,
+        int(current_available_ram_bytes)
+        - int(required_host_reserve_bytes)
+        - int(non_ring_runtime_reserve_bytes),
+    )
+    maximum_slots = available_ring_bytes // int(actual_slot_bytes)
+    total_pinned_bytes = int(required_slots) * int(actual_slot_bytes)
+    return {
+        "available_system_ram_bytes": int(current_available_ram_bytes),
+        "required_host_reserve_bytes": int(required_host_reserve_bytes),
+        "non_ring_runtime_reserve_bytes": int(non_ring_runtime_reserve_bytes),
+        "available_ring_bytes": available_ring_bytes,
+        "actual_slot_bytes": int(actual_slot_bytes),
+        "measured_maximum_in_flight": TRACE_MEASURED_MAX_IN_FLIGHT,
+        "safety_slot_count": RING_SAFETY_SLOT_COUNT,
+        "required_slots": int(required_slots),
+        "maximum_slots": maximum_slots,
+        "total_pinned_bytes": total_pinned_bytes,
+        "admitted": int(required_slots) <= maximum_slots,
+    }
+
+
 def build_runtime_admission(
     *,
     physical_ram_bytes: int,
     current_available_ram_bytes: int,
     physical_vram_bytes: int = PHYSICAL_VRAM_BYTES,
+    ring_depth: int = PINNED_RING_DEPTH,
 ) -> dict[str, Any]:
     """Build conservative 12 GB and simulated 24 GB+ memory ledgers."""
 
@@ -338,14 +376,23 @@ def build_runtime_admission(
         + CUDA_BOOKKEEPING_RESERVE_BYTES
     )
     vram_headroom = int(physical_vram_bytes) - balanced_peak
-    host_increment = HOST_SOURCE_CACHE_BYTES + PINNED_HOST_TOTAL_BYTES
+    ring_admission = build_ring_capacity_admission(
+        current_available_ram_bytes=current_available_ram_bytes,
+        required_slots=ring_depth,
+    )
+    pinned_host_total_bytes = CANDIDATE_SLOT_BYTES * int(ring_depth)
+    host_increment = HOST_SOURCE_CACHE_BYTES + pinned_host_total_bytes
     host_peak = HISTORICAL_SYSTEM_RAM_PEAK_BYTES + host_increment
     host_headroom = int(physical_ram_bytes) - host_peak
     host_current_allocation_safe = (
         int(current_available_ram_bytes) >= host_increment + HOST_OS_COMFY_RESERVE_BYTES
     )
     host_historical_peak_safe = host_headroom >= HOST_OS_COMFY_RESERVE_BYTES
-    host_safe = host_current_allocation_safe and host_historical_peak_safe
+    host_safe = (
+        host_current_allocation_safe
+        and host_historical_peak_safe
+        and bool(ring_admission["admitted"])
+    )
     balanced_safe = balanced_peak < int(physical_vram_bytes) and host_safe
 
     common = {
@@ -367,14 +414,16 @@ def build_runtime_admission(
         "GPU_STAGING_BYTES": metric(GPU_SHARED_STAGING_BYTES, "PROJECTED", "bytes"),
         "GPU_METRIC_BUFFER_BYTES": metric(GPU_METRIC_BUFFER_BYTES, "PROJECTED", "bytes"),
         "PINNED_RING_SLOT_BYTES": metric(CANDIDATE_SLOT_BYTES, "DESIGN_BOUND", "bytes"),
-        "PINNED_RING_DEPTH": metric(PINNED_RING_DEPTH, "DESIGN_BOUND", "count"),
-        "PINNED_HOST_TOTAL_BYTES": metric(PINNED_HOST_TOTAL_BYTES, "DESIGN_BOUND", "bytes"),
+        "PINNED_RING_DEPTH": metric(int(ring_depth), "TRACE_DERIVED_BOUND", "count"),
+        "PINNED_HOST_TOTAL_BYTES": metric(
+            pinned_host_total_bytes, "RAM_ADMITTED_BOUND", "bytes"
+        ),
         "CONTROL_ORACLE_D2H_BYTES": metric(CONTROL_ORACLE_D2H_BYTES, "PROJECTED", "bytes"),
         "CONTROL_ORACLE_H2D_BYTES": metric(0, "STRUCTURAL_ZERO", "bytes"),
         "DUPLICATE_D2H_AVOIDED_BYTES": metric(0, "STRUCTURAL_ZERO", "bytes"),
         "DUPLICATE_H2D_AVOIDED_BYTES": metric(0, "STRUCTURAL_ZERO", "bytes"),
         "CUDA_STREAM_COUNT": metric(1, "DESIGN_BOUND", "count"),
-        "CUDA_EVENT_COUNT": metric(PINNED_RING_DEPTH, "DESIGN_BOUND", "count"),
+        "CUDA_EVENT_COUNT": metric(int(ring_depth), "DESIGN_BOUND", "count"),
         "HOT_PATH_FORCED_SYNC_COUNT": metric(0, "STRUCTURAL_ZERO", "count"),
         "BACKGROUND_EVENT_WAIT_COUNT": metric(None, "NOT_EXECUTED", "count"),
         "RING_BACKPRESSURE_COUNT": metric(None, "NOT_EXECUTED", "count"),
@@ -417,7 +466,8 @@ def build_runtime_admission(
                 "historical_system_peak_bytes": HISTORICAL_SYSTEM_RAM_PEAK_BYTES,
                 "historical_process_tree_rss_peak_bytes": HISTORICAL_PROCESS_TREE_RSS_PEAK_BYTES,
                 "source_cache_bytes": HOST_SOURCE_CACHE_BYTES,
-                "pinned_ring_bytes": PINNED_HOST_TOTAL_BYTES,
+                "pinned_ring_bytes": pinned_host_total_bytes,
+                "ring_capacity_admission": ring_admission,
                 "expected_peak_bytes": host_peak,
                 "physical_ram_bytes": int(physical_ram_bytes),
                 "current_available_ram_bytes": int(current_available_ram_bytes),

@@ -106,7 +106,7 @@ class H3RowRegionSafetyControlV2Tests(unittest.TestCase):
             completion_event=completion,
             timing_start_event=timing,
             timing_end_event=object(),
-            state="PENDING",
+            state="D2H_IN_FLIGHT",
             metadata={"source_identity": "pending"},
         )
         result = D2HEventFinalizer().try_finalize(slot)
@@ -123,7 +123,7 @@ class H3RowRegionSafetyControlV2Tests(unittest.TestCase):
             completion_event=completion,
             timing_start_event=timing,
             timing_end_event=object(),
-            state="PENDING",
+            state="D2H_IN_FLIGHT",
             metadata={"source_identity": "complete"},
         )
         finalizer = D2HEventFinalizer()
@@ -144,11 +144,12 @@ class H3RowRegionSafetyControlV2Tests(unittest.TestCase):
             completion_event=completion,
             timing_start_event=timing,
             timing_end_event=object(),
-            state="PENDING",
+            state="D2H_IN_FLIGHT",
             metadata={"source_identity": "complete"},
         )
         result = D2HEventFinalizer().try_finalize(slot)
         self.assertTrue(result["admitted"])
+        self.assertEqual(slot.state, "CPU_READY")
         self.assertEqual(result["timing"]["status"], "MEASURED_CUDA_EVENT")
         self.assertEqual(result["timing"]["value"], 0.5)
         self.assertEqual(timing.calls, 1)
@@ -160,7 +161,7 @@ class H3RowRegionSafetyControlV2Tests(unittest.TestCase):
             completion_event=object(),
             timing_start_event=object(),
             timing_end_event=object(),
-            state="PENDING",
+            state="FINALIZED",
             metadata={"source_identity": "complete"},
         )
         finalizer = D2HEventFinalizer()

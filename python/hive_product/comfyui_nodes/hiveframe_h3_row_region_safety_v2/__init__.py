@@ -38,6 +38,7 @@ from hive_product.h3_row_region_safety_v2 import (
     PreallocatedPinnedRing,
     settings_digest as v2_settings_digest,
 )
+from hive_product.h3_hybrid_cache_staging import build_ring_capacity_admission
 
 
 RECEIPT_ENV = "HIVEFRAME_H3_ROW_REGION_V2_RECEIPT"
@@ -58,8 +59,21 @@ def _write_json(path_value: str | None, payload: dict[str, Any]) -> None:
 
 
 try:
-    _RESOURCES = PreallocatedPinnedRing(torch)
     _memory = psutil.virtual_memory()
+    _ring_admission = build_ring_capacity_admission(
+        current_available_ram_bytes=int(_memory.available)
+    )
+    if not _ring_admission["admitted"]:
+        raise RuntimeError("available host RAM cannot admit the required pinned ring")
+    _RESOURCES = PreallocatedPinnedRing(
+        torch, slot_count=int(_ring_admission["required_slots"])
+    )
+    _memory_after = psutil.virtual_memory()
+    if int(_memory_after.available) < (
+        int(_ring_admission["required_host_reserve_bytes"])
+        + int(_ring_admission["non_ring_runtime_reserve_bytes"])
+    ):
+        raise RuntimeError("host reserve fell below the post-allocation requirement")
     _RESOURCE_ERROR: BaseException | None = None
     _write_json(
         os.environ.get(ADMISSION_ENV),
@@ -67,8 +81,10 @@ try:
             "status": "PASS",
             "page_locked": all(slot.payload.is_pinned() for slot in _RESOURCES.slots),
             "pinned_host_bytes": _RESOURCES.allocated_bytes,
+            "ring_capacity": _ring_admission,
             "physical_ram_bytes": int(_memory.total),
-            "available_ram_after_pinned_bytes": int(_memory.available),
+            "available_ram_before_pinned_bytes": int(_memory.available),
+            "available_ram_after_pinned_bytes": int(_memory_after.available),
             "process_id": os.getpid(),
         },
     )
