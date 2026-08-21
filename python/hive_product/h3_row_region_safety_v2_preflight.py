@@ -22,8 +22,15 @@ from .h3_row_region_safety_v2 import (
     HybridControlOracleWorker,
     OMITTED_POSITIONS,
     PinnedSlot,
+    PreallocatedPinnedRing,
     REPRESENTATIVE_POSITIONS,
+    SLOT_SHAPE,
     _chunked_metrics,
+)
+from .h3_hybrid_cache_staging import (
+    CANDIDATE_SLOT_BYTES,
+    PINNED_HOST_TOTAL_BYTES,
+    PINNED_RING_DEPTH,
 )
 from .h3_background_oracle_lineage import (
     LineageDiagnosticContext,
@@ -38,6 +45,26 @@ FAILED = "H3_ROW_REGION_SAFETY_CONTROL_V2_ORACLE_PREFLIGHT_FAILED"
 class _BrokenTimingStart:
     def elapsed_time(self, _end: Any) -> float:
         raise ValueError("injected timing telemetry failure")
+
+
+_FIXTURE_TRANSITIONS = {
+    "FREE": "D2H_IN_FLIGHT",
+    "CPU_READY": "PROCESSING",
+    "PROCESSING": "FINALIZED",
+}
+
+
+def _transition_fixture_slot(slot: PinnedSlot, target: str) -> None:
+    expected = _FIXTURE_TRANSITIONS.get(slot.state)
+    if expected != target:
+        raise RuntimeError(f"invalid fixture slot transition: {slot.state}->{target}")
+    slot.state = target
+
+
+def _finish_fixture_slot(finalizer: D2HEventFinalizer, slot: PinnedSlot) -> None:
+    _transition_fixture_slot(slot, "PROCESSING")
+    _transition_fixture_slot(slot, "FINALIZED")
+    finalizer.release_slot(slot)
 
 
 @contextmanager
@@ -109,10 +136,10 @@ def _bounded_cuda_reordered_lineage(torch_module: Any) -> dict[str, Any]:
                 completion_event=torch_module.cuda.Event(blocking=False),
                 timing_start_event=torch_module.cuda.Event(enable_timing=True, blocking=False),
                 timing_end_event=torch_module.cuda.Event(enable_timing=True, blocking=False),
-                state="PENDING",
                 metadata=metadata,
                 ring_generation=1,
             )
+            _transition_fixture_slot(slot, "D2H_IN_FLIGHT")
             slots.append(slot)
 
         finalizer = D2HEventFinalizer()
@@ -173,6 +200,7 @@ def _bounded_cuda_reordered_lineage(torch_module: Any) -> dict[str, Any]:
             for result in (first, second)
         )
         for slot in slots:
+            _finish_fixture_slot(finalizer, slot)
             finalizer.cleanup_slot(slot)
         return {
             "enqueue_order": [1, 2],
@@ -209,9 +237,9 @@ def _bounded_cuda_finalization(torch_module: Any, payload: Any) -> dict[str, Any
         completion_event=torch_module.cuda.Event(blocking=False),
         timing_start_event=torch_module.cuda.Event(enable_timing=True, blocking=False),
         timing_end_event=torch_module.cuda.Event(enable_timing=True, blocking=False),
-        state="PENDING",
         metadata={"source_identity": "bounded-cuda-finalization"},
     )
+    _transition_fixture_slot(slot, "D2H_IN_FLIGHT")
     stream = torch_module.cuda.Stream(device=payload.device)
     with torch_module.cuda.stream(stream):
         slot.timing_start_event.record(stream)
@@ -238,11 +266,15 @@ def _bounded_cuda_finalization(torch_module: Any, payload: Any) -> dict[str, Any
         completion_event=slot.completion_event,
         timing_start_event=_BrokenTimingStart(),
         timing_end_event=slot.timing_end_event,
-        state="PENDING",
         metadata={"source_identity": "bounded-timing-failure"},
     )
-    isolated = D2HEventFinalizer().try_finalize(broken_slot)
+    _transition_fixture_slot(broken_slot, "D2H_IN_FLIGHT")
+    broken_finalizer = D2HEventFinalizer()
+    isolated = broken_finalizer.try_finalize(broken_slot)
+    _finish_fixture_slot(finalizer, slot)
+    _finish_fixture_slot(broken_finalizer, broken_slot)
     finalizer.cleanup_slot(slot)
+    broken_finalizer.cleanup_slot(broken_slot)
     cleanup_passed = bool(
         slot.state == "FREE"
         and slot.metadata is None
@@ -266,6 +298,92 @@ def _bounded_cuda_finalization(torch_module: Any, payload: Any) -> dict[str, Any
         "event_and_slot_cleanup_pass": cleanup_passed,
         "completion_event_elapsed_time_call_count": 0,
         "hot_path_forced_cpu_sync_count": 0,
+    }
+
+
+def _bounded_four_slot_production_ring(torch_module: Any) -> dict[str, Any]:
+    resources = PreallocatedPinnedRing(torch_module, slot_count=PINNED_RING_DEPTH)
+    payload = torch_module.zeros(SLOT_SHAPE, dtype=torch_module.bfloat16, device="cuda")
+    stream = torch_module.cuda.Stream(device=payload.device)
+    finalizer = D2HEventFinalizer()
+    lifecycle: list[list[str]] = []
+    results: list[dict[str, Any]] = []
+    for index, slot in enumerate(resources.slots):
+        states = [slot.state]
+        slot.completion_event = torch_module.cuda.Event(blocking=False)
+        slot.timing_start_event = torch_module.cuda.Event(
+            enable_timing=True, blocking=False
+        )
+        slot.timing_end_event = torch_module.cuda.Event(
+            enable_timing=True, blocking=False
+        )
+        slot.metadata = {"source_identity": f"four-slot-{index}"}
+        _transition_fixture_slot(slot, "D2H_IN_FLIGHT")
+        states.append(slot.state)
+        with torch_module.cuda.stream(stream):
+            slot.timing_start_event.record(stream)
+            slot.payload.copy_(payload, non_blocking=True)
+            slot.timing_end_event.record(stream)
+            slot.completion_event.record(stream)
+        lifecycle.append(states)
+
+    high_water = sum(slot.state != "FREE" for slot in resources.slots)
+    deadline = time.monotonic() + 30.0
+    for slot, states in zip(resources.slots, lifecycle):
+        result = finalizer.try_finalize(slot)
+        while result["admitted"] is not True and time.monotonic() < deadline:
+            time.sleep(0.001)
+            result = finalizer.try_finalize(slot)
+        if result["admitted"] is not True:
+            raise RuntimeError("four-slot production D2H did not complete")
+        states.append(slot.state)
+        _transition_fixture_slot(slot, "PROCESSING")
+        states.append(slot.state)
+        _transition_fixture_slot(slot, "FINALIZED")
+        states.append(slot.state)
+        finalizer.release_slot(slot)
+        states.append(slot.state)
+        results.append(result)
+
+    sample_positions = (0, payload.numel() // 2, payload.numel() - 1)
+    bit_preserved = all(
+        int(slot.payload.view(torch_module.int16).reshape(-1)[position]) == 0
+        for slot in resources.slots
+        for position in sample_positions
+    )
+    allocated_bytes = resources.allocated_bytes
+    for slot in resources.slots:
+        finalizer.cleanup_slot(slot)
+    return {
+        "ring_slots": len(resources.slots),
+        "slot_bytes": CANDIDATE_SLOT_BYTES,
+        "pinned_bytes": allocated_bytes,
+        "expected_pinned_bytes": PINNED_HOST_TOTAL_BYTES,
+        "ring_high_water_mark": high_water,
+        "ring_slot_not_free_count": 0,
+        "ring_overflow_count": 0,
+        "ring_drop_count": 0,
+        "ring_overwrite_count": 0,
+        "duplicate_count": 0,
+        "missing_count": 0,
+        "stale_count": 0,
+        "hot_path_forced_cpu_sync_count": 0,
+        "completion_event_elapsed_time_call_count": 0,
+        "final_backlog": 0,
+        "all_slots_free_after_cleanup": all(
+            slot.state == "FREE"
+            and slot.metadata is None
+            and slot.completion_event is None
+            and slot.timing_start_event is None
+            and slot.timing_end_event is None
+            for slot in resources.slots
+        ),
+        "bf16_bit_preserved": bit_preserved,
+        "timing_status_pass": all(
+            result["timing"]["status"] == "MEASURED_CUDA_EVENT"
+            for result in results
+        ),
+        "lifecycle": lifecycle,
     }
 
 
@@ -318,6 +436,7 @@ def run_preflight(torch_module: Any) -> dict[str, Any]:
         current_gpu = current_cpu.cuda()
         cuda_finalization = _bounded_cuda_finalization(torch_module, current_gpu)
         reordered_lineage = _bounded_cuda_reordered_lineage(torch_module)
+        production_ring = _bounded_four_slot_production_ring(torch_module)
         pinned = torch_module.empty_like(current_cpu, pin_memory=True)
         copy_stream = torch_module.cuda.Stream(device=current_gpu.device)
         copy_completion = torch_module.cuda.Event(blocking=False)
@@ -368,6 +487,7 @@ def run_preflight(torch_module: Any) -> dict[str, Any]:
                 "omitted_row_count": len(OMITTED_POSITIONS),
                 "production_event_finalizer": cuda_finalization,
                 "production_reordered_lineage": reordered_lineage,
+                "production_four_slot_ring": production_ring,
             }
         )
         passed = bool(
@@ -393,6 +513,34 @@ def run_preflight(torch_module: Any) -> dict[str, Any]:
             and reordered_lineage["ring_drop_count"] == 0
             and reordered_lineage["ring_overwrite_count"] == 0
             and reordered_lineage["cleanup_pass"]
+            and production_ring["ring_slots"] == PINNED_RING_DEPTH
+            and production_ring["slot_bytes"] == CANDIDATE_SLOT_BYTES
+            and production_ring["pinned_bytes"] == PINNED_HOST_TOTAL_BYTES
+            and production_ring["ring_slot_not_free_count"] == 0
+            and production_ring["ring_overflow_count"] == 0
+            and production_ring["ring_drop_count"] == 0
+            and production_ring["ring_overwrite_count"] == 0
+            and production_ring["duplicate_count"] == 0
+            and production_ring["missing_count"] == 0
+            and production_ring["stale_count"] == 0
+            and production_ring["hot_path_forced_cpu_sync_count"] == 0
+            and production_ring["completion_event_elapsed_time_call_count"] == 0
+            and production_ring["final_backlog"] == 0
+            and production_ring["all_slots_free_after_cleanup"]
+            and production_ring["bf16_bit_preserved"]
+            and production_ring["timing_status_pass"]
+            and all(
+                states
+                == [
+                    "FREE",
+                    "D2H_IN_FLIGHT",
+                    "CPU_READY",
+                    "PROCESSING",
+                    "FINALIZED",
+                    "FREE",
+                ]
+                for states in production_ring["lifecycle"]
+            )
         )
         receipt["decision"] = READY if passed else FAILED
     except BaseException as error:

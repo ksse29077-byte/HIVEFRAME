@@ -2312,6 +2312,34 @@ no CONTROL was started. See the detailed
 
 ---
 
+## 2026-08-21 - H3 preflight fixture migration and Formal CONTROL V2
+
+Issue #131 and Draft PR #132 started from exact Draft PR #130 head
+`c10d2e559b5fc70b69615fcec8d3c864a4302afe`. The stale `PENDING` preflight
+fixture state was migrated to the strict production lifecycle without
+relaxing the production finalizer. Focused tests passed 33/33, the broader H3
+set passed 74/74, release PyO3/Rust passed 15/15 and 12/12, and the bounded
+four-slot CUDA preflight passed with all integrity and synchronization
+counters at zero.
+
+All fixed P1-A2 identity, queue, ownership, workflow, CUDA projection, and
+runtime Admission Gates passed. The one authorized Standard Full Compute
+CONTROL was submitted once and reached GPU execution, but failed closed after
+one progress record because the live CPU oracle lag would overwrite the
+four-slot pinned ring. Submission/GPU start/completion was 1/1/0;
+retry/fallback/SELECTIVE/partial-Q/omission was 0/0/0/0/0.
+
+No partial evidence was admitted. Holdout, planned Q reduction, output
+integrity, Rust live compile, and offline replay remain unestablished. The
+owned runtime tree was stopped without foreign or direct console-helper
+termination; port 8191, external queues, and the 10 MiB GPU baseline were
+restored. The final decision is
+`H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_FAILED`; no follow-up work was
+started. See the detailed
+[worklog](worklogs/2026-08-21-h3-preflight-fixture-state-migration-and-formal-control-v2.md).
+
+---
+
 ## Entry template
 
 ```markdown

@@ -1,0 +1,103 @@
+schema_version: hiveframe.knowledge.h3-preflight-fixture-migration-formal-control-v2.1
+recorded_at: 2026-08-21
+issue: 131
+pull_request: 132
+exact_base_commit: c10d2e559b5fc70b69615fcec8d3c864a4302afe
+implementation_commit: f3b72b59307f18e196ff86fa144421a7b1892f73
+decision: H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_FAILED
+fixture_migration:
+  lifecycle: [FREE, D2H_IN_FLIGHT, CPU_READY, PROCESSING, FINALIZED, FREE]
+  production_finalizer_relaxed: false
+  legacy_pending_rejected: true
+  focused_tests: 33/33 PASS
+  full_h3_tests: 74/74 PASS
+bounded_cuda_preflight:
+  decision: H3_ROW_REGION_SAFETY_CONTROL_V2_ORACLE_PREFLIGHT_READY
+  ring_slots: 4
+  slot_bytes: 48269312
+  pinned_bytes: 193077248
+  saturation_high_water: 4
+  ring_slot_not_free: 0
+  overflow_drop_overwrite: [0, 0, 0]
+  duplicate_missing_stale: [0, 0, 0]
+  hot_path_forced_sync: 0
+  final_backlog: 0
+  all_slots_free_after_cleanup: true
+  receipt_sha256: fc143aeae5ed41a2aefb6dc1ca9c80b885bd8bded5e54845ad2fbda918277713
+release_abi:
+  pyo3_tests: 15/15 PASS
+  pyo3_skips: 0
+  rust_cache_plan_tests: 12/12 PASS
+  rust_tensor_bytes: 0
+  rust_calls_per_generation_max: 1
+  rust_hot_path_calls: 0
+  extension_sha256: f63d99fcded29b78e64059a3c5145fa7c43cf51670dbb65c3250994052e7df2f
+repository_verification:
+  cargo_fmt: PASS
+  cargo_test_workspace_all_features: 50/50 PASS
+  cargo_build_release_workspace_all_features: PASS
+  cargo_clippy_workspace_all_targets_all_features: BLOCKED_PREEXISTING
+  clippy_reason: manual_div_ceil diagnostics in locality.rs lines 243 and 244
+admission:
+  p1_a2_prompt_digest_exact: true
+  p1_a2_input_digest_exact: true
+  workflow_digest_exact: true
+  external_active_jobs: 0
+  foreign_comfy_processes: 0
+  port_8191_before: FREE
+  pre_start: PASS
+  post_start: PASS
+  projected_cuda_peak_bytes: 12514625897
+  physical_vram_bytes: 12884377600
+  projected_headroom_bytes: 369751703
+  minimum_headroom_bytes: 268435456
+counters:
+  prior_cumulative_formal_control_submissions: 2
+  current_task_submission: 1
+  current_task_gpu_start: 1
+  current_task_completion: 0
+  final_cumulative_formal_control_submissions: 3
+  current_task_retry: 0
+  fallback_generation: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+execution:
+  fixed_profile: H3 Standard Full Compute I2V
+  sampler_progress_records: 1
+  terminal_event: execution_error
+  runner_wall_seconds: 133.40231989999302
+failure:
+  phase: live_h3_cpu_oracle_enqueue
+  error_type: ControlV2EvidenceError
+  error_message: CPU oracle lag would overwrite the pinned ring
+  root_cause: LIVE_H3_PRODUCER_BURST_EXCEEDED_FOUR_SLOT_CPU_ORACLE_PROGRESS
+  fail_closed: true
+  partial_evidence_admitted: false
+evidence:
+  expected_enqueue_600: NOT_ESTABLISHED
+  expected_evidence_480: NOT_ESTABLISHED
+  holdout_false_safe: NOT_ESTABLISHED
+  holdout_false_unsafe: NOT_ESTABLISHED
+  planned_q_reduction: NOT_ESTABLISHED
+  output_integrity: NOT_ESTABLISHED
+  rust_live_compile: 0
+  rust_offline_replay: 0
+  private_receipt_sha256: 46190416d72301e32a636238c9a40eca89c4c8e1e63278dbb497f141b885e714
+  callback_receipt_sha256: c5f71cf734b2e7d362933ab9ec3698b2b33d914442b81c18b7d8b49f7bc79fe2
+  pinned_admission_sha256: f848b4accc7d40529e11331e28bf97743e708dab28296aae85dfdc64d5021650
+  runtime_log_sha256: b819e56c1bce62d1381c867a9ae1e1cd0ae91320eeb3ef3d6de7030e0dbcda8b
+cleanup:
+  owned_runtime_tree_stopped: true
+  listener_8191_after: 0
+  runtime_candidates_after: 0
+  external_active_jobs_after: 0
+  foreign_process_termination: 0
+  console_helper_direct_termination: 0
+  gpu_used_mib_after: 10
+authorization:
+  exception_ended: true
+  additional_control_authorized: false
+  remediation_started: false
+  executor_integration_started: false
+  next_step_automatic: none

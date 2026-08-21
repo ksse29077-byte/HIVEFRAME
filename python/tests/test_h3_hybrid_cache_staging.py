@@ -13,7 +13,10 @@ from hive_product.h3_hybrid_cache_staging import (
     HOST_SOURCE_CACHE_BYTES,
     PINNED_HOST_TOTAL_BYTES,
     PINNED_RING_DEPTH,
+    HybridPreflightError,
     HybridControlOracleRing,
+    _PinnedSlot,
+    _transition_preflight_slot,
     build_runtime_admission,
     build_ring_capacity_admission,
     calibration_gate,
@@ -28,6 +31,42 @@ PHYSICAL_VRAM_BYTES = 12_884_377_600
 
 
 class H3HybridCacheStagingTests(unittest.TestCase):
+    def test_preflight_slot_lifecycle_is_strict_and_complete(self):
+        slot = _PinnedSlot(payload=object(), event=object())
+        observed = [slot.state]
+        for state in (
+            "D2H_IN_FLIGHT",
+            "CPU_READY",
+            "PROCESSING",
+            "FINALIZED",
+            "FREE",
+        ):
+            _transition_preflight_slot(slot, state)
+            observed.append(slot.state)
+        self.assertEqual(
+            observed,
+            [
+                "FREE",
+                "D2H_IN_FLIGHT",
+                "CPU_READY",
+                "PROCESSING",
+                "FINALIZED",
+                "FREE",
+            ],
+        )
+
+    def test_preflight_slot_rejects_legacy_unknown_and_skipped_states(self):
+        for current, target in (
+            ("PENDING", "CPU_READY"),
+            ("UNKNOWN", "FREE"),
+            ("FREE", "PROCESSING"),
+            ("D2H_IN_FLIGHT", "FINALIZED"),
+            ("CPU_READY", "FREE"),
+        ):
+            slot = _PinnedSlot(payload=object(), event=object(), state=current)
+            with self.assertRaises(HybridPreflightError):
+                _transition_preflight_slot(slot, target)
+
     def test_balanced_profile_has_no_gpu_source_or_control_h2d(self):
         result = build_runtime_admission(
             physical_ram_bytes=PHYSICAL_RAM_BYTES,

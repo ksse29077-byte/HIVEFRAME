@@ -50,6 +50,7 @@ from .h3_hybrid_cache_staging import (
     CANDIDATE_SLOT_BYTES,
     PINNED_RING_DEPTH,
     PINNED_HOST_TOTAL_BYTES,
+    TRACE_MEASURED_MAX_IN_FLIGHT,
     build_runtime_admission,
 )
 from .h3_row_region_safety import CACHE_HARD_CAP_BYTES, FULL_Q_ROWS, MAX_EVIDENCE_RECORDS, generation_candidates, generation_identity
@@ -683,7 +684,9 @@ def run_control(
             "final_slot_states_all_free": final_slot_states
             == ["FREE"] * PINNED_RING_DEPTH,
             "ring_high_water_bounded": isinstance(oracle.get("ring_high_water_mark"), int)
-            and 0 < int(oracle["ring_high_water_mark"]) <= PINNED_RING_DEPTH,
+            and 0
+            < int(oracle["ring_high_water_mark"])
+            <= TRACE_MEASURED_MAX_IN_FLIGHT,
             "cardinality_exact": cardinality["passed"] is True,
             "producer_arrival_rate_measured": isinstance(
                 oracle.get("producer_arrival_rate_records_per_second"), (int, float)
