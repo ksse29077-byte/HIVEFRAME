@@ -1,0 +1,58 @@
+schema_version: hiveframe.knowledge.h3-background-oracle-step-lineage-remediation.1
+recorded_at: 2026-08-21
+issue: 123
+pull_request: 124
+exact_base_commit: dd06404dfc7080b3aeb3293b93d9c1ae0edcb5e5
+decision: H3_BACKGROUND_ORACLE_STEP_LINEAGE_REMEDIATION_BLOCKED
+root_cause: UNKNOWN
+gate:
+  root_cause_proven: false
+  speculative_fix_allowed: false
+  contract_edit_started: false
+  bounded_cuda_started: false
+retained_trace:
+  sampler_progress: 20/20
+  actual_model_forward_order: NOT_PRESERVED
+  scheduler_timestep_order: NOT_PRESERVED
+  failing_source_step: NOT_PRESERVED
+  failing_current_step: NOT_PRESERVED
+  enqueue_order: NOT_PRESERVED
+  completion_order: NOT_PRESERVED
+  ring_write_order: NOT_PRESERVED
+  finalizer_read_order: NOT_PRESERVED
+  first_mismatch: NOT_PRESERVED
+  records_before_mismatch: NOT_PRESERVED
+  block_region_identity: NOT_PRESERVED
+  attention_call_order: NOT_PRESERVED
+source_audit:
+  worker_step_semantics: synthetic_denoise_ordinal_from_block_call_count
+  raw_scheduler_timestep_used_by_failed_predicate: false
+  controller_receives_scheduler_sequence: false
+  worker_consumer: single_fifo
+  compound_predicate_operands_preserved: false
+rust_contract:
+  source_step_semantics: denoise_ordinal
+  target_source_age_rule: target_step_equals_source_step_plus_one
+  raw_scheduler_timestep_carried: false
+  abi_version_changed: false
+  rust_calls: 0
+  rust_metadata_bytes: 0
+  rust_tensor_bytes: 0
+counters:
+  h3_model_loads: 0
+  generation_submissions: 0
+  control_submissions: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+  bounded_cuda_runs: 0
+  hot_path_forced_cpu_sync: 0
+evidence_digests:
+  callback_sha256: a4852a2d2d333599d836fab2ff5d0c157b1eaa50d90670463a401e52f3196c5c
+  runtime_log_sha256: 37672b9182fc89b7734cb72a40656457edb55157be71c6b5961c1731c82b6ebb
+  private_public_receipt_sha256: 74236c23198237c3d403c116ab1ab02ff126d9285050e6b744bda3a98d36ca5d
+authorization:
+  exception_ended: true
+  control_retry_authorized: false
+  executor_integration_started: false
+  next_step_automatic: none
