@@ -1,0 +1,98 @@
+schema_version: hiveframe.knowledge.h3-control-v2-finalize-event-remediation-retry.1
+recorded_at: 2026-08-21
+issue: 121
+pull_request: 122
+exact_base_commit: 318e24cb1d7c4fbc925f04ada77293c4111e24f3
+implementation_commit: 20c55605a2ef127a55638cb6a767fd7636a80eba
+decision: H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_RETRY_FAILED
+recovery_audit:
+  decision: NOT_POSSIBLE
+  full_compute_progress: 20/20
+  complete_holdout_records: NOT_PRESERVED
+  ring_sequence_and_counters: NOT_PRESERVED
+  lineage_records: NOT_PRESERVED
+  rust_plan: NOT_EXECUTED
+  output: NOT_PRESERVED
+remediation:
+  completion_event_role: nonblocking query only
+  timing_event_role: timing-enabled start.elapsed_time(end)
+  timing_error_isolation: PASS
+  timing_error_value: UNKNOWN
+  host_time_substituted_for_cuda_time: false
+  hot_path_forced_cpu_sync: 0
+  event_and_slot_cleanup: PASS
+verification:
+  focused_control_v2_tests: 13
+  adjacent_regression_tests: 55
+  adjacent_skips: 0
+  actual_cuda_finalizer_preflight: PASS
+  cuda_preflight_sha256: 21f967e3793b3f829b19530d711bb2892022190f4a905ac360b8fa7e36027e4b
+admission:
+  model_free: PASS
+  runtime_ownership_v2: PASS
+  queue_before_submission: 0/0
+  pinned_allocation: PASS
+  page_locked: true
+  projected_cuda_peak_bytes: 12514625897
+  physical_vram_bytes: 12884377600
+  projected_headroom_bytes: 369751703
+  minimum_headroom_bytes: 268435456
+  two_gib_reserve: UNSATISFIED_BY_BASELINE
+counters:
+  cumulative_control_submissions: 2
+  current_task_submissions: 1
+  current_task_gpu_starts: 1
+  current_task_completions: 0
+  current_task_retry_count: 0
+  fallback_generation: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+execution:
+  fixed_profile: H3 Standard Full Compute I2V
+  full_compute_progress: 20/20
+  terminal_event: execution_error
+  runner_wall_seconds: 794.0544819000643
+  final_progress_seconds_since_submit: 769.4026211000746
+failure:
+  phase: background_cpu_oracle
+  error_type: ControlV2EvidenceError
+  error_message: source lineage or step ordering changed
+  timing_event_failure_repeated: false
+  lineage_gate_failed_closed: true
+evidence:
+  full_attention_cardinality: NOT_ESTABLISHED
+  bounded_holdout_records: NOT_ESTABLISHED
+  false_safe: NOT_ESTABLISHED
+  false_unsafe: NOT_ESTABLISHED
+  planned_q_reduction: NOT_ESTABLISHED
+  ring_integrity: NOT_ESTABLISHED
+  d2h_h2d_final_counters: NOT_ESTABLISHED
+  rust_live_compile: 0
+  rust_offline_replay: 0
+  output_integrity: NOT_ESTABLISHED
+  partial_worker_state_admitted: false
+resources:
+  peak_nvidia_sampled_vram_bytes: 11724128256
+  peak_comfyui_sampled_vram_bytes: 12004259239
+  peak_process_tree_rss_bytes: 42465411072
+  peak_system_used_ram_bytes: 62966935552
+cleanup:
+  post_shutdown_ownership: PASS
+  listener_8191_after: 0
+  foreign_process_termination: 0
+  console_helper_direct_termination: 0
+  gpu_used_mib_after: 10
+  gpu_utilization_after: 0
+receipts:
+  private_receipt_sha256: 74236c23198237c3d403c116ab1ab02ff126d9285050e6b744bda3a98d36ca5d
+  public_summary_sha256: 74236c23198237c3d403c116ab1ab02ff126d9285050e6b744bda3a98d36ca5d
+  callback_sha256: a4852a2d2d333599d836fab2ff5d0c157b1eaa50d90670463a401e52f3196c5c
+  runtime_log_sha256: 37672b9182fc89b7734cb72a40656457edb55157be71c6b5961c1731c82b6ebb
+  pinned_admission_sha256: 0b4c72ca095f0ed96d580ea0d1d57590d084532fe80ffca185c018f923b832ff
+authorization:
+  exception_ended: true
+  additional_control_authorized: false
+  lineage_remediation_started: false
+  executor_integration_started: false
+  next_step_automatic: none

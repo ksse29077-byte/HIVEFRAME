@@ -246,7 +246,7 @@ flowchart LR
     ROWCTRL["Row/region CONTROL retry\n17/20; transfer and false-safe Gate failed"]
     GPUV2["GPU-local evidence V2\n3.173690% geometry; full CUDA source too large"]
     HYBRID["12 GB hybrid staging preflight\nhost BF16 CONTROL oracle; READY"]
-    CONTROLV2["H3 CONTROL V2\nseparate approval; not started"]
+    CONTROLV2["H3 CONTROL V2 retry\n20/20; lineage ordering failed"]
     DEFAULT["Current default\nFull Compute\nproduct speedup claim = 0"]
 
     C0 --> C1 --> C2
@@ -306,8 +306,8 @@ flowchart LR
     classDef safe fill:#dff5e1,stroke:#287a34,color:#111;
     classDef planned fill:#eeeeee,stroke:#777,color:#111,stroke-dasharray: 5 5;
     class C0,C1,C2,R1,R2,C4,C4S1,C4S1R1,A0,A1,A2,A3,A3G0,A3G0G,A3G1,HYBRID verified;
-    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G,A3G1G,ROWCTRL,GPUV2 rejected;
-    class C4A,C4F,A0G,CONTROLV2 planned;
+    class C3,R1Q,R2G,R3,R3G,R4,R4G,C4S1G,C4S1R1G,A1G,A2G,A3G,A3G1G,ROWCTRL,GPUV2,CONTROLV2 rejected;
+    class C4A,C4F,A0G planned;
     class DEFAULT safe;
 ```
 
@@ -397,8 +397,17 @@ potential, but full source residency is not admissible on the measured 12 GB
 peak. The bounded hybrid preflight now keeps the Full Compute CONTROL source in
 host BF16, uses two pinned ingress slots, and leaves only shared staging and
 compact metrics on CUDA. Its model-free CUDA, RAM, VRAM, Rust, and PyO3 Gates
-pass, but the 2 GiB VRAM reserve remains unsatisfied. CONTROL V2 is therefore a
-dashed, separately approved holdout; Full Compute remains the product default.
+pass, but the 2 GiB VRAM reserve remains unsatisfied.
+
+The first approved CONTROL V2 execution reached 20/20 Full Compute but failed
+because a timing-disabled completion Event was used for elapsed-time
+telemetry. A separately approved bounded remediation split completion from
+timing-enabled start/end Events and passed actual model-free CUDA finalization.
+Its single authorized H3 retry again reached 20/20, then failed the independent
+source-step lineage ordering contract before complete holdout, Rust plan, or
+output evidence was finalized. CONTROL V2 is rejected at this bounded
+finalization/lineage contract; no executor integration is admitted and Full
+Compute remains the product default.
 
 ## 5. Module ownership
 

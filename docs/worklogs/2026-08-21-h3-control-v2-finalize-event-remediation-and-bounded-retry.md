@@ -106,3 +106,72 @@ Preflight receipt SHA-256:
 Diagram impact remains none. This change repairs bounded adapter telemetry and
 evidence finalization without changing the Core/adapter boundary, compute
 authority, product execution flow, or Full Compute fallback.
+
+## Final retry Admission
+
+The exact pushed implementation head was
+`20c55605a2ef127a55638cb6a767fd7636a80eba`. The worktree was clean and Draft
+PR #122 remote head matched. External product jobs, foreign runtimes and
+listeners, and port 8191 occupancy were zero. The fixed input, prompt,
+workflow, model source, Standard profile, release PyO3, Rust, actual CUDA
+finalizer, host RAM, pinned-ring, and 256 MiB VRAM headroom Gates all passed.
+The 2 GiB reserve remained the explicitly authorized
+`UNSATISFIED_BY_BASELINE` condition.
+
+## Single authorized CONTROL retry
+
+The retry used the unchanged P1-A2 Standard I2V input and prompt, seed 101,
+864x480, 124 frames, 24 FPS, 20 steps, `res_multistep`, `simple`, unchanged
+precision/offload/checkpoint behavior, and Sage disabled. It executed Full
+Compute only. Current-task submission/GPU start/completion was 1/1/0. Current
+task retry, automatic fallback Generation, SELECTIVE, partial-Q, and Attention
+omission were 0/0/0/0/0.
+
+All 20/20 sampler progress events completed. The repaired finalizer did not
+repeat the timing-disabled Event `elapsed_time` failure. The background oracle
+instead failed its independent lineage safety contract: a retained source
+step did not satisfy `source_step + 1 == current_step` for the next consumed
+record. It raised `ControlV2EvidenceError: source lineage or step ordering
+changed`, which became `background CPU oracle failed` and terminal
+`execution_error`.
+
+The failure occurred before a complete immutable `attention_execution`
+receipt. Full Attention cardinality, the 480-record holdout, false-safe and
+false-unsafe, ring integrity, D2H/H2D final counters, planned Q reduction,
+Rust live compile/replay, and output integrity are therefore
+`NOT_ESTABLISHED`. Rust live/replay calls were 0/0 and no MP4 was admitted.
+Partial worker state is not reconstructed or used.
+
+The runner lifecycle was 794.054 seconds and final progress arrived 769.403
+seconds after submit. Peak sampled NVIDIA VRAM was 11,724,128,256 bytes, peak
+sampled ComfyUI VRAM was 12,004,259,239 bytes, peak process-tree RSS was
+42,465,411,072 bytes, and peak system RAM use was 62,966,935,552 bytes. These
+are sampled, not allocator-exact, values.
+
+Verified shutdown passed. The owned Python tree stopped, the console helper
+exited without direct termination, foreign-process termination was zero, port
+8191 had no listener, and the GPU returned to 10 MiB at zero utilization.
+
+Immutable retry receipt digests:
+
+- private/public summary:
+  `74236c23198237c3d403c116ab1ab02ff126d9285050e6b744bda3a98d36ca5d`
+- callback:
+  `a4852a2d2d333599d836fab2ff5d0c157b1eaa50d90670463a401e52f3196c5c`
+- runtime log:
+  `37672b9182fc89b7734cb72a40656457edb55157be71c6b5961c1731c82b6ebb`
+- pinned admission:
+  `0b4c72ca095f0ed96d580ea0d1d57590d084532fe80ffca185c018f923b832ff`
+
+Historical cumulative CONTROL submissions are 2. This task submitted 1 and
+performed zero internal retries. The final decision is:
+
+```text
+H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_RETRY_FAILED
+```
+
+The one-time exception ends here. No lineage remediation, additional CONTROL,
+executor integration, or subsequent research stage was started.
+
+Diagram impact: updated. The Living System Map now records the bounded retry
+and its lineage-ordering failure instead of showing CONTROL V2 as unstarted.
