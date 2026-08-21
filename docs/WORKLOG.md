@@ -2283,6 +2283,35 @@ remediation, CONTROL, or executor integration was started. See the detailed
 
 ---
 
+## 2026-08-21 - H3 CPU oracle ring backpressure throughput remediation
+
+Issue #127 and Draft PR #128 started from exact Draft PR #126 head
+`d1863ec359fb09f42f27f21adc50096e364e6563`. The actual trace proves a
+three-payload burst at sequences 31/32/33 but contains no enqueue or CPU
+service timestamps, so unavailable distributions were not fabricated.
+
+Production-shape CPU measurement selected one deterministic worker at 5.991
+records/s versus the 0.453 records/s observed producer bound. The ring is now
+RAM-admitted at four slots: measured maximum in flight three plus one safety
+slot, totaling 193,077,248 pinned bytes. Explicit D2H/CPU/finalization states,
+FREE-slot scanning, future timing/high-water telemetry, and fail-closed worker
+cleanup replace the fixed two-slot behavior.
+
+The exact 30/31/32/33 replay reproduces the old failure and passes with four
+slots. A full production-shape 20-step replay completed 600 enqueues and 480
+evidence calculations with all integrity counters and final backlog zero. The
+final 12-transfer RTX 3060 pinned-D2H stress preserved BF16 bits, matched CPU
+metrics exactly, used no hot-path sync, and restored the CUDA baseline.
+
+H3/model load, Generation, Formal CONTROL submission, SELECTIVE, partial-Q,
+Attention omission, Rust calls/tensor bytes, executor integration, and product
+wiring remained zero. The decision is
+`H3_CPU_ORACLE_RING_BACKPRESSURE_THROUGHPUT_REMEDIATION_READY_FOR_CONTROL`;
+no CONTROL was started. See the detailed
+[worklog](worklogs/2026-08-21-h3-cpu-oracle-ring-backpressure-throughput-remediation.md).
+
+---
+
 ## Entry template
 
 ```markdown
