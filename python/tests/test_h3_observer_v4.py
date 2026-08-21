@@ -161,17 +161,6 @@ class H3ObserverV4Tests(unittest.TestCase):
                 },
             },
         }
-        receipt = {
-            "status": "succeeded",
-            "backend": "minimax_h3_comfyui_local",
-            "model_contract": "MiniMax-H3",
-            "workflow_sha256": (
-                "31ab33fdb053a7834cc866bd7aa08b887518fc656e4a796c89779c6b5e1786e6"
-            ),
-            "metrics": {"retry_count": 0},
-            "reference_sha256": "a" * 64,
-            "nested": {"profile": profile},
-        }
         workflow = build_workflow(
             standard, run_digest="a" * 64, first_frame_name="frame.png"
         )
@@ -194,6 +183,17 @@ class H3ObserverV4Tests(unittest.TestCase):
             "sampler": "res_multistep",
             "scheduler": "simple",
             "sage_enabled": False,
+        }
+        receipt = {
+            "status": "succeeded",
+            "backend": "minimax_h3_comfyui_local",
+            "model_contract": "MiniMax-H3",
+            "workflow_sha256": (
+                "31ab33fdb053a7834cc866bd7aa08b887518fc656e4a796c89779c6b5e1786e6"
+            ),
+            "metrics": {"retry_count": 0},
+            "reference_sha256": "a" * 64,
+            "nested": {"profile": profile},
         }
         repository = Path(__file__).resolve().parents[2]
         temporary_root = repository / ".test-tmp"
