@@ -76,6 +76,14 @@ seven sources. Seven sources expose at most 261,072 planned rows, about
 1.693%, below the frozen three-percent Gate. The single authorized shared
 source exposes only 37,296 rows, 0.2418%.
 
+The candidate-only H2D budget independently makes the frozen Gate
+unreachable. Source age must be exactly one, so the 199 exact-oracle records
+need 199 distinct block-step source uploads. At 48,269,312 bytes each, that is
+9,605,593,088 bytes, about 8.946 GiB. The fixed 2 GiB H2D budget admits at
+most 44 exact records, or 102,564 planned rows, which is only 0.6649% of Full
+Q. This remains below three percent even if a valid host source cache is
+assumed to appear without any D2H cost.
+
 Host retention would fit the historical RAM envelope, but populating it in
 the same Generation requires the full-tensor D2H that V3 explicitly sets to
 zero. Implicit unified-memory migration, delayed CPU reads, or a compressed
@@ -89,6 +97,7 @@ implementation could only pass by doing at least one prohibited thing:
 
 - transfer candidate source tensors D2H,
 - retain multiple exact sources on the GPU,
+- raise the candidate-only H2D budget above 2 GiB,
 - weaken the exact oracle into an approximate sketch comparison, or
 - admit candidates without an exact oracle.
 

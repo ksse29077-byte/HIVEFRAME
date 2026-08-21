@@ -39,6 +39,11 @@ three_percent_lower_bound:
   minimum_simultaneous_block_sources: 13
   exact_source_bytes_per_block_region: 48269312
   minimum_exact_source_storage_bytes: 627501056
+  minimum_candidate_h2d_bytes: 9605593088
+  candidate_h2d_budget_bytes: 2147483648
+  maximum_exact_records_by_h2d_budget: 44
+  maximum_planned_rows_by_h2d_budget: 102564
+  maximum_reduction_ppm_by_h2d_budget: 6649
   projected_vram_headroom_bytes: 369751703
   maximum_sources_by_headroom: 7
   maximum_reduction_ppm_by_headroom: 16926
@@ -46,8 +51,10 @@ three_percent_lower_bound:
 blocking_reason: >-
   Exact same-generation source tensors cannot be supplied while full-tensor
   D2H, persistent per-candidate GPU payloads, and more than one shared staging
-  buffer are all prohibited; the resulting exact-oracle opportunity cannot
-  reach the frozen three-percent Gate.
+  buffer are all prohibited. Independently, the 2 GiB candidate H2D budget
+  permits only 44 age-one exact records and 0.6649 percent planned Q, so the
+  frozen three-percent Gate is unreachable even with a hypothetical host
+  source provider.
 execution:
   v3_code_changes: 0
   model_free_preflight: NOT_EXECUTED_AFTER_STRUCTURAL_GATE

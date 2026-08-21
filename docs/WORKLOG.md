@@ -2354,7 +2354,9 @@ and more than one shared staging buffer all forbidden, no legal source reaches
 the exact oracle. The three-percent floor also requires at least 199 records
 and 13 simultaneous block sources, or 627,501,056 bytes, while the authorized
 shared staging capacity is one 48,269,312-byte source and projected VRAM
-headroom is 369,751,703 bytes.
+headroom is 369,751,703 bytes. Independently, the 2 GiB candidate H2D budget
+admits only 44 age-one exact records, enough for 0.6649% planned Q rather than
+the required 3%.
 
 The decision is
 `H3_GPU_LOCAL_COMPRESSED_EVIDENCE_V3_ADMISSION_BLOCKED`. No V3 runtime code,
