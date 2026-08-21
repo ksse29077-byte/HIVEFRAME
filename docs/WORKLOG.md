@@ -2393,6 +2393,20 @@ returned to 10 MiB. The decision is `H3_V4_FORMAL_CONTROL_FAILED`; no second
 submission or follow-up work was started. See the detailed
 [worklog](worklogs/2026-08-21-h3-cuda-fixture-teardown-remediation-and-v4-resume.md).
 
+The approved lineage continuation then added bounded component diagnostics
+without changing the legacy lineage Gate or execution behavior. A model-free
+frozen replay passed `1,000` calls, `208` captures, and `199` admissions, but
+could not reproduce the retained `151/13/0` failure prefix: the retained
+failure is 50 Attention calls later than the frozen first target. Because the
+old receipt does not preserve the compared operands, root cause remains
+`UNKNOWN` and no functional fix can be justified.
+
+Focused diagnostic and bounded V4 tests passed 25/25. The failed reproduction
+Gate stopped the task before CUDA, release/Rust validation, runtime Admission,
+model load, or another Formal CONTROL. Current-task submission/GPU
+start/completion remained 0/0/0 and the cumulative submission count remains
+four. The decision is `H3_V4_LINEAGE_CONTRACT_BLOCKED`.
+
 ---
 
 ```markdown

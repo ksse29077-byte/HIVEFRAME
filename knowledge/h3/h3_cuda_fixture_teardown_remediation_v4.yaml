@@ -282,3 +282,80 @@ observer_runtime_continuation:
     automatic_second_submission: false
     automatic_follow_up_created: false
     decision: H3_V4_FORMAL_CONTROL_FAILED
+  lineage_diagnostic_continuation:
+    starting_head: ace5be83f1ddecdd71c002c98109769c90ae2969
+    authorized_local_origin_pr_exact: true
+    prior_run_id: h3-v4-formal-control-20260821-2
+    prior_evidence_preserved: true
+    prior_evidence_digests:
+      callback_sha256: 2b7e6716946fe3127268185dfb1eae25a271b1041e14e6468d5ccbcb87d5fcd2
+      node_admission_sha256: 4114e11c0b519ae46dd08c8919f1d6e1484a6b9d59db7c6a563af062fd94bd05
+      runtime_log_sha256: 1cde99dabbb5fdb76cf79d3f0e9288964f7ca7040abe80703580d9755ef0c2bb
+    retained_failure_prefix:
+      full_attention_calls: 151
+      source_capture_count: 13
+      exact_record_count: 0
+    frozen_trace:
+      runtime_evidence: false
+      full_attention_calls: 1000
+      source_capture_count: 208
+      frozen_candidate_count: 199
+      exact_candidate_admissions: 199
+      expected_first_target_full_attention_call: 101
+      lineage_mismatch_count: 0
+      source_slot_overwrite_count: 0
+      incomplete_source_admission_count: 0
+      passed: true
+    failure_prefix_reproduction:
+      reproduced: false
+      unexplained_full_attention_call_delta: 50
+      exact_expected_actual_operands_available: false
+    root_cause:
+      classification: UNKNOWN
+      minimal_functional_fix_allowed: false
+      rationale: RETAINED_PREFIX_NOT_REPRODUCIBLE_FROM_FROZEN_EVENT_ORDER
+    diagnostic_receipt:
+      schema_version: h3.v4.lineage-diagnostic.1
+      implemented: true
+      legacy_digest_gate_removed: false
+      component_mismatch_mask: true
+      first_mismatch_field: true
+      expected_actual_component_values: true
+      source_slot_and_sequence: true
+      target_candidate_identity: true
+      completion_state: true
+      tensor_payload_stored: false
+      prompt_or_input_stored: false
+      private_path_stored: false
+      fail_closed_before_candidate_h2d: true
+      fail_closed_before_exact_oracle: true
+    focused_verification:
+      tests_passed: 25
+      tests_failed: 0
+      tests_skipped: 0
+      python_compile_passed: true
+      diff_check_passed: true
+      negative_component_cases: 11
+    unentered_due_to_gate:
+      cuda_fixture_execution_count: 0
+      release_pyo3_tests: NOT_ENTERED
+      adjacent_h3_tests: NOT_ENTERED
+      rust_workspace_validation: NOT_ENTERED
+      runtime_admission: NOT_ENTERED
+      model_load_count: 0
+      submission_count: 0
+      gpu_start_count: 0
+      completion_count: 0
+      retry_count: 0
+      fallback_count: 0
+      rust_live_compile_count: 0
+      rust_offline_replay_count: 0
+      output_integrity: NOT_EXECUTED
+      production_net_saving: NOT_COMPUTABLE
+    cumulative_formal_control_submission_count: 4
+    selective_execution_count: 0
+    partial_q_execution_count: 0
+    attention_omission_count: 0
+    output_mutation_count: 0
+    automatic_follow_up_created: false
+    decision: H3_V4_LINEAGE_CONTRACT_BLOCKED

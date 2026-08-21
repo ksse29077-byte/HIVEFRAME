@@ -46,6 +46,11 @@ from .h3_bounded_host_source_oracle_v4_cuda import (
     threshold_classification,
 )
 from .h3_row_region_safety import FULL_Q_ROWS
+from .h3_v4_lineage_diagnostic import (
+    build_source_components,
+    build_target_components,
+    compare_lineage,
+)
 
 
 SCHEMA_VERSION = "h3.observer-runtime-v4.1"
@@ -81,6 +86,7 @@ class V4HostSourceSlot:
     consumed: bool = True
     source_step: int | None = None
     lineage_digest: str | None = None
+    lineage_components: dict[str, Any] | None = None
     completion_event: Any | None = None
 
     def reset(self) -> None:
@@ -88,6 +94,7 @@ class V4HostSourceSlot:
         self.consumed = True
         self.source_step = None
         self.lineage_digest = None
+        self.lineage_components = None
         self.completion_event = None
 
 
@@ -240,6 +247,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
         self.dropped_source_count = 0
         self.incomplete_source_count = 0
         self.lineage_mismatch_count = 0
+        self.lineage_diagnostic: dict[str, Any] | None = None
         self.staging_conflict_count = 0
         self.nonfinite_count = 0
         self.hot_path_forced_sync_count = 0
@@ -301,6 +309,34 @@ class H3ObserverControllerV4(H3A3G1Controller):
             cache_precision="EXACT_BF16",
         )
 
+    def _source_lineage_components(
+        self, *, block_index: int, source_step: int, legacy_digest: str
+    ) -> dict[str, Any]:
+        return build_source_components(
+            generation_digest=self.generation_digest,
+            profile_digest=self.profile_digest,
+            model_digest=self.model_digest,
+            inventory_digest=self._inventory_digest,
+            layout_digest=PACKED_LAYOUT_DIGEST,
+            scheduler_timesteps=self.scheduler_timesteps,
+            block=block_index,
+            source_step=source_step,
+            tensor_shape=SOURCE_SHAPE,
+            tensor_dtype="torch.bfloat16",
+            completion_state="EVENT_RECORDED",
+            legacy_lineage_digest=legacy_digest,
+        )
+
+    def lineage_diagnostic_receipt(self) -> dict[str, Any]:
+        """Return bounded component evidence without tensor or prompt payloads."""
+
+        return self.lineage_diagnostic or {
+            "schema_version": "h3.v4.lineage-diagnostic.1",
+            "matched": True,
+            "mismatch_count": self.lineage_mismatch_count,
+            "first_mismatch": None,
+        }
+
     def _timed_events(self, kind: str, stream: Any) -> tuple[Any, Any]:
         start = self.torch.cuda.Event(enable_timing=True, blocking=False)
         end = self.torch.cuda.Event(enable_timing=True, blocking=False)
@@ -356,12 +392,48 @@ class H3ObserverControllerV4(H3A3G1Controller):
             raise V4ObserverAbort("V4 duplicate target record")
         slot = self.resources.slots[block_index]
         expected_lineage = self._source_identity(block_index, event.source_step).lineage_digest()
+        expected_components = self._source_lineage_components(
+            block_index=block_index,
+            source_step=event.source_step,
+            legacy_digest=expected_lineage,
+        )
+        target_components = build_target_components(
+            scheduler_timesteps=self.scheduler_timesteps,
+            target_step=step,
+            expected_source_step=event.source_step,
+            block=block_index,
+            target_sequence=event.ordinal,
+        )
         if not slot.valid or slot.completion_event is None:
             self.incomplete_source_count += 1
-            raise V4ObserverAbort("V4 candidate source is incomplete")
+            self.lineage_diagnostic = compare_lineage(
+                expected=expected_components,
+                actual=slot.lineage_components,
+                target=target_components,
+            )
+            raise V4ObserverAbort(
+                "V4 candidate source is incomplete: "
+                f"slot={expected_components['source_slot_index']} "
+                f"source_step={event.source_step} target_step={step} "
+                f"block={block_index} region={REGION}"
+            )
         if slot.source_step != event.source_step or slot.lineage_digest != expected_lineage:
             self.lineage_mismatch_count += 1
-            raise V4ObserverAbort("V4 candidate source lineage changed")
+            self.lineage_diagnostic = compare_lineage(
+                expected=expected_components,
+                actual=slot.lineage_components,
+                target=target_components,
+            )
+            first = self.lineage_diagnostic["first_mismatch_field"]
+            raise V4ObserverAbort(
+                "V4 candidate source lineage changed: "
+                f"field={first} "
+                f"expected={self.lineage_diagnostic['first_mismatch_expected']} "
+                f"actual={self.lineage_diagnostic['first_mismatch_actual']} "
+                f"slot={expected_components['source_slot_index']} "
+                f"source_step={event.source_step} target_step={step} "
+                f"block={block_index} region={REGION}"
+            )
         stream = self.torch.cuda.current_stream(device=full_core.device)
         self._wait_for_staging(stream)
         stream.wait_event(slot.completion_event)
@@ -497,6 +569,11 @@ class H3ObserverControllerV4(H3A3G1Controller):
         slot.consumed = False
         slot.source_step = step
         slot.lineage_digest = identity.lineage_digest()
+        slot.lineage_components = self._source_lineage_components(
+            block_index=block_index,
+            source_step=step,
+            legacy_digest=slot.lineage_digest,
+        )
         slot.completion_event = completion
         self._staging_release_event = completion
         self._seen_sources.add(key)
@@ -689,6 +766,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
                     "finalization_sync_count": self.finalization_sync_count,
                     "integrity_checks": integrity,
                     "passed": all(integrity.values()),
+                    "lineage_diagnostic": self.lineage_diagnostic_receipt(),
                 },
             }
             return self._final_receipt
@@ -728,6 +806,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
             "candidate_source_h2d_bytes": self.candidate_source_h2d_bytes,
             "output_mutation_count": self.output_mutation_count,
             "rust_tensor_transfer_bytes": 0,
+            "lineage_diagnostic": self.lineage_diagnostic_receipt(),
         }
 
     def close(self) -> None:

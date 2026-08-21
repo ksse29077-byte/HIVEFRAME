@@ -483,3 +483,80 @@ H3_V4_FORMAL_CONTROL_FAILED
 
 No second H3 submission, remediation, SELECTIVE execution, executor
 integration, or product work was started.
+
+## V4 Lineage Diagnostic Continuation
+
+The continuation started from exact clean Draft PR #138 head
+`ace5be83f1ddecdd71c002c98109769c90ae2969`. Authorized, local, origin, and
+PR heads matched. The existing run `h3-v4-formal-control-20260821-2` callback,
+node admission, runtime log, manual finalization, their SHA-256 values, and the
+earlier worklog and Knowledge entries were not changed or reconstructed.
+
+The source-readonly audit established the frozen order mechanically:
+
+```text
+20 denoise ordinals x 50 blocks:       1,000 Attention calls
+source capture steps 1..16 x 13:       208 captures
+frozen target candidates:              199
+expected first target Attention call:  101
+```
+
+A model-free replay using the fixed 20-step canonical scheduler trace ran the
+complete order with `1,000` calls, `208` captures, `199` target admissions,
+and zero lineage mismatch, overwrite, or incomplete source. This is a runtime
+event-contract test, not H3 holdout evidence.
+
+The retained failure prefix is `151` Full Attention calls, `13` captures, and
+zero exact records. It occurs exactly 50 Attention calls later than the frozen
+first target. The frozen order therefore does not reproduce the previous
+failure. The old receipt does not contain the expected/actual operands, source
+step, target step, or candidate key needed to explain that extra 50-call gap.
+No past value was inferred or appended to the immutable receipt.
+
+The only evidence-supported classification remains:
+
+```text
+root cause: UNKNOWN
+H3_V4_LINEAGE_CONTRACT_BLOCKED
+```
+
+Because the required reproduction and non-UNKNOWN root-cause Gates failed,
+no functional lineage fix was made. The legacy digest comparison, inventory,
+thresholds, source storage, transfer limits, Attention output, and execution
+paths remain unchanged.
+
+The authorized diagnostic-only change adds a bounded component receipt for a
+future mismatch. It records common generation/profile/model/inventory/layout
+digests; source ordinal and canonical scheduler value; block, region, slot,
+capture sequence and event digest; shape, dtype, and completion state; target
+ordinal, scheduler value, candidate key, and sequence; and the component
+mismatch mask and first mismatch. It stores no tensor payload, prompt, input,
+or private path. The comparison still aborts before candidate H2D and exact
+oracle work. Incomplete source admission now produces the same bounded
+diagnostic schema.
+
+Focused model-free verification passed 25/25 with skip zero. It covers the
+full 1,000-call trace and generation, profile, model, ordinal, scheduler,
+block, region, slot/capture sequence, completion, inventory, and layout
+negative cases. Python compilation and `git diff --check` passed. The
+candidate-H2D and exact-oracle calls remain after the fail-closed lineage Gate
+in source order.
+
+The failed reproduction Gate stopped the task before CUDA fixture execution,
+release PyO3, adjacent H3 suites, Rust workspace validation, runtime Admission,
+model load, or Formal CONTROL. This is a deliberate Gate stop, not a test pass
+claim for unentered stages.
+
+```text
+current-task runtime/model load:                 0/0
+current-task submission/GPU start/completion:    0/0/0
+current-task retry/fallback:                     0/0
+cumulative Formal CONTROL submissions:          4
+CUDA exact-oracle fixture executions:            0
+Rust live/replay:                                0/0
+SELECTIVE/partial-Q/Attention omission:           0/0/0
+output mutation:                                 0
+```
+
+No Formal CONTROL, minimal cause fix, V5 work, evidence expansion, executor
+integration, or product work was started.

@@ -227,6 +227,7 @@ class HIVEFRAMEH3ObserverV4ControlSampler(io.ComfyNode):
             payload["c2_shadow"] = pipeline.receipt()
             payload["region_plan"] = plan_bridge.receipt()
             payload["attention_execution"] = controller.finalize()
+            payload["lineage_diagnostic"] = controller.lineage_diagnostic_receipt()
             finalized = True
             payload["sampler_succeeded"] = True
             payload["sampler_execution_completed"] = True
@@ -244,6 +245,7 @@ class HIVEFRAMEH3ObserverV4ControlSampler(io.ComfyNode):
             if not finalized:
                 controller.abort(type(error).__name__)
                 payload["attention_execution"] = controller.failure_receipt()
+                payload["lineage_diagnostic"] = controller.lineage_diagnostic_receipt()
             _write_json(os.environ.get(RECEIPT_ENV), payload)
             raise
         finally:

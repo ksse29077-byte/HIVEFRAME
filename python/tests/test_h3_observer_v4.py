@@ -36,9 +36,44 @@ from hive_product.h3_observer_v4_control_probe import (
     _performance_receipt,
     build_workflow,
 )
+from hive_product.h3_v4_lineage_diagnostic import (
+    CAUSE_UNKNOWN,
+    LINEAGE_FIELDS,
+    build_source_components,
+    build_target_components,
+    compare_lineage,
+    replay_frozen_event_trace,
+    replay_retained_failure_prefix,
+)
 
 
 class H3ObserverV4Tests(unittest.TestCase):
+    @staticmethod
+    def _lineage_components():
+        scheduler = tuple(float(20 - index).hex() for index in range(20))
+        source = build_source_components(
+            generation_digest="1" * 64,
+            profile_digest="2" * 64,
+            model_digest="3" * 64,
+            inventory_digest="4" * 64,
+            layout_digest="5" * 64,
+            scheduler_timesteps=scheduler,
+            block=0,
+            source_step=1,
+            tensor_shape=(3367, 7168),
+            tensor_dtype="torch.bfloat16",
+            completion_state="EVENT_RECORDED",
+            legacy_lineage_digest="6" * 64,
+        )
+        target = build_target_components(
+            scheduler_timesteps=scheduler,
+            target_step=2,
+            expected_source_step=1,
+            block=0,
+            target_sequence=1,
+        )
+        return source, target
+
     def test_frozen_runtime_inventory_is_exact(self):
         self.assertEqual(len(FROZEN_EVENTS), MINIMUM_EXACT_RECORDS)
         self.assertEqual(MINIMUM_EXACT_RECORDS, 199)
@@ -61,6 +96,104 @@ class H3ObserverV4Tests(unittest.TestCase):
         )
         with self.assertRaises(V4ObserverAbort):
             controller._transition("observing")
+
+    def test_full_model_free_event_trace_has_1000_calls_and_199_candidates(self):
+        scheduler = tuple(float(20 - index).hex() for index in range(20))
+        receipt = replay_frozen_event_trace(scheduler)
+        self.assertTrue(receipt["passed"])
+        self.assertFalse(receipt["runtime_evidence"])
+        self.assertEqual(receipt["full_attention_trace_calls"], 1000)
+        self.assertEqual(receipt["source_capture_count"], 208)
+        self.assertEqual(receipt["frozen_candidates_encountered"], 199)
+        self.assertEqual(receipt["exact_candidate_admissions"], 199)
+        self.assertEqual(receipt["lineage_mismatch_count"], 0)
+        self.assertEqual(receipt["source_slot_overwrite_count"], 0)
+        self.assertEqual(receipt["incomplete_source_admission_count"], 0)
+
+    def test_retained_151_13_0_prefix_is_not_reproducible_from_frozen_order(self):
+        receipt = replay_retained_failure_prefix(
+            full_attention_calls=151,
+            source_capture_count=13,
+            exact_record_count=0,
+        )
+        self.assertFalse(receipt["reproduced_from_frozen_order"])
+        self.assertEqual(receipt["expected_first_target_full_attention_call"], 101)
+        self.assertEqual(receipt["unexplained_full_attention_call_delta"], 50)
+        self.assertEqual(receipt["classification"], CAUSE_UNKNOWN)
+
+    def test_lineage_component_receipt_identifies_each_negative_field(self):
+        expected, target = self._lineage_components()
+        mutations = {
+            "generation_digest": "a" * 64,
+            "profile_digest": "b" * 64,
+            "model_digest": "c" * 64,
+            "source_step_ordinal": 7,
+            "source_scheduler_timestep": float(7).hex(),
+            "source_block": 9,
+            "source_region": 3,
+            "source_capture_sequence": 99,
+            "source_completion_state": "INCOMPLETE",
+            "inventory_digest": "d" * 64,
+            "layout_digest": "e" * 64,
+        }
+        for field, changed in mutations.items():
+            with self.subTest(field=field):
+                actual = dict(expected)
+                actual[field] = changed
+                receipt = compare_lineage(
+                    expected=expected, actual=actual, target=target
+                )
+                self.assertFalse(receipt["matched"])
+                self.assertEqual(receipt["first_mismatch_field"], field)
+                self.assertIn(field, receipt["mismatched_fields"])
+                self.assertGreater(receipt["mismatch_count"], 0)
+                self.assertNotEqual(receipt["mismatch_mask"], 0)
+                self.assertNotEqual(
+                    receipt["expected_identity_digest"],
+                    receipt["actual_identity_digest"],
+                )
+
+    def test_lineage_classification_is_derived_from_first_proven_component(self):
+        expected, target = self._lineage_components()
+        cases = {
+            "generation_digest": "GENERATION_DIGEST_DRIFT",
+            "profile_digest": "PROFILE_DIGEST_DRIFT",
+            "model_digest": "MODEL_DIGEST_DRIFT",
+            "inventory_digest": "INVENTORY_OR_LAYOUT_DIGEST_DRIFT",
+            "layout_digest": "INVENTORY_OR_LAYOUT_DIGEST_DRIFT",
+            "source_block": "BLOCK_OR_REGION_IDENTITY_MISMATCH",
+            "source_region": "BLOCK_OR_REGION_IDENTITY_MISMATCH",
+            "source_slot_index": "SOURCE_SLOT_REUSE_OR_OVERWRITE",
+            "source_step_ordinal": "CAPTURE_TARGET_ORDERING_ERROR",
+            "source_scheduler_timestep": "STEP_ORDINAL_VS_SCHEDULER_TIMESTEP",
+        }
+        for field, classification in cases.items():
+            with self.subTest(field=field):
+                actual = dict(expected)
+                actual[field] = "changed"
+                receipt = compare_lineage(
+                    expected=expected, actual=actual, target=target
+                )
+                self.assertEqual(receipt["classification"], classification)
+
+    def test_lineage_receipt_covers_every_contract_field_without_payload(self):
+        expected, target = self._lineage_components()
+        receipt = compare_lineage(expected=expected, actual=expected, target=target)
+        self.assertTrue(receipt["matched"])
+        self.assertEqual(set(receipt["matched_fields"]), set(LINEAGE_FIELDS))
+        serialized = json.dumps(receipt, sort_keys=True)
+        self.assertNotIn("prompt", serialized)
+        self.assertNotIn("tensor_payload", serialized)
+
+    def test_runtime_lineage_gate_precedes_candidate_h2d_and_exact_oracle(self):
+        source = inspect.getsource(H3ObserverControllerV4._observe_full_compute_control)
+        lineage_gate = source.index("compare_lineage(")
+        abort = source.index("raise V4ObserverAbort(", lineage_gate)
+        candidate_h2d = source.index("staging.copy_(")
+        exact_oracle = source.index("gpu_exact_oracle_metrics_indexed(")
+        self.assertLess(lineage_gate, abort)
+        self.assertLess(abort, candidate_h2d)
+        self.assertLess(abort, exact_oracle)
 
     def test_indexed_gpu_helpers_match_packed_helpers_on_small_tensor(self):
         import torch
