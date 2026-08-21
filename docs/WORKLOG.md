@@ -2369,7 +2369,7 @@ remain three. See the detailed
 
 ## Entry template
 
-## 2026-08-21 - H3 V4 observer runtime and Formal Admission
+## 2026-08-21 - H3 V4 observer runtime and Formal CONTROL
 
 PR #138 now contains the real H3 Full-Attention V4 observer controller,
 isolated CONTROL node, frozen 199-record callback path, and one-shot runner.
@@ -2377,12 +2377,21 @@ Focused Python/release tests passed 53/53, release PyO3 passed its fixed 29
 tests with skip zero, Rust workspace tests passed 50/50, and strict Clippy and
 release build passed.
 
-Formal Admission stopped before runtime start because the runner's expected
-HEAD argument contained an incorrect suffix. Actual clean local/origin/PR head
-was `310e76a9f07ed7fff9db00264e33e76c87993d45`; every non-HEAD Admission check
-passed. Submission/GPU start/completion remained 0/0/0, cumulative Formal
-CONTROL submissions remain three, and no automatic retry was made. See the
-detailed [worklog](worklogs/2026-08-21-h3-cuda-fixture-teardown-remediation-and-v4-resume.md).
+The initial Formal Admission stopped before runtime start because the runner's
+expected HEAD argument contained an incorrect suffix. After an explicitly
+approved administrative recheck at exact head
+`bbf81a0469c0af7c858a7e486dca89eb83f46b32`, all gates passed and one Formal
+CONTROL was submitted. It reached H3 GPU execution but failed closed before
+the first exact holdout record with `V4 candidate source lineage changed`.
+
+Submission/GPU start/completion was 1/1/0 and the cumulative submission count
+is four. Full Attention ran 151 times; SELECTIVE, partial-Q, Attention omission,
+output mutation, retry, and fallback remained zero. No output, holdout result,
+Rust plan, or production-saving claim was admitted. The verified owned runtime
+was stopped, port 8191 and related processes returned to zero, and GPU use
+returned to 10 MiB. The decision is `H3_V4_FORMAL_CONTROL_FAILED`; no second
+submission or follow-up work was started. See the detailed
+[worklog](worklogs/2026-08-21-h3-cuda-fixture-teardown-remediation-and-v4-resume.md).
 
 ---
 

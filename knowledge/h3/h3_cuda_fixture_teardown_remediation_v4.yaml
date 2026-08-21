@@ -206,3 +206,79 @@ observer_runtime_continuation:
     production_net_saving: NOT_COMPUTABLE
     automatic_retry: false
     decision: H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED
+  corrected_formal_control:
+    authorized_execution_head: bbf81a0469c0af7c858a7e486dca89eb83f46b32
+    head_length: 40
+    authorized_local_origin_pr_exact: true
+    previous_admission_classification: OPERATOR_INPUT_ERROR
+    current_admission_classification: ADMINISTRATIVE_ADMISSION_RECHECK
+    formal_control_retry: false
+    release_pyo3_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+    release_pyo3_tests_passed: 29
+    release_pyo3_tests_skipped: 0
+    node_admission:
+      status: PASS
+      source_slot_count: 13
+      pinned_source_bytes: 627501056
+      pinned_metric_bytes: 7164
+      shared_gpu_staging_bytes: 48269312
+      available_ram_after_pinned_bytes: 44388995072
+      inventory_digest: 8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc
+      profile_digest: 99de39e52efbf92c3238c4d0580fccf412d3822b4e541e2025a77cda343d7f7d
+    run_id: h3-v4-formal-control-20260821-2
+    lifecycle: [created, admitted, observing, aborted]
+    submission_count: 1
+    gpu_start_count: 1
+    completion_count: 0
+    cumulative_formal_control_submission_count: 4
+    retry_count: 0
+    fallback_count: 0
+    failure_type: V4ObserverAbort
+    failure_message: V4 candidate source lineage changed
+    exact_lineage_difference_recorded: false
+    model_forward_count: 4
+    block_call_count: 151
+    full_attention_actual: 151
+    full_attention_expected: 1000
+    source_capture_count: 13
+    exact_record_count: 0
+    source_d2h_bytes: 627501056
+    candidate_h2d_bytes: 0
+    v4_exact_metadata_d2h_bytes: 0
+    c2_auxiliary_d2h_bytes: 576
+    total_observed_device_transfer_bytes: 627501632
+    rust_policy_metadata_bytes: 2448
+    rust_tensor_bytes: 0
+    selective_execution_count: 0
+    partial_q_execution_count: 0
+    attention_omission_count: 0
+    output_mutation_count: 0
+    hot_path_forced_cuda_sync_count: 0
+    holdout_confusion_matrix: NOT_AVAILABLE_ABORTED_BEFORE_FIRST_EXACT_RECORD
+    holdout_planned_q_reduction: NOT_AVAILABLE
+    static_planned_q_reference: 0.03007449429460581
+    rust_live_compile_count: 0
+    rust_offline_replay_count: 0
+    output_integrity: NOT_EXECUTED
+    sampler_timing: NOT_AVAILABLE
+    observer_oracle_timing: NOT_FINALIZED
+    end_to_end_timing: NOT_TERMINAL
+    production_net_saving: NOT_COMPUTABLE
+    physical_vram_mib: 12288
+    observed_vram_lower_bound_mib: 9333
+    observed_headroom_upper_bound_mib: 2955
+    exact_peak_vram: NOT_PERSISTED
+    cleanup:
+      owned_processes_remaining: 0
+      port_8191_listeners: 0
+      related_runner_comfy_processes: 0
+      external_processes_terminated: 0
+      conhost_direct_terminations: 0
+      post_stop_gpu_used_mib: 10
+    evidence_digests:
+      callback_sha256: 2b7e6716946fe3127268185dfb1eae25a271b1041e14e6468d5ccbcb87d5fcd2
+      node_admission_sha256: 4114e11c0b519ae46dd08c8919f1d6e1484a6b9d59db7c6a563af062fd94bd05
+      runtime_log_sha256: 1cde99dabbb5fdb76cf79d3f0e9288964f7ca7040abe80703580d9755ef0c2bb
+    automatic_second_submission: false
+    automatic_follow_up_created: false
+    decision: H3_V4_FORMAL_CONTROL_FAILED

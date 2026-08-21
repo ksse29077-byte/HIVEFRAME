@@ -404,3 +404,82 @@ SELECTIVE/partial-Q/Attention omission:        0/0/0
 cumulative Formal CONTROL submissions:        3
 H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED
 ```
+
+## Corrected Administrative Recheck and One-Shot Formal CONTROL
+
+The approved SHA was fixed as the full 40-character value
+`bbf81a0469c0af7c858a7e486dca89eb83f46b32`. Authorized, local, origin, and
+Draft PR #138 heads matched exactly and the worktree was clean. The previous
+bad `expected_head` was classified as `OPERATOR_INPUT_ERROR`; this pass was an
+`ADMINISTRATIVE_ADMISSION_RECHECK`, not a Formal CONTROL retry. The release
+PyO3 extension was rebuilt from the authorized head, loaded successfully, and
+passed its fixed 29-test subset with skip zero. No V4 runtime source changed
+between the previously verified implementation head and this execution head.
+
+All pre-start gates passed. The dedicated runtime admitted 13 page-locked BF16
+source slots (`627,501,056 B`), a page-locked metric buffer (`7,164 B`), and
+one shared GPU staging allocation (`48,269,312 B`). Available system RAM after
+the pinned allocations was `44,388,995,072 B`. The frozen inventory and
+profile digests remained respectively
+`8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc` and
+`99de39e52efbf92c3238c4d0580fccf412d3822b4e541e2025a77cda343d7f7d`.
+
+The runner submitted exactly one `/prompt`, bringing the cumulative Formal
+CONTROL submission count to four. H3 entered GPU execution, initialized the
+model, and executed exact Full Attention only. During the first target
+admission, after 13 source captures and before any candidate H2D or exact
+oracle record, the observer failed closed with:
+
+```text
+V4ObserverAbort: V4 candidate source lineage changed
+```
+
+The callback receipt proves the following bounded partial execution:
+
+```text
+lifecycle:                             created -> admitted -> observing -> aborted
+submission/GPU start/completion:       1/1/0
+retry/fallback:                        0/0
+model forwards:                        4
+Full Attention calls:                  151 of expected 1,000
+partial-Q/SELECTIVE/Attention omission: 0/0/0
+output mutation:                       0
+source captures/source D2H:            13 / 627,501,056 B
+candidate source H2D:                  0 B
+C2 auxiliary telemetry D2H:            576 B
+total observed device transfer:        627,501,632 B
+Rust policy metadata:                  2,448 B
+exact completed records:               0
+Rust tensor bytes:                     0
+hot-path forced CUDA sync:             0
+```
+
+The failure receipt records the lineage classifier but not the compared
+actual and expected digests, so the exact changed identity field is not
+claimed. The 199-record holdout, confusion matrix, measured holdout planned-Q
+reduction, Rust live/replay digests, output integrity, exact terminal timings,
+exact peak VRAM, and production net saving are therefore unavailable rather
+than inferred from preflight fixtures. Static planned Q remains the preflight
+reference `3.007449429460581%`; it is not a Formal CONTROL result.
+
+The live NVIDIA spot sample reached at least `9,333 MiB` used on a physical
+`12,288 MiB` device, leaving at most `2,955 MiB` at that sample. The exact peak
+was not persisted because the abort escaped ComfyUI's ordinary exception path
+and prevented a terminal websocket event. The callback receipt was preserved,
+the hung runner was stopped without a second prompt, and only the verified
+owned Python tree was terminated. External termination and direct
+`conhost.exe` termination remained zero. Post-stop related runner/ComfyUI
+processes and port-8191 listeners were zero, and NVIDIA usage returned to
+`10 MiB`.
+
+Private evidence is stored under run ID
+`h3-v4-formal-control-20260821-2`. The separate manual finalization receipt
+binds the callback, node admission, and runtime log by SHA-256 without adding
+private absolute paths to repository evidence.
+
+```text
+H3_V4_FORMAL_CONTROL_FAILED
+```
+
+No second H3 submission, remediation, SELECTIVE execution, executor
+integration, or product work was started.
