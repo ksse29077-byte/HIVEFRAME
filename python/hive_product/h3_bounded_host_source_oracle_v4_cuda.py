@@ -53,6 +53,26 @@ def gpu_compressed_fingerprint(
     return torch_module.cat((channel_mean, bands))
 
 
+def gpu_indexed_compressed_fingerprint(
+    torch_module: Any,
+    payload: Any,
+    packed_indices: Any,
+    representative_positions: Any,
+) -> Any:
+    """Build the same summary directly from an H3 full-core tensor."""
+
+    current_indices = packed_indices.index_select(0, representative_positions)
+    representative = payload.index_select(0, current_indices).float()
+    channel_mean = representative.mean(dim=0)
+    band_width = max(1, int(representative.shape[0]) // FINGERPRINT_BANDS)
+    band_energy = []
+    for start in range(0, int(representative.shape[0]), band_width):
+        band = representative[start : start + band_width]
+        band_energy.append(torch_module.sqrt((band * band).mean().clamp_min(1e-12)))
+    bands = torch_module.stack(band_energy[:FINGERPRINT_BANDS])
+    return torch_module.cat((channel_mean, bands))
+
+
 def gpu_preliminary_metrics(torch_module: Any, source_summary: Any, current_summary: Any) -> Any:
     """Return GPU-resident cosine, nL2, and finite preliminary evidence."""
 
@@ -105,6 +125,79 @@ def gpu_exact_oracle_metrics(
     for start in range(0, omitted_count, METRIC_CHUNK_ROWS):
         positions = omitted_positions[start : start + METRIC_CHUNK_ROWS]
         actual = current.index_select(0, positions).float()
+        cached = source.index_select(0, positions).float()
+        corrected = cached + delta
+        for name, predicted in (("raw", cached), ("corrected", corrected)):
+            accumulator = accumulators[name]
+            difference = actual - predicted
+            accumulator["dot"].add_((actual * predicted).sum())
+            accumulator["actual_sq"].add_((actual * actual).sum())
+            accumulator["predicted_sq"].add_((predicted * predicted).sum())
+            accumulator["diff_sq"].add_((difference * difference).sum())
+            accumulator["finite"].logical_and_(
+                torch_module.isfinite(actual).all()
+                & torch_module.isfinite(predicted).all()
+            )
+    raw = _metric_result(torch_module, accumulators["raw"])
+    corrected = _metric_result(torch_module, accumulators["corrected"])
+    return torch_module.stack(
+        (
+            raw["cosine"],
+            raw["normalized_l2"],
+            raw["finite"].float(),
+            corrected["cosine"],
+            corrected["normalized_l2"],
+            corrected["finite"].float(),
+        )
+    )
+
+
+def gpu_exact_oracle_metrics_indexed(
+    torch_module: Any,
+    source: Any,
+    current_full_core: Any,
+    packed_indices: Any,
+    representative_positions: Any,
+    omitted_positions: Any,
+) -> Any:
+    """Compare a packed source with indexed rows of the real H3 full core."""
+
+    if int(source.ndim) != 2 or int(current_full_core.ndim) != 2:
+        raise ValueError("V4 indexed oracle requires two-dimensional tensors")
+    if int(source.shape[0]) != int(packed_indices.numel()):
+        raise ValueError("V4 indexed oracle packed row count changed")
+    if int(source.shape[1]) != int(current_full_core.shape[1]):
+        raise ValueError("V4 indexed oracle hidden width changed")
+    device = source.device
+    width = int(source.shape[1])
+    delta = torch_module.zeros((width,), dtype=torch_module.float32, device=device)
+    representative_count = int(representative_positions.numel())
+    for start in range(0, representative_count, METRIC_CHUNK_ROWS):
+        positions = representative_positions[start : start + METRIC_CHUNK_ROWS]
+        current_indices = packed_indices.index_select(0, positions)
+        source_chunk = source.index_select(0, positions).float()
+        current_chunk = current_full_core.index_select(0, current_indices).float()
+        delta.add_((current_chunk - source_chunk).sum(dim=0))
+    delta.div_(representative_count)
+
+    def zero():
+        return torch_module.zeros((), dtype=torch_module.float32, device=device)
+
+    accumulators = {
+        name: {
+            "dot": zero(),
+            "actual_sq": zero(),
+            "predicted_sq": zero(),
+            "diff_sq": zero(),
+            "finite": torch_module.ones((), dtype=torch_module.bool, device=device),
+        }
+        for name in ("raw", "corrected")
+    }
+    omitted_count = int(omitted_positions.numel())
+    for start in range(0, omitted_count, METRIC_CHUNK_ROWS):
+        positions = omitted_positions[start : start + METRIC_CHUNK_ROWS]
+        current_indices = packed_indices.index_select(0, positions)
+        actual = current_full_core.index_select(0, current_indices).float()
         cached = source.index_select(0, positions).float()
         corrected = cached + delta
         for name, predicted in (("raw", cached), ("corrected", corrected)):
