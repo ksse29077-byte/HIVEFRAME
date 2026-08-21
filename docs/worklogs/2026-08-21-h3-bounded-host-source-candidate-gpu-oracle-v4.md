@@ -58,8 +58,43 @@ exact GPU oracle all complete. No calibration label is promoted.
 - the 32 GiB total tensor-transfer cap;
 - exact-order, same-step burst, H2D latency, oracle latency, and combined 1.5x replays.
 
-The first focused run passed 7/7 tests. It allocated no model, submitted no
+The first focused run passed 7/7 tests. The CUDA-helper static additions then
+passed the expanded 9/9 focused tests. They allocated no model, submitted no
 workflow, performed no H3 Generation, and executed no GPU Attention work.
+
+## Bounded CUDA Gate Failure
+
+The one model-free bounded CUDA fixture was executed on the idle RTX 3060. The
+pre-run device receipt was 12,288 MiB total, 10 MiB used, and 0% utilization.
+The fixture passed exact BF16 D2H/H2D bit identity, compressed fingerprint,
+exact GPU metric, packed-row, threshold-boundary, metadata-size, and bounded
+allocation checks. Its measured peak was 196,618,240 allocated bytes and
+213,909,504 reserved bytes. CPU/GPU bounded-reference error was:
+
+```text
+maximum absolute error: 1.1920928955078125e-07
+mean absolute error:    1.987791620194912e-08
+```
+
+The mandatory in-process teardown Gate failed:
+
+```text
+baseline allocated/reserved: 0 / 0 B
+final allocated/reserved:    8,606,720 / 27,262,976 B
+allocated returned:          false
+reserved returned:           false
+```
+
+The implementation retained auxiliary tensor/event references that were not
+included in its final deletion set before `empty_cache()` and the final memory
+check. Therefore this is an implementation/preflight failure, not an admitted
+allocator result. The fixture process exited normally enough for an external
+read-only check to show the GPU back at 10 MiB and 0% utilization, but process
+exit recovery cannot replace the required in-process teardown proof.
+
+Per the no-retry and immediate-stop rule, the CUDA fixture was not rerun. The
+runtime controller, ComfyUI node, release PyO3 Gate, Formal CONTROL, holdout,
+and Rust compile/replay were not started. No threshold or budget was changed.
 
 ## Execution Ledger
 
@@ -74,7 +109,13 @@ Attention omission:        0
 retry:                     0
 ```
 
-The Formal CONTROL remains blocked until the actual runtime implementation,
-focused tests, model-free/stress replay, bounded CUDA bit/metric/event checks,
-release PyO3 checks, memory admission, ownership, queue, and worktree Gates all
-pass.
+Final bounded decision:
+
+```text
+H3_BOUNDED_HOST_SOURCE_CANDIDATE_GPU_ORACLE_V4_FAILED
+```
+
+The Formal CONTROL is blocked with submission/GPU start/completion `0/0/0`.
+The single bounded CUDA fixture is not an H3 GPU start and is not a CONTROL
+submission. A future teardown remediation requires a separate user approval;
+this task does not retry it automatically.

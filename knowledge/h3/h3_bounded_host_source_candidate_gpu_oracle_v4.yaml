@@ -1,5 +1,5 @@
 schema_version: h3.bounded-host-source-candidate-gpu-oracle-v4.1
-status: IMPLEMENTATION_IN_PROGRESS
+status: H3_BOUNDED_HOST_SOURCE_CANDIDATE_GPU_ORACLE_V4_FAILED
 decision_input: CALIBRATION_ONLY
 holdout_status: NOT_EXECUTED
 exact_base: 346e4a45b6fa0b9006d113e46c265b99ac6abcf7
@@ -39,7 +39,24 @@ execution:
   attention_omission_count: 0
   retry_count: 0
 verification:
-  model_free_focused_tests: 7
+  model_free_focused_tests: 9
   model_free_focused_failures: 0
-  bounded_cuda: NOT_EXECUTED
+  bounded_cuda: FAILED_TEARDOWN_GATE
+  bounded_cuda_execution_count: 1
+  bounded_cuda_checks_before_teardown_passed: true
+  bounded_cuda_peak_allocated_bytes: 196618240
+  bounded_cuda_peak_reserved_bytes: 213909504
+  bounded_cuda_final_allocated_bytes: 8606720
+  bounded_cuda_final_reserved_bytes: 27262976
+  bounded_cuda_teardown_allocated_returned: false
+  bounded_cuda_teardown_reserved_returned: false
+  bounded_cuda_retry_count: 0
   formal_control: NOT_EXECUTED
+  formal_control_submission_count: 0
+  formal_control_gpu_start_count: 0
+  formal_control_completion_count: 0
+decision:
+  code: H3_BOUNDED_HOST_SOURCE_CANDIDATE_GPU_ORACLE_V4_FAILED
+  exact_failure: IN_PROCESS_CUDA_TEARDOWN_DID_NOT_RETURN_TO_BASELINE
+  automatic_retry_allowed: false
+  next_step_requires_separate_approval: true

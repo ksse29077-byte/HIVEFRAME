@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+import inspect
 
 from hive_product.h3_bounded_host_source_oracle_v4 import (
     CANDIDATE_H2D_ADMISSION_BYTES,
@@ -21,6 +22,12 @@ from hive_product.h3_bounded_host_source_oracle_v4 import (
     frozen_inventory_digest,
     model_free_preflight_receipt,
     replay_frozen_inventory,
+)
+from hive_product.h3_bounded_host_source_oracle_v4_cuda import (
+    gpu_compressed_fingerprint,
+    gpu_exact_oracle_metrics,
+    gpu_preliminary_metrics,
+    threshold_classification,
 )
 
 
@@ -99,6 +106,51 @@ class H3BoundedHostSourceOracleV4Tests(unittest.TestCase):
             "oracle_latency_1_5x",
             "combined_1_5x",
         })
+
+    def test_gpu_metric_helpers_have_no_host_read_or_forced_sync(self):
+        source = "\n".join(
+            inspect.getsource(function)
+            for function in (
+                gpu_compressed_fingerprint,
+                gpu_preliminary_metrics,
+                gpu_exact_oracle_metrics,
+            )
+        )
+        for forbidden in (
+            ".cpu(",
+            ".item(",
+            ".tolist(",
+            ".numpy(",
+            ".synchronize(",
+        ):
+            self.assertNotIn(forbidden, source)
+
+    def test_threshold_boundary_is_fail_closed(self):
+        from hive_product.attention_output_reuse import (
+            CATASTROPHIC_COSINE_MIN,
+            CATASTROPHIC_NORMALIZED_L2_MAX,
+        )
+
+        self.assertEqual(
+            threshold_classification(
+                cosine=CATASTROPHIC_COSINE_MIN,
+                normalized_l2=CATASTROPHIC_NORMALIZED_L2_MAX,
+                finite=True,
+            ),
+            "SAFE",
+        )
+        self.assertEqual(
+            threshold_classification(
+                cosine=CATASTROPHIC_COSINE_MIN - 1e-9,
+                normalized_l2=CATASTROPHIC_NORMALIZED_L2_MAX,
+                finite=True,
+            ),
+            "UNSAFE",
+        )
+        self.assertEqual(
+            threshold_classification(cosine=1.0, normalized_l2=0.0, finite=False),
+            "INVALID",
+        )
 
 
 if __name__ == "__main__":
