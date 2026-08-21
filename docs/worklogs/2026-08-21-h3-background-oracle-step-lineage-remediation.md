@@ -2,7 +2,7 @@
 
 ## Authorization and exact base
 
-Issue #123 tracks the one-time constitutional exception for
+Issue #123 and Draft PR #124 track the one-time constitutional exception for
 `H3_BACKGROUND_ORACLE_STEP_LINEAGE_REMEDIATION`. The branch starts from exact
 Draft PR #122 head `dd06404dfc7080b3aeb3293b93d9c1ae0edcb5e5`. The local
 head, remote PR head, and clean worktree matched before analysis. PR #122 and

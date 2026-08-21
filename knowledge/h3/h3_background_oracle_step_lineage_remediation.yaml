@@ -1,7 +1,7 @@
 schema_version: hiveframe.knowledge.h3-background-oracle-step-lineage-remediation.1
 recorded_at: 2026-08-21
 issue: 123
-pull_request: pending
+pull_request: 124
 exact_base_commit: dd06404dfc7080b3aeb3293b93d9c1ae0edcb5e5
 decision: H3_BACKGROUND_ORACLE_STEP_LINEAGE_REMEDIATION_BLOCKED
 root_cause: UNKNOWN
