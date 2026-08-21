@@ -1,0 +1,62 @@
+schema_version: h3.bounded-host-source-candidate-gpu-oracle-v4.1
+status: H3_BOUNDED_HOST_SOURCE_CANDIDATE_GPU_ORACLE_V4_FAILED
+decision_input: CALIBRATION_ONLY
+holdout_status: NOT_EXECUTED
+exact_base: 346e4a45b6fa0b9006d113e46c265b99ac6abcf7
+issue: 135
+branch: codex/h3-bounded-host-source-candidate-gpu-oracle-v4
+inventory:
+  safe_geometry_blocks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+  source_blocks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  veto_blocks: [30, 31, 48, 49]
+  source_steps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  exact_record_count: 199
+  planned_q_rows_per_record: 2331
+  planned_q_rows: 463869
+  full_q_rows: 15424000
+  planned_q_ratio: 0.030074566390041493
+memory:
+  source_payload_bytes: 48269312
+  resident_exact_host_source_bytes: 627501056
+  resident_exact_host_source_limit_bytes: 805306368
+  persistent_exact_gpu_source_bytes: 0
+  shared_gpu_staging_count: 1
+  shared_gpu_staging_bytes: 48269312
+transfer:
+  current_payload_d2h_bytes: 0
+  cpu_oracle_payload_d2h_bytes: 0
+  source_capture_d2h_bytes: 10040016896
+  candidate_source_h2d_bytes: 9605593088
+  candidate_source_h2d_hard_cap_bytes: 12884901888
+  total_tensor_transfer_bytes: 19645609984
+  total_tensor_transfer_hard_cap_bytes: 34359738368
+execution:
+  formal_control_submission_count: 0
+  gpu_start_count: 0
+  generation_completion_count: 0
+  selective_execution_count: 0
+  partial_q_execution_count: 0
+  attention_omission_count: 0
+  retry_count: 0
+verification:
+  model_free_focused_tests: 9
+  model_free_focused_failures: 0
+  bounded_cuda: FAILED_TEARDOWN_GATE
+  bounded_cuda_execution_count: 1
+  bounded_cuda_checks_before_teardown_passed: true
+  bounded_cuda_peak_allocated_bytes: 196618240
+  bounded_cuda_peak_reserved_bytes: 213909504
+  bounded_cuda_final_allocated_bytes: 8606720
+  bounded_cuda_final_reserved_bytes: 27262976
+  bounded_cuda_teardown_allocated_returned: false
+  bounded_cuda_teardown_reserved_returned: false
+  bounded_cuda_retry_count: 0
+  formal_control: NOT_EXECUTED
+  formal_control_submission_count: 0
+  formal_control_gpu_start_count: 0
+  formal_control_completion_count: 0
+decision:
+  code: H3_BOUNDED_HOST_SOURCE_CANDIDATE_GPU_ORACLE_V4_FAILED
+  exact_failure: IN_PROCESS_CUDA_TEARDOWN_DID_NOT_RETURN_TO_BASELINE
+  automatic_retry_allowed: false
+  next_step_requires_separate_approval: true
