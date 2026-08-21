@@ -1,0 +1,83 @@
+schema_version: hiveframe.knowledge.h3-gpu-local-compressed-evidence-v3-admission.1
+recorded_at: 2026-08-21
+issue: 133
+exact_base_commit: 94b10cd6fdc9a39b4b6b56378200e41eedd7dce6
+decision: H3_GPU_LOCAL_COMPRESSED_EVIDENCE_V3_ADMISSION_BLOCKED
+start_gate:
+  remote_pr_132_head_exact: true
+  local_head_exact: true
+  worktree_clean: true
+  v2_failure_receipt_present: true
+  production_state_migration_present: true
+  cumulative_formal_control_submissions: 3
+  external_active_jobs: 0
+  port_8191_listeners: 0
+  comfy_runtime_candidates: 0
+  gpu_used_mib: 10
+frozen_constraints:
+  full_tensor_d2h_bytes: 0
+  oracle_tensor_d2h_bytes: 0
+  persistent_per_candidate_gpu_payload_bytes: 0
+  shared_gpu_staging_buffer_count: 1
+  shared_gpu_staging_bytes: 48269312
+  metadata_d2h_limit_bytes: 1048576
+  candidate_h2d_limit_bytes: 2147483648
+  minimum_planned_q_reduction_ppm: 30000
+source_provenance:
+  exact_same_generation_source_required: true
+  current_repository_provider: V2_FULL_REGION_D2H_TO_HOST_CACHE
+  provider_allowed_in_v3: false
+  alternate_exact_source_provider_found: false
+  cross_generation_source_allowed: false
+  compressed_metadata_is_exact_source: false
+three_percent_lower_bound:
+  full_q_rows: 15424000
+  minimum_planned_q_rows: 462720
+  planned_q_rows_per_record: 2331
+  minimum_exact_oracle_records: 199
+  eligible_records_per_block_source: 16
+  minimum_simultaneous_block_sources: 13
+  exact_source_bytes_per_block_region: 48269312
+  minimum_exact_source_storage_bytes: 627501056
+  projected_vram_headroom_bytes: 369751703
+  maximum_sources_by_headroom: 7
+  maximum_reduction_ppm_by_headroom: 16926
+  shared_one_source_maximum_reduction_ppm: 2418
+blocking_reason: >-
+  Exact same-generation source tensors cannot be supplied while full-tensor
+  D2H, persistent per-candidate GPU payloads, and more than one shared staging
+  buffer are all prohibited; the resulting exact-oracle opportunity cannot
+  reach the frozen three-percent Gate.
+execution:
+  v3_code_changes: 0
+  model_free_preflight: NOT_EXECUTED_AFTER_STRUCTURAL_GATE
+  cuda_preflight: NOT_EXECUTED_AFTER_STRUCTURAL_GATE
+  h3_model_load: 0
+  runtime_start: 0
+  formal_control_submission: 0
+  gpu_start: 0
+  completion: 0
+  retry: 0
+  fallback: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+  rust_live_compile: 0
+  rust_offline_replay: 0
+unmeasured:
+  legacy_cpu_oracle_calls: NOT_EXECUTED
+  legacy_tensor_ring_allocated_bytes: NOT_EXECUTED
+  v3_record_bytes: NOT_IMPLEMENTED
+  gpu_cpu_metric_error: NOT_EXECUTED
+  preliminary_candidates: NOT_EXECUTED
+  exact_oracle_candidates: NOT_EXECUTED
+  holdout_confusion_matrix: NOT_EXECUTED
+  metadata_d2h_bytes: NOT_EXECUTED
+  candidate_h2d_bytes: NOT_EXECUTED
+  live_replay_digest: NOT_EXECUTED
+  output_integrity: NOT_EXECUTED
+authorization:
+  exception_ended: true
+  constraints_relaxed: false
+  second_h3_submission: false
+  follow_up_started: false
