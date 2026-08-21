@@ -16,6 +16,7 @@ from hive_product.h3_row_region_safety_control_v2_probe import (
     FAILED,
     NODE_CLASS,
     READY,
+    _cardinality_receipt,
     build_workflow,
 )
 from hive_product.h3_row_region_safety_v2 import (
@@ -66,6 +67,22 @@ class FakeTimingStart:
 
 
 class H3RowRegionSafetyControlV2Tests(unittest.TestCase):
+    def test_formal_control_cardinality_contract_is_exact(self):
+        writes = [
+            {"step": step, "block": block}
+            for step in range(20)
+            for block in range(30)
+        ]
+        records = [
+            {"step": step, "block": block, "region": 0}
+            for step in range(2, 18)
+            for block in range(30)
+        ]
+        receipt = _cardinality_receipt(writes, records)
+        self.assertTrue(receipt["passed"])
+        records.pop()
+        self.assertFalse(_cardinality_receipt(writes, records)["passed"])
+
     def test_balanced_holdout_shape_and_budgets_are_exact(self):
         design = evidence_design_receipt()
         self.assertEqual(CANDIDATE_BLOCKS, tuple(range(30)))

@@ -81,6 +81,9 @@ try:
             "status": "PASS",
             "page_locked": all(slot.payload.is_pinned() for slot in _RESOURCES.slots),
             "pinned_host_bytes": _RESOURCES.allocated_bytes,
+            "slot_bytes": int(_RESOURCES.slots[0].payload.numel())
+            * int(_RESOURCES.slots[0].payload.element_size()),
+            "slot_states": [slot.state for slot in _RESOURCES.slots],
             "ring_capacity": _ring_admission,
             "physical_ram_bytes": int(_memory.total),
             "available_ram_before_pinned_bytes": int(_memory.available),

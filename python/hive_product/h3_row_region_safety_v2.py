@@ -239,6 +239,7 @@ class D2HEventFinalizer:
             "completion_method": "nonblocking CUDA Event query",
             "completion_query_count": self.completion_query_count,
             "completion_not_ready_count": self.completion_not_ready_count,
+            "completion_event_elapsed_time_count": 0,
             "forced_cpu_synchronization_count": 0,
             "timing_status": status,
             "timing_sample_count": self.timing_sample_count,
@@ -286,7 +287,14 @@ def _evidence_integrity_checks(
 
 def _timing_summary(samples: Sequence[float]) -> dict[str, Any]:
     if not samples:
-        return {"count": 0, "min": None, "median": None, "p95": None, "max": None}
+        return {
+            "count": 0,
+            "total": 0.0,
+            "min": None,
+            "median": None,
+            "p95": None,
+            "max": None,
+        }
     ordered = sorted(float(value) for value in samples)
     middle = len(ordered) // 2
     median_value = (
@@ -297,6 +305,7 @@ def _timing_summary(samples: Sequence[float]) -> dict[str, Any]:
     p95_index = min(len(ordered) - 1, max(0, (95 * len(ordered) + 99) // 100 - 1))
     return {
         "count": len(ordered),
+        "total": sum(ordered),
         "min": ordered[0],
         "median": median_value,
         "p95": ordered[p95_index],
@@ -777,6 +786,12 @@ class HybridControlOracleWorker:
 
     def receipt(self) -> dict[str, Any]:
         timing = self.event_finalizer.receipt()
+        producer_span = (
+            self.enqueue_host_times[-1] - self.enqueue_host_times[0]
+            if len(self.enqueue_host_times) > 1
+            else 0.0
+        )
+        service_total = sum(self.cpu_service_seconds)
         return {
             "scope": "REAL_H3_FULL_COMPUTE_CONTROL_V2",
             "enqueue_count": self.enqueue_count,
@@ -811,7 +826,20 @@ class HybridControlOracleWorker:
                     )
                 ]
             ),
+            "producer_arrival_rate_records_per_second": (
+                (len(self.enqueue_host_times) - 1) / producer_span
+                if producer_span > 0.0
+                else None
+            ),
+            "worker_service_rate_records_per_second": (
+                len(self.cpu_service_seconds) / service_total
+                if service_total > 0.0
+                else None
+            ),
             "ring_high_water_mark": self.ring_high_water_mark,
+            "ring_slot_count": len(self.resources.slots),
+            "final_slot_states": [slot.state for slot in self.resources.slots],
+            "final_backlog": self._queue.unfinished_tasks,
             "persistent_gpu_source_bytes": 0,
             "rust_tensor_bytes": 0,
             "ring_write_sequence": list(self.ring_write_sequence),
@@ -963,7 +991,10 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
         self.eligible_source_steps_seen.add(step)
 
     def finalize(self) -> dict[str, Any]:
+        finalization_started = perf_counter()
+        drain_started = perf_counter()
         self.oracle.finish()
+        drain_seconds = perf_counter() - drain_started
         self._staging_release_event = None
         integrity = self.oracle.validate_integrity()
         base = super().finalize()
@@ -1000,6 +1031,10 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
             }
         )
         base["partial_attention_calls"] = 0
+        base["control_timings"] = {
+            "cpu_oracle_drain_seconds": drain_seconds,
+            "evidence_finalization_seconds": perf_counter() - finalization_started,
+        }
         return base
 
     def finalize_diagnostic(self) -> dict[str, Any]:

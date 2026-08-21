@@ -1,0 +1,48 @@
+schema_version: hiveframe.knowledge.h3-row-region-safety-evidence-formal-control-v2.1
+recorded_at: 2026-08-21
+issue: 129
+pull_request: 130
+exact_base_commit: f91c85504d75be4b17e5049a335b3e47fc3c4621
+decision: H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_ADMISSION_BLOCKED
+scope:
+  engine: H3
+  mode: I2V
+  profile: Standard Full Compute
+  submission: 0
+  gpu_start: 0
+  completion: 0
+  retry: 0
+  diagnostic_submission: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+cumulative_counters:
+  formal_control_submissions: 2
+  diagnostic_submissions: 1
+admission:
+  worktree_before_preflight: CLEAN
+  focused_tests: 26/26 PASS
+  bytecode_compile: PASS
+  model_free_cuda_oracle: FAIL_CLOSED
+failure:
+  phase: pre_submit_model_free_cuda_oracle
+  error_type: ControlV2EvidenceError
+  error_message: event finalizer received an invalid D2H slot
+  production_required_state: D2H_IN_FLIGHT
+  preflight_fixture_state: PENDING
+  root_cause: PRE_FLIGHT_FIXTURE_STATE_CONTRACT_STALE_AFTER_PR128
+execution:
+  h3_model_load: 0
+  runtime_start: 0
+  backend_submission: 0
+  rust_live_compile: 0
+  rust_offline_replay: 0
+  output: NOT_EXECUTED
+receipts:
+  private_model_free_preflight_sha256: 99f392ccad0dcf9c87b6e23a9aebc3c1ea562e7f4167b01df4fa2426b81f8f5e
+authorization:
+  exception_ended: true
+  preflight_remediation_started: false
+  retry_authorized: false
+  executor_integration_started: false
+  next_step_automatic: none

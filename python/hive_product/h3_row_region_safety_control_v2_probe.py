@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from collections import Counter
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -46,11 +47,14 @@ from .h3_hybrid_cache_staging import (
     HOST_OS_COMFY_RESERVE_BYTES,
     HOST_SOURCE_CACHE_BYTES,
     PHYSICAL_VRAM_BYTES,
+    CANDIDATE_SLOT_BYTES,
+    PINNED_RING_DEPTH,
     PINNED_HOST_TOTAL_BYTES,
     build_runtime_admission,
 )
 from .h3_row_region_safety import CACHE_HARD_CAP_BYTES, FULL_Q_ROWS, MAX_EVIDENCE_RECORDS, generation_candidates, generation_identity
 from .h3_row_region_safety_v2 import (
+    CANDIDATE_BLOCKS,
     EXPECTED_ENQUEUE_COUNT,
     EXPECTED_RECORD_COUNT,
     HOLDOUT_LABEL,
@@ -74,6 +78,42 @@ PROJECTED_CUDA_PEAK_BYTES = 12_514_625_897
 MINIMUM_VRAM_HEADROOM_BYTES = 256 * 1024**2
 PREFLIGHT_AVAILABLE_RAM_BYTES = 47_136_583_680
 RTX_3060_LUID_FRAGMENT = "luid_0x00000000_0x000114d9"
+FROZEN_PLAN_SETTINGS_SHA256 = "7b9852657c88d433ba03a2ed4e91ad0817ae44cc8df686dff9528da728983757"
+
+
+def _cardinality_receipt(
+    writes: Sequence[Mapping[str, Any]], records: Sequence[Mapping[str, Any]]
+) -> dict[str, Any]:
+    enqueue_by_step = Counter(int(item["step"]) for item in writes)
+    enqueue_by_block = Counter(int(item["block"]) for item in writes)
+    evidence_by_step = Counter(int(item["step"]) for item in records)
+    evidence_by_block = Counter(int(item["block"]) for item in records)
+    evidence_by_region = Counter(int(item["region"]) for item in records)
+    expected_enqueue_by_step = {step: len(CANDIDATE_BLOCKS) for step in range(20)}
+    expected_enqueue_by_block = {block: 20 for block in CANDIDATE_BLOCKS}
+    expected_evidence_by_step = {step: len(CANDIDATE_BLOCKS) for step in range(2, 18)}
+    expected_evidence_by_block = {block: 16 for block in CANDIDATE_BLOCKS}
+    expected_evidence_by_region = {0: EXPECTED_RECORD_COUNT}
+
+    def plain(counter: Counter[int]) -> dict[int, int]:
+        return dict(sorted(counter.items()))
+
+    actual = {
+        "enqueue_by_step": plain(enqueue_by_step),
+        "enqueue_by_block": plain(enqueue_by_block),
+        "evidence_by_step": plain(evidence_by_step),
+        "evidence_by_block": plain(evidence_by_block),
+        "evidence_by_region": plain(evidence_by_region),
+    }
+    expected = {
+        "enqueue_by_step": expected_enqueue_by_step,
+        "enqueue_by_block": expected_enqueue_by_block,
+        "evidence_by_step": expected_evidence_by_step,
+        "evidence_by_block": expected_evidence_by_block,
+        "evidence_by_region": expected_evidence_by_region,
+    }
+    checks = {name + "_exact": actual[name] == expected[name] for name in expected}
+    return {"expected": expected, "actual": actual, "checks": checks, "passed": all(checks.values())}
 
 
 def _utc_now() -> str:
@@ -417,7 +457,26 @@ def run_control(
                 for name in ("rust_calls_per_block", "rust_calls_per_region", "rust_calls_per_row")
             ),
         }
+        worktree_clean = not subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=repository_root,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        ).stdout.strip()
+        inventory_checks = {
+            "candidate_blocks_exact": tuple(CANDIDATE_BLOCKS) == tuple(range(30)),
+            "expected_enqueue_exact": EXPECTED_ENQUEUE_COUNT == 600,
+            "expected_evidence_exact": EXPECTED_RECORD_COUNT == 480,
+            "ring_slots_exact": PINNED_RING_DEPTH == 4,
+            "slot_bytes_exact": CANDIDATE_SLOT_BYTES == 48_269_312,
+            "pinned_ring_bytes_exact": PINNED_HOST_TOTAL_BYTES == 193_077_248,
+            "plan_settings_digest_exact": settings_digest()
+            == FROZEN_PLAN_SETTINGS_SHA256,
+        }
         pre_start_checks = {
+            "worktree_clean": worktree_clean,
             "external_jobs_zero": external_jobs["active_job_count"] == 0,
             "foreign_comfy_process_zero": len(foreign_comfy) == 0,
             "dedicated_port_free": not _port_open(base_url),
@@ -431,6 +490,7 @@ def run_control(
             "synthetic_oracle_pass": all(synthetic_checks.values()),
             "release_pyo3_and_rust_pass": all(verification_checks.values()),
             "pre_launch_ownership_pass": pre_launch_ownership["passed"] is True,
+            "candidate_inventory_and_plan_pass": all(inventory_checks.values()),
         }
         receipt["pre_start_admission"] = {
             "external_jobs": external_jobs,
@@ -445,6 +505,7 @@ def run_control(
             "synthetic": synthetic_checks,
             "release_verification": verification_checks,
             "process_ownership": pre_launch_ownership,
+            "candidate_inventory_and_plan": inventory_checks,
             "checks": pre_start_checks,
             "passed": all(pre_start_checks.values()),
         }
@@ -489,6 +550,11 @@ def run_control(
             "pinned_allocation_pass": node_admission.get("status") == "PASS",
             "page_locked": node_admission.get("page_locked") is True,
             "pinned_bytes_exact": node_admission.get("pinned_host_bytes") == PINNED_HOST_TOTAL_BYTES,
+            "ring_slots_exact": node_admission.get("ring_capacity", {}).get("required_slots")
+            == PINNED_RING_DEPTH,
+            "slot_bytes_exact": node_admission.get("slot_bytes") == CANDIDATE_SLOT_BYTES,
+            "initial_slot_states_all_free": node_admission.get("slot_states")
+            == ["FREE"] * PINNED_RING_DEPTH,
             "host_reserve_after_future_source_cache": host_available - HOST_SOURCE_CACHE_BYTES >= HOST_OS_COMFY_RESERVE_BYTES,
             "external_gpu_usage_not_increased": post_launch_external_gpu_bytes
             <= baseline_external_gpu_bytes,
@@ -579,6 +645,10 @@ def run_control(
         safety = execution.get("safety_evidence", {})
         oracle = execution.get("hybrid_oracle", {})
         confusion = safety.get("confusion_matrix", {})
+        cardinality = _cardinality_receipt(
+            oracle.get("ring_write_sequence", []), safety.get("records", [])
+        )
+        final_slot_states = oracle.get("final_slot_states")
         execution_checks = {
             "sampler_succeeded": callback.get("sampler_succeeded") is True,
             "model_forward_count": execution.get("model_forward_count") == 20,
@@ -590,15 +660,45 @@ def run_control(
             "records_bounded": int(safety.get("record_count", MAX_EVIDENCE_RECORDS + 1)) <= MAX_EVIDENCE_RECORDS,
             "false_safe_zero": confusion.get("false_safe") == 0,
             "false_unsafe_collected": safety.get("false_unsafe_status") == "COLLECTED",
+            "nonfinite_zero": oracle.get("nonfinite_count") == 0,
+            "truncated_evidence_zero": safety.get("overflow") is False,
+            "incomplete_evidence_zero": oracle.get("incomplete_record_count") == 0,
             "d2h_exact": oracle.get("d2h_bytes") == CONTROL_ORACLE_D2H_BYTES,
             "d2h_within_limit": int(oracle.get("d2h_bytes", CONTROL_TRANSFER_LIMIT_BYTES + 1)) <= CONTROL_TRANSFER_LIMIT_BYTES,
             "h2d_zero": oracle.get("h2d_bytes") == 0,
             "persistent_gpu_source_zero": oracle.get("persistent_gpu_source_bytes") == 0,
             "hot_sync_zero": oracle.get("hot_path_forced_sync_count") == 0,
-            "ring_clean": all(oracle.get(name) == 0 for name in ("ring_overflow_count", "ring_overwrite_count", "evidence_drop_count", "duplicate_d2h_count", "lineage_mismatch_count")),
+            "ring_clean": all(
+                oracle.get(name) == 0
+                for name in (
+                    "ring_backpressure_count",
+                    "ring_overflow_count",
+                    "ring_overwrite_count",
+                    "evidence_drop_count",
+                    "duplicate_d2h_count",
+                    "lineage_mismatch_count",
+                )
+            ),
+            "final_backlog_zero": oracle.get("final_backlog") == 0,
+            "final_slot_states_all_free": final_slot_states
+            == ["FREE"] * PINNED_RING_DEPTH,
+            "ring_high_water_bounded": isinstance(oracle.get("ring_high_water_mark"), int)
+            and 0 < int(oracle["ring_high_water_mark"]) <= PINNED_RING_DEPTH,
+            "cardinality_exact": cardinality["passed"] is True,
+            "producer_arrival_rate_measured": isinstance(
+                oracle.get("producer_arrival_rate_records_per_second"), (int, float)
+            ),
+            "worker_service_rate_measured": isinstance(
+                oracle.get("worker_service_rate_records_per_second"), (int, float)
+            ),
+            "cuda_completion_event_not_used_for_timing": oracle.get(
+                "d2h_timing_telemetry", {}
+            ).get("completion_event_elapsed_time_count")
+            == 0,
             "source_cache_cap": int(oracle.get("source_cache_bytes", CACHE_HARD_CAP_BYTES + 1)) <= CACHE_HARD_CAP_BYTES,
         }
         receipt["callback_instrumentation"] = callback
+        receipt["evidence_cardinality"] = cardinality
         receipt["execution_gate"] = {"checks": execution_checks, "passed": all(execution_checks.values())}
         if not all(execution_checks.values()):
             raise RuntimeError("CONTROL V2 execution evidence Gate failed")
@@ -615,20 +715,24 @@ def run_control(
             record["complete_lineage_digest"] = candidate["lineage_digest"].hex()
         bridge = RustCachePlanV2Bridge()
         receipt["rust_live_compile_count"] = 1
+        rust_live_started = time.perf_counter()
         live_plan = bridge.compile_generation(
             identity=identity,
             candidates=candidates,
             total_full_q_rows=FULL_Q_ROWS,
             profile_name="balanced_12gb",
         )
+        rust_live_seconds = time.perf_counter() - rust_live_started
         replay_bridge = RustCachePlanV2Bridge()
         receipt["rust_offline_replay_count"] = 1
+        rust_replay_started = time.perf_counter()
         replay_plan = replay_bridge.compile_generation(
             identity=identity,
             candidates=candidates,
             total_full_q_rows=FULL_Q_ROWS,
             profile_name="balanced_12gb",
         )
+        rust_replay_seconds = time.perf_counter() - rust_replay_started
         planned_transfer = int(live_plan.get("total_planned_d2h_bytes", 0)) + int(live_plan.get("total_planned_h2d_bytes", 0))
         plan_checks = {
             "release_extension_loaded": bridge.extension is not None,
@@ -656,6 +760,8 @@ def run_control(
             "passed": all(plan_checks.values()),
             "live_digest": _json_safe(live_plan.get("plan_digest")),
             "replay_digest": _json_safe(replay_plan.get("plan_digest")),
+            "live_compile_seconds": rust_live_seconds,
+            "offline_replay_seconds": rust_replay_seconds,
         }
         if not all(plan_checks.values()):
             raise RuntimeError("Rust CachePlan ABI V2 holdout Gate failed")
