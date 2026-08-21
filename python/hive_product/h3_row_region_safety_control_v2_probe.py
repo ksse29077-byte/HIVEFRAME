@@ -788,6 +788,11 @@ def run_control(
             receipt["node_timeline"] = timeline.node_timeline()
             receipt["progress_timeline"] = timeline.progress_summary()
             receipt["websocket_terminal_event"] = timeline.terminal_event
+            gpu_started = bool(receipt["progress_timeline"].get("records", []))
+            receipt["gpu_start_count"] = int(gpu_started)
+            receipt["diagnostic_gpu_start_count"] = (
+                int(gpu_started) if lineage_diagnostic else 0
+            )
         if callback_path.is_file() and "callback_instrumentation" not in receipt:
             receipt["callback_instrumentation"] = json.loads(callback_path.read_text(encoding="utf-8"))
         if lineage_diagnostic:

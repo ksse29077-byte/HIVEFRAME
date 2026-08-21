@@ -45,8 +45,8 @@ EXPECTED_RECORD_COUNT = len(CANDIDATE_BLOCKS) * len(ELIGIBLE_CACHE_SOURCE_STEPS)
 METRIC_CHUNK_ROWS = 256
 
 
-class ControlV2EvidenceError(RuntimeError):
-    """Fail the one-shot CONTROL instead of dropping or truncating evidence."""
+class ControlV2EvidenceError(Exception):
+    """Fail closed without entering the native Full Compute fallback."""
 
 
 def _region_rows() -> tuple[int, ...]:

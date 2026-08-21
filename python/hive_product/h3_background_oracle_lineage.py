@@ -20,12 +20,12 @@ FULL_TRACE_LIMIT = 600
 VALIDATION_RULE = "source_denoise_ordinal + 1 == current_denoise_ordinal"
 
 
-class LineageDiagnosticError(RuntimeError):
+class LineageDiagnosticError(Exception):
     """Reject malformed or incomplete lineage diagnostics."""
 
 
-class LineageDiagnosticAbort(BaseException):
-    """Escape the Attention fallback handler after a diagnostic failure."""
+class LineageDiagnosticAbort(Exception):
+    """Escape Attention fallback while remaining visible to ComfyUI."""
 
 
 class LineageDiagnosticCapsuleWriteError(LineageDiagnosticError):
@@ -189,6 +189,60 @@ def validate_diagnostic_trace(records: Sequence[Mapping[str, Any]]) -> None:
             raise LineageDiagnosticError("duplicate diagnostic lineage record")
         keys.add(key)
         enqueue_sequences.add(sequence)
+
+
+def replay_ring_backpressure_capsule(capsule: Mapping[str, Any]) -> dict[str, Any]:
+    """Replay the bounded H3 trace that preceded a missing oracle record."""
+
+    mismatch = capsule.get("mismatch")
+    if not isinstance(mismatch, Mapping):
+        raise LineageDiagnosticError("lineage capsule mismatch record is missing")
+    reason = str(capsule.get("rejection_reason", ""))
+    if reason != "DUPLICATE_OR_MISSING_RECORD:RING_SLOT_NOT_FREE":
+        raise LineageDiagnosticError("lineage capsule is not a ring backpressure trace")
+    if capsule.get("logical_denoise_order") != list(range(20)):
+        raise LineageDiagnosticError("logical denoise order changed in lineage capsule")
+    timesteps = capsule.get("raw_scheduler_timestep_order")
+    if not isinstance(timesteps, list) or len(timesteps) != 20:
+        raise LineageDiagnosticError("scheduler timestep trace is incomplete")
+
+    source_ordinal = int(mismatch["source_denoise_ordinal"])
+    current_ordinal = int(mismatch["current_denoise_ordinal"])
+    enqueue_sequence = int(mismatch["oracle_enqueue_sequence"])
+    fully_consumed_before = int(capsule["last_fully_consumed_sequence_before_mismatch"])
+    completed_before = int(capsule["last_completion_sequence_before_mismatch"])
+    finalized_before = int(capsule["last_finalizer_sequence_before_mismatch"])
+    pending = capsule.get("pending_records_before_mismatch")
+    if not isinstance(pending, list) or not pending:
+        raise LineageDiagnosticError("pending ring records are missing")
+    pending_sequences = sorted(int(item["oracle_enqueue_sequence"]) for item in pending)
+    if source_ordinal + 1 != current_ordinal:
+        raise LineageDiagnosticError("captured source was not age one at backpressure")
+    if pending_sequences != list(range(fully_consumed_before + 1, enqueue_sequence)):
+        raise LineageDiagnosticError("pending ring sequence is not contiguous")
+    if completed_before < fully_consumed_before or finalized_before < fully_consumed_before:
+        raise LineageDiagnosticError("physical completion precedes logical consumption")
+
+    replay = {
+        "cause": "DUPLICATE_OR_MISSING_RECORD",
+        "proven_trigger": "RING_SLOT_NOT_FREE",
+        "source_denoise_ordinal": source_ordinal,
+        "current_denoise_ordinal": current_ordinal,
+        "oracle_enqueue_sequence": enqueue_sequence,
+        "last_fully_consumed_sequence_before_mismatch": fully_consumed_before,
+        "last_completion_sequence_before_mismatch": completed_before,
+        "last_finalizer_sequence_before_mismatch": finalized_before,
+        "occupied_slot_count": len(pending_sequences),
+        "pending_sequences": pending_sequences,
+        "source_age_one_at_failure": True,
+        "scheduler_timestep_order_preserved": True,
+        "required_action": "FAIL_CLOSED_BEFORE_NATIVE_FULL_FALLBACK",
+        "native_full_fallback_allowed": False,
+        "missing_record_created": False,
+        "later_false_age_mismatch_prevented": True,
+    }
+    replay["replay_digest"] = _canonical_digest(replay)
+    return replay
 
 
 def _trace_view(metadata: Mapping[str, Any] | None) -> dict[str, Any] | None:

@@ -15,10 +15,12 @@ from hive_product.h3_background_oracle_lineage import (
     LineageDiagnosticContext,
     LineageDiagnosticError,
     LineageDiagnosticRecorder,
+    replay_ring_backpressure_capsule,
     scheduler_timestep_trace,
     validate_diagnostic_pair,
     validate_diagnostic_trace,
 )
+from hive_product.h3_row_region_safety_v2 import ControlV2EvidenceError
 
 
 TEST_TEMP_ROOT = Path(__file__).resolve().parents[2] / ".test-tmp"
@@ -77,6 +79,25 @@ def enriched(recorder: LineageDiagnosticRecorder, ordinal: int, block: int = 0):
 
 
 class H3BackgroundOracleLineageTests(unittest.TestCase):
+    def test_integrity_errors_bypass_runtime_error_full_compute_fallback(self):
+        self.assertTrue(issubclass(ControlV2EvidenceError, Exception))
+        self.assertFalse(issubclass(ControlV2EvidenceError, RuntimeError))
+        self.assertTrue(issubclass(LineageDiagnosticAbort, Exception))
+
+    def test_actual_h3_ring_backpressure_trace_replays_fail_closed(self):
+        fixture = Path(__file__).parent / "fixtures" / "h3_oracle_ring_backpressure_trace.json"
+        capsule = json.loads(fixture.read_text(encoding="utf-8"))
+        first = replay_ring_backpressure_capsule(capsule)
+        second = replay_ring_backpressure_capsule(capsule)
+        self.assertEqual(first, second)
+        self.assertEqual(first["cause"], "DUPLICATE_OR_MISSING_RECORD")
+        self.assertEqual(first["occupied_slot_count"], 2)
+        self.assertEqual(first["pending_sequences"], [31, 32])
+        self.assertTrue(first["source_age_one_at_failure"])
+        self.assertFalse(first["native_full_fallback_allowed"])
+        self.assertFalse(first["missing_record_created"])
+        self.assertTrue(first["later_false_age_mismatch_prevented"])
+
     def test_decreasing_raw_scheduler_timestep_is_preserved(self):
         values = torch.tensor([20.0 - i for i in range(21)])
         trace = scheduler_timestep_trace(values)
