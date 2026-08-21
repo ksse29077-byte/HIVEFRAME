@@ -296,3 +296,40 @@ old release SHA-256:                0758bba92c7f0f60e9f85a90fee30582a3cee758b567
 new release SHA-256:                60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
 Formal CONTROL submission:          0
 ```
+
+## Formal CONTROL Admission Result
+
+The lint-resolution commit was pushed before Admission so the local worktree,
+local HEAD, and Draft PR #138 head were clean and identical at
+`27bfcb02269d43e1136efafde1407a7874b5820e`. The frozen inventory digest and
+release binary identity matched the verified preflight. Resource observations
+were also admissible: RTX 3060 use was 10 MiB at 0%, projected V4 headroom was
+321,482,391 bytes, available system RAM was 46,599,868,416 bytes, port 8191 had
+zero listeners, and no ComfyUI Python candidate was running.
+
+The structural V4 production Gate did not pass. The repository contains the
+V4 model-free contract and bounded CUDA fixture, but no V4 runtime controller,
+ComfyUI node, one-shot Formal CONTROL runner, or callback that can emit the
+frozen 199-record candidate-only-H2D exact-GPU-oracle holdout. The earlier V4
+worklog explicitly records that these production components were not started
+after the original teardown failure, and the approved teardown/lint changes do
+not add them.
+
+The existing V2 runner cannot be substituted. It uses the V2 controller,
+candidate set, D2H-only oracle contract, cardinality, settings digest, node
+class, and holdout label. A V2 Generation would therefore be a fourth Formal
+CONTROL submission without proving the authorized V4 product question.
+
+The Gate failed before runtime start. External queue query, Process Ownership
+V2 finalization, an approved 8191 listener, H3 model load, workflow submission,
+holdout collection, Rust live/replay, video output, and production net-saving
+calculation were not entered. No follow-up implementation or remediation was
+created automatically.
+
+```text
+current-task submission/GPU start/completion: 0/0/0
+current-task retry/fallback:                   0/0
+cumulative Formal CONTROL submissions:        3
+SELECTIVE/partial-Q/Attention omission:        0/0/0
+H3_V4_CLOSE_THE_LOOP_ADMISSION_BLOCKED
+```

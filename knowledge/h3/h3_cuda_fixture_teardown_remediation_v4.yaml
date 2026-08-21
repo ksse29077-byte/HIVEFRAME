@@ -59,7 +59,7 @@ post_stop:
   port_8191_listener_count: 0
   comfyui_runtime_candidate_count: 0
 decision:
-  code: BASELINE_PREEXISTING_ABI_LINT_RESOLVED
+  code: H3_V4_CLOSE_THE_LOOP_ADMISSION_BLOCKED
   automatic_retry_allowed: false
   v4_preflight_started: true
   formal_control_allowed: false
@@ -105,6 +105,32 @@ v4_preflight:
   workspace_release_build_entered: false
   formal_control_admission_entered: false
   formal_control_submission_count: 0
+formal_control_admission:
+  head: 27bfcb02269d43e1136efafde1407a7874b5820e
+  structural_gate: V4_PRODUCTION_OBSERVER_ENTRYPOINT_ABSENT
+  model_free_contract_present: true
+  bounded_cuda_fixture_present: true
+  runtime_controller_present: false
+  comfyui_node_present: false
+  one_shot_runner_present: false
+  holdout_callback_present: false
+  v2_substitution_allowed: false
+  release_pyo3_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+  projected_vram_headroom_bytes: 321482391
+  available_ram_bytes: 46599868416
+  port_8191_listener_count: 0
+  comfyui_candidate_count: 0
+  runtime_started: false
+  process_ownership_entered: false
+  submission_count: 0
+  gpu_start_count: 0
+  completion_count: 0
+  cumulative_formal_control_submission_count: 3
+  rust_live_compile_count: 0
+  rust_offline_replay_count: 0
+  output_integrity: NOT_EXECUTED
+  production_net_saving: NOT_COMPUTABLE
+  automatic_follow_up_created: false
   gpu_start_count: 0
   completion_count: 0
 baseline_lint_resolution:
