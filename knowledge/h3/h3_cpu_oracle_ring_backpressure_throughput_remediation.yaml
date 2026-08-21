@@ -1,0 +1,62 @@
+schema_version: hiveframe.knowledge.h3-cpu-oracle-ring-throughput-remediation.1
+recorded_at: 2026-08-21
+issue: 127
+pull_request: 128
+exact_base_commit: d1863ec359fb09f42f27f21adc50096e364e6563
+implementation_commit: 2857516
+decision: H3_CPU_ORACLE_RING_BACKPRESSURE_THROUGHPUT_REMEDIATION_READY_FOR_CONTROL
+actual_trace:
+  fully_consumed_sequence: 30
+  occupied_sequences: [31, 32]
+  first_rejected_sequence: 33
+  measured_maximum_in_flight: 3
+  exact_enqueue_and_service_timestamps: UNAVAILABLE_IN_SOURCE_TRACE
+  actual_payload_bytes: 48269312
+ring:
+  previous_slots: 2
+  safety_slots: 1
+  admitted_slots: 4
+  total_pinned_bytes: 193077248
+  high_water: 3
+  state_machine: [FREE, D2H_IN_FLIGHT, CPU_READY, PROCESSING, FINALIZED, FREE]
+  ram_admission: PASS
+throughput:
+  producer_bound_records_per_second: 0.4531558719756992
+  selected_workers: 1
+  selected_records_per_second: 5.991146483437869
+  required_rate_margin: 1.10
+  metric_digest: 349dc9dfd7d41737d8cc42a1a411290fdd9b763aa327fac50a06450b78f053dc
+production_replay:
+  steps: 20
+  enqueues: 600
+  evidence_records: 480
+  source_cache_bytes: 1448079360
+  duplicate_missing_stale_overwrite_lineage_mismatch: [0, 0, 0, 0, 0]
+  final_backlog: 0
+  digest: 4ccfbba64e1409cba098c76643f46b3b89566e807d385045e332b225cf134efe
+cuda_stress:
+  final_transfer_count: 12
+  final_d2h_bytes: 579231744
+  cumulative_transfer_count: 16
+  cumulative_d2h_bytes: 772308992
+  hot_path_forced_sync: 0
+  completion_elapsed_time_calls: 0
+  bf16_bit_preserved: true
+  cpu_metric_max_abs_error: 0.0
+  gpu_baseline_restored: true
+execution_counts:
+  h3_model_load: 0
+  generation: 0
+  formal_control_submission: 0
+  selective: 0
+  partial_q: 0
+  attention_omission: 0
+  rust_calls: 0
+  rust_tensor_bytes: 0
+evidence:
+  local_json_sha256: 445172562af8cfe2d2edd5e132041459cd589723b3631a8a28b3435f7a3aa912
+  canonical_receipt_digest: 3c57f86f49426c5e45a8efad2c92bb398efa1563688d696e4f765486e4decad0
+authorization:
+  formal_control_started: false
+  next_step_automatic: none
+

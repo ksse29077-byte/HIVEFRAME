@@ -15,6 +15,7 @@ from hive_product.h3_hybrid_cache_staging import (
     PINNED_RING_DEPTH,
     HybridControlOracleRing,
     build_runtime_admission,
+    build_ring_capacity_admission,
     calibration_gate,
 )
 from hive_product.h3_hybrid_cache_staging_probe import completion_gates
@@ -46,8 +47,26 @@ class H3HybridCacheStagingTests(unittest.TestCase):
         self.assertEqual(CONTROL_STEP_UPPER_BOUND, 20)
         self.assertEqual(CONTROL_ORACLE_D2H_BYTES, 28_961_587_200)
         self.assertLessEqual(CONTROL_ORACLE_D2H_BYTES, CONTROL_TRANSFER_LIMIT_BYTES)
-        self.assertEqual(PINNED_RING_DEPTH, 2)
-        self.assertEqual(PINNED_HOST_TOTAL_BYTES, CANDIDATE_SLOT_BYTES * 2)
+        self.assertEqual(PINNED_RING_DEPTH, 4)
+        self.assertEqual(PINNED_HOST_TOTAL_BYTES, CANDIDATE_SLOT_BYTES * 4)
+
+    def test_ring_capacity_is_trace_derived_and_ram_admitted(self):
+        admitted = build_ring_capacity_admission(
+            current_available_ram_bytes=AVAILABLE_RAM_BYTES
+        )
+        blocked = build_ring_capacity_admission(
+            current_available_ram_bytes=(
+                HOST_OS_COMFY_RESERVE_BYTES
+                + HOST_SOURCE_CACHE_BYTES
+                + CANDIDATE_SLOT_BYTES * 3
+            )
+        )
+        self.assertEqual(admitted["measured_maximum_in_flight"], 3)
+        self.assertEqual(admitted["safety_slot_count"], 1)
+        self.assertEqual(admitted["required_slots"], 4)
+        self.assertTrue(admitted["admitted"])
+        self.assertEqual(blocked["maximum_slots"], 3)
+        self.assertFalse(blocked["admitted"])
 
     def test_vram_and_host_ram_admission_include_reserves(self):
         result = build_runtime_admission(
