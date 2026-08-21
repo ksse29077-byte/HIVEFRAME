@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Mapping
+from uuid import uuid4
 import argparse
 import inspect
 import json
@@ -23,6 +25,10 @@ from .h3_row_region_safety_v2 import (
     REPRESENTATIVE_POSITIONS,
     _chunked_metrics,
 )
+from .h3_background_oracle_lineage import (
+    LineageDiagnosticContext,
+    LineageDiagnosticRecorder,
+)
 
 
 READY = "H3_ROW_REGION_SAFETY_CONTROL_V2_ORACLE_PREFLIGHT_READY"
@@ -32,6 +38,166 @@ FAILED = "H3_ROW_REGION_SAFETY_CONTROL_V2_ORACLE_PREFLIGHT_FAILED"
 class _BrokenTimingStart:
     def elapsed_time(self, _end: Any) -> float:
         raise ValueError("injected timing telemetry failure")
+
+
+@contextmanager
+def _plain_temporary_directory():
+    path = Path.cwd() / f"hiveframe-lineage-preflight-{uuid4().hex}"
+    path.mkdir()
+    try:
+        yield str(path)
+    finally:
+        for child in path.iterdir():
+            child.unlink()
+        path.rmdir()
+
+
+def _diagnostic_metadata(ordinal: int, enqueue_sequence: int) -> dict[str, Any]:
+    return {
+        "block": 0,
+        "step": ordinal,
+        "current_step_raw": ordinal,
+        "current_denoise_ordinal": ordinal,
+        "current_scheduler_timestep": float(20 - ordinal).hex(),
+        "model_forward_ordinal": ordinal,
+        "attention_call_ordinal": ordinal * 50,
+        "block_id": 0,
+        "region_id": 0,
+        "current_shape_dtype_device": "shape=(32, 8)|dtype=torch.bfloat16|device=cuda",
+        "oracle_lineage_digest": "bounded-cuda-oracle",
+        "source_identity": f"bounded-cuda-{ordinal}",
+        "lineage_base": "bounded-cuda-lineage",
+        "enqueue_sequence": enqueue_sequence,
+    }
+
+
+def _bounded_cuda_reordered_lineage(torch_module: Any) -> dict[str, Any]:
+    """Observe reverse completion with real pinned D2H and production finalization."""
+
+    with _plain_temporary_directory() as temporary:
+        context = LineageDiagnosticContext.create(
+            run_digest="11" * 32,
+            workflow_digest="22" * 32,
+            model_digest="33" * 32,
+            settings_digest="44" * 32,
+            scheduler_timesteps=tuple(float(20 - index).hex() for index in range(20)),
+            capsule_path=Path(temporary) / "capsule.json",
+        )
+        recorder = LineageDiagnosticRecorder(context)
+        source_gpu = torch_module.arange(
+            256, dtype=torch_module.float32, device="cuda"
+        ).reshape(32, 8).to(torch_module.bfloat16)
+        current_gpu = source_gpu + torch_module.tensor(
+            1.0, dtype=torch_module.bfloat16, device="cuda"
+        )
+        payloads = [source_gpu, current_gpu]
+        slots = []
+        streams = [
+            torch_module.cuda.Stream(device=source_gpu.device),
+            torch_module.cuda.Stream(device=source_gpu.device),
+        ]
+        for ordinal, payload in enumerate(payloads):
+            metadata = recorder.enrich_enqueue(
+                _diagnostic_metadata(ordinal, ordinal + 1),
+                enqueue_sequence=ordinal + 1,
+                ring_slot_id=ordinal,
+                ring_slot_generation=1,
+                ring_write_sequence=ordinal + 1,
+            )
+            slot = PinnedSlot(
+                payload=torch_module.empty_like(payload, device="cpu", pin_memory=True),
+                completion_event=torch_module.cuda.Event(blocking=False),
+                timing_start_event=torch_module.cuda.Event(enable_timing=True, blocking=False),
+                timing_end_event=torch_module.cuda.Event(enable_timing=True, blocking=False),
+                state="PENDING",
+                metadata=metadata,
+                ring_generation=1,
+            )
+            slots.append(slot)
+
+        finalizer = D2HEventFinalizer()
+        deadline = time.monotonic() + 10.0
+        with torch_module.cuda.stream(streams[1]):
+            slots[1].timing_start_event.record(streams[1])
+            slots[1].payload.copy_(payloads[1], non_blocking=True)
+            slots[1].timing_end_event.record(streams[1])
+            slots[1].completion_event.record(streams[1])
+        second = finalizer.try_finalize(slots[1])
+        while second["admitted"] is not True and time.monotonic() < deadline:
+            time.sleep(0.001)
+            second = finalizer.try_finalize(slots[1])
+        first_pending_when_second_completed = second["admitted"] is True
+        with torch_module.cuda.stream(streams[0]):
+            slots[0].timing_start_event.record(streams[0])
+            slots[0].payload.copy_(payloads[0], non_blocking=True)
+            slots[0].timing_end_event.record(streams[0])
+            slots[0].completion_event.record(streams[0])
+        first = finalizer.try_finalize(slots[0])
+        while first["admitted"] is not True and time.monotonic() < deadline:
+            time.sleep(0.001)
+            first = finalizer.try_finalize(slots[0])
+        if first["admitted"] is not True or second["admitted"] is not True:
+            raise RuntimeError("bounded reordered CUDA D2H did not complete")
+
+        recorder.mark_completion(slots[1].metadata)
+        recorder.mark_completion(slots[0].metadata)
+        recorder.mark_finalizer(slots[0].metadata, ring_read_sequence=1)
+        recorder.record_valid_pair(source=None, current=slots[0].metadata)
+        recorder.mark_finalizer(slots[1].metadata, ring_read_sequence=2)
+        recorder.record_valid_pair(
+            source=slots[0].metadata, current=slots[1].metadata
+        )
+        recorder.write_complete_trace()
+        source_preserved = bool(
+            torch_module.equal(
+                slots[0].payload.view(torch_module.uint16),
+                source_gpu.cpu().view(torch_module.uint16),
+            )
+        )
+        current_preserved = bool(
+            torch_module.equal(
+                slots[1].payload.view(torch_module.uint16),
+                current_gpu.cpu().view(torch_module.uint16),
+            )
+        )
+        completion_order = [
+            slots[1].metadata["oracle_completion_sequence"],
+            slots[0].metadata["oracle_completion_sequence"],
+        ]
+        finalizer_order = [
+            slots[0].metadata["finalizer_sequence"],
+            slots[1].metadata["finalizer_sequence"],
+        ]
+        timing_pass = all(
+            result["timing"]["status"] == "MEASURED_CUDA_EVENT"
+            for result in (first, second)
+        )
+        for slot in slots:
+            finalizer.cleanup_slot(slot)
+        return {
+            "enqueue_order": [1, 2],
+            "completion_order_by_ordinal": [1, 0],
+            "completion_sequence_values": completion_order,
+            "finalizer_order_by_ordinal": [0, 1],
+            "finalizer_sequence_values": finalizer_order,
+            "completion_reordered": first_pending_when_second_completed,
+            "logical_lineage_preserved": recorder.receipt()["bounded_full_trace_count"] == 2,
+            "pinned_d2h_pass": source_preserved and current_preserved,
+            "completion_event_timing_calls": 0,
+            "timing_enabled_event_pass": timing_pass,
+            "hot_path_forced_cpu_sync": 0,
+            "ring_overflow_count": 0,
+            "ring_drop_count": 0,
+            "ring_overwrite_count": 0,
+            "cleanup_pass": all(
+                slot.state == "FREE"
+                and slot.metadata is None
+                and slot.completion_event is None
+                and slot.timing_start_event is None
+                and slot.timing_end_event is None
+                for slot in slots
+            ),
+        }
 
 
 def _bounded_cuda_finalization(torch_module: Any, payload: Any) -> dict[str, Any]:
@@ -151,6 +317,7 @@ def run_preflight(torch_module: Any) -> dict[str, Any]:
         source_gpu = source_cpu.cuda()
         current_gpu = current_cpu.cuda()
         cuda_finalization = _bounded_cuda_finalization(torch_module, current_gpu)
+        reordered_lineage = _bounded_cuda_reordered_lineage(torch_module)
         pinned = torch_module.empty_like(current_cpu, pin_memory=True)
         copy_stream = torch_module.cuda.Stream(device=current_gpu.device)
         copy_completion = torch_module.cuda.Event(blocking=False)
@@ -200,6 +367,7 @@ def run_preflight(torch_module: Any) -> dict[str, Any]:
                 "representative_row_count": len(REPRESENTATIVE_POSITIONS),
                 "omitted_row_count": len(OMITTED_POSITIONS),
                 "production_event_finalizer": cuda_finalization,
+                "production_reordered_lineage": reordered_lineage,
             }
         )
         passed = bool(
@@ -215,6 +383,16 @@ def run_preflight(torch_module: Any) -> dict[str, Any]:
             and cuda_finalization["event_and_slot_cleanup_pass"]
             and cuda_finalization["completion_event_elapsed_time_call_count"] == 0
             and cuda_finalization["hot_path_forced_cpu_sync_count"] == 0
+            and reordered_lineage["completion_reordered"]
+            and reordered_lineage["logical_lineage_preserved"]
+            and reordered_lineage["pinned_d2h_pass"]
+            and reordered_lineage["completion_event_timing_calls"] == 0
+            and reordered_lineage["timing_enabled_event_pass"]
+            and reordered_lineage["hot_path_forced_cpu_sync"] == 0
+            and reordered_lineage["ring_overflow_count"] == 0
+            and reordered_lineage["ring_drop_count"] == 0
+            and reordered_lineage["ring_overwrite_count"] == 0
+            and reordered_lineage["cleanup_pass"]
         )
         receipt["decision"] = READY if passed else FAILED
     except BaseException as error:

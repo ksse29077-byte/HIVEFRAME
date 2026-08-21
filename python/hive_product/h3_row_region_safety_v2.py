@@ -21,6 +21,10 @@ from .h3_hybrid_cache_staging import (
     PINNED_HOST_TOTAL_BYTES,
     PINNED_RING_DEPTH,
 )
+from .h3_background_oracle_lineage import (
+    LineageDiagnosticAbort,
+    LineageDiagnosticRecorder,
+)
 from .h3_row_region_safety import (
     CACHE_HARD_CAP_BYTES,
     FULL_Q_ROWS,
@@ -111,6 +115,7 @@ class PinnedSlot:
     timing_end_event: Any | None = None
     state: str = "FREE"
     metadata: dict[str, Any] | None = None
+    ring_generation: int = 0
 
 
 class PreallocatedPinnedRing:
@@ -318,10 +323,18 @@ def _chunked_metrics(torch_module: Any, source: Any, current: Any) -> dict[str, 
 class HybridControlOracleWorker:
     """One-way D2H producer with all host waits and metrics on one worker."""
 
-    def __init__(self, torch_module: Any, resources: PreallocatedPinnedRing, *, lineage_base: str) -> None:
+    def __init__(
+        self,
+        torch_module: Any,
+        resources: PreallocatedPinnedRing,
+        *,
+        lineage_base: str,
+        diagnostic: LineageDiagnosticRecorder | None = None,
+    ) -> None:
         self.torch = torch_module
         self.resources = resources
         self.lineage_base = lineage_base
+        self.diagnostic = diagnostic
         self.transfer_stream: Any | None = None
         self._queue: Queue[int | None] = Queue(maxsize=PINNED_RING_DEPTH)
         self._lock = Lock()
@@ -329,6 +342,7 @@ class HybridControlOracleWorker:
         self._write_index = 0
         self._source_cache: dict[int, Any] = {}
         self._source_steps: dict[int, int] = {}
+        self._source_metadata: dict[int, dict[str, Any]] = {}
         self._failure: BaseException | None = None
         self.event_finalizer = D2HEventFinalizer()
         self.records: list[dict[str, Any]] = []
@@ -353,6 +367,10 @@ class HybridControlOracleWorker:
         self._worker.start()
 
     def _raise_worker_failure(self) -> None:
+        if self.diagnostic is not None and self.diagnostic.failed:
+            raise LineageDiagnosticAbort(
+                "background oracle lineage diagnostic failed"
+            ) from self._failure
         if self._failure is not None:
             raise ControlV2EvidenceError("background CPU oracle failed") from self._failure
 
@@ -363,6 +381,9 @@ class HybridControlOracleWorker:
         identity = str(metadata["source_identity"])
         if identity in self.source_identities:
             self.duplicate_d2h_count += 1
+            self._capture_enqueue_failure(
+                "DUPLICATE_OR_MISSING_RECORD:DUPLICATE_SOURCE_IDENTITY", metadata
+            )
             raise ControlV2EvidenceError("duplicate source identity would repeat D2H")
         if payload.device.type != "cuda" or payload.dtype != self.torch.bfloat16:
             raise ControlV2EvidenceError("CONTROL V2 accepts CUDA BF16 payloads only")
@@ -384,9 +405,27 @@ class HybridControlOracleWorker:
             if slot.state != "FREE":
                 self.ring_backpressure_count += 1
                 self.ring_overflow_count += 1
+                self._capture_enqueue_failure(
+                    "DUPLICATE_OR_MISSING_RECORD:RING_SLOT_NOT_FREE", metadata
+                )
+                if self.diagnostic is not None:
+                    raise LineageDiagnosticAbort(
+                        "lineage diagnostic captured ring backpressure"
+                    )
                 raise ControlV2EvidenceError("CPU oracle lag would overwrite the pinned ring")
+            next_enqueue = self.enqueue_count + 1
+            slot.ring_generation += 1
+            prepared = dict(metadata)
+            if self.diagnostic is not None:
+                prepared = self.diagnostic.enrich_enqueue(
+                    prepared,
+                    enqueue_sequence=next_enqueue,
+                    ring_slot_id=slot_index,
+                    ring_slot_generation=slot.ring_generation,
+                    ring_write_sequence=next_enqueue,
+                )
             slot.state = "PENDING"
-            slot.metadata = dict(metadata)
+            slot.metadata = prepared
             self._write_index = (self._write_index + 1) % len(self.resources.slots)
         with self.torch.cuda.stream(self.transfer_stream):
             self.transfer_stream.wait_event(producer_event)
@@ -399,6 +438,13 @@ class HybridControlOracleWorker:
         except Full as error:
             self.ring_backpressure_count += 1
             self.ring_overflow_count += 1
+            self._capture_enqueue_failure(
+                "DUPLICATE_OR_MISSING_RECORD:QUEUE_OVERFLOW", slot.metadata or metadata
+            )
+            if self.diagnostic is not None:
+                raise LineageDiagnosticAbort(
+                    "lineage diagnostic captured oracle queue overflow"
+                ) from error
             raise ControlV2EvidenceError("CPU oracle queue overflow") from error
         self.source_identities.add(identity)
         self.enqueue_count += 1
@@ -409,6 +455,27 @@ class HybridControlOracleWorker:
         if self.d2h_bytes > CONTROL_TRANSFER_LIMIT_BYTES:
             raise ControlV2EvidenceError("CONTROL V2 D2H budget exceeded")
         return slot.completion_event
+
+    def _capture_enqueue_failure(
+        self, rejection_reason: str, metadata: Mapping[str, Any]
+    ) -> None:
+        if self.diagnostic is None or self.diagnostic.failed:
+            return
+        current = dict(metadata)
+        current.setdefault("oracle_enqueue_sequence", self.enqueue_count + 1)
+        current.setdefault("oracle_completion_sequence", None)
+        current.setdefault("finalizer_sequence", None)
+        current.setdefault("ring_slot_id", self._write_index)
+        current.setdefault("ring_slot_generation", 0)
+        current.setdefault("ring_write_sequence", self.enqueue_count + 1)
+        current.setdefault("ring_read_sequence", None)
+        current.setdefault("current_lineage_digest", current.get("oracle_lineage_digest"))
+        source = self._source_metadata.get(int(current["block_id"]))
+        self.diagnostic.capture_failure(
+            rejection_reason=rejection_reason,
+            source=source,
+            current=current,
+        )
 
     @staticmethod
     def _sequence_entry(
@@ -448,13 +515,31 @@ class HybridControlOracleWorker:
             return False
         self.background_event_wait_count += 1
         metadata = slot.metadata
+        if self.diagnostic is not None:
+            self.diagnostic.mark_completion(metadata)
+            self.diagnostic.mark_finalizer(
+                metadata, ring_read_sequence=len(self.ring_read_sequence) + 1
+            )
         block = int(metadata["block"])
         step = int(metadata["step"])
         source = self._source_cache.get(block)
+        source_metadata = self._source_metadata.get(block)
         if source is not None:
             source_step = self._source_steps[block]
             if source_step + 1 != step or metadata["lineage_base"] != self.lineage_base:
                 self.lineage_mismatch_count += 1
+                if self.diagnostic is not None:
+                    completed_after = self._completed_after_mismatch(slot_index)
+                    self.diagnostic.capture_failure(
+                        rejection_reason=(
+                            "SOURCE_DENOISE_ORDINAL_NOT_AGE_ONE"
+                            if source_step + 1 != step
+                            else "CURRENT_LINEAGE_DIGEST_MISMATCH"
+                        ),
+                        source=source_metadata,
+                        current=metadata,
+                        completed_after_mismatch=completed_after,
+                    )
                 raise ControlV2EvidenceError("source lineage or step ordering changed")
             if source_step in ELIGIBLE_CACHE_SOURCE_STEPS:
                 if len(self.records) >= MAX_EVIDENCE_RECORDS:
@@ -494,12 +579,18 @@ class HybridControlOracleWorker:
                         "oracle_lineage_digest": str(metadata["oracle_lineage_digest"]),
                     }
                 )
+        if self.diagnostic is not None:
+            self.diagnostic.record_valid_pair(
+                source=source_metadata,
+                current=metadata,
+            )
         retained = self._source_cache.get(block)
         if retained is None:
             retained = self.torch.empty_like(slot.payload, pin_memory=False)
             self._source_cache[block] = retained
         retained.copy_(slot.payload)
         self._source_steps[block] = step
+        self._source_metadata[block] = dict(metadata)
         self.ring_read_sequence.append(
             self._sequence_entry(
                 slot_index, metadata, len(self.ring_read_sequence) + 1
@@ -509,6 +600,26 @@ class HybridControlOracleWorker:
             slot.metadata = None
             slot.state = "FREE"
         return True
+
+    def _completed_after_mismatch(self, current_slot_index: int) -> list[dict[str, Any]]:
+        completed: list[dict[str, Any]] = []
+        if self.diagnostic is None:
+            return completed
+        for index, candidate in enumerate(self.resources.slots):
+            if index == current_slot_index or candidate.state != "PENDING":
+                continue
+            if candidate.metadata is None or candidate.completion_event is None:
+                continue
+            try:
+                ready = bool(candidate.completion_event.query())
+            except BaseException:
+                ready = False
+            if ready:
+                self.diagnostic.mark_completion(candidate.metadata)
+                completed.append(dict(candidate.metadata))
+            if len(completed) == 4:
+                break
+        return completed
 
     def finish(self, timeout_seconds: float = 900.0) -> None:
         deadline = perf_counter() + timeout_seconds
@@ -532,6 +643,40 @@ class HybridControlOracleWorker:
             and slot.completion_event is None
             and slot.timing_start_event is None
             and slot.timing_end_event is None
+            for slot in self.resources.slots
+        )
+
+    def abort_and_cleanup(self, timeout_seconds: float = 30.0) -> None:
+        """Drain already-enqueued D2H work without a forced CUDA synchronization."""
+
+        deadline = perf_counter() + timeout_seconds
+        while perf_counter() < deadline:
+            pending = [
+                slot
+                for slot in self.resources.slots
+                if slot.state == "PENDING" and slot.completion_event is not None
+            ]
+            if not pending:
+                break
+            if all(bool(slot.completion_event.query()) for slot in pending):
+                break
+            sleep(0.001)
+        for slot in self.resources.slots:
+            if slot.state == "PENDING" and slot.completion_event is not None:
+                if not bool(slot.completion_event.query()):
+                    raise ControlV2EvidenceError(
+                        "diagnostic D2H cleanup did not complete before timeout"
+                    )
+            self.event_finalizer.cleanup_slot(slot)
+        while True:
+            try:
+                self._queue.get_nowait()
+                self._queue.task_done()
+            except Empty:
+                break
+        self.transfer_stream = None
+        self.event_and_slot_cleanup_pass = all(
+            slot.state == "FREE" and slot.metadata is None
             for slot in self.resources.slots
         )
 
@@ -583,6 +728,9 @@ class HybridControlOracleWorker:
             "ring_read_sequence": list(self.ring_read_sequence),
             "event_and_slot_cleanup_pass": self.event_and_slot_cleanup_pass,
             "integrity_checks": dict(self.integrity_checks or {}),
+            "lineage_diagnostic": (
+                None if self.diagnostic is None else self.diagnostic.receipt()
+            ),
         }
 
 
@@ -597,6 +745,7 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
         torch_module: Any,
         resources: PreallocatedPinnedRing,
         lineage_base: str,
+        diagnostic: LineageDiagnosticRecorder | None = None,
     ) -> None:
         super().__init__(
             mode=CONTROL_MODE,
@@ -606,11 +755,38 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
             candidate_blocks=CANDIDATE_BLOCKS,
         )
         self.oracle = HybridControlOracleWorker(
-            torch_module, resources, lineage_base=lineage_base
+            torch_module,
+            resources,
+            lineage_base=lineage_base,
+            diagnostic=diagnostic,
         )
         self.lineage_base = lineage_base
+        self.diagnostic = diagnostic
         self._pending_metadata: dict[tuple[int, int], dict[str, Any]] = {}
         self._staging_release_event: Any | None = None
+
+    def instrumented_forward(
+        self,
+        block: Any,
+        x: Any,
+        t_emb: Any,
+        mod_segments: Sequence[Sequence[int]],
+        rope_freqs: Any,
+        transformer_options: Mapping[str, Any] | None = None,
+    ) -> Any:
+        if self.diagnostic is not None:
+            self.oracle._raise_worker_failure()
+        result = super().instrumented_forward(
+            block,
+            x,
+            t_emb,
+            mod_segments,
+            rope_freqs,
+            transformer_options,
+        )
+        if self.diagnostic is not None:
+            self.oracle._raise_worker_failure()
+        return result
 
     def _cache_ready(self, block_index: int, step: int) -> bool:
         return int(block_index) in CANDIDATE_BLOCKS and 1 <= int(step) <= 17
@@ -635,6 +811,20 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
         self._pending_metadata[(block_index, step)] = {
             "block": block_index,
             "step": step,
+            "source_step_raw": None,
+            "current_step_raw": step,
+            "source_denoise_ordinal": None,
+            "current_denoise_ordinal": step,
+            "source_scheduler_timestep": None,
+            "current_scheduler_timestep": (
+                None
+                if self.diagnostic is None
+                else self.diagnostic.context.scheduler_timestep(step)
+            ),
+            "model_forward_ordinal": step,
+            "attention_call_ordinal": self.block_call_count,
+            "block_id": block_index,
+            "region_id": REGION,
             "predicted_state": state,
             "uncertainty_ppm": max(0, 1_000_000 - int(confidence[REGION + 1])),
             "motion_ppm": int(motion[REGION + 1]),
@@ -667,6 +857,10 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
             current_stream.wait_event(self._staging_release_event)
         indices = self._region_cache_indices[REGION]
         staging = self._region_staging[: int(indices.numel())]
+        metadata["current_shape_dtype_device"] = (
+            f"shape={tuple(int(value) for value in staging.shape)}|"
+            f"dtype={staging.dtype}|device={staging.device.type}"
+        )
         self.torch.index_select(full_core, 0, indices, out=staging)
         producer_event = self.torch.cuda.Event(blocking=False)
         producer_event.record(current_stream)
@@ -718,7 +912,38 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
         base["partial_attention_calls"] = 0
         return base
 
+    def finalize_diagnostic(self) -> dict[str, Any]:
+        if self.diagnostic is None:
+            raise ControlV2EvidenceError("lineage diagnostic is not configured")
+        self.oracle.finish()
+        self._staging_release_event = None
+        self.diagnostic.write_complete_trace()
+        base = super().finalize()
+        base["formal_control_result"] = False
+        base["safety_evidence_admitted"] = False
+        base["rust_cache_plan_calls"] = 0
+        base["lineage_diagnostic"] = self.diagnostic.receipt()
+        base["partial_attention_calls"] = 0
+        return base
+
+    def diagnostic_failure_receipt(self) -> dict[str, Any]:
+        if self.diagnostic is None:
+            return {"lineage_diagnostic": None}
+        self.oracle.abort_and_cleanup()
+        return {
+            "formal_control_result": False,
+            "safety_evidence_admitted": False,
+            "rust_cache_plan_calls": 0,
+            "full_compute_only": True,
+            "model_forward_count_observed": self.model_forward_count,
+            "block_call_count_observed": self.block_call_count,
+            "lineage_diagnostic": self.diagnostic.receipt(),
+            "hybrid_oracle": self.oracle.receipt(),
+        }
+
     def close(self) -> None:
+        if self.diagnostic is not None and not self.oracle.event_and_slot_cleanup_pass:
+            self.oracle.abort_and_cleanup()
         self._pending_metadata.clear()
         self._staging_release_event = None
         self._region_staging = None

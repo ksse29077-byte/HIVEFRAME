@@ -66,6 +66,7 @@ SCHEMA_VERSION = "h3.row-region-safety-control-v2.runner.1"
 NODE_CLASS = "HIVEFRAMEH3RowRegionSafetyControlV2Sampler"
 RECEIPT_ENV = "HIVEFRAME_H3_ROW_REGION_V2_RECEIPT"
 ADMISSION_ENV = "HIVEFRAME_H3_ROW_REGION_V2_ADMISSION"
+LINEAGE_CAPSULE_ENV = "HIVEFRAME_H3_LINEAGE_DIAGNOSTIC_CAPSULE"
 READY = "H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_READY_FOR_EXECUTOR_INTEGRATION"
 FAILED = "H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_FAILED"
 ADMISSION_BLOCKED = "H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_ADMISSION_BLOCKED"
@@ -280,6 +281,7 @@ def run_control(
     rust_extension_root: Path,
     synthetic_receipt: Path,
     verification_receipt: Path,
+    lineage_diagnostic: bool = False,
 ) -> dict[str, Any]:
     root = private_run_root.resolve() / run_id
     if root.exists():
@@ -287,6 +289,7 @@ def run_control(
     root.mkdir(parents=True)
     callback_path = root / "callback-private.json"
     node_admission_path = root / "node-admission-private.json"
+    lineage_capsule_path = root / "lineage-diagnostic-capsule.json"
     image_digest = sha256(input_image.read_bytes()).hexdigest()
     if image_digest != input_image_sha256:
         raise RuntimeError("P1-A2 input image identity changed")
@@ -315,6 +318,7 @@ def run_control(
         "PYTHONPATH": os.environ.get("PYTHONPATH"),
         RECEIPT_ENV: os.environ.get(RECEIPT_ENV),
         ADMISSION_ENV: os.environ.get(ADMISSION_ENV),
+        LINEAGE_CAPSULE_ENV: os.environ.get(LINEAGE_CAPSULE_ENV),
     }
     python_entries = [str(repository_root / "python"), str(rust_extension_root.resolve())]
     if prior_environment["PYTHONPATH"]:
@@ -322,6 +326,10 @@ def run_control(
     os.environ["PYTHONPATH"] = os.pathsep.join(python_entries)
     os.environ[RECEIPT_ENV] = str(callback_path)
     os.environ[ADMISSION_ENV] = str(node_admission_path)
+    if lineage_diagnostic:
+        os.environ[LINEAGE_CAPSULE_ENV] = str(lineage_capsule_path)
+    else:
+        os.environ.pop(LINEAGE_CAPSULE_ENV, None)
 
     receipt: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -356,6 +364,10 @@ def run_control(
         "attention_omission_count": 0,
         "rust_live_compile_count": 0,
         "rust_offline_replay_count": 0,
+        "lineage_diagnostic_only": lineage_diagnostic,
+        "diagnostic_h3_submission_count": 0,
+        "diagnostic_gpu_start_count": 0,
+        "valid_control_result_count": 0 if lineage_diagnostic else None,
     }
     timeline: EventTimeline | None = None
     sampler: ResourceSampler | None = None
@@ -517,12 +529,20 @@ def run_control(
         sampler = ResourceSampler(backend, timeline)
         sampler.start()
         receipt["submission_count"] = 1
+        receipt["diagnostic_h3_submission_count"] = int(lineage_diagnostic)
         submitted = True
         prompt_id, history = asyncio.run(_collect_websocket_run(backend, workflow, timeline))
         receipt["backend_prompt_id"] = prompt_id
         receipt["gpu_start_count"] = int(bool(timeline.progress_summary().get("records", [])))
+        receipt["diagnostic_gpu_start_count"] = (
+            receipt["gpu_start_count"] if lineage_diagnostic else 0
+        )
         if timeline.terminal_event != "execution_success":
             raise RuntimeError(f"ComfyUI terminal event was {timeline.terminal_event}")
+        if lineage_diagnostic:
+            raise RuntimeError(
+                "diagnostic node returned success instead of a fail-closed terminal"
+            )
         receipt["completion_count"] = 1
         sampler.stop()
 
@@ -770,6 +790,32 @@ def run_control(
             receipt["websocket_terminal_event"] = timeline.terminal_event
         if callback_path.is_file() and "callback_instrumentation" not in receipt:
             receipt["callback_instrumentation"] = json.loads(callback_path.read_text(encoding="utf-8"))
+        if lineage_diagnostic:
+            receipt["formal_control_result_admitted"] = False
+            receipt["holdout_admission_count"] = 0
+            receipt["valid_control_result_count"] = 0
+            receipt["rust_live_compile_count"] = 0
+            receipt["rust_offline_replay_count"] = 0
+            if lineage_capsule_path.is_file():
+                capsule_content = lineage_capsule_path.read_bytes()
+                receipt["lineage_capsule"] = {
+                    "present": True,
+                    "size_bytes": len(capsule_content),
+                    "sha256": sha256(capsule_content).hexdigest(),
+                }
+                if shutdown_passed:
+                    receipt["decision"] = (
+                        "H3_BACKGROUND_ORACLE_LINEAGE_TRACE_CAPTURED_PENDING_ANALYSIS"
+                    )
+                    exit_code = 0
+                    receipt["exit_code"] = 0
+            else:
+                receipt["lineage_capsule"] = {"present": False}
+                receipt["decision"] = (
+                    "H3_BACKGROUND_ORACLE_LINEAGE_TRACE_FAILED"
+                    if submitted
+                    else "H3_BACKGROUND_ORACLE_LINEAGE_TRACE_ADMISSION_BLOCKED"
+                )
         (root / "private-receipt.json").write_text(
             json.dumps(_json_safe(receipt), indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
@@ -795,6 +841,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rust-extension-root", required=True, type=Path)
     parser.add_argument("--synthetic-receipt", required=True, type=Path)
     parser.add_argument("--verification-receipt", required=True, type=Path)
+    parser.add_argument("--lineage-diagnostic", action="store_true")
     args = parser.parse_args(argv)
     result = run_control(
         run_id=args.run_id,
@@ -810,6 +857,7 @@ def main(argv: list[str] | None = None) -> int:
         rust_extension_root=args.rust_extension_root,
         synthetic_receipt=args.synthetic_receipt,
         verification_receipt=args.verification_receipt,
+        lineage_diagnostic=args.lineage_diagnostic,
     )
     print(json.dumps(sanitize_public(_json_safe(result)), sort_keys=True))
     return int(result.get("exit_code", 1))
