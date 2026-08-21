@@ -152,206 +152,23 @@ def _cpu_reference(source: Any, current: Any, representative: Any, omitted: Any)
 
 
 def run_bounded_cuda_preflight(torch_module: Any) -> dict[str, Any]:
-    """Run one bounded real-CUDA fixture and release every allocation."""
+    """Run the production-equivalent explicit-ownership lifecycle once."""
 
-    if not torch_module.cuda.is_available():
-        raise RuntimeError("CUDA is unavailable")
-    device = torch_module.device("cuda:0")
-    torch_module.cuda.synchronize(device)
-    baseline_allocated = int(torch_module.cuda.memory_allocated(device))
-    baseline_reserved = int(torch_module.cuda.memory_reserved(device))
-    torch_module.cuda.reset_peak_memory_stats(device)
+    from .h3_cuda_fixture_teardown_v4 import run_teardown_remediation
 
-    source = None
-    current = None
-    staging = None
-    host_source = None
-    preliminary_host = None
-    exact_host = None
-    source_capture_event = None
-    source_upload_event = None
-    oracle_event = None
-    transfer_stream = None
-    try:
-        generator = torch_module.Generator(device=device)
-        generator.manual_seed(101)
-        source = torch_module.randn(
-            SOURCE_SHAPE,
-            dtype=torch_module.bfloat16,
-            device=device,
-            generator=generator,
-        )
-        host_source = torch_module.empty(
-            SOURCE_SHAPE,
-            dtype=torch_module.bfloat16,
-            device="cpu",
-            pin_memory=True,
-        )
-        staging = torch_module.empty_like(source)
-        transfer_stream = torch_module.cuda.Stream(device=device)
-        source_capture_event = torch_module.cuda.Event(enable_timing=True)
-        source_upload_event = torch_module.cuda.Event(enable_timing=True)
-        oracle_event = torch_module.cuda.Event(enable_timing=True)
-
-        producer = torch_module.cuda.Event()
-        producer.record(torch_module.cuda.current_stream(device))
-        with torch_module.cuda.stream(transfer_stream):
-            transfer_stream.wait_event(producer)
-            source_capture_event.record(transfer_stream)
-            host_source.copy_(source, non_blocking=True)
-        transfer_stream.synchronize()
-        with torch_module.cuda.stream(transfer_stream):
-            staging.copy_(host_source, non_blocking=True)
-            source_upload_event.record(transfer_stream)
-        transfer_stream.synchronize()
-
-        bit_identity = bool(
-            torch_module.equal(source.view(torch_module.int16), staging.view(torch_module.int16))
-        )
-        current = source.clone()
-        current[::257].add_(torch_module.tensor(0.0009765625, dtype=current.dtype, device=device))
-        representative = torch_module.tensor(
-            REPRESENTATIVE_POSITIONS, dtype=torch_module.long, device=device
-        )
-        omitted = torch_module.tensor(
-            OMITTED_POSITIONS, dtype=torch_module.long, device=device
-        )
-        source_summary = gpu_compressed_fingerprint(
-            torch_module, staging, representative
-        )
-        current_summary = gpu_compressed_fingerprint(
-            torch_module, current, representative
-        )
-        preliminary = gpu_preliminary_metrics(
-            torch_module, source_summary, current_summary
-        )
-        exact = gpu_exact_oracle_metrics(
-            torch_module, staging, current, representative, omitted
-        )
-        preliminary_host = torch_module.empty(
-            (3,), dtype=torch_module.float32, device="cpu", pin_memory=True
-        )
-        exact_host = torch_module.empty(
-            (6,), dtype=torch_module.float32, device="cpu", pin_memory=True
-        )
-        with torch_module.cuda.stream(transfer_stream):
-            transfer_stream.wait_stream(torch_module.cuda.current_stream(device))
-            preliminary_host.copy_(preliminary, non_blocking=True)
-            exact_host.copy_(exact, non_blocking=True)
-            oracle_event.record(transfer_stream)
-        oracle_event.synchronize()
-
-        preliminary_values = [float(value) for value in preliminary_host.tolist()]
-        exact_values = [float(value) for value in exact_host.tolist()]
-        cpu_source = host_source[:96, :128].clone()
-        cpu_current = cpu_source.clone()
-        cpu_current[::7].add_(torch_module.tensor(0.0009765625, dtype=cpu_current.dtype))
-        small_representative = torch_module.arange(0, 32, dtype=torch_module.long)
-        small_omitted = torch_module.arange(32, 96, dtype=torch_module.long)
-        cpu_reference = _cpu_reference(
-            cpu_source, cpu_current, small_representative, small_omitted
-        )
-        gpu_small = gpu_exact_oracle_metrics(
-            torch_module,
-            cpu_source.to(device),
-            cpu_current.to(device),
-            small_representative.to(device),
-            small_omitted.to(device),
-        ).cpu().tolist()
-        reference_errors = [
-            abs(float(gpu) - float(cpu))
-            for gpu, cpu in zip(gpu_small, cpu_reference)
-        ]
-        boundary = {
-            "at_threshold": threshold_classification(
-                cosine=CATASTROPHIC_COSINE_MIN,
-                normalized_l2=CATASTROPHIC_NORMALIZED_L2_MAX,
-                finite=True,
-            ),
-            "below_cosine": threshold_classification(
-                cosine=CATASTROPHIC_COSINE_MIN - 1e-7,
-                normalized_l2=CATASTROPHIC_NORMALIZED_L2_MAX,
-                finite=True,
-            ),
-            "above_l2": threshold_classification(
-                cosine=CATASTROPHIC_COSINE_MIN,
-                normalized_l2=CATASTROPHIC_NORMALIZED_L2_MAX + 1e-7,
-                finite=True,
-            ),
-            "nonfinite": threshold_classification(
-                cosine=1.0, normalized_l2=0.0, finite=False
-            ),
-        }
-        peak_allocated = int(torch_module.cuda.max_memory_allocated(device))
-        peak_reserved = int(torch_module.cuda.max_memory_reserved(device))
-        checks = {
-            "source_shape_exact": tuple(source.shape) == SOURCE_SHAPE,
-            "source_payload_bytes_exact": source.numel() * source.element_size()
-            == SOURCE_PAYLOAD_BYTES,
-            "shared_staging_bytes_within_bound": staging.numel() * staging.element_size()
-            <= GPU_STAGING_BUDGET_BYTES,
-            "host_source_is_pinned": bool(host_source.is_pinned()),
-            "bf16_d2h_h2d_bit_identity": bit_identity,
-            "fingerprint_is_compressed": source_summary.numel() < source.numel() // 100,
-            "preliminary_finite": preliminary_values[2] == 1.0,
-            "exact_finite": exact_values[2] == 1.0 and exact_values[5] == 1.0,
-            "cpu_gpu_reference_within_tolerance": max(reference_errors) <= 1e-5,
-            "packed_row_mapping_exact": len(REGION_ROWS) == SOURCE_SHAPE[0]
-            and len(REPRESENTATIVE_POSITIONS) + len(OMITTED_POSITIONS) == len(REGION_ROWS),
-            "threshold_boundary_exact": boundary
-            == {
-                "at_threshold": "SAFE",
-                "below_cosine": "UNSAFE",
-                "above_l2": "UNSAFE",
-                "nonfinite": "INVALID",
-            },
-            "metadata_d2h_within_one_mib": (preliminary_host.numel() + exact_host.numel())
-            * 4
-            <= 1024**2,
-        }
-        receipt = {
-            "schema_version": CUDA_PREFLIGHT_SCHEMA,
-            "torch_version": str(torch_module.__version__),
-            "cuda_version": str(torch_module.version.cuda),
-            "device_name_digest": sha256(
-                torch_module.cuda.get_device_name(device).encode("utf-8")
-            ).hexdigest(),
-            "source_shape": list(SOURCE_SHAPE),
-            "source_payload_bytes": SOURCE_PAYLOAD_BYTES,
-            "preliminary_metrics": preliminary_values,
-            "exact_metrics": exact_values,
-            "cpu_gpu_reference_max_abs_error": max(reference_errors),
-            "cpu_gpu_reference_mean_abs_error": sum(reference_errors) / len(reference_errors),
-            "threshold_boundary": boundary,
-            "metadata_d2h_bytes": (preliminary_host.numel() + exact_host.numel()) * 4,
-            "current_payload_d2h_bytes": 0,
-            "cpu_oracle_payload_d2h_bytes": 0,
-            "fixture_explicit_sync_count": 5,
-            "production_hot_path_forced_sync_count": 0,
-            "peak_allocated_bytes": peak_allocated,
-            "peak_reserved_bytes": peak_reserved,
-            "checks": checks,
-            "passed": all(checks.values()),
-        }
-    finally:
-        del source, current, staging, host_source, preliminary_host, exact_host
-        del source_capture_event, source_upload_event, oracle_event, transfer_stream
-        torch_module.cuda.empty_cache()
-        torch_module.cuda.synchronize(device)
-
-    final_allocated = int(torch_module.cuda.memory_allocated(device))
-    final_reserved = int(torch_module.cuda.memory_reserved(device))
-    teardown_checks = {
-        "allocated_returned_to_baseline": final_allocated <= baseline_allocated,
-        "reserved_returned_to_baseline": final_reserved <= baseline_reserved,
+    remediation = run_teardown_remediation(
+        torch_module, verification_cycles=1, run_negative_tests=False
+    )
+    verification = remediation["verification_cycles"][0]
+    return {
+        "schema_version": CUDA_PREFLIGHT_SCHEMA,
+        "functional": verification["functional"],
+        "teardown": verification["close"],
+        "cold_baseline": remediation["cold_baseline"],
+        "warm_baseline": remediation["warm_baseline"],
+        "checks": remediation["checks"],
+        "passed": remediation["passed"],
     }
-    receipt["baseline_allocated_bytes"] = baseline_allocated
-    receipt["baseline_reserved_bytes"] = baseline_reserved
-    receipt["final_allocated_bytes"] = final_allocated
-    receipt["final_reserved_bytes"] = final_reserved
-    receipt["teardown_checks"] = teardown_checks
-    receipt["passed"] = bool(receipt["passed"] and all(teardown_checks.values()))
-    return receipt
 
 
 def main(argv: list[str] | None = None) -> int:

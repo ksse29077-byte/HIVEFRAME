@@ -1,0 +1,51 @@
+schema_version: h3.cuda-fixture-teardown-remediation-v4.1
+status: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_FAILED
+exact_base: cabe03127ff1e7ee1503861ca62515e3dd40afce
+issue: 137
+branch: codex/h3-cuda-fixture-teardown-remediation-v4-resume
+root_cause:
+  pr_136_classification: LIVE_TENSOR_REFERENCE_LEAK
+  evidence: function_local_fixture_owned_cuda_references_survived_final_measurement
+remediation:
+  explicit_ownership_registry: implemented
+  lifecycle_state_machine: implemented
+  weak_reference_release_check: implemented
+  warm_baseline_gate: implemented
+  negative_leak_cases_implemented: 4
+  focused_tests_passed: 13
+  focused_tests_failed: 0
+execution:
+  planned_warmup_count: 1
+  warmup_entered_count: 1
+  warmup_source_allocation_count: 0
+  warm_baseline_finalized_count: 0
+  planned_verification_count: 3
+  completed_verification_count: 0
+  negative_cuda_cases_executed: 0
+  retry_count: 0
+failure:
+  classification: INVALID_DEVICE_ARGUMENT_IN_WARMUP_PEAK_RESET
+  exception_type: RuntimeError
+  message: Invalid device argument
+  source_basename: h3_cuda_fixture_teardown_v4.py
+  function: V4CudaFixture.run
+  cold_snapshot: NOT_PERSISTED_DUE_TO_WARMUP_EXCEPTION
+formal_control:
+  cumulative_prior_submission_count: 3
+  submission_count: 0
+  gpu_start_count: 0
+  completion_count: 0
+holdout: NOT_EXECUTED
+rust_cache_plan:
+  live_compile_count: 0
+  deterministic_replay_count: 0
+post_stop:
+  gpu_used_mib: 10
+  gpu_utilization_percent: 0
+  port_8191_listener_count: 0
+  comfyui_runtime_candidate_count: 0
+decision:
+  code: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_FAILED
+  automatic_retry_allowed: false
+  v4_preflight_started: false
+  formal_control_allowed: false
