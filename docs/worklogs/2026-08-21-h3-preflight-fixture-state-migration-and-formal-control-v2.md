@@ -37,4 +37,64 @@ DIAGNOSTIC_SUBMISSIONS=1
 The PR #130 Admission block had submission/GPU start `0/0` and is not a Formal
 CONTROL submission.
 
-Current status: `FIXTURE_MIGRATION_NOT_STARTED`.
+## Fixture migration
+
+The stale row-region CUDA fixtures now begin FREE, enter
+`D2H_IN_FLIGHT`, use the unchanged production finalizer to reach CPU_READY,
+then advance through PROCESSING and FINALIZED before the unchanged release
+contract returns them to FREE. The separate hybrid staging preflight ring was
+migrated to the same strict sequence. Invalid, skipped, legacy `PENDING`, and
+unknown transitions fail closed.
+
+The repository-wide `PENDING` search was classified before editing:
+
+- ComfyUI `queue_pending` and product job states are unrelated and unchanged.
+- human-review and proposal `pending` values are unrelated and unchanged.
+- row-region CUDA fixture slot states and the hybrid staging preflight slot
+  states were the affected ring states and were migrated.
+- the production finalizer remains unchanged and still rejects `PENDING`.
+
+Focused fixture, finalizer, ring, lineage, worker-failure, cardinality, and
+throughput tests passed 33/33. They cover the complete lifecycle, legacy and
+unknown state rejection, transition skipping, duplicate finalization, reuse
+before FREE, worker fail-closed behavior, exactly-once integrity, and the
+trace-derived four-slot ring.
+
+## Bounded CUDA preflight
+
+The model-free CUDA preflight passed without loading H3 or submitting a
+workflow:
+
+```text
+decision=H3_ROW_REGION_SAFETY_CONTROL_V2_ORACLE_PREFLIGHT_READY
+ring slots=4
+slot bytes=48,269,312
+pinned bytes=193,077,248
+ring high-water=4 (bounded saturation fixture)
+RING_SLOT_NOT_FREE=0
+overflow/drop/overwrite=0/0/0
+duplicate/missing/stale=0/0/0
+hot-path forced CPU sync=0
+completion Event elapsed_time calls=0
+final backlog=0
+all slots FREE after cleanup=true
+```
+
+All four slots recorded the exact sequence
+`FREE -> D2H_IN_FLIGHT -> CPU_READY -> PROCESSING -> FINALIZED -> FREE`.
+BF16 preservation, CPU/GPU metric classification, timing-event separation,
+and reordered lineage checks passed. Maximum CPU/GPU metric error was
+`6.468255198122108e-08`, below the fixed `1e-6` limit.
+
+The private receipt file SHA-256 is
+`fc143aeae5ed41a2aefb6dc1ca9c80b885bd8bded5e54845ad2fbda918277713`.
+Its internal canonical JSON digest is
+`092d6e0e56700f04f45570a2792b26a8c567fd0863959dda18f5c01181fb6c76`.
+It records H3 model load, Generation, CONTROL submission, SELECTIVE,
+partial-Q, and Attention omission as zero.
+
+The Formal CONTROL runner now enforces the trace-backed runtime high-water
+limit `<=3`; the four-slot saturation fixture above proves all slots are
+usable but is not substituted for that runtime Gate.
+
+Current status: `FIXTURE_AND_BOUNDED_CUDA_GATES_PASS_PENDING_FULL_ADMISSION`.

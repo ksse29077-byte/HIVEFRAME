@@ -9,6 +9,7 @@ from hive_product.h3_hybrid_cache_staging import (
     CONTROL_ORACLE_D2H_BYTES,
     HOST_SOURCE_CACHE_BYTES,
     PINNED_HOST_TOTAL_BYTES,
+    TRACE_MEASURED_MAX_IN_FLIGHT,
 )
 from hive_product.h3_row_region_safety import FULL_Q_ROWS, generation_candidates, generation_identity
 from hive_product.h3_row_region_safety_control_v2_probe import (
@@ -21,6 +22,7 @@ from hive_product.h3_row_region_safety_control_v2_probe import (
 )
 from hive_product.h3_row_region_safety_v2 import (
     CANDIDATE_BLOCKS,
+    ControlV2EvidenceError,
     D2HEventFinalizer,
     EXPECTED_ENQUEUE_COUNT,
     EXPECTED_RECORD_COUNT,
@@ -36,6 +38,11 @@ from hive_product.h3_row_region_safety_v2 import (
     _evidence_integrity_checks,
     evidence_design_receipt,
     settings_digest,
+)
+from hive_product.h3_row_region_safety_v2_preflight import (
+    _bounded_cuda_finalization,
+    _bounded_cuda_reordered_lineage,
+    _transition_fixture_slot,
 )
 
 
@@ -67,6 +74,62 @@ class FakeTimingStart:
 
 
 class H3RowRegionSafetyControlV2Tests(unittest.TestCase):
+    def test_fixture_uses_only_current_production_slot_state(self):
+        for function in (
+            _bounded_cuda_finalization,
+            _bounded_cuda_reordered_lineage,
+        ):
+            source = inspect.getsource(function)
+            self.assertNotIn('state="PENDING"', source)
+            self.assertIn('"D2H_IN_FLIGHT"', source)
+
+    def test_fixture_rejects_legacy_unknown_and_skipped_transitions(self):
+        for current, target in (
+            ("PENDING", "PROCESSING"),
+            ("UNKNOWN", "FREE"),
+            ("FREE", "PROCESSING"),
+            ("CPU_READY", "FINALIZED"),
+        ):
+            slot = PinnedSlot(payload=object(), state=current)
+            with self.assertRaises(RuntimeError):
+                _transition_fixture_slot(slot, target)
+
+    def test_duplicate_finalize_and_reuse_before_free_fail_closed(self):
+        slot = PinnedSlot(
+            payload=object(),
+            completion_event=FakeCompletionEvent(ready=True),
+            timing_start_event=FakeTimingStart(),
+            timing_end_event=object(),
+            state="D2H_IN_FLIGHT",
+            metadata={"source_identity": "exactly-once"},
+        )
+        finalizer = D2HEventFinalizer()
+        self.assertTrue(finalizer.try_finalize(slot)["admitted"])
+        with self.assertRaises(ControlV2EvidenceError):
+            finalizer.try_finalize(slot)
+        with self.assertRaises(RuntimeError):
+            _transition_fixture_slot(slot, "D2H_IN_FLIGHT")
+
+    def test_production_finalizer_rejects_legacy_pending_and_unknown_states(self):
+        for state in ("PENDING", "UNKNOWN"):
+            slot = PinnedSlot(
+                payload=object(),
+                completion_event=FakeCompletionEvent(ready=True),
+                timing_start_event=FakeTimingStart(),
+                timing_end_event=object(),
+                state=state,
+                metadata={"source_identity": "invalid-state"},
+            )
+            with self.assertRaises(ControlV2EvidenceError):
+                D2HEventFinalizer().try_finalize(slot)
+
+    def test_background_worker_error_is_fail_closed(self):
+        worker = HybridControlOracleWorker.__new__(HybridControlOracleWorker)
+        worker.diagnostic = None
+        worker._failure = RuntimeError("injected worker failure")
+        with self.assertRaises(ControlV2EvidenceError):
+            worker._raise_worker_failure()
+
     def test_formal_control_cardinality_contract_is_exact(self):
         writes = [
             {"step": step, "block": block}
@@ -95,6 +158,7 @@ class H3RowRegionSafetyControlV2Tests(unittest.TestCase):
         self.assertEqual(design["pinned_ring_bytes"], PINNED_HOST_TOTAL_BYTES)
         self.assertEqual(design["h2d_bytes"], 0)
         self.assertEqual(SLOT_SHAPE, (3367, 7168))
+        self.assertEqual(TRACE_MEASURED_MAX_IN_FLIGHT, 3)
 
     def test_hot_path_has_no_host_read_or_forced_sync(self):
         source = inspect.getsource(HybridControlOracleWorker.enqueue)

@@ -67,6 +67,24 @@ class RingBackpressureError(HybridPreflightError):
     """The CPU oracle did not release a pinned slot before reuse."""
 
 
+_SLOT_TRANSITIONS = {
+    "FREE": "D2H_IN_FLIGHT",
+    "D2H_IN_FLIGHT": "CPU_READY",
+    "CPU_READY": "PROCESSING",
+    "PROCESSING": "FINALIZED",
+    "FINALIZED": "FREE",
+}
+
+
+def _transition_preflight_slot(slot: Any, target: str) -> None:
+    expected = _SLOT_TRANSITIONS.get(str(slot.state))
+    if expected != target:
+        raise HybridPreflightError(
+            f"invalid preflight slot transition: {slot.state}->{target}"
+        )
+    slot.state = target
+
+
 @dataclass
 class _PinnedSlot:
     payload: Any
@@ -232,7 +250,7 @@ class HybridControlOracleRing:
                 self.transfer_stream.wait_event(producer_event)
             slot.payload.copy_(payload, non_blocking=True)
             slot.event.record(self.transfer_stream)
-        slot.state = "PENDING"
+        _transition_preflight_slot(slot, "D2H_IN_FLIGHT")
         slot.block = int(block)
         slot.region = int(region)
         slot.step = int(step)
@@ -247,11 +265,13 @@ class HybridControlOracleRing:
         """Wait in the background worker, run exact CPU metrics, then release."""
 
         slot = self.slots[int(slot_index)]
-        if slot.state != "PENDING":
-            raise HybridPreflightError("only a pending slot may be consumed")
+        if slot.state != "D2H_IN_FLIGHT":
+            raise HybridPreflightError("only a D2H-in-flight slot may be consumed")
         self.background_event_wait_count += 1
         transfer_start = perf_counter()
         slot.event.synchronize()
+        _transition_preflight_slot(slot, "CPU_READY")
+        _transition_preflight_slot(slot, "PROCESSING")
         self.d2h_transfer_time_ms += (perf_counter() - transfer_start) * 1000.0
         key = (slot.block, slot.region)
         source = self._source_cache.get(key)
@@ -262,11 +282,9 @@ class HybridControlOracleRing:
                 or self._source_lineages[key] != slot.lineage_digest
             ):
                 self.invalid_count += 1
-                slot.state = "FREE"
                 raise HybridPreflightError("source lineage or step ordering changed")
             if len(self.records) >= self.maximum_records:
                 self.ring_overflow_count += 1
-                slot.state = "FREE"
                 raise HybridPreflightError("bounded oracle evidence overflow")
             cpu_start = perf_counter()
             scalar_metrics = _host_scalars(_metric_values(self.torch, source, slot.payload))
@@ -284,7 +302,8 @@ class HybridControlOracleRing:
         self._source_cache[key] = slot.payload.clone()
         self._source_steps[key] = slot.step
         self._source_lineages[key] = slot.lineage_digest
-        slot.state = "FREE"
+        _transition_preflight_slot(slot, "FINALIZED")
+        _transition_preflight_slot(slot, "FREE")
         return result
 
     def receipt(self) -> dict[str, Any]:
