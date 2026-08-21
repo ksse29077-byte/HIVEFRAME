@@ -2251,6 +2251,38 @@ executor integration were not started. See the detailed
 
 ---
 
+## 2026-08-21 - H3 CONTROL V2 finalizer remediation and bounded retry
+
+Issue #121 and Draft PR #122 started from exact Draft PR #120 head
+`318e24cb1d7c4fbc925f04ada77293c4111e24f3`. The failed CONTROL's immutable
+files preserved 20/20 progress but not complete holdout records, ring/lineage
+evidence, a Rust plan, or MP4, so recovery was `NOT_POSSIBLE` and no partial
+worker state was admitted.
+
+The adapter now separates the timing-disabled completion Event from
+timing-enabled start/end Events. Completion uses nonblocking query only;
+timing failures become `UNKNOWN` without replacing CUDA time or discarding
+complete evidence. Focused tests passed 13/13, adjacent release PyO3/Rust,
+hybrid, and ownership regressions passed 55/55 with skip 0, and the production
+finalizer passed one actual model-free CUDA D2H preflight.
+
+All retry Admission Gates passed and the one authorized Standard Full Compute
+CONTROL was submitted. The sampler reached 20/20 and the old timing Event
+failure did not recur, but the background oracle failed its independent
+`source_step + 1 == current_step` lineage contract. Terminal status was
+`execution_error`; current submission/GPU start/completion was 1/1/0 and
+retry/fallback/SELECTIVE/partial-Q/omission was 0/0/0/0/0. Holdout, false-safe,
+planned Q, Rust replay, and output integrity remain unestablished.
+
+Verified shutdown passed with no foreign or direct console-helper termination,
+no 8191 listener, and GPU at the 10 MiB baseline. Cumulative CONTROL
+submissions are 2. The final decision is
+`H3_ROW_REGION_SAFETY_EVIDENCE_CONTROL_V2_RETRY_FAILED`; no additional
+remediation, CONTROL, or executor integration was started. See the detailed
+[remediation worklog](worklogs/2026-08-21-h3-control-v2-finalize-event-remediation-and-bounded-retry.md).
+
+---
+
 ## Entry template
 
 ```markdown

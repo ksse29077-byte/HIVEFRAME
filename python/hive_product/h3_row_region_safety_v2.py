@@ -106,8 +106,9 @@ def evidence_design_receipt() -> dict[str, Any]:
 @dataclass
 class PinnedSlot:
     payload: Any
-    event: Any | None = None
-    transfer_start: Any | None = None
+    completion_event: Any | None = None
+    timing_start_event: Any | None = None
+    timing_end_event: Any | None = None
     state: str = "FREE"
     metadata: dict[str, Any] | None = None
 
@@ -133,6 +134,134 @@ class PreallocatedPinnedRing:
         )
         if self.allocated_bytes != PINNED_HOST_TOTAL_BYTES:
             raise ControlV2EvidenceError("pinned ring allocation size changed")
+
+
+class D2HEventFinalizer:
+    """Admit completed D2H slots while isolating optional CUDA timing."""
+
+    def __init__(self) -> None:
+        self.completion_query_count = 0
+        self.completion_not_ready_count = 0
+        self.timing_sample_count = 0
+        self.timing_unknown_count = 0
+        self.timing_total_ms = 0.0
+        self.timing_failure_reasons: list[str] = []
+        self.cleaned_event_count = 0
+
+    def try_finalize(self, slot: PinnedSlot) -> dict[str, Any]:
+        """Return pending until D2H completion; timing can fail independently."""
+
+        if slot.state != "PENDING" or slot.metadata is None:
+            raise ControlV2EvidenceError("event finalizer received a non-pending slot")
+        if slot.completion_event is None:
+            raise ControlV2EvidenceError("D2H completion event is missing")
+        self.completion_query_count += 1
+        try:
+            completed = bool(slot.completion_event.query())
+        except BaseException as error:
+            raise ControlV2EvidenceError("D2H completion query failed") from error
+        if not completed:
+            self.completion_not_ready_count += 1
+            return {"admitted": False, "completion": "PENDING", "timing": None}
+
+        timing: dict[str, Any]
+        if slot.timing_start_event is None or slot.timing_end_event is None:
+            timing = self._unknown_timing("TIMING_EVENT_MISSING")
+        else:
+            try:
+                elapsed_ms = float(
+                    slot.timing_start_event.elapsed_time(slot.timing_end_event)
+                )
+                self.timing_sample_count += 1
+                self.timing_total_ms += elapsed_ms
+                timing = {
+                    "status": "MEASURED_CUDA_EVENT",
+                    "value": elapsed_ms,
+                    "unit": "ms",
+                    "measurement_method": "timing-enabled CUDA start.elapsed_time(end)",
+                    "fallback_reason": None,
+                }
+            except BaseException as error:
+                timing = self._unknown_timing(
+                    f"TIMING_ELAPSED_TIME_FAILED:{type(error).__name__}"
+                )
+        return {"admitted": True, "completion": "COMPLETE", "timing": timing}
+
+    def _unknown_timing(self, reason: str) -> dict[str, Any]:
+        self.timing_unknown_count += 1
+        if reason not in self.timing_failure_reasons:
+            self.timing_failure_reasons.append(reason)
+        return {
+            "status": "UNKNOWN",
+            "value": None,
+            "unit": "ms",
+            "measurement_method": "CUDA event timing unavailable",
+            "fallback_reason": reason,
+        }
+
+    def cleanup_slot(self, slot: PinnedSlot) -> None:
+        for name in (
+            "completion_event",
+            "timing_start_event",
+            "timing_end_event",
+        ):
+            if getattr(slot, name) is not None:
+                self.cleaned_event_count += 1
+            setattr(slot, name, None)
+        slot.metadata = None
+        slot.state = "FREE"
+
+    def receipt(self) -> dict[str, Any]:
+        status = "UNKNOWN" if self.timing_unknown_count else "MEASURED_CUDA_EVENT"
+        if self.timing_sample_count == 0 and self.timing_unknown_count == 0:
+            status = "NOT_COLLECTED"
+        return {
+            "completion_method": "nonblocking CUDA Event query",
+            "completion_query_count": self.completion_query_count,
+            "completion_not_ready_count": self.completion_not_ready_count,
+            "forced_cpu_synchronization_count": 0,
+            "timing_status": status,
+            "timing_sample_count": self.timing_sample_count,
+            "timing_unknown_count": self.timing_unknown_count,
+            "timing_total_ms": (
+                None if self.timing_unknown_count else self.timing_total_ms
+            ),
+            "timing_failure_reasons": list(self.timing_failure_reasons),
+            "host_wall_time_substituted_for_cuda_time": False,
+            "cleaned_event_count": self.cleaned_event_count,
+        }
+
+
+def _evidence_integrity_checks(
+    receipt: Mapping[str, Any],
+    *,
+    expected_enqueue_count: int,
+    expected_record_count: int,
+    expected_d2h_bytes: int,
+) -> dict[str, bool]:
+    writes = receipt.get("ring_write_sequence", [])
+    reads = receipt.get("ring_read_sequence", [])
+    return {
+        "enqueue_count_exact": receipt.get("enqueue_count") == expected_enqueue_count,
+        "record_count_exact": receipt.get("record_count") == expected_record_count,
+        "incomplete_zero": receipt.get("incomplete_record_count") == 0,
+        "ring_backpressure_zero": receipt.get("ring_backpressure_count") == 0,
+        "ring_overflow_zero": receipt.get("ring_overflow_count") == 0,
+        "ring_overwrite_zero": receipt.get("ring_overwrite_count") == 0,
+        "evidence_drop_zero": receipt.get("evidence_drop_count") == 0,
+        "duplicate_d2h_zero": receipt.get("duplicate_d2h_count") == 0,
+        "lineage_mismatch_zero": receipt.get("lineage_mismatch_count") == 0,
+        "d2h_bytes_exact": receipt.get("d2h_bytes") == expected_d2h_bytes,
+        "h2d_bytes_zero": receipt.get("h2d_bytes") == 0,
+        "ring_sequence_cardinality_exact": len(writes)
+        == len(reads)
+        == expected_enqueue_count,
+        "ring_sequence_identity_exact": writes == reads,
+        "event_and_slot_cleanup_pass": receipt.get("event_and_slot_cleanup_pass")
+        is True,
+        "hot_path_forced_sync_zero": receipt.get("hot_path_forced_sync_count")
+        == 0,
+    }
 
 
 def _chunked_metrics(torch_module: Any, source: Any, current: Any) -> dict[str, Any]:
@@ -201,8 +330,13 @@ class HybridControlOracleWorker:
         self._source_cache: dict[int, Any] = {}
         self._source_steps: dict[int, int] = {}
         self._failure: BaseException | None = None
+        self.event_finalizer = D2HEventFinalizer()
         self.records: list[dict[str, Any]] = []
         self.source_identities: set[str] = set()
+        self.ring_write_sequence: list[dict[str, Any]] = []
+        self.ring_read_sequence: list[dict[str, Any]] = []
+        self.integrity_checks: dict[str, bool] | None = None
+        self.event_and_slot_cleanup_pass = False
         self.enqueue_count = 0
         self.d2h_bytes = 0
         self.h2d_bytes = 0
@@ -216,7 +350,6 @@ class HybridControlOracleWorker:
         self.lineage_mismatch_count = 0
         self.nonfinite_count = 0
         self.cpu_oracle_time_ms = 0.0
-        self.d2h_transfer_time_ms = 0.0
         self._worker.start()
 
     def _raise_worker_failure(self) -> None:
@@ -238,8 +371,13 @@ class HybridControlOracleWorker:
         if self.transfer_stream is None:
             self.transfer_stream = self.torch.cuda.Stream(device=payload.device)
             for slot in self.resources.slots:
-                slot.event = self.torch.cuda.Event(blocking=False)
-                slot.transfer_start = self.torch.cuda.Event(enable_timing=True, blocking=False)
+                slot.completion_event = self.torch.cuda.Event(blocking=False)
+                slot.timing_start_event = self.torch.cuda.Event(
+                    enable_timing=True, blocking=False
+                )
+                slot.timing_end_event = self.torch.cuda.Event(
+                    enable_timing=True, blocking=False
+                )
         with self._lock:
             slot_index = self._write_index
             slot = self.resources.slots[slot_index]
@@ -252,9 +390,10 @@ class HybridControlOracleWorker:
             self._write_index = (self._write_index + 1) % len(self.resources.slots)
         with self.torch.cuda.stream(self.transfer_stream):
             self.transfer_stream.wait_event(producer_event)
-            slot.transfer_start.record(self.transfer_stream)
+            slot.timing_start_event.record(self.transfer_stream)
             slot.payload.copy_(payload, non_blocking=True)
-            slot.event.record(self.transfer_stream)
+            slot.timing_end_event.record(self.transfer_stream)
+            slot.completion_event.record(self.transfer_stream)
         try:
             self._queue.put_nowait(slot_index)
         except Full as error:
@@ -264,9 +403,26 @@ class HybridControlOracleWorker:
         self.source_identities.add(identity)
         self.enqueue_count += 1
         self.d2h_bytes += CANDIDATE_SLOT_BYTES
+        self.ring_write_sequence.append(
+            self._sequence_entry(slot_index, slot.metadata, self.enqueue_count)
+        )
         if self.d2h_bytes > CONTROL_TRANSFER_LIMIT_BYTES:
             raise ControlV2EvidenceError("CONTROL V2 D2H budget exceeded")
-        return slot.event
+        return slot.completion_event
+
+    @staticmethod
+    def _sequence_entry(
+        slot_index: int, metadata: Mapping[str, Any], ordinal: int
+    ) -> dict[str, Any]:
+        return {
+            "ordinal": ordinal,
+            "slot": slot_index,
+            "block": int(metadata["block"]),
+            "step": int(metadata["step"]),
+            "source_identity_digest": sha256(
+                str(metadata["source_identity"]).encode()
+            ).hexdigest(),
+        }
 
     def _run(self) -> None:
         try:
@@ -276,19 +432,21 @@ class HybridControlOracleWorker:
                     self._queue.task_done()
                     return
                 try:
-                    self._consume(slot_index)
+                    while not self._consume(slot_index):
+                        sleep(0.001)
                 finally:
                     self._queue.task_done()
         except BaseException as error:
             self._failure = error
 
-    def _consume(self, slot_index: int) -> None:
+    def _consume(self, slot_index: int) -> bool:
         slot = self.resources.slots[slot_index]
         if slot.state != "PENDING" or slot.metadata is None:
             raise ControlV2EvidenceError("worker received an invalid pinned slot")
+        finalized = self.event_finalizer.try_finalize(slot)
+        if finalized["admitted"] is not True:
+            return False
         self.background_event_wait_count += 1
-        slot.event.synchronize()
-        self.d2h_transfer_time_ms += float(slot.transfer_start.elapsed_time(slot.event))
         metadata = slot.metadata
         block = int(metadata["block"])
         step = int(metadata["step"])
@@ -342,9 +500,15 @@ class HybridControlOracleWorker:
             self._source_cache[block] = retained
         retained.copy_(slot.payload)
         self._source_steps[block] = step
+        self.ring_read_sequence.append(
+            self._sequence_entry(
+                slot_index, metadata, len(self.ring_read_sequence) + 1
+            )
+        )
         with self._lock:
             slot.metadata = None
             slot.state = "FREE"
+        return True
 
     def finish(self, timeout_seconds: float = 900.0) -> None:
         deadline = perf_counter() + timeout_seconds
@@ -359,8 +523,36 @@ class HybridControlOracleWorker:
         self._raise_worker_failure()
         if self._worker.is_alive():
             raise ControlV2EvidenceError("CPU oracle worker did not terminate")
+        for slot in self.resources.slots:
+            self.event_finalizer.cleanup_slot(slot)
+        self.transfer_stream = None
+        self.event_and_slot_cleanup_pass = all(
+            slot.state == "FREE"
+            and slot.metadata is None
+            and slot.completion_event is None
+            and slot.timing_start_event is None
+            and slot.timing_end_event is None
+            for slot in self.resources.slots
+        )
+
+    def validate_integrity(self) -> dict[str, bool]:
+        receipt = self.receipt()
+        checks = _evidence_integrity_checks(
+            receipt,
+            expected_enqueue_count=EXPECTED_ENQUEUE_COUNT,
+            expected_record_count=EXPECTED_RECORD_COUNT,
+            expected_d2h_bytes=CONTROL_ORACLE_D2H_BYTES,
+        )
+        self.integrity_checks = checks
+        if not all(checks.values()):
+            failed = sorted(name for name, passed in checks.items() if not passed)
+            raise ControlV2EvidenceError(
+                "CONTROL V2 evidence integrity failed: " + ",".join(failed)
+            )
+        return checks
 
     def receipt(self) -> dict[str, Any]:
+        timing = self.event_finalizer.receipt()
         return {
             "scope": "REAL_H3_FULL_COMPUTE_CONTROL_V2",
             "enqueue_count": self.enqueue_count,
@@ -382,10 +574,15 @@ class HybridControlOracleWorker:
             "evidence_drop_count": self.evidence_drop_count,
             "lineage_mismatch_count": self.lineage_mismatch_count,
             "nonfinite_count": self.nonfinite_count,
-            "d2h_transfer_time_ms": self.d2h_transfer_time_ms,
+            "d2h_transfer_time_ms": timing["timing_total_ms"],
+            "d2h_timing_telemetry": timing,
             "cpu_oracle_time_ms": self.cpu_oracle_time_ms,
             "persistent_gpu_source_bytes": 0,
             "rust_tensor_bytes": 0,
+            "ring_write_sequence": list(self.ring_write_sequence),
+            "ring_read_sequence": list(self.ring_read_sequence),
+            "event_and_slot_cleanup_pass": self.event_and_slot_cleanup_pass,
+            "integrity_checks": dict(self.integrity_checks or {}),
         }
 
 
@@ -483,6 +680,8 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
 
     def finalize(self) -> dict[str, Any]:
         self.oracle.finish()
+        self._staging_release_event = None
+        integrity = self.oracle.validate_integrity()
         base = super().finalize()
         evidence = list(self.oracle.records)
         confusion = {
@@ -506,6 +705,7 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
             "rust_tensor_transfer_bytes": 0,
         }
         base["hybrid_oracle"] = oracle
+        base["hybrid_oracle"]["integrity_checks"] = integrity
         base["cache"].update(
             {
                 "host_cache_bytes": oracle["source_cache_bytes"],
@@ -520,6 +720,7 @@ class H3RowRegionSafetyControllerV2(H3A3G1Controller):
 
     def close(self) -> None:
         self._pending_metadata.clear()
+        self._staging_release_event = None
         self._region_staging = None
 
 
