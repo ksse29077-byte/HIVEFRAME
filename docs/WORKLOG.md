@@ -2369,6 +2369,23 @@ remain three. See the detailed
 
 ## Entry template
 
+## 2026-08-21 - H3 V4 observer runtime and Formal Admission
+
+PR #138 now contains the real H3 Full-Attention V4 observer controller,
+isolated CONTROL node, frozen 199-record callback path, and one-shot runner.
+Focused Python/release tests passed 53/53, release PyO3 passed its fixed 29
+tests with skip zero, Rust workspace tests passed 50/50, and strict Clippy and
+release build passed.
+
+Formal Admission stopped before runtime start because the runner's expected
+HEAD argument contained an incorrect suffix. Actual clean local/origin/PR head
+was `310e76a9f07ed7fff9db00264e33e76c87993d45`; every non-HEAD Admission check
+passed. Submission/GPU start/completion remained 0/0/0, cumulative Formal
+CONTROL submissions remain three, and no automatic retry was made. See the
+detailed [worklog](worklogs/2026-08-21-h3-cuda-fixture-teardown-remediation-and-v4-resume.md).
+
+---
+
 ```markdown
 ## YYYY-MM-DD — Title
 

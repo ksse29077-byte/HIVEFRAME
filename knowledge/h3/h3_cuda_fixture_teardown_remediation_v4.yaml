@@ -149,3 +149,60 @@ baseline_lint_resolution:
   prior_binary_sha256: 0758bba92c7f0f60e9f85a90fee30582a3cee758b567cb8326ef567a3e86d3b5
   current_binary_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
   formal_control_submission_count: 0
+observer_runtime_continuation:
+  starting_head: 0aa869414b3096cecd8fa2ed016391d8937204b0
+  implementation_heads:
+    - 8bb44d498af14d84876390a5738a29595ef55770
+    - 41a1febe2a57f207347dba773716f269ccc3b21d
+    - 310e76a9f07ed7fff9db00264e33e76c87993d45
+  runtime_controller_present: true
+  comfyui_control_node_present: true
+  isolated_v4_custom_node_root: true
+  v2_pinned_ring_loaded: false
+  one_shot_runner_present: true
+  real_h3_full_attention_callback_present: true
+  full_compute_output_mutation_allowed: false
+  focused_python_release_tests_passed: 53
+  release_pyo3_fixed_subset_passed: 29
+  release_pyo3_skipped: 0
+  python_compile_passed: true
+  cargo_fmt_passed: true
+  strict_clippy_passed: true
+  rust_workspace_tests_passed: 50
+  release_build_passed: true
+  broad_python_discovery:
+    executed: 609
+    errors: 35
+    failures: 1
+    skipped: 16
+    classification: ENVIRONMENT_TEMP_ACL_AND_PREEXISTING_C0_KNOWLEDGE_MISMATCH
+    claimed_pass: false
+  formal_admission:
+    expected_head_argument: 310e76a8c5f66e716e24fcf9616a3c83ab5c7580
+    actual_local_head: 310e76a9f07ed7fff9db00264e33e76c87993d45
+    actual_remote_head: 310e76a9f07ed7fff9db00264e33e76c87993d45
+    failed_checks: [head_exact, remote_head_exact]
+    all_non_head_checks_passed: true
+    cuda_preflight_passed: true
+    p1_a2_identity_passed: true
+    process_ownership_passed: true
+    memory_passed: true
+    transfer_passed: true
+    projected_peak_vram_bytes: 12562895209
+    projected_vram_headroom_bytes: 321482391
+    available_ram_bytes: 47036989440
+    resident_host_source_bytes: 627501056
+    tensor_transfer_bytes: 19645609984
+    runtime_started: false
+    model_loaded: false
+    submission_count: 0
+    gpu_start_count: 0
+    completion_count: 0
+    retry_count: 0
+    fallback_count: 0
+    rust_live_compile_count: 0
+    rust_offline_replay_count: 0
+    output_integrity: NOT_EXECUTED
+    production_net_saving: NOT_COMPUTABLE
+    automatic_retry: false
+    decision: H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED

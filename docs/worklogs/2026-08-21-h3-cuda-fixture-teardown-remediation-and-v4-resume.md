@@ -333,3 +333,74 @@ cumulative Formal CONTROL submissions:        3
 SELECTIVE/partial-Q/Attention omission:        0/0/0
 H3_V4_CLOSE_THE_LOOP_ADMISSION_BLOCKED
 ```
+
+## V4 Observer Runtime Integration and Formal Admission
+
+The approved continuation started from exact clean PR #138 head
+`0aa869414b3096cecd8fa2ed016391d8937204b0`. It added a generation-scoped V4
+controller, an observation-only callback after real H3 exact Full Attention,
+an isolated CONTROL-only ComfyUI node root, indexed exact-GPU metric helpers,
+and a one-shot runner. The callback preserves the Full Attention output and
+keeps SELECTIVE, partial-Q, cache omission, and Attention omission disabled.
+The isolated node root prevents the V2 all-candidate pinned ring from loading.
+
+Verification before Admission:
+
+```text
+focused Python/release PyO3 tests: 53 PASS
+release PyO3 fixed subset:         29 PASS, skip 0
+Python compile:                    PASS
+cargo fmt:                         PASS
+strict workspace Clippy:           PASS
+Rust workspace tests:              50 PASS
+release workspace build:           PASS
+```
+
+The broad Python discovery run executed 609 tests, with 35 errors caused by
+the installed Comfy Python losing access to newly created temporary
+directories and one pre-existing C0 knowledge-status mismatch; 16 tests were
+skipped. These failures were not changed or represented as a full-suite pass.
+
+The final implementation commits were `8bb44d498af14d84876390a5738a29595ef55770`,
+`41a1febe2a57f207347dba773716f269ccc3b21d`, and
+`310e76a9f07ed7fff9db00264e33e76c87993d45`. Local, origin, and PR #138
+actually matched the last SHA with a clean worktree. The one-shot runner was
+mistakenly invoked with expected SHA
+`310e76a8c5f66e716e24fcf9616a3c83ab5c7580`. Consequently only
+`head_exact` and `remote_head_exact` failed. Per the fixed Admission failure
+rule, the runner did not automatically run again.
+
+Every non-SHA pre-start check passed. The CUDA fixture passed, P1-A2 receipt,
+prompt, input, workflow, model source, release PyO3, inventory, transfer,
+queue, port, process ownership, RAM, and VRAM checks matched. Measured and
+projected admission values were:
+
+```text
+baseline GPU use:                  10,485,760 B
+physical VRAM:                     12,884,377,600 B
+projected V4 peak VRAM:            12,562,895,209 B
+projected VRAM headroom:           321,482,391 B
+available RAM:                     47,036,989,440 B
+resident pinned host source:       627,501,056 B
+RAM after host source:             46,409,488,384 B
+source capture D2H:                10,040,016,896 B
+candidate source H2D:              9,605,593,088 B
+expected tensor transfer:          19,645,609,984 B
+frozen inventory:                  199 records
+planned Q reference:               3.007449429460581%
+```
+
+Runtime start, model load, `/prompt`, GPU generation, callback holdout, Rust
+live compile, Rust replay, video output, and production-net timing were not
+entered. The private fail-closed receipt is outside the repository under the
+approved local HIVEFRAME evidence root.
+
+```text
+current-task submission/GPU start/completion: 0/0/0
+current-task retry/fallback:                   0/0
+runtime/model load:                            0/0
+Rust live/replay:                              0/0
+SELECTIVE/partial-Q/Attention omission:        0/0/0
+cumulative Formal CONTROL submissions:        3
+H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED
+```
