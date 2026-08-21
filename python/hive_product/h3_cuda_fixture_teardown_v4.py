@@ -43,6 +43,41 @@ class FixtureLifecycleError(RuntimeError):
     """Reject unsafe ownership, ordering, or post-close access."""
 
 
+def normalize_cuda_device_index(torch_module: Any, value: Any) -> int:
+    """Normalize one CUDA device to the initialized current integer index."""
+
+    if not torch_module.cuda.is_available():
+        raise FixtureLifecycleError("CUDA is unavailable")
+    current = int(torch_module.cuda.current_device())
+    count = int(torch_module.cuda.device_count())
+    if isinstance(value, bool):
+        raise FixtureLifecycleError("boolean CUDA device index is invalid")
+    if isinstance(value, int):
+        index = value
+    else:
+        device = (
+            value
+            if hasattr(value, "type") and hasattr(value, "index")
+            else torch_module.device(value)
+        )
+        if device.type != "cuda":
+            raise FixtureLifecycleError("fixture device must be CUDA")
+        index = current if device.index is None else int(device.index)
+    if index < 0 or index >= count:
+        raise FixtureLifecycleError("fixture CUDA device index is unavailable")
+    if index != current:
+        raise FixtureLifecycleError("fixture CUDA device differs from current device")
+    return index
+
+
+def reset_peak_memory_stats_compat(torch_module: Any, value: Any) -> int:
+    """Use the probed Windows Torch integer-index peak-reset form."""
+
+    index = normalize_cuda_device_index(torch_module, value)
+    torch_module.cuda.reset_peak_memory_stats(index)
+    return index
+
+
 def _tensor_bytes(tensor: Any) -> int:
     return int(tensor.numel()) * int(tensor.element_size())
 
@@ -276,6 +311,7 @@ class V4CudaFixture:
             raise FixtureLifecycleError("CUDA is unavailable")
         self.torch = torch_module
         self.device = torch_module.device("cuda:0")
+        self.device_index = normalize_cuda_device_index(torch_module, self.device)
         self.cycle_name = cycle_name
         self.state = "RUNNING"
         self.transitions = [self.state]
@@ -309,7 +345,7 @@ class V4CudaFixture:
             threshold_classification,
         )
 
-        torch_module.cuda.reset_peak_memory_stats(self.device)
+        reset_peak_memory_stats_compat(torch_module, self.device_index)
         generator = self.registry.helper(
             "generator", torch_module.Generator(device=self.device)
         )

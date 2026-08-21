@@ -118,3 +118,89 @@ Post-stop checks found port 8191 listener count zero, ComfyUI runtime candidate
 count zero, GPU usage 10 MiB at 0%, and no private or public probe receipt left
 by the failed process. This public worklog and the bounded failure summary are
 the durable evidence for the attempt.
+
+## Approved Continuation: Peak Reset Compatibility
+
+The user approved continuation on the same Issue, branch, and Draft PR. The
+pre-allocation error is not treated as a V4 architecture or teardown result.
+The installed Windows Torch `2.12.1+cu130` API was probed directly:
+
+```text
+signature: (device: 'Device' = None) -> None
+CUDA device count/current: 1/0
+omitted argument: PASS
+integer current index 0: PASS
+torch.device("cuda:0") after current-device initialization: PASS
+CPU device: ValueError
+invalid index 1: RuntimeError Invalid device argument
+small allocation peak: 0 -> 16,384 B -> final allocated/reserved 0/0 B
+```
+
+The failure was an initialization-sensitive call site, not proof that this
+Torch build never supports a CUDA device object. The implementation now calls
+`current_device()`, normalizes and validates the requested CUDA device against
+the available and current index, and passes the supported integer index to
+`reset_peak_memory_stats()`. There is no multi-form fallback and exceptions are
+not swallowed. This compatibility correction is remediation cycle 1; two
+independent fix-forward cycles remain.
+
+The first focused run exposed a FakeTorch-only normalization defect: an
+already-normalized device object was passed back through the fake constructor.
+Fix-forward cycle 2 now accepts objects with explicit `type` and `index`
+attributes and applies the same CUDA/current-index validation directly. This
+does not relax real-device admission. One fix-forward cycle remains.
+
+## Teardown Remediation Result
+
+The compatibility helper passed on the installed Windows Torch with integer
+device index `0`, including a real 16,384-byte CUDA allocation and return to
+`0/0` allocator bytes. The authorized production-equivalent sequence then
+completed with retry zero.
+
+```text
+decision: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_READY
+cold allocated/reserved: 0 / 0 B
+warm allocated/reserved: 8,519,680 / 25,165,824 B
+warm active bytes: 8,519,680 B
+warm fixture-owned CUDA/pinned: 0 / 0 B
+warm Python CUDA tensors/storages: 0 / 0
+warm worker/future/event/stream: 0 / 0 / 0 / 0
+```
+
+The nonzero warm allocation is classified separately as
+`LAZY_CUDA_INITIALIZATION_BASELINE_MISMATCH`. It contains no fixture-owned or
+Python-live CUDA tensor and is stable after representative initialization.
+This classification is supported by the warm snapshot and all three planned
+verification cycles; it is not an arbitrary tolerance.
+
+| cycle | final allocated | final reserved | active | fixture CUDA/pinned | worker/future/event/stream |
+|---|---:|---:|---:|---:|---:|
+| verification 1 | 8,519,680 | 25,165,824 | 8,519,680 | 0 / 0 | 0 / 0 / 0 / 0 |
+| verification 2 | 8,519,680 | 25,165,824 | 8,519,680 | 0 / 0 | 0 / 0 / 0 / 0 |
+| verification 3 | 8,519,680 | 25,165,824 | 8,519,680 | 0 / 0 | 0 / 0 / 0 / 0 |
+
+Allocated and reserved growth were both `[0, 0]`. The representative
+verification peak was 205,137,920 allocated bytes and 239,075,328 reserved
+bytes. Fixture-owned pinned peak was 48,269,348 bytes, consisting of the exact
+48,269,312-byte BF16 host source plus 36 bytes of bounded metric output.
+
+All four actual CUDA negative cases behaved correctly:
+
+| retained owner | retained Gate | release Gate |
+|---|---|---|
+| CUDA tensor | FAIL | PASS |
+| shared staging | FAIL | PASS |
+| worker future CUDA result | FAIL | PASS |
+| source cache entry | FAIL | PASS |
+
+BF16 D2H/H2D bit identity, fingerprint, preliminary metric, exact metric,
+packed-row mapping, threshold boundaries, and CPU/GPU bounded-reference error
+all passed in warm-up and verification cycles. Maximum/mean reference error
+remained `1.1920928955078125e-07` / `1.987791620194912e-08`. The focused suite
+after the compatibility fix passed 14/14.
+
+Internal remediation decision:
+
+```text
+H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_READY
+```

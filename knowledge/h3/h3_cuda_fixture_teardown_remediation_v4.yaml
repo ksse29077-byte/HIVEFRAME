@@ -1,5 +1,5 @@
 schema_version: h3.cuda-fixture-teardown-remediation-v4.1
-status: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_FAILED
+status: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_READY
 exact_base: cabe03127ff1e7ee1503861ca62515e3dd40afce
 issue: 137
 branch: codex/h3-cuda-fixture-teardown-remediation-v4-resume
@@ -14,6 +14,20 @@ remediation:
   negative_leak_cases_implemented: 4
   focused_tests_passed: 13
   focused_tests_failed: 0
+  compatibility_cycle_count: 2
+  remaining_fix_forward_cycles: 1
+peak_reset_compatibility:
+  torch_version: 2.12.1+cu130
+  signature: "(device: 'Device' = None) -> None"
+  cuda_device_count: 1
+  current_device_index: 0
+  omitted_argument_supported: true
+  integer_current_index_supported: true
+  initialized_torch_device_supported: true
+  cpu_device_rejected: true
+  invalid_index_rejected: true
+  selected_call_form: reset_peak_memory_stats_integer_current_index
+  fallback_forms: 0
 execution:
   planned_warmup_count: 1
   warmup_entered_count: 1
@@ -45,7 +59,27 @@ post_stop:
   port_8191_listener_count: 0
   comfyui_runtime_candidate_count: 0
 decision:
-  code: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_FAILED
+  code: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_READY
   automatic_retry_allowed: false
-  v4_preflight_started: false
-  formal_control_allowed: false
+  v4_preflight_started: true
+  formal_control_allowed: PENDING_V4_PREFLIGHT
+teardown_result:
+  root_cause_classification: LIVE_TENSOR_REFERENCE_LEAK
+  allocator_baseline_classification: LAZY_CUDA_INITIALIZATION_BASELINE_MISMATCH
+  cold_allocated_bytes: 0
+  cold_reserved_bytes: 0
+  warm_allocated_bytes: 8519680
+  warm_reserved_bytes: 25165824
+  warm_active_bytes: 8519680
+  verification_final_allocated_bytes: [8519680, 8519680, 8519680]
+  verification_final_reserved_bytes: [25165824, 25165824, 25165824]
+  allocated_growth_bytes: [0, 0]
+  reserved_growth_bytes: [0, 0]
+  fixture_owned_cuda_final: 0
+  fixture_owned_pinned_final: 0
+  worker_future_event_stream_final: [0, 0, 0, 0]
+  negative_cuda_cases_passed: 4
+  retry_count: 0
+  peak_allocated_bytes: 205137920
+  peak_reserved_bytes: 239075328
+  peak_fixture_pinned_bytes: 48269348

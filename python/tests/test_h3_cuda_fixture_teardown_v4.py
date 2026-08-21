@@ -9,6 +9,8 @@ from hive_product.h3_cuda_fixture_teardown_v4 import (
     LIFECYCLE,
     ROOT_CAUSE,
     final_memory_gate,
+    normalize_cuda_device_index,
+    reset_peak_memory_stats_compat,
 )
 from hive_product.h3_bounded_host_source_oracle_v4_cuda import (
     run_bounded_cuda_preflight,
@@ -32,7 +34,42 @@ class FakeTensor:
 
 
 class FakeTorch:
-    pass
+    class Device:
+        def __init__(self, value):
+            if isinstance(value, str) and value.startswith("cuda"):
+                self.type = "cuda"
+                self.index = int(value.split(":", 1)[1]) if ":" in value else None
+            elif value == "cpu":
+                self.type = "cpu"
+                self.index = None
+            else:
+                raise ValueError("invalid device")
+
+    class Cuda:
+        def __init__(self):
+            self.available = True
+            self.current = 0
+            self.count = 1
+            self.reset_calls = []
+
+        def is_available(self):
+            return self.available
+
+        def current_device(self):
+            return self.current
+
+        def device_count(self):
+            return self.count
+
+        def reset_peak_memory_stats(self, value):
+            self.reset_calls.append(value)
+
+    def __init__(self):
+        self.cuda = self.Cuda()
+
+    @staticmethod
+    def device(value):
+        return FakeTorch.Device(value)
 
 
 def snapshot(*, allocated=0, active=0, cuda=0, pinned=0, future=0, event=0, stream=0):
@@ -95,6 +132,24 @@ class H3CudaFixtureTeardownV4Tests(unittest.TestCase):
         self.assertIn("run_teardown_remediation", source)
         self.assertNotIn("del source", source)
         self.assertNotIn("final_allocated <= baseline_allocated", source)
+
+    def test_cuda_index_normalization_and_peak_reset_are_strict(self):
+        torch_module = FakeTorch()
+        self.assertEqual(normalize_cuda_device_index(torch_module, 0), 0)
+        self.assertEqual(normalize_cuda_device_index(torch_module, "cuda:0"), 0)
+        self.assertEqual(
+            normalize_cuda_device_index(torch_module, torch_module.device("cuda:0")),
+            0,
+        )
+        self.assertEqual(reset_peak_memory_stats_compat(torch_module, "cuda:0"), 0)
+        self.assertEqual(torch_module.cuda.reset_calls, [0])
+        with self.assertRaises(FixtureLifecycleError):
+            normalize_cuda_device_index(torch_module, "cpu")
+        with self.assertRaises(FixtureLifecycleError):
+            normalize_cuda_device_index(torch_module, 1)
+        torch_module.cuda.available = False
+        with self.assertRaises(FixtureLifecycleError):
+            normalize_cuda_device_index(torch_module, 0)
 
 
 if __name__ == "__main__":
