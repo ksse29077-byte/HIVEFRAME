@@ -12,10 +12,10 @@ remediation:
   weak_reference_release_check: implemented
   warm_baseline_gate: implemented
   negative_leak_cases_implemented: 4
-  focused_tests_passed: 13
+  focused_tests_passed: 14
   focused_tests_failed: 0
   compatibility_cycle_count: 2
-  remaining_fix_forward_cycles: 1
+  remaining_fix_forward_cycles: 0
 peak_reset_compatibility:
   torch_version: 2.12.1+cu130
   signature: "(device: 'Device' = None) -> None"
@@ -31,19 +31,19 @@ peak_reset_compatibility:
 execution:
   planned_warmup_count: 1
   warmup_entered_count: 1
-  warmup_source_allocation_count: 0
-  warm_baseline_finalized_count: 0
+  warmup_source_allocation_count: 1
+  warm_baseline_finalized_count: 1
   planned_verification_count: 3
-  completed_verification_count: 0
-  negative_cuda_cases_executed: 0
+  completed_verification_count: 3
+  negative_cuda_cases_executed: 4
   retry_count: 0
-failure:
+prior_failure_remediated:
   classification: INVALID_DEVICE_ARGUMENT_IN_WARMUP_PEAK_RESET
   exception_type: RuntimeError
   message: Invalid device argument
   source_basename: h3_cuda_fixture_teardown_v4.py
   function: V4CudaFixture.run
-  cold_snapshot: NOT_PERSISTED_DUE_TO_WARMUP_EXCEPTION
+  cold_snapshot: NOT_PERSISTED_DUE_TO_PRIOR_WARMUP_EXCEPTION
 formal_control:
   cumulative_prior_submission_count: 3
   submission_count: 0
@@ -59,10 +59,10 @@ post_stop:
   port_8191_listener_count: 0
   comfyui_runtime_candidate_count: 0
 decision:
-  code: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_READY
+  code: H3_V4_INFRASTRUCTURE_REMEDIATION_BUDGET_EXHAUSTED
   automatic_retry_allowed: false
   v4_preflight_started: true
-  formal_control_allowed: PENDING_V4_PREFLIGHT
+  formal_control_allowed: false
 teardown_result:
   root_cause_classification: LIVE_TENSOR_REFERENCE_LEAK
   allocator_baseline_classification: LAZY_CUDA_INITIALIZATION_BASELINE_MISMATCH
@@ -83,3 +83,27 @@ teardown_result:
   peak_allocated_bytes: 205137920
   peak_reserved_bytes: 239075328
   peak_fixture_pinned_bytes: 48269348
+v4_preflight:
+  remediation_cycles_used: 3
+  remediation_cycles_remaining: 0
+  model_free_replay_passed: true
+  frozen_inventory_digest: 8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc
+  exact_record_count: 199
+  planned_q_rows: 463869
+  full_q_rows: 15424000
+  planned_q_ratio: 0.03007449429460581
+  release_pyo3_import_passed: true
+  focused_release_tests_passed: 29
+  h3_adjacent_tests_passed: 88
+  skipped_tests: 0
+  cargo_fmt_passed: true
+  cargo_clippy_passed: false
+  blocking_lint: clippy::too_many_arguments
+  blocking_file: crates/hive-retina-python/src/lib.rs
+  blocking_line: 70
+  workspace_test_entered: false
+  workspace_release_build_entered: false
+  formal_control_admission_entered: false
+  formal_control_submission_count: 0
+  gpu_start_count: 0
+  completion_count: 0

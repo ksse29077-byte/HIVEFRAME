@@ -204,3 +204,60 @@ Internal remediation decision:
 ```text
 H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_READY
 ```
+
+## V4 Full Preflight Continuation
+
+The current release PyO3 extension was rebuilt and loaded from the exact
+continuation branch. The real Rust CachePlan V2 round trip, panic containment,
+and three-percent fixture passed. The focused release-extension set passed
+29/29 with skip zero, and the complete adjacent H3 regression set passed 88/88
+with skip zero. Model-free exact, burst, H2D-latency, oracle-latency, and
+combined stress replays all completed 199 records with no backlog, overwrite,
+drop, duplicate, stale source, or invalid transition.
+
+The frozen preflight evidence was:
+
+```text
+inventory digest:             8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc
+exact holdout records:        199
+planned Q rows/full Q rows:   463,869 / 15,424,000
+planned Q reduction:          3.007449429460581%
+source capture D2H:           10,040,016,896 B
+candidate source H2D:         9,605,593,088 B
+metadata D2H:                 50,944 B
+total tensor transfer:        19,645,609,984 B
+resident host source:         627,501,056 B
+shared GPU staging:           48,269,312 B
+projected V4 peak VRAM:       12,562,895,209 B
+projected VRAM headroom:      321,482,391 B
+available RAM:                46,998,458,368 B
+RAM after resident source:    46,370,957,312 B
+```
+
+The memory and transfer admissions passed. `cargo fmt --all -- --check` also
+passed. The first strict clippy run exposed two pre-existing Rust 1.97
+`manual_div_ceil` findings in `locality.rs`. The final bounded remediation
+cycle replaced those two expressions with the equivalent stable integer
+`div_ceil` operation. The next strict clippy run advanced to a separate
+pre-existing `too_many_arguments` finding on the eight-argument PyO3
+`run_candidate` function in `crates/hive-retina-python/src/lib.rs:70`.
+
+At that point all three authorized remediation cycles were consumed:
+
+1. Windows Torch peak-reset compatibility.
+2. FakeTorch device-object normalization.
+3. Rust 1.97 manual-div-ceil compatibility.
+
+The instruction requires termination when the budget is exhausted before the
+full preflight passes. The PyO3 public function was not refactored or lint-
+suppressed. Workspace test/release build, Formal CONTROL Admission, runtime
+start, model load, Generation, holdout Rust compile/replay, and output analysis
+were not entered after the failed Gate.
+
+```text
+current-task submission/GPU start/completion: 0/0/0
+current-task retry/fallback:                   0/0
+SELECTIVE/partial-Q/Attention omission:        0/0/0
+cumulative prior Formal CONTROL submissions:  3
+H3_V4_INFRASTRUCTURE_REMEDIATION_BUDGET_EXHAUSTED
+```
