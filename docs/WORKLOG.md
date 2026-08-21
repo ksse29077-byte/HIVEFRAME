@@ -2340,6 +2340,33 @@ started. See the detailed
 
 ---
 
+## 2026-08-21 - H3 GPU-local compressed evidence V3 admission
+
+Issue #133 started from exact Draft PR #132 head
+`94b10cd6fdc9a39b4b6b56378200e41eedd7dce6`. All base and idle-runtime Gates
+passed, but the V3 source-provenance contract was structurally blocked before
+implementation or execution.
+
+The candidate-only exact GPU oracle requires a same-generation BF16 source.
+The repository's only source-cache producer is the prohibited 48,269,312-byte
+region D2H path. With full tensor D2H, persistent per-candidate GPU payloads,
+and more than one shared staging buffer all forbidden, no legal source reaches
+the exact oracle. The three-percent floor also requires at least 199 records
+and 13 simultaneous block sources, or 627,501,056 bytes, while the authorized
+shared staging capacity is one 48,269,312-byte source and projected VRAM
+headroom is 369,751,703 bytes. Independently, the 2 GiB candidate H2D budget
+admits only 44 age-one exact records, enough for 0.6649% planned Q rather than
+the required 3%.
+
+The decision is
+`H3_GPU_LOCAL_COMPRESSED_EVIDENCE_V3_ADMISSION_BLOCKED`. No V3 runtime code,
+CUDA preflight, model load, runtime, Formal CONTROL, Rust replay, Selective,
+partial-Q, or omission was started. Cumulative Formal CONTROL submissions
+remain three. See the detailed
+[worklog](worklogs/2026-08-21-h3-gpu-local-compressed-evidence-v3-and-formal-control.md).
+
+---
+
 ## Entry template
 
 ```markdown
