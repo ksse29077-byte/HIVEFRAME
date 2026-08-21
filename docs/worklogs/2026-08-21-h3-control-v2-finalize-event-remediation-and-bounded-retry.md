@@ -59,3 +59,50 @@ runtime Admission Gate ends the task with zero current-task submissions.
 
 Diagram impact: none. This audit does not change architecture, ownership, or
 the verified product execution flow.
+
+## CUDA Event contract remediation
+
+The production pinned slot now owns three distinct events:
+
+- a timing-disabled completion event used only by nonblocking `query()`;
+- a timing-enabled start event;
+- a timing-enabled end event.
+
+The transfer stream records start, asynchronous D2H, end, then completion in
+that order. The background worker does not call `synchronize()` and does not
+admit a record before completion query reports ready. CUDA duration uses only
+`start.elapsed_time(end)`. A timing exception produces `UNKNOWN`, a null CUDA
+duration, and a bounded fallback reason; it does not replace CUDA duration
+with host time and does not discard an otherwise complete record.
+
+The production finalizer records bounded ring write/read sequences and checks
+exact enqueue/record/D2H cardinality, sequence identity, zero incomplete,
+backpressure, overflow, overwrite, drop, duplicate, lineage mismatch, H2D,
+and hot-path sync counts. Successful finish releases Event references, clears
+slot metadata/state, and drops the controller's last completion-event
+reference. Any evidence-integrity failure remains fail-closed.
+
+## Focused and bounded verification
+
+- CONTROL V2 focused tests: 13/13 PASS.
+- Adjacent hybrid staging, release PyO3/Rust bridge, and process ownership
+  regression set: 55/55 PASS, skip 0.
+- The first adjacent invocation omitted the tests and release-extension paths;
+  it produced one import error and three skips before executing product code.
+  The corrected 55-test invocation above is the admitted result.
+- Actual model-free CUDA preflight: PASS.
+
+The CUDA preflight used the same production `D2HEventFinalizer` with a real
+3367x32 BF16 CUDA tensor, a pinned host tensor, one timing-disabled completion
+event, and timing-enabled start/end events. It proved completion admission,
+bit-preserved asynchronous D2H, measured timing, isolated injected timing
+failure with preserved payload, cleanup, no completion-event timing call, and
+hot-path forced sync zero. H3 model load, Generation, CONTROL submission,
+SELECTIVE, partial-Q, and Attention omission remained zero.
+
+Preflight receipt SHA-256:
+`21f967e3793b3f829b19530d711bb2892022190f4a905ac360b8fa7e36027e4b`.
+
+Diagram impact remains none. This change repairs bounded adapter telemetry and
+evidence finalization without changing the Core/adapter boundary, compute
+authority, product execution flow, or Full Compute fallback.
