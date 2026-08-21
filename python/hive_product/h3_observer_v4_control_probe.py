@@ -128,6 +128,12 @@ def _p1_a2_profile_receipt(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8-sig"))
     profile = _profile_candidate(payload)
     checks = {
+        "status_succeeded": payload.get("status") == "succeeded",
+        "backend_exact": payload.get("backend") == "minimax_h3_comfyui_local",
+        "model_exact": payload.get("model_contract") == "MiniMax-H3",
+        "workflow_exact": payload.get("workflow_sha256")
+        == APPROVED_WORKFLOW_SHA256,
+        "receipt_retry_zero": payload.get("metrics", {}).get("retry_count") == 0,
         "profile_found": profile is not None,
         "width_864": profile is not None and profile.get("width") == 864,
         "height_480": profile is not None and profile.get("height") == 480,
@@ -140,10 +146,11 @@ def _p1_a2_profile_receipt(path: Path) -> dict[str, Any]:
         and profile.get("sampler") == "res_multistep",
         "scheduler_fixed": profile is not None and profile.get("scheduler") == "simple",
         "sage_disabled": profile is not None
-        and profile.get("sage_enabled", False) is False,
+        and profile.get("sage_enabled", profile.get("sage_attention")) is False,
     }
     return {
         "sha256": sha256(path.read_bytes()).hexdigest(),
+        "reference_sha256": payload.get("reference_sha256"),
         "profile": dict(profile) if profile is not None else None,
         "checks": checks,
         "passed": all(checks.values()),
@@ -432,6 +439,7 @@ def run_control(
             "worktree_clean": worktree_clean,
             "input_identity_exact": image_digest == input_image_sha256,
             "p1_a2_profile_exact": p1_reference["passed"] is True,
+            "p1_a2_input_exact": p1_reference["reference_sha256"] == image_digest,
             "workflow_digest_exact": sha256(workflow_path.read_bytes()).hexdigest()
             == APPROVED_WORKFLOW_SHA256,
             "source_gate": source_gate.get("admitted") is True,

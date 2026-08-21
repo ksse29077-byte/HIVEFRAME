@@ -161,6 +161,17 @@ class H3ObserverV4Tests(unittest.TestCase):
                 },
             },
         }
+        receipt = {
+            "status": "succeeded",
+            "backend": "minimax_h3_comfyui_local",
+            "model_contract": "MiniMax-H3",
+            "workflow_sha256": (
+                "31ab33fdb053a7834cc866bd7aa08b887518fc656e4a796c89779c6b5e1786e6"
+            ),
+            "metrics": {"retry_count": 0},
+            "reference_sha256": "a" * 64,
+            "nested": {"profile": profile},
+        }
         workflow = build_workflow(
             standard, run_digest="a" * 64, first_frame_name="frame.png"
         )
@@ -189,7 +200,7 @@ class H3ObserverV4Tests(unittest.TestCase):
         temporary_root.mkdir(exist_ok=True)
         path = temporary_root / "observer-v4-p1-a2-receipt.json"
         try:
-            path.write_text(json.dumps({"nested": {"profile": profile}}), encoding="utf-8")
+            path.write_text(json.dumps(receipt), encoding="utf-8")
             self.assertTrue(_p1_a2_profile_receipt(path)["passed"])
         finally:
             path.unlink(missing_ok=True)
