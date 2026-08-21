@@ -1,0 +1,71 @@
+schema_version: hiveframe.knowledge.h3-background-oracle-lineage-trace-remediation.1
+recorded_at: 2026-08-21
+issue: 125
+pull_request: 126
+exact_base_commit: d2077bb09794e5701549912ca1383965619ce451
+instrumentation_commit: 822210f05a375b83932b6dd6ff2259e8ef6322c4
+decision: H3_BACKGROUND_ORACLE_LINEAGE_TRACE_CAPTURED_AND_REMEDIATED_READY_FOR_CONTROL
+root_cause: DUPLICATE_OR_MISSING_RECORD
+proven_trigger: RING_SLOT_NOT_FREE
+trace:
+  diagnostic_h3_submissions: 1
+  diagnostic_gpu_starts: 1
+  valid_control_results: 0
+  completed_generations: 0
+  retry_count: 0
+  first_rejected_enqueue_sequence: 33
+  fully_consumed_sequence_before_failure: 30
+  physical_completion_sequence_before_failure: 31
+  finalizer_sequence_before_failure: 31
+  occupied_ring_sequences: [31, 32]
+  occupied_ring_slots: 2
+  source_denoise_ordinal: 0
+  current_denoise_ordinal: 1
+  source_age_one_at_failure: true
+  block_id: 2
+  region_id: 0
+  attention_call_ordinal: 52
+  raw_scheduler_timestep_preserved: true
+remediation:
+  control_v2_integrity_error_is_runtime_error: false
+  native_full_fallback_allowed: false
+  missing_record_created: false
+  later_false_age_mismatch_prevented: true
+  diagnostic_error_visible_to_comfyui: true
+  gpu_start_finalized_from_progress: true
+  age_rule_changed: false
+  scheduler_contract_changed: false
+  ring_size_changed: false
+  cache_budget_changed: false
+  rust_abi_changed: false
+replay:
+  fixture: python/tests/fixtures/h3_oracle_ring_backpressure_trace.json
+  deterministic_digest: f3af6e841992b9d5ae0e05cda75eb6cb611747c8c3bbf121451798fae68e6811
+verification:
+  focused_and_adjacent_tests_passed: 33
+  final_model_free_cuda_preflight: H3_ROW_REGION_SAFETY_CONTROL_V2_ORACLE_PREFLIGHT_READY
+  hot_path_forced_cpu_sync: 0
+  rust_calls: 0
+  rust_tensor_bytes: 0
+shutdown:
+  owned_runtime_recovery_passed: true
+  foreign_process_termination_count: 0
+  console_helper_direct_termination_count: 0
+  listener_count_after_shutdown: 0
+  runtime_count_after_shutdown: 0
+  gpu_baseline_bytes: 10485760
+evidence_digests:
+  capsule_sha256: bf791ee9a8c641bfb4f031f337d0be9caa5a510538fe9d85bbb76465e572ae13
+  callback_sha256: 3366e7d70404c869c3afa937c7775d82649dcbbfd9b7e056f4d8ad4695328d18
+  runner_receipt_sha256: 042613380cf8f8524c4d7e733d774b51ce6e150d68fa76cf898361fcb6d89e5b
+  shutdown_ownership_sha256: 8915662eb78dd7fab54b4bcf7b5dc922e07aa00bdf90a1525585a715d8e71828
+  shutdown_result_sha256: e583e1fc7b04a79fe62ddf752dc95f931a61ecade4624cc53b18d3a603bec092
+  final_cuda_preflight_file_sha256: 93272cfff6bb82265be3407fb61b27d8c16b8fdcaccda8c00b1abac87b61b09b
+  adjudication_sha256: 6dd909d76b1d86da5571ab6b085671605fe8f8ded7d62c5d9b31d0257516b19d
+authorization:
+  formal_control_started: false
+  selective_started: false
+  partial_q_started: false
+  attention_omission_started: false
+  executor_integration_started: false
+  next_step_automatic: none

@@ -1,0 +1,75 @@
+{
+  "schema_version": "h3.background-oracle-lineage-capsule.1",
+  "rejection_reason": "DUPLICATE_OR_MISSING_RECORD:RING_SLOT_NOT_FREE",
+  "logical_denoise_order": [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+  ],
+  "raw_scheduler_timestep_order": [
+    "0x1.0000000000000p+0",
+    "0x1.fdc3a20000000p-1",
+    "0x1.fb4d800000000p-1",
+    "0x1.f8946a0000000p-1",
+    "0x1.f58d100000000p-1",
+    "0x1.f229840000000p-1",
+    "0x1.ee58460000000p-1",
+    "0x1.ea03240000000p-1",
+    "0x1.e50d780000000p-1",
+    "0x1.df51b40000000p-1",
+    "0x1.d89d8a0000000p-1",
+    "0x1.d0ac180000000p-1",
+    "0x1.c71c720000000p-1",
+    "0x1.bb61a60000000p-1",
+    "0x1.aca6b20000000p-1",
+    "0x1.99999a0000000p-1",
+    "0x1.8000000000000p-1",
+    "0x1.5bc60a0000000p-1",
+    "0x1.24924a0000000p-1",
+    "0x1.8c631a0000000p-2"
+  ],
+  "normal_record_count_before_mismatch": 30,
+  "last_fully_consumed_sequence_before_mismatch": 30,
+  "last_completion_sequence_before_mismatch": 31,
+  "last_finalizer_sequence_before_mismatch": 31,
+  "pending_records_before_mismatch": [
+    {
+      "oracle_enqueue_sequence": 31,
+      "block_id": 0,
+      "current_denoise_ordinal": 1,
+      "ring_slot_id": 0,
+      "ring_slot_generation": 16
+    },
+    {
+      "oracle_enqueue_sequence": 32,
+      "block_id": 1,
+      "current_denoise_ordinal": 1,
+      "ring_slot_id": 1,
+      "ring_slot_generation": 16
+    }
+  ],
+  "mismatch": {
+    "source_denoise_ordinal": 0,
+    "current_denoise_ordinal": 1,
+    "source_scheduler_timestep": "0x1.0000000000000p+0",
+    "current_scheduler_timestep": "0x1.fdc3a20000000p-1",
+    "model_forward_ordinal": 1,
+    "attention_call_ordinal": 52,
+    "block_id": 2,
+    "region_id": 0,
+    "oracle_enqueue_sequence": 33,
+    "oracle_completion_sequence": null,
+    "finalizer_sequence": null,
+    "ring_slot_id": 0,
+    "ring_slot_generation": 0,
+    "ring_write_sequence": 33,
+    "ring_read_sequence": null,
+    "validation_rule": "source_denoise_ordinal + 1 == current_denoise_ordinal",
+    "rejection_reason": "DUPLICATE_OR_MISSING_RECORD:RING_SLOT_NOT_FREE"
+  },
+  "completed_records_after_mismatch": [],
+  "tensor_payload_bytes": 0,
+  "rust_calls": 0,
+  "rust_metadata_bytes": 0,
+  "tensor_to_rust_bytes": 0,
+  "hot_path_forced_cpu_sync": 0
+}

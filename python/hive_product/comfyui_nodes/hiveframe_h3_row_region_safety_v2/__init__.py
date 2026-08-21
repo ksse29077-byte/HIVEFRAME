@@ -27,6 +27,12 @@ from hive_product.compound_eye_shadow import (
     wrap_async_shadow_callback,
 )
 from hive_product.h3_row_region_safety import SafetyEvidencePlanBridge
+from hive_product.h3_background_oracle_lineage import (
+    LineageDiagnosticAbort,
+    LineageDiagnosticContext,
+    LineageDiagnosticRecorder,
+    scheduler_timestep_trace,
+)
 from hive_product.h3_row_region_safety_v2 import (
     H3RowRegionSafetyControllerV2,
     PreallocatedPinnedRing,
@@ -36,6 +42,7 @@ from hive_product.h3_row_region_safety_v2 import (
 
 RECEIPT_ENV = "HIVEFRAME_H3_ROW_REGION_V2_RECEIPT"
 ADMISSION_ENV = "HIVEFRAME_H3_ROW_REGION_V2_ADMISSION"
+LINEAGE_CAPSULE_ENV = "HIVEFRAME_H3_LINEAGE_DIAGNOSTIC_CAPSULE"
 NODE_CLASS = "HIVEFRAMEH3RowRegionSafetyControlV2Sampler"
 _ACTIVE = False
 
@@ -131,6 +138,18 @@ class HIVEFRAMEH3RowRegionSafetyControlV2Sampler(io.ComfyNode):
         lineage_base = __import__("hashlib").sha256(
             f"{run_digest}:{workflow_revision_digest}:{settings_digest}:{model_revision_digest}".encode()
         ).hexdigest()
+        capsule_path = os.environ.get(LINEAGE_CAPSULE_ENV)
+        diagnostic = None
+        if capsule_path:
+            context = LineageDiagnosticContext.create(
+                run_digest=run_digest,
+                workflow_digest=workflow_revision_digest,
+                model_digest=model_revision_digest,
+                settings_digest=settings_digest,
+                scheduler_timesteps=scheduler_timestep_trace(sigmas),
+                capsule_path=Path(capsule_path),
+            )
+            diagnostic = LineageDiagnosticRecorder(context)
         shadow_bridge = CompoundEyeShadowBridge(
             ShadowContext(
                 run_digest=run_digest,
@@ -153,6 +172,7 @@ class HIVEFRAMEH3RowRegionSafetyControlV2Sampler(io.ComfyNode):
             torch_module=torch,
             resources=_RESOURCES,
             lineage_base=lineage_base,
+            diagnostic=diagnostic,
         )
         payload: dict[str, Any] = {
             "schema_version": "h3.row-region-safety-control-v2.callback.1",
@@ -169,6 +189,8 @@ class HIVEFRAMEH3RowRegionSafetyControlV2Sampler(io.ComfyNode):
             "selective_execution_count": 0,
             "partial_q_execution_count": 0,
             "attention_omission_count": 0,
+            "lineage_diagnostic_only": diagnostic is not None,
+            "valid_control_result_count": 0 if diagnostic is not None else None,
         }
         original_prepare_callback = latent_preview.prepare_callback
         finalize_attempted = False
@@ -186,9 +208,18 @@ class HIVEFRAMEH3RowRegionSafetyControlV2Sampler(io.ComfyNode):
             payload["c2_shadow"] = pipeline.receipt()
             payload["region_plan"] = plan_bridge.receipt()
             finalize_attempted = True
-            payload["attention_execution"] = controller.finalize()
-            payload["sampler_succeeded"] = True
+            payload["attention_execution"] = (
+                controller.finalize()
+                if diagnostic is None
+                else controller.finalize_diagnostic()
+            )
+            payload["sampler_succeeded"] = diagnostic is None
+            payload["sampler_execution_completed"] = True
             _write_json(os.environ.get(RECEIPT_ENV), payload)
+            if diagnostic is not None:
+                raise LineageDiagnosticAbort(
+                    "lineage diagnostic completed without a mismatch"
+                )
             return result
         except BaseException as error:
             payload["error_type"] = type(error).__name__
@@ -197,7 +228,12 @@ class HIVEFRAMEH3RowRegionSafetyControlV2Sampler(io.ComfyNode):
                 pipeline.drain()
                 payload["c2_shadow"] = pipeline.receipt()
                 payload["region_plan"] = plan_bridge.receipt()
-                if not finalize_attempted:
+                if diagnostic is not None and not finalize_attempted:
+                    finalize_attempted = True
+                    payload["attention_execution"] = (
+                        controller.diagnostic_failure_receipt()
+                    )
+                elif not finalize_attempted:
                     finalize_attempted = True
                     payload["attention_execution"] = controller.finalize()
             except BaseException as receipt_error:
