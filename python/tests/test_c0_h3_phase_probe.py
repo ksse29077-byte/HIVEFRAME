@@ -173,7 +173,7 @@ class C0H3PhaseProbeTests(unittest.TestCase):
         validate_hook_map(hook_map["hooks"])
         selected = [item for item in hook_map["hooks"] if item["hook_id"] == hook_map["selected_target"]["hook_id"]]
         self.assertEqual(len(selected), 1)
-        self.assertEqual(selected[0]["status"], "requires_runtime_wrapper")
+        self.assertEqual(selected[0]["status"], "controllable_now")
         self.assertTrue(selected[0]["full_compute_fallback"])
 
 

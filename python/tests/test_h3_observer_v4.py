@@ -21,6 +21,7 @@ from hive_product.h3_bounded_host_source_oracle_v4_cuda import (
     gpu_indexed_compressed_fingerprint,
 )
 from hive_product.a3_g1_conditional_reuse import CONTROL_MODE
+from hive_product.c0_h3_phase_probe import EventTimeline
 from hive_product.h3_observer_v4 import (
     H3ObserverControllerV4,
     PROFILE_DIGEST,
@@ -48,6 +49,30 @@ from hive_product.h3_v4_lineage_diagnostic import (
 
 
 class H3ObserverV4Tests(unittest.TestCase):
+    def test_abort_uses_ordinary_runtime_exception_boundary(self) -> None:
+        self.assertTrue(issubclass(V4ObserverAbort, RuntimeError))
+        self.assertTrue(issubclass(V4ObserverAbort, Exception))
+
+        timeline = EventTimeline({"10": {"class_type": NODE_CLASS}})
+        timeline.prompt_id = "prompt-id"
+        try:
+            raise V4ObserverAbort("lineage mismatch")
+        except Exception as error:
+            terminal = timeline.ingest(
+                {
+                    "type": "execution_error",
+                    "data": {
+                        "prompt_id": "prompt-id",
+                        "node_id": "10",
+                        "node_type": NODE_CLASS,
+                        "exception_type": type(error).__name__,
+                    },
+                },
+                1.0,
+            )
+        self.assertTrue(terminal)
+        self.assertEqual(timeline.terminal_event, "execution_error")
+
     @staticmethod
     def _lineage_components():
         scheduler = tuple(float(20 - index).hex() for index in range(20))
@@ -367,6 +392,9 @@ class H3ObserverV4Tests(unittest.TestCase):
         self.assertNotIn("lineage_diagnostic", source)
         self.assertIn("custom_nodes_root=repository", source)
         self.assertIn("comfyui_v4_nodes", source)
+        self.assertIn("_shutdown_owned_runtime(", source)
+        self.assertIn('if callback_path.is_file()', source)
+        self.assertIn('root / "private-receipt.json"', source)
         self.assertEqual(VALIDATED, "H3_V4_OBSERVER_RUNTIME_AND_FORMAL_CONTROL_VALIDATED")
         self.assertEqual(NOT_VIABLE, "H3_COMPOUND_EYE_PATH_NOT_YET_PRODUCT_VIABLE")
         self.assertEqual(ADMISSION_BLOCKED, "H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED")

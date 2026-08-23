@@ -73,7 +73,7 @@ PACKED_LAYOUT_DIGEST = sha256(
 ).hexdigest()
 
 
-class V4ObserverAbort(BaseException):
+class V4ObserverAbort(RuntimeError):
     """Abort the one-shot observer without entering a native retry path."""
 
 
