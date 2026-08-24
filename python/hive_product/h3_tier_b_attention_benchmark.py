@@ -29,6 +29,9 @@ PRIOR_ATTENTION_KERNEL_SECONDS = 314.55162658691406
 PRIOR_ATTENTION_SURFACE_SECONDS = 380.23846793174744
 PHYSICAL_VRAM_BYTES = 12_884_377_600
 PRIOR_PEAK_VRAM_BYTES = 12_458_231_732
+MODEL_SOURCE_SHA256 = "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024"
+ATTENTION_SOURCE_SHA256 = "a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9"
+OPS_SOURCE_SHA256 = "aa6dc3dd7f2d6b04f9e3f5df949348a4734f5f9af4d08891c57c8a64986d3782"
 
 
 def _percentile(values: Sequence[float], quantile: float) -> float:
@@ -288,12 +291,22 @@ def run_benchmark(torch: Any, baseline: Callable[..., Any], *, warmups: int, rep
             "after": after,
         },
         "cold_first_use": cold,
+        "cold_first_use_interpretation": {
+            "order": ["attention_pytorch", CANDIDATE_BACKEND, "efficient_sdpa_alternative"],
+            "cross_backend_comparison_valid": False,
+            "reason": "the first call pays shared cuDNN initialization; warm interleaved timing is the performance admission source",
+        },
         "warm_interleaved": timing,
         "memory": memory,
         "kernel_inventory": kernels,
         "parity": parity,
         "candidate_receipt": candidate_receipt,
         "capability_manifest": AttentionBackendCapabilityRegistry().capability_manifest(),
+        "installed_source_sha256": {
+            "h3_model": MODEL_SOURCE_SHA256,
+            "attention_dispatch": ATTENTION_SOURCE_SHA256,
+            "comfy_ops": OPS_SOURCE_SHA256,
+        },
         "ablations": {
             "A0": {"component": "baseline attention_pytorch", "status": "MEASURED"},
             "A1": {
