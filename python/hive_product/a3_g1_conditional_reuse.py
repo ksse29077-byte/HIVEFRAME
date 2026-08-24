@@ -449,6 +449,9 @@ class H3A3G1Controller:
     def is_selective(self) -> bool:
         return self.mode == SELECTIVE_MODE
 
+    def _native_error_fallback_allowed(self) -> bool:
+        return True
+
     @staticmethod
     def _video_segment(x: Any, mod_segments: Sequence[Sequence[int]]) -> tuple[int, int]:
         if not mod_segments or len(mod_segments[-1]) != 3:
@@ -933,6 +936,9 @@ class H3A3G1Controller:
             h = self.h3._mod_scale_shift(block.norm2(x), shift_mlp, scale_mlp, mod_segments)
             return self.h3._mod_gate(x, gate_mlp, block.mlp(h), mod_segments)
         except (IndexError, RuntimeError, TypeError, ValueError):
+            if not self._native_error_fallback_allowed():
+                self.wrapper_failure_count += 1
+                raise
             if state_mutated:
                 self.wrapper_failure_count += 1
                 raise

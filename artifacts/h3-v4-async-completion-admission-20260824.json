@@ -1,0 +1,130 @@
+{
+  "schema_version": "h3.v4-async-completion-admission.1",
+  "task": "H3_V4_ASYNC_COMPLETION_PUMP_AND_CONDITIONAL_FORMAL_CONTROL",
+  "issue": 137,
+  "draft_pr": 138,
+  "base_head": "9610ff9cf01da7eb0d9454daffbce4e5bb57b36a",
+  "root_cause": {
+    "classification": "CALLBACK_ORDERING_GAP",
+    "consume_mutation": "H3ObserverControllerV4._observe_full_compute_control:slot.begin_consume",
+    "fallback_boundary": "H3A3G1Controller.instrumented_forward:native_error_fallback",
+    "completion_defect": "oracle completion events were recorded but never queried",
+    "release_defect": "release was coupled to synchronous callback fallthrough instead of completed evidence commit",
+    "proven": true
+  },
+  "contract": {
+    "slot_count": 13,
+    "slot_count_changed": false,
+    "host_buffer_bytes_changed": false,
+    "candidate_inventory_changed": false,
+    "planned_q_reduction_changed": false,
+    "threshold_changed": false,
+    "cache_plan_abi_changed": false,
+    "executor_adapter_changed": false,
+    "selective_runtime_hot_path_changed": false,
+    "completion_pump_scope": "CONTROL_ONLY",
+    "hot_path_forced_cpu_synchronization": 0
+  },
+  "event_dependency": [
+    "source_capture_enqueue",
+    "capture_completion_event_record",
+    "oracle_stream_waits_for_capture_completion",
+    "candidate_h2d_and_exact_oracle_enqueue",
+    "oracle_completion_event_record",
+    "non_blocking_completion_query",
+    "evidence_record_commit",
+    "slot_release",
+    "slot_return_empty"
+  ],
+  "release_zero_reproduction": {
+    "before_completion": {
+      "capture": 13,
+      "consume": 13,
+      "release": 0,
+      "consuming": 13
+    },
+    "early_release": 0,
+    "after_completion": {
+      "capture": 13,
+      "consume": 13,
+      "release": 13,
+      "empty": 13
+    },
+    "passed": true
+  },
+  "async_trace": {
+    "full_attention_calls": 1000,
+    "capture": 208,
+    "consume": 199,
+    "release": 199,
+    "completion_queries": 4136,
+    "completion_not_ready": 3937,
+    "delay_classes": [
+      "immediate",
+      "next_callback",
+      "next_block",
+      "next_step_entry",
+      "reverse_batch",
+      "abort_boundary"
+    ],
+    "peak_live_slots": 13,
+    "lineage_mismatch": 0,
+    "overwrite": 0,
+    "stale_admission": 0,
+    "duplicate_release": 0,
+    "incomplete_evidence": 0,
+    "unread_overwrite": 0,
+    "final_live_slots": 0,
+    "final_live_tensor_references": 0,
+    "passed": true
+  },
+  "cuda_fixture": {
+    "model_loaded": false,
+    "generation_count": 0,
+    "capture_consume_release": [13, 13, 13],
+    "empty_slots": 13,
+    "oracle_completion_events_created_recorded": [13, 13],
+    "completion_queries": 13,
+    "evidence_commits": 13,
+    "duplicate_release": 0,
+    "stale_completion": 0,
+    "pending_completion": 0,
+    "live_tensor_references": 0,
+    "warm_baseline_allocated_reserved_bytes": [8519680, 16777216],
+    "final_allocated_reserved_bytes": [8519680, 16777216],
+    "allocator_baseline_restored": true,
+    "passed": true
+  },
+  "pipeline": {
+    "common_controller_path": true,
+    "comfyui_node_path_unchanged": true,
+    "runner_path_unchanged": true,
+    "generation_context_preserved": true,
+    "evidence_batch_preserved": true,
+    "rust_cache_plan_v2_preserved": true,
+    "executor_adapter_preserved": true,
+    "passed": true
+  },
+  "economics": {
+    "remeasured": false,
+    "reason": "CONTROL-only completion path; selective executor normal hot path and output are unchanged",
+    "median_net_saving_percent": 1.432035,
+    "conservative_net_saving_percent": 1.416365,
+    "unknown_runtime_cost_count": 0,
+    "preserved": true
+  },
+  "verification": {
+    "focused_async_tests": 8,
+    "adjacent_h3_python_tests": 125,
+    "python_skips_with_release_extension": 0,
+    "rust_tests": 50,
+    "cargo_fmt": "PASS",
+    "cargo_clippy_strict": "PASS",
+    "cargo_release_build": "PASS",
+    "release_pyo3": "PASS"
+  },
+  "admission_decision": "H3_V4_ASYNC_COMPLETION_PRECONTROL_READY",
+  "h3_model_load_count": 0,
+  "backend_submission_count": 0,
+  "selective_partial_q_omission": [0, 0, 0]
+}

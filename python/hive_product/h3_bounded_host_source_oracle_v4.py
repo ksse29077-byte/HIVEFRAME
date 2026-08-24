@@ -134,6 +134,12 @@ class SourceSlotLifecycle:
         self._transition(SOURCE_SLOT_RELEASED)
         self.release_count += 1
 
+    def return_empty(self) -> None:
+        """Drop the released identity while preserving generation counters."""
+
+        self._transition(SOURCE_SLOT_EMPTY)
+        self.identity = None
+
     def reset(self) -> None:
         self.state = SOURCE_SLOT_EMPTY
         self.version = 0

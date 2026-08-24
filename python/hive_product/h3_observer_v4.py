@@ -147,6 +147,17 @@ class V4HostSourceSlot:
     def release(self) -> None:
         self.lifecycle.release()
 
+    def complete_release(self, *, expected_version: int) -> None:
+        if self.state != SOURCE_SLOT_CONSUMING:
+            raise V4ContractError("V4 completion requires CONSUMING slot")
+        if self.version != expected_version:
+            raise V4ContractError("V4 completion slot version changed")
+        self.lifecycle.release()
+        self.lifecycle.return_empty()
+        self.lineage_digest = None
+        self.lineage_components = None
+        self.completion_event = None
+
     def reset(self) -> None:
         self.lifecycle.reset()
         self.lineage_digest = None
@@ -231,6 +242,29 @@ class _TimingPair:
     end: Any
 
 
+@dataclass
+class _PendingCompletion:
+    block_index: int
+    slot_version: int
+    generation_digest: str
+    source_identity: dict[str, Any]
+    capture_completion_event: Any
+    oracle_completion_event: Any
+    target_key: tuple[int, int]
+    pending_record: dict[str, Any]
+    evidence_committed: bool = False
+    release_eligible: bool = False
+
+
+@dataclass
+class _DeferredCapture:
+    block_index: int
+    source_step: int
+    lineage_digest: str
+    lineage_components: dict[str, Any]
+    completion_event: Any
+
+
 class H3ObserverControllerV4(H3A3G1Controller):
     """Observe frozen V4 candidates after exact H3 Full Attention."""
 
@@ -286,8 +320,11 @@ class H3ObserverControllerV4(H3A3G1Controller):
         self._seen_targets: set[tuple[int, int]] = set()
         self._seen_sources: set[tuple[int, int]] = set()
         self._pending_records: list[dict[str, Any]] = []
+        self._pending_completions: list[_PendingCompletion] = []
+        self._deferred_captures: dict[int, _DeferredCapture] = {}
+        self._scheduled_targets: set[tuple[int, int]] = set()
+        self._scheduled_sources: set[tuple[int, int]] = set()
         self._timings: list[_TimingPair] = []
-        self._metric_completion_events: list[Any] = []
         self._transfer_stream: Any | None = None
         self._staging_release_event: Any | None = None
         self._staging_state = SharedStagingState()
@@ -310,6 +347,25 @@ class H3ObserverControllerV4(H3A3G1Controller):
         self.finalization_sync_count = 0
         self.legacy_v2_cpu_oracle_count = 0
         self.legacy_all_candidate_d2h_count = 0
+        self.completion_event_created_count = 0
+        self.completion_event_recorded_count = 0
+        self.capture_event_created_count = 0
+        self.capture_event_recorded_count = 0
+        self.oracle_dependency_registered_count = 0
+        self.completion_query_count = 0
+        self.completion_not_ready_count = 0
+        self.evidence_commit_count = 0
+        self.slot_release_requested_count = 0
+        self.slot_release_completed_count = 0
+        self.slot_returned_empty_count = 0
+        self.duplicate_release_count = 0
+        self.stale_completion_count = 0
+        self.completion_commit_failure_count = 0
+        self.completion_pump_reentry_count = 0
+        self._completion_pump_active = False
+        self.completion_pump_calls: dict[str, int] = {}
+        self.peak_pending_completions = 0
+        self.root_cause = "CALLBACK_ORDERING_GAP"
         if profile_digest != PROFILE_DIGEST:
             raise V4ObserverAbort("V4 observer profile digest changed")
         if len(self.scheduler_timesteps) != 20:
@@ -325,6 +381,9 @@ class H3ObserverControllerV4(H3A3G1Controller):
 
     def start_observing(self) -> None:
         self._transition("observing")
+
+    def _native_error_fallback_allowed(self) -> bool:
+        return False
 
     @staticmethod
     def _predicted_state(plan: Mapping[str, Any] | None) -> str:
@@ -405,6 +464,90 @@ class H3ObserverControllerV4(H3A3G1Controller):
             stream.wait_event(self._staging_release_event)
             self._staging_release_event = None
 
+    def _admit_capture(self, capture: _DeferredCapture) -> None:
+        slot = self.resources.slots[capture.block_index]
+        try:
+            slot.begin_capture(capture.lineage_components)
+            slot.mark_ready(
+                lineage_digest=capture.lineage_digest,
+                lineage_components=capture.lineage_components,
+                completion_event=capture.completion_event,
+            )
+        except V4ContractError as error:
+            self.completion_commit_failure_count += 1
+            raise V4ObserverAbort("V4 deferred source admission failed") from error
+        key = (capture.block_index, capture.source_step)
+        self._seen_sources.add(key)
+        self.source_capture_d2h_bytes += SOURCE_PAYLOAD_BYTES
+        self.full_refreshes += 1
+        self.eligible_source_steps_seen.add(capture.source_step)
+
+    def _commit_completion(self, pending: _PendingCompletion) -> None:
+        slot = self.resources.slots[pending.block_index]
+        if pending.evidence_committed or pending.release_eligible:
+            self.duplicate_release_count += 1
+            raise V4ObserverAbort("V4 completion was committed twice")
+        if pending.generation_digest != self.generation_digest:
+            self.stale_completion_count += 1
+            raise V4ObserverAbort("V4 completion generation changed")
+        if slot.version != pending.slot_version:
+            self.stale_completion_count += 1
+            raise V4ObserverAbort("V4 late completion targeted a reused slot")
+        if slot.lifecycle.identity != pending.source_identity:
+            self.stale_completion_count += 1
+            raise V4ObserverAbort("V4 completion source identity changed")
+
+        record = dict(pending.pending_record)
+        record["completion_state"] = "GPU_COMPLETE"
+        self._pending_records.append(record)
+        pending.evidence_committed = True
+        self.evidence_commit_count += 1
+        self._seen_targets.add(pending.target_key)
+        self.candidate_source_h2d_bytes += SOURCE_PAYLOAD_BYTES
+        self.region_upload_count += 1
+        pending.release_eligible = True
+        self.slot_release_requested_count += 1
+        try:
+            slot.complete_release(expected_version=pending.slot_version)
+        except V4ContractError as error:
+            self.completion_commit_failure_count += 1
+            raise V4ObserverAbort("V4 completed evidence could not release its slot") from error
+        self.slot_release_completed_count += 1
+        self.slot_returned_empty_count += 1
+
+        deferred = self._deferred_captures.pop(pending.block_index, None)
+        if deferred is not None:
+            self._admit_capture(deferred)
+
+    def _pump_completions(self, position: str) -> int:
+        """Commit completed oracle records without blocking the callback thread."""
+
+        self.completion_pump_calls[position] = self.completion_pump_calls.get(position, 0) + 1
+        if self._completion_pump_active:
+            self.completion_pump_reentry_count += 1
+            return 0
+        self._completion_pump_active = True
+        completed = 0
+        try:
+            retained: list[_PendingCompletion] = []
+            for pending in self._pending_completions:
+                self.completion_query_count += 1
+                try:
+                    ready = bool(pending.oracle_completion_event.query())
+                except BaseException as error:
+                    self.completion_commit_failure_count += 1
+                    raise V4ObserverAbort("V4 oracle completion query failed") from error
+                if not ready:
+                    self.completion_not_ready_count += 1
+                    retained.append(pending)
+                    continue
+                self._commit_completion(pending)
+                completed += 1
+            self._pending_completions = retained
+            return completed
+        finally:
+            self._completion_pump_active = False
+
     def _exact_full(
         self,
         *,
@@ -439,11 +582,12 @@ class H3ObserverControllerV4(H3A3G1Controller):
         del directive, stable_mask
         if self.state != "observing":
             raise V4ObserverAbort("V4 callback executed outside observing state")
+        self._pump_completions("callback_entry")
         event = self._event_by_target.get((block_index, step))
         if event is None:
             return
         key = (block_index, step)
-        if key in self._seen_targets:
+        if key in self._seen_targets or key in self._scheduled_targets:
             self.duplicate_record_count += 1
             raise V4ObserverAbort("V4 duplicate target record")
         slot = self.resources.slots[block_index]
@@ -538,9 +682,10 @@ class H3ObserverControllerV4(H3A3G1Controller):
         self.resources.metric_rows[event.ordinal - 1].copy_(
             metric_values, non_blocking=True
         )
-        completion = self.torch.cuda.Event(blocking=False)
+        completion = self.torch.cuda.Event(enable_timing=False, blocking=False)
+        self.completion_event_created_count += 1
         completion.record(stream)
-        self._metric_completion_events.append(completion)
+        self.completion_event_recorded_count += 1
         observer_pair = next(
             pair for pair in reversed(self._timings) if pair.start is observer_start
         )
@@ -560,8 +705,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
             if isinstance(plan, Mapping)
             else [1_000_000] * 5
         )
-        self._pending_records.append(
-            {
+        pending_record = {
                 "ordinal": event.ordinal,
                 "evidence_label": HOLDOUT_LABEL,
                 "generation_id": self.generation_digest,
@@ -585,16 +729,26 @@ class H3ObserverControllerV4(H3A3G1Controller):
                 "completion_state": "GPU_ENQUEUED",
                 "bf16_bit_preserving_copy_path": True,
             }
+        self._pending_completions.append(
+            _PendingCompletion(
+                block_index=block_index,
+                slot_version=slot.version,
+                generation_digest=self.generation_digest,
+                source_identity=dict(slot.lifecycle.identity or {}),
+                capture_completion_event=slot.completion_event,
+                oracle_completion_event=completion,
+                target_key=key,
+                pending_record=pending_record,
+            )
         )
-        try:
-            slot.release()
-        except V4ContractError as error:
-            raise V4ObserverAbort(str(error)) from error
-        self._seen_targets.add(key)
-        self.candidate_source_h2d_bytes += SOURCE_PAYLOAD_BYTES
-        self.region_upload_count += 1
+        self._scheduled_targets.add(key)
+        self.peak_pending_completions = max(
+            self.peak_pending_completions, len(self._pending_completions)
+        )
+        self._pump_completions("callback_exit")
 
     def _refresh_cache(self, *, block_index: int, step: int, full_core: Any) -> None:
+        self._pump_completions("before_capture_admission")
         if step not in SOURCE_STEPS:
             self.skipped_ineligible_source_refreshes += 1
             return
@@ -602,7 +756,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
         if key not in self._expected_sources:
             self.unexpected_record_count += 1
             raise V4ObserverAbort("V4 unexpected source capture key")
-        if key in self._seen_sources:
+        if key in self._seen_sources or key in self._scheduled_sources:
             self.duplicate_record_count += 1
             raise V4ObserverAbort("V4 duplicate source capture")
         slot = self.resources.slots[block_index]
@@ -613,13 +767,32 @@ class H3ObserverControllerV4(H3A3G1Controller):
             source_step=step,
             legacy_digest=lineage_digest,
         )
-        try:
-            slot.begin_capture(lineage_components)
-        except V4ContractError as error:
+        deferred = slot.state == SOURCE_SLOT_CONSUMING
+        if deferred and block_index in self._deferred_captures:
             self.source_overwrite_count += 1
-            raise V4ObserverAbort(str(error)) from error
+            raise V4ObserverAbort("V4 deferred source capture already exists")
+        if not deferred:
+            try:
+                slot.begin_capture(lineage_components)
+            except V4ContractError as error:
+                self.source_overwrite_count += 1
+                raise V4ObserverAbort(str(error)) from error
         stream = self.torch.cuda.current_stream(device=full_core.device)
         self._wait_for_staging(stream)
+        if deferred:
+            pending = next(
+                (
+                    item
+                    for item in self._pending_completions
+                    if item.block_index == block_index and item.slot_version == slot.version
+                ),
+                None,
+            )
+            if pending is None:
+                self.incomplete_source_count += 1
+                raise V4ObserverAbort("V4 consuming slot has no oracle completion")
+            stream.wait_event(pending.oracle_completion_event)
+            self.oracle_dependency_registered_count += 1
         staging = self._region_staging
         if staging is None:
             raise V4ObserverAbort("V4 shared staging is unavailable")
@@ -629,7 +802,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
             self._region_cache_indices[REGION],
             out=staging,
         )
-        producer_event = self.torch.cuda.Event(blocking=False)
+        producer_event = self.torch.cuda.Event(enable_timing=False, blocking=False)
         producer_event.record(stream)
         if self._transfer_stream is None:
             self._transfer_stream = self.torch.cuda.Stream(device=full_core.device)
@@ -637,18 +810,35 @@ class H3ObserverControllerV4(H3A3G1Controller):
         _, d2h_end = self._timed_events("source_d2h", self._transfer_stream)
         slot.payload.copy_(staging, non_blocking=True)
         d2h_end.record(self._transfer_stream)
-        completion = self.torch.cuda.Event(blocking=False)
+        completion = self.torch.cuda.Event(enable_timing=False, blocking=False)
+        self.capture_event_created_count += 1
         completion.record(self._transfer_stream)
-        slot.mark_ready(
+        self.capture_event_recorded_count += 1
+        capture = _DeferredCapture(
+            block_index=block_index,
+            source_step=step,
             lineage_digest=lineage_digest,
-            lineage_components=lineage_components,
+            lineage_components=dict(lineage_components),
             completion_event=completion,
         )
+        if deferred:
+            self._deferred_captures[block_index] = capture
+        else:
+            try:
+                slot.mark_ready(
+                    lineage_digest=lineage_digest,
+                    lineage_components=lineage_components,
+                    completion_event=completion,
+                )
+            except V4ContractError as error:
+                raise V4ObserverAbort(str(error)) from error
+            self._seen_sources.add(key)
+            self.source_capture_d2h_bytes += SOURCE_PAYLOAD_BYTES
+            self.full_refreshes += 1
+            self.eligible_source_steps_seen.add(step)
         self._staging_release_event = completion
-        self._seen_sources.add(key)
-        self.source_capture_d2h_bytes += SOURCE_PAYLOAD_BYTES
-        self.full_refreshes += 1
-        self.eligible_source_steps_seen.add(step)
+        self._scheduled_sources.add(key)
+        self._pump_completions("callback_exit")
 
     def _timing_totals(self) -> dict[str, float]:
         totals: dict[str, float] = {}
@@ -659,9 +849,13 @@ class H3ObserverControllerV4(H3A3G1Controller):
         return totals
 
     def _materialize_records(self) -> list[dict[str, Any]]:
-        values = self.resources.metric_rows[: len(self._pending_records)].tolist()
+        ordered = sorted(self._pending_records, key=lambda item: int(item["ordinal"]))
+        values = [
+            self.resources.metric_rows[int(item["ordinal"]) - 1].tolist()
+            for item in ordered
+        ]
         records: list[dict[str, Any]] = []
-        for pending, row in zip(self._pending_records, values):
+        for pending, row in zip(ordered, values):
             preliminary_finite = bool(row[2])
             corrected_finite = bool(row[8])
             preliminary_state = threshold_classification(
@@ -715,6 +909,9 @@ class H3ObserverControllerV4(H3A3G1Controller):
         try:
             self.torch.cuda.synchronize()
             self.finalization_sync_count += 1
+            self._pump_completions("generation_finalize")
+            if self._pending_completions or self._deferred_captures:
+                raise V4ObserverAbort("V4 completion pump left pending work at finalize")
             records = self._materialize_records()
             missing_targets = self._expected_targets - self._seen_targets
             missing_sources = self._expected_sources - self._seen_sources
@@ -807,6 +1004,29 @@ class H3ObserverControllerV4(H3A3G1Controller):
                     "invalid_transition_count"
                 ]
                 == 0,
+                "completion_events_created_recorded_exact": self.completion_event_created_count
+                == self.completion_event_recorded_count
+                == MINIMUM_EXACT_RECORDS,
+                "capture_events_created_recorded_exact": self.capture_event_created_count
+                == self.capture_event_recorded_count
+                == SOURCE_CAPTURE_COUNT,
+                "completion_queries_present": self.completion_query_count
+                >= MINIMUM_EXACT_RECORDS,
+                "evidence_commit_exact": self.evidence_commit_count
+                == MINIMUM_EXACT_RECORDS,
+                "release_requested_completed_exact": self.slot_release_requested_count
+                == self.slot_release_completed_count
+                == MINIMUM_EXACT_RECORDS,
+                "slot_returned_empty_exact": self.slot_returned_empty_count
+                == MINIMUM_EXACT_RECORDS,
+                "duplicate_release_zero": self.duplicate_release_count == 0,
+                "stale_completion_zero": self.stale_completion_count == 0,
+                "completion_commit_failure_zero": self.completion_commit_failure_count
+                == 0,
+                "completion_pump_reentry_zero": self.completion_pump_reentry_count
+                == 0,
+                "pending_completion_zero": not self._pending_completions,
+                "deferred_capture_zero": not self._deferred_captures,
             }
             if not all(integrity.values()):
                 raise V4ObserverAbort("V4 observer integrity Gate failed")
@@ -863,6 +1083,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
                     "passed": all(integrity.values()),
                     "lineage_diagnostic": self.lineage_diagnostic_receipt(),
                     "source_slot_lifecycle": slot_lifecycle,
+                    "async_completion": self._async_completion_receipt(),
                 },
             }
             return self._final_receipt
@@ -882,6 +1103,35 @@ class H3ObserverControllerV4(H3A3G1Controller):
             self.finalization_sync_count += 1
         except (RuntimeError, ValueError):
             pass
+        try:
+            self._pump_completions("abort_cleanup")
+        except V4ObserverAbort:
+            self.completion_commit_failure_count += 1
+
+    def _async_completion_receipt(self) -> dict[str, Any]:
+        return {
+            "root_cause": self.root_cause,
+            "capture_event_created_count": self.capture_event_created_count,
+            "capture_event_recorded_count": self.capture_event_recorded_count,
+            "oracle_dependency_registered_count": self.oracle_dependency_registered_count,
+            "oracle_completion_event_created_count": self.completion_event_created_count,
+            "oracle_completion_event_recorded_count": self.completion_event_recorded_count,
+            "completion_query_count": self.completion_query_count,
+            "completion_not_ready_count": self.completion_not_ready_count,
+            "evidence_commit_count": self.evidence_commit_count,
+            "slot_release_requested_count": self.slot_release_requested_count,
+            "slot_release_completed_count": self.slot_release_completed_count,
+            "slot_returned_empty_count": self.slot_returned_empty_count,
+            "duplicate_release_count": self.duplicate_release_count,
+            "stale_completion_count": self.stale_completion_count,
+            "completion_commit_failure_count": self.completion_commit_failure_count,
+            "completion_pump_reentry_count": self.completion_pump_reentry_count,
+            "completion_pump_calls": dict(self.completion_pump_calls),
+            "peak_pending_completions": self.peak_pending_completions,
+            "pending_completion_count": len(self._pending_completions),
+            "deferred_capture_count": len(self._deferred_captures),
+            "hot_path_forced_cpu_sync_count": self.hot_path_forced_sync_count,
+        }
 
     def failure_receipt(self) -> dict[str, Any]:
         return {
@@ -922,13 +1172,17 @@ class H3ObserverControllerV4(H3A3G1Controller):
                     slot.lifecycle.release_count for slot in self.resources.slots.values()
                 ),
             },
+            "async_completion": self._async_completion_receipt(),
         }
 
     def close(self) -> None:
         if self.state not in {"complete", "aborted"}:
             self.abort("controller closed before terminal state")
         self._pending_records.clear()
-        self._metric_completion_events.clear()
+        self._pending_completions.clear()
+        self._deferred_captures.clear()
+        self._scheduled_targets.clear()
+        self._scheduled_sources.clear()
         self._timings.clear()
         self._transfer_stream = None
         self._staging_release_event = None
