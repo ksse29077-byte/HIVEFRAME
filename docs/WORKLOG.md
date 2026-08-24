@@ -2369,6 +2369,139 @@ remain three. See the detailed
 
 ## Entry template
 
+## 2026-08-21 - H3 V4 observer runtime and Formal CONTROL
+
+PR #138 now contains the real H3 Full-Attention V4 observer controller,
+isolated CONTROL node, frozen 199-record callback path, and one-shot runner.
+Focused Python/release tests passed 53/53, release PyO3 passed its fixed 29
+tests with skip zero, Rust workspace tests passed 50/50, and strict Clippy and
+release build passed.
+
+The initial Formal Admission stopped before runtime start because the runner's
+expected HEAD argument contained an incorrect suffix. After an explicitly
+approved administrative recheck at exact head
+`bbf81a0469c0af7c858a7e486dca89eb83f46b32`, all gates passed and one Formal
+CONTROL was submitted. It reached H3 GPU execution but failed closed before
+the first exact holdout record with `V4 candidate source lineage changed`.
+
+Submission/GPU start/completion was 1/1/0 and the cumulative submission count
+is four. Full Attention ran 151 times; SELECTIVE, partial-Q, Attention omission,
+output mutation, retry, and fallback remained zero. No output, holdout result,
+Rust plan, or production-saving claim was admitted. The verified owned runtime
+was stopped, port 8191 and related processes returned to zero, and GPU use
+returned to 10 MiB. The decision is `H3_V4_FORMAL_CONTROL_FAILED`; no second
+submission or follow-up work was started. See the detailed
+[worklog](worklogs/2026-08-21-h3-cuda-fixture-teardown-remediation-and-v4-resume.md).
+
+The approved lineage continuation then added bounded component diagnostics
+without changing the legacy lineage Gate or execution behavior. A model-free
+frozen replay passed `1,000` calls, `208` captures, and `199` admissions, but
+could not reproduce the retained `151/13/0` failure prefix: the retained
+failure is 50 Attention calls later than the frozen first target. Because the
+old receipt does not preserve the compared operands, root cause remains
+`UNKNOWN` and no functional fix can be justified.
+
+Focused diagnostic and bounded V4 tests passed 25/25. The failed reproduction
+Gate stopped the task before CUDA, release/Rust validation, runtime Admission,
+model load, or another Formal CONTROL. Current-task submission/GPU
+start/completion remained 0/0/0 and the cumulative submission count remains
+four. The decision is `H3_V4_LINEAGE_CONTRACT_BLOCKED`.
+
+The approved instrumented continuation then fixed only abort-to-terminal
+routing and ran one new Full Compute Formal CONTROL. All 20 forwards and
+1,000/1,000 Full Attention calls executed, but final holdout admission exposed
+an exact `SOURCE_SLOT_REUSE_OR_OVERWRITE`: block 3, region 0, slot 3 retained
+step 1/sequence 4 while target step 17 required step 16/sequence 199. The
+component diagnostic was 105,239 bytes and the automatic `execution_error`
+terminal, callback receipt, runner exit, and owned-tree shutdown all occurred.
+
+Submission/GPU start/completion was 1/1/0, cumulative submissions are five,
+and retry/fallback/SELECTIVE/partial-Q/omission/output mutation remained zero.
+No exact holdout record, Rust plan, MP4, quality result, or production-saving
+claim was admitted. A delayed cleanup check found owned processes and port
+8191 listeners zero and GPU use restored to 10 MiB. The decision is
+`H3_V4_LIVE_LINEAGE_CAUSE_CAPTURED`; no second generation or automatic
+remediation was started.
+
+## 2026-08-24 - H3 V4 production executor economics and conditional control
+
+PR #138 added a production-shaped model-free executor benchmark against the
+installed Standard H3 `attention_pytorch` backend at the real BF16 Attention
+shape. All previously unknown hot-path costs were measured. The frozen
+1,000-call schedule projects 3.007449% Q reduction and 1.432035% median net
+sampler savings; conservative savings remain positive at 1.416365%. Fallback,
+pipeline, reconstruction, and RTX 3060 memory checks passed, producing
+`H3_V4_HOT_PATH_ECONOMICS_VIABLE` for this auxiliary optimization.
+
+The economics Gate authorized exactly one Full Compute Formal CONTROL. It
+submitted and started GPU work once, then failed closed on Full Attention call
+151 because the step-2 source slot was incomplete before step-3 consumption.
+Submission/GPU start/completion was 1/1/0, cumulative Formal submissions are
+six, and retry/fallback/SELECTIVE/partial-Q/omission remained zero. No output
+was produced. The owned runtime was stopped; a delayed check found port 8191
+closed and GPU memory back at 10 MiB. Final decision:
+`H3_V4_FORMAL_CONTROL_FAILED`. No repair or follow-up execution was started.
+
+The next approved continuation added a nonblocking CUDA completion pump while
+keeping the 13-slot inventory, schedule, ABI, and executor unchanged. Delayed
+model-free replay passed the full 1,000-call schedule at 208/199/199
+capture/consume/release, and the model-free CUDA fixture passed 13/13/13 with
+zero forced hot-path synchronization and allocator baseline restored. Focused
+and adjacent tests, release PyO3, Rust tests, strict Clippy, and release build
+all passed.
+
+Exactly one seventh Formal CONTROL was then submitted. It failed at Full
+Attention call 101 before the pump could create its first completion event:
+reading `_version` from a real inference tensor raised `RuntimeError: Inference
+tensors do not track version counter.` The receipt recorded 13 captures, one
+consume, zero releases, zero completion events, and no output. This supersedes
+the pre-control callback-ordering attribution and explains the prior 13/13/0:
+native fallback had hidden the same post-consume exception. Submission/GPU
+start/completion was 1/1/0, cumulative submissions are seven, and no retry,
+repair, or Selective work followed. Decision remains
+`H3_V4_FORMAL_CONTROL_FAILED`.
+
+The approved inference-identity continuation removed the two direct V4
+observer `_version` reads and added a guarded identity helper. Inference tensors
+now use `INFERENCE_NO_VERSION_COUNTER`; normal tensors retain version-mutation
+diagnostics. Logical generation/source/slot/shape/layout identity remains
+authoritative while object and storage pointers are diagnostic-only. Identity
+validation precedes `CONSUMING`, and abort cleanup leaves no orphan slots or
+event references.
+
+A model-free production-shaped CUDA trace used Standard `attention_pytorch`,
+Sage disabled, and a real BF16 inference tensor. It passed 1,000 Full Attention
+schedule positions, 208/199/199 capture/consume/release, 199 exact records, 398
+inference identity checks, raw version errors 0, safety failures 0, and exact
+allocator restoration. Focused tests passed 44, release-PyO3 H3 tests passed
+139 with skip zero, Rust passed 50, and strict build checks passed. No model,
+prompt, or Formal CONTROL was executed; cumulative submissions remain seven.
+Admission decision: `H3_V4_INFERENCE_RUNTIME_READY`.
+
+The final inference-compatible Formal Gate passed at clean local/origin/PR
+head `8636a0dc2eb91ad115499bf9ab6ff8834fa2e51c`, and exactly one eighth Full
+Compute CONTROL was submitted. H3 completed 20 model forwards and 1,000/1,000
+Full Attention calls. The common observer path completed 208/199/199
+capture/consume/release, 199 exact records, and 398 inference identity checks
+with raw `_version` access, lineage errors, orphan slots, and forced hot-path
+synchronization all zero. The 124-frame H.264 output passed integrity.
+
+The frozen holdout evidence retained zero false-safe and a 3.007449% candidate
+Q ratio, but CachePlan ABI V2 rejected all 13 candidates and produced an actual
+Rust plan ratio of 0%. Live and offline replay ran once each and matched, yet
+`plan_ready` and `planned_q_three_percent` failed. Therefore the overall Formal
+CONTROL failed after successful generation. Submission/GPU start/completion was
+1/1/1; retry/fallback/SELECTIVE/partial-Q/omission remained zero. Runner,
+submit-to-output, and sampler times were 672.082, 647.183, and 537.654 seconds.
+The runtime and listener stopped, no external process was terminated, and a
+delayed check found GPU restored to 10 MiB. No repair or rerun followed.
+
+Final decision: `H3_V4_VALIDATION_CYCLE_EXHAUSTED`. The recommended next task
+is `H3_END_TO_END_BOTTLENECK_PROFILE_AND_HIGH_IMPACT_ACCELERATION_PLAN`; actual
+Selective H3 remains unauthorized and the two-minute product target is not met.
+
+---
+
 ```markdown
 ## YYYY-MM-DD — Title
 

@@ -1,0 +1,118 @@
+{
+  "schema_version": "h3.v4-inference-identity-final-control.1",
+  "issue": 137,
+  "draft_pr": 138,
+  "starting_head": "5452b8769f1d3890e42576ac94abf1c788b16ee1",
+  "control_head": "8636a0dc2eb91ad115499bf9ab6ff8834fa2e51c",
+  "decision": "H3_V4_VALIDATION_CYCLE_EXHAUSTED",
+  "inference_identity_admission": {
+    "raw_hot_path_version_access": 0,
+    "inference_version_semantics": "INFERENCE_NO_VERSION_COUNTER",
+    "identity_checks": 398,
+    "identity_failures": 0,
+    "identity_mismatches": 0,
+    "orphan_consuming_slots": 0,
+    "live_tensor_references": 0,
+    "hot_path_forced_cpu_sync": 0,
+    "full_trace": {
+      "full_attention_calls": 1000,
+      "captures": 208,
+      "consumes": 199,
+      "releases": 199,
+      "exact_records": 199,
+      "passed": true
+    }
+  },
+  "formal_control": {
+    "submission_gpu_start_completion": [1, 1, 1],
+    "cumulative_formal_submissions": 8,
+    "retry_fallback": [0, 0],
+    "selective_partial_q_omission": [0, 0, 0],
+    "output_mutation_count": 0,
+    "websocket_terminal": "execution_success",
+    "model_forwards": 20,
+    "full_attention_calls": 1000,
+    "captures_consumes_releases": [208, 199, 199],
+    "exact_holdout_records": 199,
+    "false_safe": 0,
+    "false_unsafe": 130,
+    "true_safe": 69,
+    "true_unsafe": 0,
+    "evidence_candidate_q_reduction_percent": 3.0074494295,
+    "actual_rust_plan_q_reduction_percent": 0.0,
+    "rust_live_compile_offline_replay": [1, 1],
+    "rust_plan_digest": "0955a7d8ecc4ed2f8ffbcc5df124d4ac204c2c24684b1b1f55f41cca402b31c0",
+    "rust_plan_ready": false,
+    "rust_plan_fallback_required": true,
+    "rust_plan_reason_code": 9,
+    "rust_selected_count": 0,
+    "rust_rejected_count": 13,
+    "rust_tensor_bytes": 0,
+    "evidence_batch_bytes": 51000,
+    "failure": {
+      "error_type": "RuntimeError",
+      "message": "V4 Rust live/replay Gate failed",
+      "failed_checks": [
+        "plan_ready",
+        "planned_q_three_percent",
+        "rust_tensor_zero_receipt_check"
+      ]
+    },
+    "timing_seconds": {
+      "runner_wall": 672.0816669001,
+      "submit_to_output": 647.1829314,
+      "sampler": 537.6543957,
+      "full_attention_kernel_total": 314.3882592163,
+      "observer_total": 5.8237130928,
+      "exact_gpu_oracle_total": 4.9956014023
+    },
+    "transfer_bytes": {
+      "source_d2h": 10040016896,
+      "candidate_h2d": 9605593088,
+      "total_tensor": 19645609984,
+      "cpu_oracle_payload_d2h": 0,
+      "current_payload_d2h": 0,
+      "metadata_d2h": 50944
+    },
+    "sampled_resources": {
+      "peak_comfyui_vram_bytes": 11702912423,
+      "peak_nvidia_used_bytes": 12187598848,
+      "peak_gpu_utilization_percent": 100,
+      "peak_process_tree_rss_bytes": 44260040704
+    },
+    "output": {
+      "integrity_passed": true,
+      "sha256": "6dfc729f275967fe24efad740d407771133c658463fc52652ddf2f38f81294c0",
+      "bytes": 329913,
+      "codec": "h264",
+      "decoded_frames": 124,
+      "corrupted_frames": 0,
+      "black_frames": 0,
+      "audio_streams": 1,
+      "width": 864,
+      "height": 480,
+      "fps": 24.0,
+      "duration_seconds": 5.1666666667
+    }
+  },
+  "shutdown": {
+    "owned_processes_remaining": 0,
+    "listener_8191_remaining": 0,
+    "external_process_termination_count": 0,
+    "console_helper_natural_exit": true,
+    "immediate_gpu_baseline_check": "FAIL",
+    "immediate_gpu_bytes": 173015040,
+    "delayed_gpu_mib": 10,
+    "delayed_gpu_utilization_percent": 0
+  },
+  "economics_reused": {
+    "executor_or_cacheplan_changed": false,
+    "median_net_saving_percent": 1.4320347854,
+    "conservative_net_saving_percent": 1.4163649114,
+    "unknown_runtime_cost_count": 0
+  },
+  "same_task_fix_or_retry": false,
+  "selective_follow_up_started": false,
+  "recommended_next_task": "H3_END_TO_END_BOTTLENECK_PROFILE_AND_HIGH_IMPACT_ACCELERATION_PLAN",
+  "two_minute_product_target_met": false
+}

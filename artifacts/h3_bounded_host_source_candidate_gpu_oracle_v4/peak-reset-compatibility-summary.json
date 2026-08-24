@@ -1,0 +1,37 @@
+{
+  "calls": {
+    "cpu_device": {
+      "exception_type": "ValueError",
+      "supported": false
+    },
+    "integer_current": {
+      "supported": true
+    },
+    "invalid_index": {
+      "exception_type": "RuntimeError",
+      "supported": false
+    },
+    "omitted": {
+      "supported": true
+    },
+    "torch_device_after_initialization": {
+      "supported": true
+    }
+  },
+  "current_device": 0,
+  "device_count": 1,
+  "remediation_cycle": 2,
+  "remaining_fix_forward_cycles": 1,
+  "schema_version": "h3.cuda-peak-reset-compatibility.1",
+  "selected_call_form": "integer_current_index",
+  "signature": "(device: 'Device' = None) -> None",
+  "small_allocation": {
+    "allocated_after_bytes": 16384,
+    "allocated_before_bytes": 0,
+    "final_allocated_bytes": 0,
+    "final_reserved_bytes": 0,
+    "peak_after_bytes": 16384,
+    "peak_before_bytes": 0
+  },
+  "torch_version": "2.12.1+cu130"
+}

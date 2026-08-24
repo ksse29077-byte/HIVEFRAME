@@ -1,0 +1,77 @@
+{
+  "schema_version": "h3.v4-formal-control-admission-blocked.1",
+  "decision": "H3_V4_CLOSE_THE_LOOP_ADMISSION_BLOCKED",
+  "admission_head": "27bfcb02269d43e1136efafde1407a7874b5820e",
+  "blocking_gate": "V4_PRODUCTION_OBSERVER_ENTRYPOINT_ABSENT",
+  "structural_checks": {
+    "model_free_v4_contract_present": true,
+    "bounded_cuda_v4_fixture_present": true,
+    "v4_runtime_controller_present": false,
+    "v4_comfyui_node_present": false,
+    "v4_one_shot_formal_control_runner_present": false,
+    "v4_holdout_callback_present": false,
+    "v2_runner_is_equivalent_to_v4_contract": false,
+    "v2_substitution_allowed": false,
+    "passed": false
+  },
+  "reason": "The repository implements the V4 model-free contract and bounded CUDA fixture only. Substituting the V2 runner would not collect the frozen 199-record candidate-only-H2D exact-GPU-oracle holdout and would violate the approved V4 Gate.",
+  "verified_identity": {
+    "inventory_digest": "8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc",
+    "release_pyo3_sha256": "60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711",
+    "python_signature": "(input, candidate_id, profile_id, width, height, frames, seed)",
+    "cache_plan_abi": 2,
+    "release_load": "PASS"
+  },
+  "frozen_plan": {
+    "exact_record_count": 199,
+    "planned_q_rows": 463869,
+    "full_q_rows": 15424000,
+    "planned_q_ratio": 0.03007449429460581,
+    "false_safe_gate": 0,
+    "veto_blocks": [30, 31, 48, 49],
+    "source_capture_d2h_bytes": 10040016896,
+    "candidate_source_h2d_bytes": 9605593088,
+    "metadata_d2h_bytes": 50944,
+    "total_tensor_transfer_bytes": 19645609984,
+    "resident_host_source_bytes": 627501056,
+    "shared_gpu_staging_bytes": 48269312
+  },
+  "resource_admission": {
+    "physical_vram_bytes": 12884377600,
+    "baseline_gpu_used_mib": 10,
+    "baseline_gpu_utilization_percent": 0,
+    "projected_peak_vram_bytes": 12562895209,
+    "projected_vram_headroom_bytes": 321482391,
+    "available_ram_bytes": 46599868416,
+    "ram_after_resident_source_bytes": 45972367360,
+    "port_8191_listener_count": 0,
+    "comfyui_python_candidate_count": 0,
+    "foreign_8191_listener_count": 0
+  },
+  "not_entered_after_structural_gate": {
+    "external_queue_query": true,
+    "runtime_start": true,
+    "process_ownership_v2": true,
+    "approved_8191_listener": true,
+    "h3_model_load": true,
+    "formal_control_submission": true,
+    "gpu_start": true,
+    "generation_completion": true,
+    "holdout_confusion_matrix": true,
+    "rust_live_compile": true,
+    "rust_offline_replay": true,
+    "output_integrity": true,
+    "production_net_saving": true
+  },
+  "execution_counts": {
+    "current_task_submission": 0,
+    "current_task_gpu_start": 0,
+    "current_task_completion": 0,
+    "current_task_retry": 0,
+    "cumulative_formal_control_submissions": 3,
+    "selective": 0,
+    "partial_q": 0,
+    "attention_omission": 0
+  },
+  "automatic_follow_up_created": false
+}

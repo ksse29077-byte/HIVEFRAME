@@ -1,0 +1,41 @@
+{
+  "schema_version": "h3.v4-baseline-lint-resolution.1",
+  "classification": "BASELINE_PREEXISTING_ABI_LINT",
+  "exact_base": "cabe03127ff1e7ee1503861ca62515e3dd40afce",
+  "continuation_head": "f46be72869124db2393390a2399692445062b970",
+  "function": "run_candidate",
+  "file": "crates/hive-retina-python/src/lib.rs",
+  "line_before_resolution": 70,
+  "base_function_present": true,
+  "pr_138_argument_count_change": 0,
+  "base_strict_workspace_first_blocker": "clippy::manual_div_ceil",
+  "base_isolated_pyo3_lint": "clippy::too_many_arguments",
+  "base_isolated_argument_count": 8,
+  "clippy_default_maximum": 7,
+  "resolution": {
+    "scope": "run_candidate only",
+    "attribute": "allow(clippy::too_many_arguments)",
+    "reason": "PyO3 ABI boundary; argument order and cardinality are contract-bound.",
+    "function_body_changed": false,
+    "argument_order_changed": false,
+    "argument_cardinality_changed": false,
+    "crate_or_workspace_allow": false
+  },
+  "verification": {
+    "cargo_fmt": "PASS",
+    "strict_workspace_clippy": "PASS",
+    "rust_workspace_tests_passed": 50,
+    "rust_workspace_tests_failed": 0,
+    "release_pyo3_focused_tests_passed": 29,
+    "release_pyo3_focused_tests_skipped": 0,
+    "release_load": "PASS",
+    "old_python_signature": "(input, candidate_id, profile_id, width, height, frames, seed)",
+    "new_python_signature": "(input, candidate_id, profile_id, width, height, frames, seed)",
+    "old_cache_plan_abi": 2,
+    "new_cache_plan_abi": 2,
+    "old_release_sha256": "0758bba92c7f0f60e9f85a90fee30582a3cee758b567cb8326ef567a3e86d3b5",
+    "new_release_sha256": "60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711"
+  },
+  "formal_control_submission_count": 0,
+  "status": "BASELINE_PREEXISTING_ABI_LINT_RESOLVED"
+}

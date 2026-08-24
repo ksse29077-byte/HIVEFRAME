@@ -1,0 +1,486 @@
+schema_version: h3.cuda-fixture-teardown-remediation-v4.1
+status: H3_CUDA_FIXTURE_TEARDOWN_REMEDIATION_READY
+exact_base: cabe03127ff1e7ee1503861ca62515e3dd40afce
+issue: 137
+branch: codex/h3-cuda-fixture-teardown-remediation-v4-resume
+root_cause:
+  pr_136_classification: LIVE_TENSOR_REFERENCE_LEAK
+  evidence: function_local_fixture_owned_cuda_references_survived_final_measurement
+remediation:
+  explicit_ownership_registry: implemented
+  lifecycle_state_machine: implemented
+  weak_reference_release_check: implemented
+  warm_baseline_gate: implemented
+  negative_leak_cases_implemented: 4
+  focused_tests_passed: 14
+  focused_tests_failed: 0
+  compatibility_cycle_count: 2
+  remaining_fix_forward_cycles: 0
+peak_reset_compatibility:
+  torch_version: 2.12.1+cu130
+  signature: "(device: 'Device' = None) -> None"
+  cuda_device_count: 1
+  current_device_index: 0
+  omitted_argument_supported: true
+  integer_current_index_supported: true
+  initialized_torch_device_supported: true
+  cpu_device_rejected: true
+  invalid_index_rejected: true
+  selected_call_form: reset_peak_memory_stats_integer_current_index
+  fallback_forms: 0
+execution:
+  planned_warmup_count: 1
+  warmup_entered_count: 1
+  warmup_source_allocation_count: 1
+  warm_baseline_finalized_count: 1
+  planned_verification_count: 3
+  completed_verification_count: 3
+  negative_cuda_cases_executed: 4
+  retry_count: 0
+prior_failure_remediated:
+  classification: INVALID_DEVICE_ARGUMENT_IN_WARMUP_PEAK_RESET
+  exception_type: RuntimeError
+  message: Invalid device argument
+  source_basename: h3_cuda_fixture_teardown_v4.py
+  function: V4CudaFixture.run
+  cold_snapshot: NOT_PERSISTED_DUE_TO_PRIOR_WARMUP_EXCEPTION
+formal_control:
+  cumulative_prior_submission_count: 3
+  submission_count: 0
+  gpu_start_count: 0
+  completion_count: 0
+holdout: NOT_EXECUTED
+rust_cache_plan:
+  live_compile_count: 0
+  deterministic_replay_count: 0
+post_stop:
+  gpu_used_mib: 10
+  gpu_utilization_percent: 0
+  port_8191_listener_count: 0
+  comfyui_runtime_candidate_count: 0
+decision:
+  code: H3_V4_CLOSE_THE_LOOP_ADMISSION_BLOCKED
+  automatic_retry_allowed: false
+  v4_preflight_started: true
+  formal_control_allowed: false
+teardown_result:
+  root_cause_classification: LIVE_TENSOR_REFERENCE_LEAK
+  allocator_baseline_classification: LAZY_CUDA_INITIALIZATION_BASELINE_MISMATCH
+  cold_allocated_bytes: 0
+  cold_reserved_bytes: 0
+  warm_allocated_bytes: 8519680
+  warm_reserved_bytes: 25165824
+  warm_active_bytes: 8519680
+  verification_final_allocated_bytes: [8519680, 8519680, 8519680]
+  verification_final_reserved_bytes: [25165824, 25165824, 25165824]
+  allocated_growth_bytes: [0, 0]
+  reserved_growth_bytes: [0, 0]
+  fixture_owned_cuda_final: 0
+  fixture_owned_pinned_final: 0
+  worker_future_event_stream_final: [0, 0, 0, 0]
+  negative_cuda_cases_passed: 4
+  retry_count: 0
+  peak_allocated_bytes: 205137920
+  peak_reserved_bytes: 239075328
+  peak_fixture_pinned_bytes: 48269348
+v4_preflight:
+  remediation_cycles_used: 3
+  remediation_cycles_remaining: 0
+  model_free_replay_passed: true
+  frozen_inventory_digest: 8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc
+  exact_record_count: 199
+  planned_q_rows: 463869
+  full_q_rows: 15424000
+  planned_q_ratio: 0.03007449429460581
+  release_pyo3_import_passed: true
+  focused_release_tests_passed: 29
+  h3_adjacent_tests_passed: 88
+  skipped_tests: 0
+  cargo_fmt_passed: true
+  cargo_clippy_passed: false
+  blocking_lint: clippy::too_many_arguments
+  blocking_file: crates/hive-retina-python/src/lib.rs
+  blocking_line: 70
+  workspace_test_entered: false
+  workspace_release_build_entered: false
+  formal_control_admission_entered: false
+  formal_control_submission_count: 0
+formal_control_admission:
+  head: 27bfcb02269d43e1136efafde1407a7874b5820e
+  structural_gate: V4_PRODUCTION_OBSERVER_ENTRYPOINT_ABSENT
+  model_free_contract_present: true
+  bounded_cuda_fixture_present: true
+  runtime_controller_present: false
+  comfyui_node_present: false
+  one_shot_runner_present: false
+  holdout_callback_present: false
+  v2_substitution_allowed: false
+  release_pyo3_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+  projected_vram_headroom_bytes: 321482391
+  available_ram_bytes: 46599868416
+  port_8191_listener_count: 0
+  comfyui_candidate_count: 0
+  runtime_started: false
+  process_ownership_entered: false
+  submission_count: 0
+  gpu_start_count: 0
+  completion_count: 0
+  cumulative_formal_control_submission_count: 3
+  rust_live_compile_count: 0
+  rust_offline_replay_count: 0
+  output_integrity: NOT_EXECUTED
+  production_net_saving: NOT_COMPUTABLE
+  automatic_follow_up_created: false
+  gpu_start_count: 0
+  completion_count: 0
+baseline_lint_resolution:
+  exact_base: cabe03127ff1e7ee1503861ca62515e3dd40afce
+  classification: BASELINE_PREEXISTING_ABI_LINT
+  function: run_candidate
+  function_argument_count_changed_by_pr_138: false
+  scope: function_only
+  function_body_changed: false
+  python_signature_changed: false
+  rust_cache_plan_abi_changed: false
+  strict_clippy_passed: true
+  rust_workspace_tests_passed: 50
+  release_pyo3_tests_passed: 29
+  release_pyo3_tests_skipped: 0
+  prior_binary_sha256: 0758bba92c7f0f60e9f85a90fee30582a3cee758b567cb8326ef567a3e86d3b5
+  current_binary_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+  formal_control_submission_count: 0
+observer_runtime_continuation:
+  starting_head: 0aa869414b3096cecd8fa2ed016391d8937204b0
+  implementation_heads:
+    - 8bb44d498af14d84876390a5738a29595ef55770
+    - 41a1febe2a57f207347dba773716f269ccc3b21d
+    - 310e76a9f07ed7fff9db00264e33e76c87993d45
+  runtime_controller_present: true
+  comfyui_control_node_present: true
+  isolated_v4_custom_node_root: true
+  v2_pinned_ring_loaded: false
+  one_shot_runner_present: true
+  real_h3_full_attention_callback_present: true
+  full_compute_output_mutation_allowed: false
+  focused_python_release_tests_passed: 53
+  release_pyo3_fixed_subset_passed: 29
+  release_pyo3_skipped: 0
+  python_compile_passed: true
+  cargo_fmt_passed: true
+  strict_clippy_passed: true
+  rust_workspace_tests_passed: 50
+  release_build_passed: true
+  broad_python_discovery:
+    executed: 609
+    errors: 35
+    failures: 1
+    skipped: 16
+    classification: ENVIRONMENT_TEMP_ACL_AND_PREEXISTING_C0_KNOWLEDGE_MISMATCH
+    claimed_pass: false
+  formal_admission:
+    expected_head_argument: 310e76a8c5f66e716e24fcf9616a3c83ab5c7580
+    actual_local_head: 310e76a9f07ed7fff9db00264e33e76c87993d45
+    actual_remote_head: 310e76a9f07ed7fff9db00264e33e76c87993d45
+    failed_checks: [head_exact, remote_head_exact]
+    all_non_head_checks_passed: true
+    cuda_preflight_passed: true
+    p1_a2_identity_passed: true
+    process_ownership_passed: true
+    memory_passed: true
+    transfer_passed: true
+    projected_peak_vram_bytes: 12562895209
+    projected_vram_headroom_bytes: 321482391
+    available_ram_bytes: 47036989440
+    resident_host_source_bytes: 627501056
+    tensor_transfer_bytes: 19645609984
+    runtime_started: false
+    model_loaded: false
+    submission_count: 0
+    gpu_start_count: 0
+    completion_count: 0
+    retry_count: 0
+    fallback_count: 0
+    rust_live_compile_count: 0
+    rust_offline_replay_count: 0
+    output_integrity: NOT_EXECUTED
+    production_net_saving: NOT_COMPUTABLE
+    automatic_retry: false
+    decision: H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED
+  corrected_formal_control:
+    authorized_execution_head: bbf81a0469c0af7c858a7e486dca89eb83f46b32
+    head_length: 40
+    authorized_local_origin_pr_exact: true
+    previous_admission_classification: OPERATOR_INPUT_ERROR
+    current_admission_classification: ADMINISTRATIVE_ADMISSION_RECHECK
+    formal_control_retry: false
+    release_pyo3_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+    release_pyo3_tests_passed: 29
+    release_pyo3_tests_skipped: 0
+    node_admission:
+      status: PASS
+      source_slot_count: 13
+      pinned_source_bytes: 627501056
+      pinned_metric_bytes: 7164
+      shared_gpu_staging_bytes: 48269312
+      available_ram_after_pinned_bytes: 44388995072
+      inventory_digest: 8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc
+      profile_digest: 99de39e52efbf92c3238c4d0580fccf412d3822b4e541e2025a77cda343d7f7d
+    run_id: h3-v4-formal-control-20260821-2
+    lifecycle: [created, admitted, observing, aborted]
+    submission_count: 1
+    gpu_start_count: 1
+    completion_count: 0
+    cumulative_formal_control_submission_count: 4
+    retry_count: 0
+    fallback_count: 0
+    failure_type: V4ObserverAbort
+    failure_message: V4 candidate source lineage changed
+    exact_lineage_difference_recorded: false
+    model_forward_count: 4
+    block_call_count: 151
+    full_attention_actual: 151
+    full_attention_expected: 1000
+    source_capture_count: 13
+    exact_record_count: 0
+    source_d2h_bytes: 627501056
+    candidate_h2d_bytes: 0
+    v4_exact_metadata_d2h_bytes: 0
+    c2_auxiliary_d2h_bytes: 576
+    total_observed_device_transfer_bytes: 627501632
+    rust_policy_metadata_bytes: 2448
+    rust_tensor_bytes: 0
+    selective_execution_count: 0
+    partial_q_execution_count: 0
+    attention_omission_count: 0
+    output_mutation_count: 0
+    hot_path_forced_cuda_sync_count: 0
+    holdout_confusion_matrix: NOT_AVAILABLE_ABORTED_BEFORE_FIRST_EXACT_RECORD
+    holdout_planned_q_reduction: NOT_AVAILABLE
+    static_planned_q_reference: 0.03007449429460581
+    rust_live_compile_count: 0
+    rust_offline_replay_count: 0
+    output_integrity: NOT_EXECUTED
+    sampler_timing: NOT_AVAILABLE
+    observer_oracle_timing: NOT_FINALIZED
+    end_to_end_timing: NOT_TERMINAL
+    production_net_saving: NOT_COMPUTABLE
+    physical_vram_mib: 12288
+    observed_vram_lower_bound_mib: 9333
+    observed_headroom_upper_bound_mib: 2955
+    exact_peak_vram: NOT_PERSISTED
+    cleanup:
+      owned_processes_remaining: 0
+      port_8191_listeners: 0
+      related_runner_comfy_processes: 0
+      external_processes_terminated: 0
+      conhost_direct_terminations: 0
+      post_stop_gpu_used_mib: 10
+    evidence_digests:
+      callback_sha256: 2b7e6716946fe3127268185dfb1eae25a271b1041e14e6468d5ccbcb87d5fcd2
+      node_admission_sha256: 4114e11c0b519ae46dd08c8919f1d6e1484a6b9d59db7c6a563af062fd94bd05
+      runtime_log_sha256: 1cde99dabbb5fdb76cf79d3f0e9288964f7ca7040abe80703580d9755ef0c2bb
+    automatic_second_submission: false
+    automatic_follow_up_created: false
+    decision: H3_V4_FORMAL_CONTROL_FAILED
+  lineage_diagnostic_continuation:
+    starting_head: ace5be83f1ddecdd71c002c98109769c90ae2969
+    authorized_local_origin_pr_exact: true
+    prior_run_id: h3-v4-formal-control-20260821-2
+    prior_evidence_preserved: true
+    prior_evidence_digests:
+      callback_sha256: 2b7e6716946fe3127268185dfb1eae25a271b1041e14e6468d5ccbcb87d5fcd2
+      node_admission_sha256: 4114e11c0b519ae46dd08c8919f1d6e1484a6b9d59db7c6a563af062fd94bd05
+      runtime_log_sha256: 1cde99dabbb5fdb76cf79d3f0e9288964f7ca7040abe80703580d9755ef0c2bb
+    retained_failure_prefix:
+      full_attention_calls: 151
+      source_capture_count: 13
+      exact_record_count: 0
+    frozen_trace:
+      runtime_evidence: false
+      full_attention_calls: 1000
+      source_capture_count: 208
+      frozen_candidate_count: 199
+      exact_candidate_admissions: 199
+      expected_first_target_full_attention_call: 101
+      lineage_mismatch_count: 0
+      source_slot_overwrite_count: 0
+      incomplete_source_admission_count: 0
+      passed: true
+    failure_prefix_reproduction:
+      reproduced: false
+      unexplained_full_attention_call_delta: 50
+      exact_expected_actual_operands_available: false
+    root_cause:
+      classification: UNKNOWN
+      minimal_functional_fix_allowed: false
+      rationale: RETAINED_PREFIX_NOT_REPRODUCIBLE_FROM_FROZEN_EVENT_ORDER
+    diagnostic_receipt:
+      schema_version: h3.v4.lineage-diagnostic.1
+      implemented: true
+      legacy_digest_gate_removed: false
+      component_mismatch_mask: true
+      first_mismatch_field: true
+      expected_actual_component_values: true
+      source_slot_and_sequence: true
+      target_candidate_identity: true
+      completion_state: true
+      tensor_payload_stored: false
+      prompt_or_input_stored: false
+      private_path_stored: false
+      fail_closed_before_candidate_h2d: true
+      fail_closed_before_exact_oracle: true
+    focused_verification:
+      tests_passed: 25
+      tests_failed: 0
+      tests_skipped: 0
+      python_compile_passed: true
+      diff_check_passed: true
+      negative_component_cases: 11
+    unentered_due_to_gate:
+      cuda_fixture_execution_count: 0
+      release_pyo3_tests: NOT_ENTERED
+      adjacent_h3_tests: NOT_ENTERED
+      rust_workspace_validation: NOT_ENTERED
+      runtime_admission: NOT_ENTERED
+      model_load_count: 0
+      submission_count: 0
+      gpu_start_count: 0
+      completion_count: 0
+      retry_count: 0
+      fallback_count: 0
+      rust_live_compile_count: 0
+      rust_offline_replay_count: 0
+      output_integrity: NOT_EXECUTED
+      production_net_saving: NOT_COMPUTABLE
+    cumulative_formal_control_submission_count: 4
+    selective_execution_count: 0
+    partial_q_execution_count: 0
+    attention_omission_count: 0
+    output_mutation_count: 0
+    automatic_follow_up_created: false
+    decision: H3_V4_LINEAGE_CONTRACT_BLOCKED
+  instrumented_live_lineage_formal_control:
+    authorized_starting_head: c9df8e9789acdce978af5bd26ac5fed04ffb9c6d
+    execution_head: 9dff881c660758ddc2865ff0ec5ed4229857fa07
+    diagnostic_only_diff: true
+    legacy_lineage_gate_relaxed: false
+    abort_terminal_fix:
+      classification: COMFYUI_EXCEPTION_BOUNDARY_COMPATIBILITY
+      exception_type_before: BaseException
+      exception_type_after: RuntimeError
+      websocket_terminal_event: execution_error
+      callback_finalized_automatically: true
+      runner_exited_automatically: true
+      manual_finalization: false
+    verification:
+      focused_and_adjacent_python_passed: 62
+      release_pyo3_tests_passed: 8
+      release_pyo3_tests_skipped: 0
+      python_compile_passed: true
+      diff_check_passed: true
+      rust_source_changed: false
+      cuda_source_changed: false
+      prior_rust_and_cuda_receipts_reused: true
+      release_pyo3_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+    run_id: h3-v4-formal-control-20260824-1
+    admission_passed: true
+    submission_count: 1
+    gpu_start_count: 1
+    completion_count: 0
+    cumulative_formal_control_submission_count: 5
+    retry_count: 0
+    fallback_count: 0
+    model_forward_count: 20
+    block_call_count: 1000
+    full_attention_actual: 1000
+    full_attention_expected: 1000
+    source_capture_count: 13
+    exact_record_count: 0
+    lineage_diagnostic:
+      classification: SOURCE_SLOT_REUSE_OR_OVERWRITE
+      first_mismatch_field: source_step_ordinal
+      mismatch_count: 5
+      mismatch_mask: 35936
+      mismatched_fields:
+        - source_step_ordinal
+        - source_scheduler_timestep
+        - source_capture_sequence
+        - source_capture_event_id
+        - legacy_lineage_digest
+      actual_source:
+        step_ordinal: 1
+        scheduler_timestep: 0x1.fdc3a20000000p-1
+        block: 3
+        region: 0
+        slot: 3
+        capture_sequence: 4
+        capture_event_digest: 9779e381b24157ecb4a1e5f06d2da6f79103a4d86c32f9c10d688a66a5544be4
+      expected_source:
+        step_ordinal: 16
+        scheduler_timestep: 0x1.8000000000000p-1
+        block: 3
+        region: 0
+        slot: 3
+        capture_sequence: 199
+        capture_event_digest: 4f433ce0a6b47ccdc5b31a73aad41624220ccf8899ac4abfc8ed2e541a8d9381
+      target:
+        step_ordinal: 17
+        scheduler_timestep: 0x1.5bc60a0000000p-1
+        expected_source_step_ordinal: 16
+        block: 3
+        region: 0
+        sequence: 199
+      shape: [3367, 7168]
+      dtype: torch.bfloat16
+      completion_state: EVENT_RECORDED
+      common_identity_fields_matched: true
+      diagnostic_metadata_bytes: 105239
+      diagnostic_metadata_cap_bytes: 1048576
+      tensor_payload_stored: false
+      prompt_or_input_stored: false
+      private_path_stored: false
+    transfer:
+      source_d2h_bytes: 627501056
+      c2_scalar_d2h_bytes: 3840
+      candidate_h2d_bytes: 0
+      exact_oracle_metadata_d2h_bytes: 0
+      total_observed_device_transfer_bytes: 627504896
+      rust_tensor_bytes: 0
+      hot_path_forced_cuda_sync_count: 0
+    timing_seconds:
+      sampler_observed: 604.2962358000223
+      c2_observer_overhead: 0.041647456
+      exact_oracle: NOT_ENTERED
+      submit_to_terminal: 645.9165709000081
+      runner_wall: 671.3113058999879
+    resources:
+      sampled_peak_nvidia_vram_bytes: 11885608960
+      frozen_physical_vram_bytes: 12884377600
+      sampled_headroom_bytes: 998768640
+    unavailable_due_to_fail_closed:
+      holdout_confusion_matrix: true
+      false_safe: true
+      actual_planned_q_reduction: true
+      rust_live_plan_digest: true
+      rust_offline_replay_digest: true
+      mp4_output: true
+      output_integrity: true
+      production_net_saving: true
+    cleanup:
+      immediate_receipt_passed: false
+      immediate_failure: GPU_BASELINE_SAMPLE_NOT_YET_SETTLED
+      delayed_read_only_check_passed: true
+      owned_processes_remaining: 0
+      port_8191_listeners: 0
+      external_processes_terminated: 0
+      conhost_direct_terminations: 0
+      post_check_gpu_used_mib: 10
+      post_check_gpu_utilization_percent: 0
+    selective_execution_count: 0
+    partial_q_execution_count: 0
+    attention_omission_count: 0
+    output_mutation_count: 0
+    executor_integration_authorized: false
+    automatic_second_submission: false
+    automatic_follow_up_created: false
+    decision: H3_V4_LIVE_LINEAGE_CAUSE_CAPTURED

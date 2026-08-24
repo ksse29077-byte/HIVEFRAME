@@ -240,8 +240,8 @@ fn estimate_translation(
         return Err("Translation scale must be positive.".to_string());
     }
     let offset = stride / 2;
-    let low_width = (width - offset + stride - 1) / stride;
-    let low_height = (height - offset + stride - 1) / stride;
+    let low_width = (width - offset).div_ceil(stride);
+    let low_height = (height - offset).div_ceil(stride);
     if (low_width, low_height) != (config.downsample_width, config.downsample_height) {
         return Err(format!(
             "Deterministic downsample shape {low_width}x{low_height} does not match {}x{}.",

@@ -1,0 +1,299 @@
+schema_version: h3.v4-source-slot-lifecycle-economics-gate.1
+status: H3_V4_FORMAL_CONTROL_FAILED
+issue: 137
+draft_pr: 138
+starting_head: fbf41c9fa869f5b0407410b041c791878e0bf5fb
+root_cause:
+  classification: TARGET_PROCESSING_DEFERRED
+  code_location:
+    observer_exception: python/hive_product/h3_observer_v4.py
+    native_fallback_boundary: python/hive_product/a3_g1_conditional_reuse.py
+  mechanism: V4ObserverAbort_was_RuntimeError_and_parent_native_fallback_deferred_target_failure
+  retained_slot: {step: 1, capture_sequence: 4, state: READY}
+  requested_source: {step: 16, capture_sequence: 199}
+remediation:
+  state_machine: [EMPTY, CAPTURING, READY, CONSUMING, RELEASED, EMPTY]
+  slot_count: 13
+  full_identity_required: true
+  monotonic_slot_version: true
+  stale_slot_fail_closed: true
+  abort_bypasses_native_fallback: true
+model_free_trace:
+  full_attention_calls: 1000
+  captures: 208
+  target_lookups: 199
+  consumes: 199
+  releases: 199
+  peak_live_slots: 13
+  lineage_mismatch: 0
+  overwrite: 0
+  duplicate_consume: 0
+  incomplete_admission: 0
+  stale_admission: 0
+  passed: true
+cuda_fixture:
+  model_loaded: false
+  captures: 208
+  consumes: 199
+  releases: 199
+  source_d2h_bytes: 10040016896
+  candidate_h2d_bytes: 9605593088
+  total_transfer_bytes: 19645609984
+  resident_host_bytes: 627501056
+  shared_gpu_staging_bytes: 48269312
+  bf16_bit_preserved: true
+  exact_gpu_oracle_metric_calls: 199
+  exact_gpu_oracle_metric: PASS
+  normal_cleanup: PASS
+  abort_cleanup: PASS
+  allocator_baseline_restored: true
+  live_tensor_references: 0
+  retry_count: 0
+economics_gate:
+  comparable_baseline_seconds: 488.8473196999985
+  global_attention_mixing_seconds: 343.2285699157715
+  planned_q_reduction_ratio: 0.03007449429460581
+  avoided_q_compute_upper_bound_seconds: 10.322425667677582
+  known_runtime_overhead_seconds: 0.041647456
+  unknown_runtime_cost_count: 6
+  predicted_net_saving_seconds: null
+  predicted_net_saving_percent: null
+  passed: false
+execution:
+  runtime_start: 0
+  h3_model_load: 0
+  formal_control_submission_gpu_completion: [0, 0, 0]
+  cumulative_formal_control_submissions: 5
+  selective_partial_q_omission: [0, 0, 0]
+  retry_fallback: [0, 0]
+decision:
+  code: H3_V4_FORMAL_CONTROL_FAILED
+  formal_control_allowed: false
+  automatic_follow_up_allowed: false
+  product_acceleration_claim: false
+production_executor_hot_path:
+  implementation_head: 4fdb82dea0f4c4014dd85409fa8403611443abd7
+  backend: attention_pytorch
+  sage_enabled: false
+  shape: {sequence_rows: 15424, attention_heads: 56, head_dimension: 128, output_width: 7168, dtype: BF16}
+  partition: {computed_rows: 13093, reused_rows: 2331, xor_enforced: true}
+  measured_cuda_median_ms:
+    full_reference: 269.83935546875
+    reduced_q_attention: 229.70777893066406
+    selective_hot_path: 232.58912658691406
+    forced_fallback: 269.876220703125
+    plan_decode: 0.22518399357795715
+    gather: 1.165312
+    scatter: 1.659904
+    cache_read: 0.212992
+    cache_write: 0.306176
+  frozen_schedule:
+    calls: 1000
+    candidate_targets: 199
+    source_cache_writes: 208
+    omitted_rows: 463869
+    theoretical_rows: 15424000
+    planned_q_reduction_percent: 3.007449429460581
+  measured_economics:
+    optimistic_net_seconds: 7.1908063711
+    optimistic_percent: 1.4709718313
+    median_net_seconds: 7.0004636657
+    median_percent: 1.4320347854
+    conservative_net_seconds: 6.9238619065
+    conservative_percent: 1.4163649114
+    unknown_runtime_cost_count: 0
+    decision: H3_V4_HOT_PATH_ECONOMICS_VIABLE
+  memory:
+    peak_allocated_bytes: 3223861760
+    peak_reserved_bytes: 3948937216
+    cleanup_allocated_bytes: 0
+    cleanup_reserved_bytes: 0
+formal_control_after_economics:
+  submissions_gpu_starts_completions: [1, 1, 0]
+  cumulative_formal_control_submissions: 6
+  full_attention_calls: 151
+  model_forwards: 4
+  source_captures_consumes_releases: [13, 13, 0]
+  exact_records: 0
+  terminal: execution_error
+  error: V4_candidate_source_incomplete_before_step_3_consumption
+  retry_fallback: [0, 0]
+  selective_partial_q_omission: [0, 0, 0]
+  output_integrity: unavailable
+  delayed_cleanup: {owned_processes: 0, listener_port_8191: closed, gpu_mib: 10, external_process_terminations: 0}
+  follow_up_started: false
+async_completion_pump:
+  implementation_head: da3449fc4e0c706410c26f154d45d770e7d6ccd6
+  slot_count: 13
+  hot_path_completion_primitive: cuda_event_query_only
+  hot_path_forced_cpu_sync: 0
+  evidence_commit_before_release: true
+  delayed_model_free_trace:
+    full_attention_calls: 1000
+    captures_consumes_releases: [208, 199, 199]
+    completion_queries_not_ready: [4136, 3937]
+    peak_live_slots: 13
+    final_live_slots: 0
+    final_tensor_references: 0
+    safety_failures: 0
+  model_free_cuda_fixture:
+    captures_consumes_releases: [13, 13, 13]
+    final_empty_slots: 13
+    oracle_events_created_recorded: [13, 13]
+    completion_queries: 13
+    evidence_commits: 13
+    allocator_baseline_restored: true
+    final_tensor_references: 0
+  precontrol_root_cause_claim:
+    code: CALLBACK_ORDERING_GAP
+    status: SUPERSEDED_BY_FORMAL_CONTROL
+    reason: model_free_fixture_could_not_reproduce_real_inference_tensor_version_counter_behavior
+formal_control_after_async_completion:
+  submissions_gpu_starts_completions: [1, 1, 0]
+  cumulative_formal_control_submissions: 7
+  full_attention_calls: 101
+  model_forwards: 3
+  source_captures_consumes_releases: [13, 1, 0]
+  slot_states: {CONSUMING: 1, READY: 12, RELEASED: 0, EMPTY: 0}
+  oracle_completion_events_created_recorded: [0, 0]
+  completion_queries: 0
+  evidence_commits: 0
+  terminal: execution_error
+  proven_cause:
+    classification: OTHER_PROVEN_CAUSE
+    code: INFERENCE_TENSOR_VERSION_COUNTER_READ
+    error_type: RuntimeError
+    message: Inference_tensors_do_not_track_version_counter
+    location: python/hive_product/h3_observer_v4.py_observe_full_compute_control
+    async_pump_reached: false
+    prior_13_13_0_mechanism: native_fallback_swallowed_post_consume_exception_and_left_slots_CONSUMING
+  retry_fallback: [0, 0]
+  selective_partial_q_omission: [0, 0, 0]
+  rust_live_compile_offline_replay: [0, 0]
+  output_integrity: unavailable
+  runner_wall_seconds: 154.12343150004745
+  prompt_execution_seconds: 130.24
+  sampled_peak_vram_bytes:
+    comfyui: 12037813671
+    nvidia_system: 11919163392
+  shutdown:
+    owned_processes_absent: true
+    listener_count_zero: true
+    console_helper_natural_exit: true
+    external_process_termination_count: 0
+    immediate_gpu_baseline_check: FAIL
+    baseline_gpu_bytes: 10485760
+    immediate_post_shutdown_gpu_bytes: 173015040
+  same_task_fix_or_retry: false
+  follow_up_started: false
+inference_tensor_identity_admission:
+  starting_head: 5452b8769f1d3890e42576ac94abf1c788b16ee1
+  decision: H3_V4_INFERENCE_RUNTIME_READY
+  raw_version_audit:
+    observer_hot_path_direct_access: 0
+    inference_tensor_access: 0
+    guarded_normal_tensor_helper_access: 1
+    inference_semantics: INFERENCE_NO_VERSION_COUNTER
+  identity_contract:
+    logical_identity_authoritative: true
+    storage_pointer_telemetry_diagnostic_only: true
+    pointer_only_lineage_admission: false
+    consume_after_identity_validation: true
+    abort_orphan_slots: 0
+  inference_cuda_trace:
+    backend: attention_pytorch
+    sage_enabled: false
+    model_loaded: false
+    generation_count: 0
+    full_attention_calls: 1000
+    model_forwards: 20
+    captures_consumes_releases: [208, 199, 199]
+    source_records: 208
+    exact_records: 199
+    inference_identity_checks: 398
+    raw_inference_version_access: 0
+    identity_failure_mismatch: [0, 0]
+    lineage_overwrite_stale_duplicate_incomplete: [0, 0, 0, 0, 0]
+    orphan_consuming: 0
+    hot_path_blocking_sync: 0
+    live_tensor_references: 0
+    allocator_baseline_allocated_reserved: [8519680, 16777216]
+    allocator_final_allocated_reserved: [8519680, 16777216]
+    passed: true
+  fixture_correction:
+    count: 1
+    reason: COLD_ALLOCATOR_BASELINE_MISMATCH
+    generation_submission_gpu_completion: [0, 0, 0]
+  verification:
+    focused_python: 44
+    adjacent_h3_release_pyo3: 139
+    adjacent_h3_skip: 0
+    rust_workspace: 50
+    fmt_clippy_release: PASS
+  executor_cacheplan_changed: false
+  economics_reused:
+    median_percent: 1.4320347854
+    conservative_percent: 1.4163649114
+    unknown_cost: 0
+  cumulative_formal_control_submissions: 7
+inference_identity_final_formal_control:
+  control_head: 8636a0dc2eb91ad115499bf9ab6ff8834fa2e51c
+  decision: H3_V4_VALIDATION_CYCLE_EXHAUSTED
+  submissions_gpu_starts_completions: [1, 1, 1]
+  cumulative_formal_control_submissions: 8
+  model_forwards: 20
+  full_attention_calls: 1000
+  source_captures_consumes_releases: [208, 199, 199]
+  exact_records: 199
+  inference_identity:
+    checks: 398
+    raw_version_access: 0
+    failures_mismatches: [0, 0]
+    semantics: INFERENCE_NO_VERSION_COUNTER
+  safety_evidence:
+    false_safe: 0
+    false_unsafe: 130
+    true_safe: 69
+    true_unsafe: 0
+    candidate_q_reduction_percent: 3.0074494295
+  rust_plan:
+    live_compile_offline_replay: [1, 1]
+    deterministic_digest_match: true
+    digest: 0955a7d8ecc4ed2f8ffbcc5df124d4ac204c2c24684b1b1f55f41cca402b31c0
+    selected_rejected: [0, 13]
+    actual_planned_q_reduction_percent: 0.0
+    fallback_required: true
+    plan_ready: false
+    tensor_bytes: 0
+    evidence_metadata_bytes: 51000
+  retry_fallback: [0, 0]
+  selective_partial_q_omission: [0, 0, 0]
+  output:
+    integrity: PASS
+    codec: h264
+    decoded_corrupted_black_frames: [124, 0, 0]
+    audio_streams: 1
+    sha256: 6dfc729f275967fe24efad740d407771133c658463fc52652ddf2f38f81294c0
+  timing_seconds:
+    runner: 672.0816669001
+    submit_to_output: 647.1829314
+    sampler: 537.6543957
+    full_attention: 314.3882592163
+    observer: 5.8237130928
+    exact_gpu_oracle: 4.9956014023
+  transfer_bytes:
+    source_d2h: 10040016896
+    candidate_h2d: 9605593088
+    total_tensor: 19645609984
+  sampled_peak_vram_bytes:
+    comfyui: 11702912423
+    nvidia_system: 12187598848
+  delayed_cleanup:
+    owned_processes: 0
+    listener_port_8191: closed
+    gpu_mib: 10
+    external_process_terminations: 0
+  same_task_fix_or_retry: false
+  selective_follow_up_started: false
+  two_minute_product_target_met: false
+  recommended_next_task: H3_END_TO_END_BOTTLENECK_PROFILE_AND_HIGH_IMPACT_ACCELERATION_PLAN

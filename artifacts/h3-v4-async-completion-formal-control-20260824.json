@@ -1,0 +1,112 @@
+{
+  "schema_version": "h3.v4-async-completion-formal-control.1",
+  "decision": "H3_V4_FORMAL_CONTROL_FAILED",
+  "issue": 137,
+  "draft_pr": 138,
+  "implementation_head": "da3449fc4e0c706410c26f154d45d770e7d6ccd6",
+  "scope": "H3_V4_ASYNC_COMPLETION_PUMP_AND_CONDITIONAL_FORMAL_CONTROL",
+  "precontrol_evidence": {
+    "model_free_delayed_trace": {
+      "full_attention_calls": 1000,
+      "captures": 208,
+      "consumes": 199,
+      "releases": 199,
+      "completion_queries": 4136,
+      "completion_not_ready": 3937,
+      "peak_live_slots": 13,
+      "final_live_slots": 0,
+      "final_tensor_references": 0,
+      "safety_failures": 0,
+      "passed": true
+    },
+    "model_free_cuda_fixture": {
+      "captures_consumes_releases": [13, 13, 13],
+      "empty_slots": 13,
+      "oracle_events_created_recorded": [13, 13],
+      "completion_queries": 13,
+      "evidence_commits": 13,
+      "hot_path_forced_cpu_sync": 0,
+      "final_tensor_references": 0,
+      "allocator_baseline_restored": true,
+      "passed": true
+    },
+    "root_cause_claim": {
+      "original": "CALLBACK_ORDERING_GAP",
+      "status": "SUPERSEDED_BY_FORMAL_CONTROL",
+      "reason": "The model-free fixture proved that asynchronous completion was safe, but could not reproduce the inference-tensor version-counter exception reached by the real H3 runtime."
+    },
+    "economics_reused": {
+      "planned_q_reduction_percent": 3.007449429460581,
+      "median_projected_sampler_saving_percent": 1.4320347854,
+      "conservative_projected_sampler_saving_percent": 1.4163649114,
+      "unknown_runtime_cost_count": 0,
+      "decision": "H3_V4_HOT_PATH_ECONOMICS_VIABLE"
+    }
+  },
+  "formal_control": {
+    "submission_gpu_start_completion": [1, 1, 0],
+    "cumulative_formal_control_submissions": 7,
+    "retry_fallback": [0, 0],
+    "selective_partial_q_omission": [0, 0, 0],
+    "rust_live_compile_offline_replay": [0, 0],
+    "terminal": "execution_error",
+    "runner_wall_seconds": 154.12343150004745,
+    "prompt_execution_seconds": 130.24,
+    "model_forwards": 3,
+    "full_attention_calls": 101,
+    "source_captures_consumes_releases": [13, 1, 0],
+    "slot_states": {"CONSUMING": 1, "READY": 12, "RELEASED": 0, "EMPTY": 0},
+    "oracle_completion_events_created_recorded": [0, 0],
+    "completion_queries": 0,
+    "evidence_commits": 0,
+    "hot_path_forced_cpu_sync": 0,
+    "exact_records": 0,
+    "output_integrity": "unavailable",
+    "output_created": false
+  },
+  "proven_failure": {
+    "classification": "OTHER_PROVEN_CAUSE",
+    "code": "INFERENCE_TENSOR_VERSION_COUNTER_READ",
+    "error_type": "RuntimeError",
+    "error_message": "Inference tensors do not track version counter.",
+    "code_location": "python/hive_product/h3_observer_v4.py:_observe_full_compute_control",
+    "failing_operation": "read full_core._version before creating the oracle completion event",
+    "direct_effect": "The first target slot remained CONSUMING and no completion event or evidence commit existed.",
+    "prior_13_13_0_mechanism": "The parent native fallback previously swallowed the same post-consume exception repeatedly, so all thirteen consumed slots remained CONSUMING before the later incomplete-source failure.",
+    "async_pump_reached": false,
+    "same_task_fix_allowed": false,
+    "same_task_retry_allowed": false
+  },
+  "resource_and_shutdown": {
+    "peak_comfyui_sampled_vram_bytes": 12037813671,
+    "peak_nvidia_sampled_vram_bytes": 11919163392,
+    "peak_gpu_utilization_percent": 100,
+    "peak_process_tree_rss_bytes": 43940679680,
+    "shutdown_owned_processes_absent": true,
+    "shutdown_listener_count_zero": true,
+    "console_helper_natural_exit": true,
+    "external_process_terminations": 0,
+    "immediate_gpu_baseline_check": "FAIL",
+    "baseline_gpu_bytes": 10485760,
+    "immediate_post_shutdown_gpu_bytes": 173015040,
+    "shutdown_receipt_passed": false
+  },
+  "verification": {
+    "focused_async_tests": "8 passed",
+    "adjacent_h3_python_tests": "125 passed",
+    "release_pyo3_tests": "15 passed",
+    "rust_workspace_tests": "50 passed",
+    "cargo_fmt": "PASS",
+    "cargo_clippy_strict": "PASS",
+    "cargo_release_build": "PASS"
+  },
+  "constraints": {
+    "slot_count_unchanged": 13,
+    "buffer_inventory_changed": false,
+    "cacheplan_abi_changed": false,
+    "executor_changed": false,
+    "formal_control_additional_execution": false,
+    "selective_execution_authorized": false,
+    "automatic_follow_up_started": false
+  }
+}

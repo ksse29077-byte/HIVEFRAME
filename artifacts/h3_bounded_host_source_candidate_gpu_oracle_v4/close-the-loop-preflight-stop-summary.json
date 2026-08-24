@@ -1,0 +1,72 @@
+{
+  "schema_version": "h3.v4-close-the-loop-preflight-stop.1",
+  "branch": "codex/h3-cuda-fixture-teardown-remediation-v4-resume",
+  "preflight_head": "a0ceebef2562a80a2e391d35c9d4588f47d03642",
+  "decision": "H3_V4_INFRASTRUCTURE_REMEDIATION_BUDGET_EXHAUSTED",
+  "remediation_cycles": {
+    "used": 3,
+    "remaining": 0,
+    "cycle_1": "WINDOWS_TORCH_PEAK_RESET_COMPATIBILITY",
+    "cycle_2": "FAKE_TORCH_DEVICE_OBJECT_NORMALIZATION",
+    "cycle_3": "RUST_1_97_MANUAL_DIV_CEIL_LINT"
+  },
+  "passed": {
+    "cuda_teardown_warmup_count": 1,
+    "cuda_teardown_verification_cycles": 3,
+    "cuda_negative_leak_cases": 4,
+    "model_free_and_stress_replays": true,
+    "release_pyo3_import": true,
+    "release_pyo3_focused_tests": 29,
+    "h3_adjacent_tests": 88,
+    "test_skips": 0,
+    "cargo_fmt": true,
+    "memory_admission": true,
+    "transfer_admission": true
+  },
+  "frozen_evidence": {
+    "inventory_digest": "8375783b8afdb3257699a310e9b0faf0d4d152a1dcc31bc4a6d1ef9986a11ebc",
+    "exact_record_count": 199,
+    "planned_q_rows": 463869,
+    "full_q_rows": 15424000,
+    "planned_q_ratio": 0.03007449429460581,
+    "source_capture_d2h_bytes": 10040016896,
+    "candidate_source_h2d_bytes": 9605593088,
+    "metadata_d2h_bytes": 50944,
+    "total_tensor_transfer_bytes": 19645609984,
+    "resident_host_source_bytes": 627501056,
+    "shared_gpu_staging_bytes": 48269312,
+    "projected_peak_vram_bytes": 12562895209,
+    "projected_vram_headroom_bytes": 321482391,
+    "available_ram_bytes": 46998458368,
+    "ram_after_source_bytes": 46370957312
+  },
+  "blocking_gate": {
+    "command": "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+    "file": "crates/hive-retina-python/src/lib.rs",
+    "line": 70,
+    "lint": "clippy::too_many_arguments",
+    "function": "run_candidate",
+    "argument_count": 8,
+    "allowed_argument_count": 7
+  },
+  "not_executed": {
+    "cargo_test_workspace": true,
+    "cargo_release_workspace": true,
+    "formal_control_admission": true,
+    "h3_model_load": true,
+    "formal_control_submission": true,
+    "gpu_start": true,
+    "generation_completion": true,
+    "holdout_rust_compile_replay": true,
+    "selective": true,
+    "partial_q": true,
+    "attention_omission": true
+  },
+  "counts": {
+    "current_task_submission": 0,
+    "current_task_gpu_start": 0,
+    "current_task_completion": 0,
+    "current_task_retry": 0,
+    "cumulative_prior_formal_control_submissions": 3
+  }
+}

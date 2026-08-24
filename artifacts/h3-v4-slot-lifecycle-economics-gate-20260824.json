@@ -1,0 +1,114 @@
+{
+  "schema_version": "h3.v4-slot-lifecycle-economics-gate.1",
+  "decision": "H3_V4_ECONOMICS_NOT_VIABLE",
+  "starting_head": "fbf41c9fa869f5b0407410b041c791878e0bf5fb",
+  "issue": 137,
+  "draft_pr": 138,
+  "root_cause": {
+    "classification": "TARGET_PROCESSING_DEFERRED",
+    "code_path": "V4ObserverAbort inherited RuntimeError and was caught by H3A3G1Controller.instrumented_forward native fallback before source consume/release",
+    "retained_slot": {
+      "source_step_ordinal": 1,
+      "source_capture_sequence": 4,
+      "state": "READY"
+    },
+    "requested_source": {
+      "source_step_ordinal": 16,
+      "source_capture_sequence": 199
+    }
+  },
+  "slot_lifecycle": {
+    "states": ["EMPTY", "CAPTURING", "READY", "CONSUMING", "RELEASED", "EMPTY"],
+    "slot_count": 13,
+    "version_monotonic": true,
+    "full_identity_required": true,
+    "stale_slot_fail_closed": true
+  },
+  "model_free_trace": {
+    "full_attention_calls": 1000,
+    "capture_count": 208,
+    "target_lookup_count": 199,
+    "consume_count": 199,
+    "release_count": 199,
+    "lineage_mismatch_count": 0,
+    "slot_overwrite_count": 0,
+    "duplicate_consume_count": 0,
+    "incomplete_source_admitted_count": 0,
+    "stale_slot_admitted_count": 0,
+    "unread_slot_overwrite_count": 0,
+    "peak_live_slots": 13,
+    "passed": true
+  },
+  "cuda_rolling_fixture": {
+    "capture_count": 208,
+    "consume_count": 199,
+    "release_count": 199,
+    "terminal_ready_count": 9,
+    "peak_live_slots": 13,
+    "source_d2h_bytes": 10040016896,
+    "candidate_h2d_bytes": 9605593088,
+    "total_tensor_transfer_bytes": 19645609984,
+    "resident_host_source_bytes": 627501056,
+    "shared_gpu_staging_bytes": 48269312,
+    "bf16_bit_preserved": true,
+    "exact_gpu_oracle_metric_calls": 199,
+    "normal_cleanup_passed": true,
+    "abort_cleanup_passed": true,
+    "allocator_baseline_restored": true,
+    "live_tensor_references": 0,
+    "retry_count": 0,
+    "passed": true
+  },
+  "economics": {
+    "direct_p1_a2_v4_comparison": "NOT_COMPARABLE",
+    "comparable_baseline_seconds": 488.8473196999985,
+    "global_attention_mixing_seconds": 343.2285699157715,
+    "planned_q_reduction_ratio": 0.03007449429460581,
+    "avoided_q_compute_upper_bound_seconds": 10.322425667677582,
+    "known_selective_runtime_overhead_seconds": 0.041647456,
+    "optimistic_net_if_all_unknown_costs_were_zero_seconds": 10.280778211677582,
+    "optimistic_net_if_all_unknown_costs_were_zero_percent": 2.1030652715835303,
+    "required_q_reduction_known_cost_only_percent": 1.4363957680474673,
+    "unknown_selective_runtime_costs": [
+      "partial_attention_kernel_launch",
+      "representative_query_gather",
+      "reconstruction_and_output_scatter",
+      "cache_read_write_and_identity_guard",
+      "per_generation_gpu_plan_materialization",
+      "rust_live_plan_compile"
+    ],
+    "predicted_net_saving_seconds": null,
+    "predicted_net_saving_percent": null,
+    "gate_passed": false
+  },
+  "verification": {
+    "focused_python_tests_passed": 36,
+    "adjacent_h3_python_tests_passed": 110,
+    "rust_workspace_tests_passed": 50,
+    "release_pyo3_required_tests_passed": 4,
+    "release_pyo3_required_tests_skipped": 0,
+    "release_pyo3_sha256": "60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711",
+    "rust_tensor_bytes": 0,
+    "maximum_rust_calls_per_generation": 1,
+    "hot_path_forced_cpu_sync": 0,
+    "acl_test_classification": "TEST_ENVIRONMENT_ONLY",
+    "cargo_fmt_passed": true,
+    "cargo_clippy_passed": true,
+    "cargo_test_passed": true,
+    "cargo_release_build_passed": true
+  },
+  "execution": {
+    "runtime_start_count": 0,
+    "h3_model_load_count": 0,
+    "formal_control_submission_count": 0,
+    "formal_control_gpu_start_count": 0,
+    "formal_control_completion_count": 0,
+    "cumulative_formal_control_submission_count": 5,
+    "selective_execution_count": 0,
+    "partial_q_execution_count": 0,
+    "attention_omission_count": 0,
+    "output_mutation_count": 0,
+    "retry_count": 0,
+    "fallback_count": 0
+  }
+}
