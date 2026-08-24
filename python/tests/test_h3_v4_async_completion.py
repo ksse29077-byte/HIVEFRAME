@@ -27,8 +27,8 @@ class FakeEvent:
 
 
 class H3V4AsyncCompletionTests(unittest.TestCase):
-    def test_root_cause_is_callback_ordering_gap(self) -> None:
-        self.assertEqual(ROOT_CAUSE, "CALLBACK_ORDERING_GAP")
+    def test_root_cause_tracks_the_proven_inference_tensor_failure(self) -> None:
+        self.assertEqual(ROOT_CAUSE, "INFERENCE_TENSOR_VERSION_COUNTER_READ")
         source = inspect.getsource(H3ObserverControllerV4)
         self.assertIn("self._pump_completions(\"callback_entry\")", source)
         self.assertIn("self._pump_completions(\"callback_exit\")", source)

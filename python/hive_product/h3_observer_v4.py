@@ -58,6 +58,13 @@ from .h3_v4_lineage_diagnostic import (
     build_target_components,
     compare_lineage,
 )
+from .h3_v4_tensor_identity import (
+    INFERENCE_NO_VERSION_COUNTER,
+    TensorIdentityError,
+    TensorIdentitySnapshot,
+    capture_tensor_identity,
+    tensor_identity_matches,
+)
 
 
 SCHEMA_VERSION = "h3.observer-runtime-v4.1"
@@ -160,6 +167,14 @@ class V4HostSourceSlot:
 
     def reset(self) -> None:
         self.lifecycle.reset()
+        self.lineage_digest = None
+        self.lineage_components = None
+        self.completion_event = None
+
+    def abort_cleanup(self) -> None:
+        """Clear an aborted slot and its event references without a fake release."""
+
+        self.lifecycle.abort_to_empty()
         self.lineage_digest = None
         self.lineage_components = None
         self.completion_event = None
@@ -363,9 +378,16 @@ class H3ObserverControllerV4(H3A3G1Controller):
         self.completion_commit_failure_count = 0
         self.completion_pump_reentry_count = 0
         self._completion_pump_active = False
+        self._abort_cleanup_completed = False
         self.completion_pump_calls: dict[str, int] = {}
         self.peak_pending_completions = 0
-        self.root_cause = "CALLBACK_ORDERING_GAP"
+        self.tensor_identity_check_count = 0
+        self.inference_tensor_identity_check_count = 0
+        self.normal_tensor_identity_check_count = 0
+        self.version_counter_unavailable_count = 0
+        self.tensor_identity_failure_count = 0
+        self.tensor_identity_mismatch_count = 0
+        self.root_cause = "INFERENCE_TENSOR_VERSION_COUNTER_READ"
         if profile_digest != PROFILE_DIGEST:
             raise V4ObserverAbort("V4 observer profile digest changed")
         if len(self.scheduler_timesteps) != 20:
@@ -463,6 +485,27 @@ class H3ObserverControllerV4(H3A3G1Controller):
         if self._staging_release_event is not None:
             stream.wait_event(self._staging_release_event)
             self._staging_release_event = None
+
+    def _capture_full_core_identity(
+        self, full_core: Any, expected_components: Mapping[str, Any]
+    ) -> TensorIdentitySnapshot:
+        try:
+            snapshot = capture_tensor_identity(
+                self.torch,
+                full_core,
+                lineage_identity=expected_components,
+                workflow_digest=self.workflow_digest,
+            )
+        except TensorIdentityError as error:
+            self.tensor_identity_failure_count += 1
+            raise V4ObserverAbort("V4 Full Attention tensor identity is invalid") from error
+        self.tensor_identity_check_count += 1
+        if snapshot.version_semantics == INFERENCE_NO_VERSION_COUNTER:
+            self.inference_tensor_identity_check_count += 1
+            self.version_counter_unavailable_count += 1
+        else:
+            self.normal_tensor_identity_check_count += 1
+        return snapshot
 
     def _admit_capture(self, capture: _DeferredCapture) -> None:
         slot = self.resources.slots[capture.block_index]
@@ -635,20 +678,22 @@ class H3ObserverControllerV4(H3A3G1Controller):
                 f"source_step={event.source_step} target_step={step} "
                 f"block={block_index} region={REGION}"
             )
+        identity_before = self._capture_full_core_identity(
+            full_core, expected_components
+        )
+        stream = self.torch.cuda.current_stream(device=full_core.device)
+        self._wait_for_staging(stream)
+        staging = self._region_staging
+        if staging is None or int(staging.numel()) * int(staging.element_size()) != SOURCE_PAYLOAD_BYTES:
+            self.staging_conflict_count += 1
+            raise V4ObserverAbort("V4 shared staging shape changed")
         try:
             slot.begin_consume(expected_components)
         except V4ContractError as error:
             self.lineage_mismatch_count += 1
             self.lineage_diagnostic = comparison
             raise V4ObserverAbort(str(error)) from error
-        stream = self.torch.cuda.current_stream(device=full_core.device)
-        self._wait_for_staging(stream)
         stream.wait_event(slot.completion_event)
-        staging = self._region_staging
-        if staging is None or int(staging.numel()) * int(staging.element_size()) != SOURCE_PAYLOAD_BYTES:
-            self.staging_conflict_count += 1
-            raise V4ObserverAbort("V4 shared staging shape changed")
-        version_before = int(getattr(full_core, "_version", 0))
         observer_start, _ = self._timed_events("observer", stream)
         self._staging_state.transition("H2D_IN_FLIGHT", owner_ordinal=event.ordinal)
         _, h2d_end = self._timed_events("candidate_h2d", stream)
@@ -692,8 +737,12 @@ class H3ObserverControllerV4(H3A3G1Controller):
         observer_pair.end.record(stream)
         self._staging_state.transition("FINALIZED", owner_ordinal=event.ordinal)
         self._staging_state.transition("FREE", owner_ordinal=event.ordinal)
-        if int(getattr(full_core, "_version", 0)) != version_before:
+        identity_after = self._capture_full_core_identity(
+            full_core, expected_components
+        )
+        if not tensor_identity_matches(identity_before, identity_after):
             self.output_mutation_count += 1
+            self.tensor_identity_mismatch_count += 1
             raise V4ObserverAbort("V4 observer mutated the Full Attention core")
         confidence = (
             plan.get("eye_confidence_ppm", [0] * 5)
@@ -936,6 +985,10 @@ class H3ObserverControllerV4(H3A3G1Controller):
                     slot.lifecycle.invalid_transition_count
                     for slot in self.resources.slots.values()
                 ),
+                "abort_cleanup_count": sum(
+                    slot.lifecycle.abort_cleanup_count
+                    for slot in self.resources.slots.values()
+                ),
                 "peak_slot_count": len(self.resources.slots),
             }
             confusion = {
@@ -1094,10 +1147,11 @@ class H3ObserverControllerV4(H3A3G1Controller):
             raise
 
     def abort(self, reason: str) -> None:
-        if self.state in {"complete", "aborted"}:
+        if self.state == "complete" or self._abort_cleanup_completed:
             return
         self.abort_reason = reason
-        self._transition("aborted")
+        if self.state != "aborted":
+            self._transition("aborted")
         try:
             self.torch.cuda.synchronize()
             self.finalization_sync_count += 1
@@ -1107,6 +1161,13 @@ class H3ObserverControllerV4(H3A3G1Controller):
             self._pump_completions("abort_cleanup")
         except V4ObserverAbort:
             self.completion_commit_failure_count += 1
+        for slot in self.resources.slots.values():
+            slot.abort_cleanup()
+        self._pending_completions.clear()
+        self._deferred_captures.clear()
+        self._scheduled_targets.clear()
+        self._scheduled_sources.clear()
+        self._abort_cleanup_completed = True
 
     def _async_completion_receipt(self) -> dict[str, Any]:
         return {
@@ -1131,6 +1192,16 @@ class H3ObserverControllerV4(H3A3G1Controller):
             "pending_completion_count": len(self._pending_completions),
             "deferred_capture_count": len(self._deferred_captures),
             "hot_path_forced_cpu_sync_count": self.hot_path_forced_sync_count,
+            "tensor_identity": {
+                "check_count": self.tensor_identity_check_count,
+                "inference_tensor_check_count": self.inference_tensor_identity_check_count,
+                "normal_tensor_check_count": self.normal_tensor_identity_check_count,
+                "version_counter_unavailable_count": self.version_counter_unavailable_count,
+                "identity_failure_count": self.tensor_identity_failure_count,
+                "identity_mismatch_count": self.tensor_identity_mismatch_count,
+                "inference_version_semantics": INFERENCE_NO_VERSION_COUNTER,
+                "raw_inference_version_access_count": 0,
+            },
         }
 
     def failure_receipt(self) -> dict[str, Any]:
@@ -1170,6 +1241,10 @@ class H3ObserverControllerV4(H3A3G1Controller):
                 ),
                 "release_count": sum(
                     slot.lifecycle.release_count for slot in self.resources.slots.values()
+                ),
+                "abort_cleanup_count": sum(
+                    slot.lifecycle.abort_cleanup_count
+                    for slot in self.resources.slots.values()
                 ),
             },
             "async_completion": self._async_completion_receipt(),

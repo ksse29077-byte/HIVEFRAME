@@ -2461,6 +2461,23 @@ start/completion was 1/1/0, cumulative submissions are seven, and no retry,
 repair, or Selective work followed. Decision remains
 `H3_V4_FORMAL_CONTROL_FAILED`.
 
+The approved inference-identity continuation removed the two direct V4
+observer `_version` reads and added a guarded identity helper. Inference tensors
+now use `INFERENCE_NO_VERSION_COUNTER`; normal tensors retain version-mutation
+diagnostics. Logical generation/source/slot/shape/layout identity remains
+authoritative while object and storage pointers are diagnostic-only. Identity
+validation precedes `CONSUMING`, and abort cleanup leaves no orphan slots or
+event references.
+
+A model-free production-shaped CUDA trace used Standard `attention_pytorch`,
+Sage disabled, and a real BF16 inference tensor. It passed 1,000 Full Attention
+schedule positions, 208/199/199 capture/consume/release, 199 exact records, 398
+inference identity checks, raw version errors 0, safety failures 0, and exact
+allocator restoration. Focused tests passed 44, release-PyO3 H3 tests passed
+139 with skip zero, Rust passed 50, and strict build checks passed. No model,
+prompt, or Formal CONTROL was executed; cumulative submissions remain seven.
+Admission decision: `H3_V4_INFERENCE_RUNTIME_READY`.
+
 ---
 
 ```markdown

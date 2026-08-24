@@ -90,6 +90,7 @@ class SourceSlotLifecycle:
     capture_count: int = 0
     consume_count: int = 0
     release_count: int = 0
+    abort_cleanup_count: int = 0
     invalid_transition_count: int = 0
 
     def _transition(self, target: str) -> None:
@@ -140,6 +141,14 @@ class SourceSlotLifecycle:
         self._transition(SOURCE_SLOT_EMPTY)
         self.identity = None
 
+    def abort_to_empty(self) -> None:
+        """Drop an aborted slot without treating cleanup as a normal release."""
+
+        if self.state != SOURCE_SLOT_EMPTY:
+            self.abort_cleanup_count += 1
+        self.state = SOURCE_SLOT_EMPTY
+        self.identity = None
+
     def reset(self) -> None:
         self.state = SOURCE_SLOT_EMPTY
         self.version = 0
@@ -147,6 +156,7 @@ class SourceSlotLifecycle:
         self.capture_count = 0
         self.consume_count = 0
         self.release_count = 0
+        self.abort_cleanup_count = 0
         self.invalid_transition_count = 0
 
 

@@ -872,3 +872,59 @@ H3_V4_FORMAL_CONTROL_FAILED
 The asynchronous pump is validated in isolation, but Formal H3 never reached
 it. Actual Selective H3 execution remains unauthorized until a separately
 approved task addresses the inference-tensor identity check.
+
+## Inference Tensor Identity Compatibility Admission
+
+The approved final V4 continuation began at exact clean head
+`5452b8769f1d3890e42576ac94abf1c788b16ee1`. The V4 runtime audit found two
+direct `full_core._version` reads, both in the observer's output-mutation
+diagnostic. No CachePlan, executor, candidate, threshold, slot-count, or buffer
+contract depended on the tensor version counter.
+
+The direct reads were replaced by one inference-aware tensor identity helper.
+It uses `torch.is_inference()` before any version access. Inference tensors use
+the explicit `INFERENCE_NO_VERSION_COUNTER` semantic and never read `_version`;
+normal tensors retain guarded version-change diagnostics. Authoritative lineage
+remains runtime-owned generation/profile/workflow/model/inventory, source
+step/timestep, block/region, capture sequence, slot index/version, and complete
+shape/stride/layout/dtype/device/storage-range identity. Python object and
+storage pointers remain diagnostic-only and are excluded from receipts.
+
+Identity and staging validation now precede the `READY -> CONSUMING`
+transition. Aborted generations clear remaining slot identities and event
+references without recording a false normal release. Negative tests reject
+pointer reuse with changed capture sequence, step, block/region, slot version,
+storage offset, dtype/device/layout, previous generation, and stale events.
+Identity-helper failure leaves the slot `READY`, and abort cleanup leaves zero
+orphan slots and event references.
+
+The production-shaped CUDA fixture loaded no H3 model and submitted no prompt.
+It used Standard ComfyUI `attention_pytorch`, Sage disabled, BF16 tensors shaped
+15,424 x 56 x 128, and a real inference-mode backend output shaped
+15,424 x 7,168. The full 20-step trace passed 1,000 Full Attention schedule
+positions, 208 captures, 199 consumes/releases, 199 exact records, and 398
+inference identity checks. Raw inference version access, identity errors,
+lineage mismatch, overwrite, stale, duplicate, incomplete, orphan `CONSUMING`,
+pending completions, hot-path blocking synchronization, and live tensor
+references were all zero.
+
+The first fixture invocation compared a cold zero-byte allocator baseline with
+PyTorch's retained initialization allocation. Its functional trace had passed,
+but allocator admission correctly failed. One allowed fixture-only correction
+reused the established CUDA warm-cycle. The rerun restored allocated/reserved
+memory exactly to 8,519,680 / 16,777,216 bytes and passed the complete Gate.
+This was not an H3 generation, submission, retry, or fallback.
+
+Focused Python tests passed 44/44. The complete adjacent H3 set with the exact
+release PyO3 extension passed 139/139 with skip zero, including the expected
+panic-containment probe. Rust workspace tests passed 50/50; format, strict
+Clippy, release build, and Python compilation passed. Executor and CachePlan ABI
+V2 sources are unchanged, so the previously measured 1.432035% median and
+1.416365% conservative economics remain applicable.
+
+```text
+H3_V4_INFERENCE_RUNTIME_READY
+```
+
+No H3 model was loaded and no Formal CONTROL was submitted during this
+Admission stage. The cumulative Formal submission count remains seven.

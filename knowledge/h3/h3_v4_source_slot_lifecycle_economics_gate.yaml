@@ -186,3 +186,53 @@ formal_control_after_async_completion:
     immediate_post_shutdown_gpu_bytes: 173015040
   same_task_fix_or_retry: false
   follow_up_started: false
+inference_tensor_identity_admission:
+  starting_head: 5452b8769f1d3890e42576ac94abf1c788b16ee1
+  decision: H3_V4_INFERENCE_RUNTIME_READY
+  raw_version_audit:
+    observer_hot_path_direct_access: 0
+    inference_tensor_access: 0
+    guarded_normal_tensor_helper_access: 1
+    inference_semantics: INFERENCE_NO_VERSION_COUNTER
+  identity_contract:
+    logical_identity_authoritative: true
+    storage_pointer_telemetry_diagnostic_only: true
+    pointer_only_lineage_admission: false
+    consume_after_identity_validation: true
+    abort_orphan_slots: 0
+  inference_cuda_trace:
+    backend: attention_pytorch
+    sage_enabled: false
+    model_loaded: false
+    generation_count: 0
+    full_attention_calls: 1000
+    model_forwards: 20
+    captures_consumes_releases: [208, 199, 199]
+    source_records: 208
+    exact_records: 199
+    inference_identity_checks: 398
+    raw_inference_version_access: 0
+    identity_failure_mismatch: [0, 0]
+    lineage_overwrite_stale_duplicate_incomplete: [0, 0, 0, 0, 0]
+    orphan_consuming: 0
+    hot_path_blocking_sync: 0
+    live_tensor_references: 0
+    allocator_baseline_allocated_reserved: [8519680, 16777216]
+    allocator_final_allocated_reserved: [8519680, 16777216]
+    passed: true
+  fixture_correction:
+    count: 1
+    reason: COLD_ALLOCATOR_BASELINE_MISMATCH
+    generation_submission_gpu_completion: [0, 0, 0]
+  verification:
+    focused_python: 44
+    adjacent_h3_release_pyo3: 139
+    adjacent_h3_skip: 0
+    rust_workspace: 50
+    fmt_clippy_release: PASS
+  executor_cacheplan_changed: false
+  economics_reused:
+    median_percent: 1.4320347854
+    conservative_percent: 1.4163649114
+    unknown_cost: 0
+  cumulative_formal_control_submissions: 7

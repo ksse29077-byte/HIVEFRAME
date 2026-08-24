@@ -27,7 +27,7 @@ from .h3_bounded_host_source_oracle_v4_cuda import gpu_exact_oracle_metrics
 from .h3_v4_lineage_diagnostic import build_source_components
 
 
-ROOT_CAUSE = "CALLBACK_ORDERING_GAP"
+ROOT_CAUSE = "INFERENCE_TENSOR_VERSION_COUNTER_READ"
 FULL_ATTENTION_CALLS = 1_000
 
 
@@ -402,6 +402,168 @@ def run_async_cuda_fixture(
     }
 
 
+def run_inference_cuda_trace_fixture(
+    torch_module: Any, attention_backend: Any
+) -> dict[str, Any]:
+    """Run the frozen observer trace on a real inference-mode H3 backend output."""
+
+    if not torch_module.cuda.is_available():
+        raise RuntimeError("CUDA is unavailable")
+    device = torch_module.device("cuda:0")
+    warm_cycle = run_async_cuda_fixture(torch_module)
+    if not warm_cycle["passed"]:
+        raise RuntimeError("V4 inference fixture warm baseline failed")
+    torch_module.cuda.empty_cache()
+    baseline_allocated = int(torch_module.cuda.memory_allocated(device))
+    baseline_reserved = int(torch_module.cuda.memory_reserved(device))
+    generator = torch_module.Generator(device=device)
+    generator.manual_seed(101)
+    with torch_module.inference_mode():
+        q = torch_module.randn(
+            (15424, 56, 128),
+            dtype=torch_module.bfloat16,
+            device=device,
+            generator=generator,
+        )
+        k = torch_module.randn(q.shape, dtype=q.dtype, device=device, generator=generator)
+        v = torch_module.randn(q.shape, dtype=q.dtype, device=device, generator=generator)
+        full_core = attention_backend(q, k, v)
+    torch_module.cuda.synchronize()
+    if tuple(int(value) for value in full_core.shape) != (15424, 7168):
+        raise RuntimeError("V4 inference fixture backend output shape changed")
+    if not torch_module.is_inference(full_core):
+        raise RuntimeError("V4 inference fixture did not create an inference tensor")
+    del q
+    del k
+    del v
+    gc.collect()
+    torch_module.cuda.empty_cache()
+
+    resources = V4HostSourceResources(torch_module)
+    controller = H3ObserverControllerV4(
+        plan_bridge=SimpleNamespace(plans={}),
+        h3_model=SimpleNamespace(),
+        torch_module=torch_module,
+        resources=resources,
+        generation_digest="1" * 64,
+        workflow_digest="2" * 64,
+        model_digest="3" * 64,
+        profile_digest=PROFILE_DIGEST,
+        scheduler_timesteps=tuple(float(20 - index).hex() for index in range(20)),
+    )
+    controller.start_observing()
+    controller._ensure_buffers(full_core=full_core, video_start=439)
+    plan = {
+        "global_invalidation": False,
+        "stable_region_mask": 0,
+        "active_mask": 1,
+        "uncertain_mask": 0,
+        "eye_confidence_ppm": [500000] * 5,
+        "eye_change_ppm": [100000] * 5,
+    }
+    with torch_module.inference_mode():
+        for step in range(20):
+            controller.model_forward_count += 1
+            controller.block_call_count += 50
+            controller.full_attention_calls += 50
+            for block in SOURCE_BLOCKS:
+                controller._observe_full_compute_control(
+                    block_index=block,
+                    step=step,
+                    plan=plan,
+                    directive="FULL_COMPUTE",
+                    stable_mask=0,
+                    full_core=full_core,
+                )
+                controller._refresh_cache(
+                    block_index=block, step=step, full_core=full_core
+                )
+        deadline = perf_counter() + 60.0
+        while controller._pending_completions and perf_counter() < deadline:
+            controller._pump_completions("inference_fixture_drain")
+            sleep(0.001)
+    torch_module.cuda.synchronize()
+    controller._pump_completions("inference_fixture_terminal")
+
+    lifecycle = {
+        "capture": sum(slot.lifecycle.capture_count for slot in resources.slots.values()),
+        "consume": sum(slot.lifecycle.consume_count for slot in resources.slots.values()),
+        "release": sum(slot.lifecycle.release_count for slot in resources.slots.values()),
+    }
+    async_receipt = controller._async_completion_receipt()
+    pre_abort_orphan_consuming = sum(
+        slot.state == "CONSUMING" for slot in resources.slots.values()
+    )
+    exact_records = len(controller._seen_targets)
+    source_records = len(controller._seen_sources)
+    lineage_mismatch_count = controller.lineage_mismatch_count
+    overwrite_count = controller.source_overwrite_count
+    incomplete_count = controller.incomplete_source_count
+    full_core_ref = weakref.ref(full_core)
+    controller.abort("inference_fixture_complete")
+    post_abort_live_slots = sum(
+        slot.state != SOURCE_SLOT_EMPTY for slot in resources.slots.values()
+    )
+    abort_cleanup_count = sum(
+        slot.lifecycle.abort_cleanup_count for slot in resources.slots.values()
+    )
+    controller.close()
+    del controller
+    del resources
+    del full_core
+    gc.collect()
+    torch_module.cuda.empty_cache()
+    final_allocated = int(torch_module.cuda.memory_allocated(device))
+    final_reserved = int(torch_module.cuda.memory_reserved(device))
+    passed = (
+        lifecycle == {"capture": 208, "consume": 199, "release": 199}
+        and exact_records == 199
+        and source_records == 208
+        and pre_abort_orphan_consuming == 0
+        and post_abort_live_slots == 0
+        and async_receipt["pending_completion_count"] == 0
+        and async_receipt["hot_path_forced_cpu_sync_count"] == 0
+        and async_receipt["tensor_identity"]["identity_failure_count"] == 0
+        and async_receipt["tensor_identity"]["identity_mismatch_count"] == 0
+        and async_receipt["tensor_identity"]["raw_inference_version_access_count"] == 0
+        and full_core_ref() is None
+        and final_allocated <= baseline_allocated
+        and final_reserved <= baseline_reserved
+    )
+    return {
+        "model_loaded": False,
+        "generation_count": 0,
+        "warm_baseline_passed": True,
+        "backend": "attention_pytorch",
+        "sage_enabled": False,
+        "dtype": "torch.bfloat16",
+        "shape": [15424, 56, 128],
+        "backend_output_shape": [15424, 7168],
+        "full_attention_calls": FULL_ATTENTION_CALLS,
+        "model_forwards": 20,
+        "lifecycle": lifecycle,
+        "source_records": source_records,
+        "exact_records": exact_records,
+        "pre_abort_orphan_consuming": pre_abort_orphan_consuming,
+        "post_abort_live_slots": post_abort_live_slots,
+        "abort_cleanup_count": abort_cleanup_count,
+        "async_completion": async_receipt,
+        "lineage_mismatch_count": lineage_mismatch_count,
+        "overwrite_count": overwrite_count,
+        "stale_count": async_receipt["stale_completion_count"],
+        "duplicate_count": async_receipt["duplicate_release_count"],
+        "incomplete_count": incomplete_count,
+        "live_tensor_references": int(full_core_ref() is not None),
+        "baseline_allocated_bytes": baseline_allocated,
+        "baseline_reserved_bytes": baseline_reserved,
+        "final_allocated_bytes": final_allocated,
+        "final_reserved_bytes": final_reserved,
+        "allocator_baseline_restored": final_allocated <= baseline_allocated
+        and final_reserved <= baseline_reserved,
+        "passed": passed,
+    }
+
+
 __all__ = [
     "FULL_ATTENTION_CALLS",
     "ROOT_CAUSE",
@@ -409,4 +571,5 @@ __all__ = [
     "replay_late_event_and_abort_cleanup",
     "replay_release_zero_prefix",
     "run_async_cuda_fixture",
+    "run_inference_cuda_trace_fixture",
 ]
