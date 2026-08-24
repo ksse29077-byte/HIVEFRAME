@@ -2423,6 +2423,25 @@ claim was admitted. A delayed cleanup check found owned processes and port
 `H3_V4_LIVE_LINEAGE_CAUSE_CAPTURED`; no second generation or automatic
 remediation was started.
 
+## 2026-08-24 - H3 V4 production executor economics and conditional control
+
+PR #138 added a production-shaped model-free executor benchmark against the
+installed Standard H3 `attention_pytorch` backend at the real BF16 Attention
+shape. All previously unknown hot-path costs were measured. The frozen
+1,000-call schedule projects 3.007449% Q reduction and 1.432035% median net
+sampler savings; conservative savings remain positive at 1.416365%. Fallback,
+pipeline, reconstruction, and RTX 3060 memory checks passed, producing
+`H3_V4_HOT_PATH_ECONOMICS_VIABLE` for this auxiliary optimization.
+
+The economics Gate authorized exactly one Full Compute Formal CONTROL. It
+submitted and started GPU work once, then failed closed on Full Attention call
+151 because the step-2 source slot was incomplete before step-3 consumption.
+Submission/GPU start/completion was 1/1/0, cumulative Formal submissions are
+six, and retry/fallback/SELECTIVE/partial-Q/omission remained zero. No output
+was produced. The owned runtime was stopped; a delayed check found port 8191
+closed and GPU memory back at 10 MiB. Final decision:
+`H3_V4_FORMAL_CONTROL_FAILED`. No repair or follow-up execution was started.
+
 ---
 
 ```markdown

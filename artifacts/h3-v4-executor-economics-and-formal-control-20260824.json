@@ -1,0 +1,94 @@
+{
+  "schema_version": "h3.v4-executor-economics-and-formal-control.1",
+  "issue": 137,
+  "draft_pr": 138,
+  "implementation_head": "4fdb82dea0f4c4014dd85409fa8403611443abd7",
+  "benchmark": {
+    "model_loaded": false,
+    "h3_generation_count": 0,
+    "backend": "attention_pytorch",
+    "backend_source_sha256": "a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9",
+    "sage_enabled": false,
+    "dtype": "torch.bfloat16",
+    "shape": {
+      "sequence_rows": 15424,
+      "attention_heads": 56,
+      "head_dimension": 128,
+      "output_width": 7168
+    },
+    "partition": {
+      "computed_rows": 13093,
+      "reused_rows": 2331,
+      "full_xor_selective": true
+    },
+    "cuda_median_ms": {
+      "full_reference": 269.83935546875,
+      "reduced_q_attention": 229.70777893066406,
+      "selective_hot_path": 232.58912658691406,
+      "forced_fallback": 269.876220703125,
+      "plan_decode": 0.22518399357795715,
+      "representative_gather": 1.165312,
+      "reconstruction_scatter": 1.659904,
+      "cache_read": 0.212992,
+      "cache_write": 0.306176
+    },
+    "frozen_schedule": {
+      "calls": 1000,
+      "candidate_targets": 199,
+      "source_cache_writes": 208,
+      "omitted_rows": 463869,
+      "theoretical_rows": 15424000,
+      "planned_q_reduction_percent": 3.007449429460581
+    },
+    "economics": {
+      "optimistic_net_seconds": 7.1908063711,
+      "optimistic_percent": 1.4709718313,
+      "median_net_seconds": 7.0004636657,
+      "median_percent": 1.4320347854,
+      "conservative_net_seconds": 6.9238619065,
+      "conservative_percent": 1.4163649114,
+      "unknown_runtime_costs": [],
+      "decision": "H3_V4_HOT_PATH_ECONOMICS_VIABLE"
+    },
+    "memory": {
+      "peak_allocated_bytes": 3223861760,
+      "peak_reserved_bytes": 3948937216,
+      "physical_vram_bytes": 12884377600,
+      "cleanup_allocated_bytes": 0,
+      "cleanup_reserved_bytes": 0
+    }
+  },
+  "formal_control": {
+    "submission_gpu_start_completion": [1, 1, 0],
+    "cumulative_formal_submissions": 6,
+    "retry_fallback": [0, 0],
+    "selective_partial_q_omission": [0, 0, 0],
+    "model_forwards": 4,
+    "full_attention_calls": 151,
+    "source_capture_consume_release": [13, 13, 0],
+    "exact_records": 0,
+    "rust_live_offline_replay": [0, 0],
+    "terminal": "execution_error",
+    "failure_class": "SOURCE_SLOT_INCOMPLETE_BEFORE_CONSUMPTION",
+    "failure_location": {
+      "source_step": 2,
+      "target_step": 3,
+      "block": 0,
+      "region": 0,
+      "slot": 0
+    },
+    "output_integrity": "UNAVAILABLE",
+    "runner_wall_seconds": 194.8654853,
+    "sampled_comfy_peak_vram_bytes": 12037813671,
+    "sampled_nvidia_peak_used_bytes": 11919163392,
+    "delayed_cleanup": {
+      "owned_process_count": 0,
+      "port_8191_listener_count": 0,
+      "gpu_mib": 10,
+      "external_process_termination_count": 0
+    },
+    "decision": "H3_V4_FORMAL_CONTROL_FAILED"
+  },
+  "automatic_follow_up_started": false,
+  "selective_h3_execution_authorized": false
+}

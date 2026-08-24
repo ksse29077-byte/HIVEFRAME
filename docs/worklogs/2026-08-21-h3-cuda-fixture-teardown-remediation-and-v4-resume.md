@@ -719,3 +719,92 @@ H3_V4_ECONOMICS_NOT_VIABLE
 The slot defect is remediated and bounded, but this does not establish that the
 compound-eye path is commercially faster. Formal CONTROL and executor work
 remain unauthorized and were not started automatically.
+
+## Production-Shaped Executor Hot Path Economics And Conditional Formal Control
+
+The approved PR #138 continuation began at exact clean head
+`a4bb919700026f5d1faa43b4f9f7e1a366cad844`. It added a production-shaped V4
+Executor Adapter and benchmark using the installed Standard H3
+`attention_pytorch` backend, Sage disabled, and model-free synthetic BF16
+tensors at the real H3 shape: 15,424 rows, 56 heads, head dimension 128, and
+output width 7,168. No H3 generation was used to establish executor economics.
+
+The adapter decodes the release Rust CachePlan ABI V2, validates runtime
+profile/context/lineage/shape/dtype/device/cache identity, and enforces Full XOR
+Selective execution. Its selective branch computes 13,093 rows and reuses
+2,331 rows; all invalid or vetoed paths fail closed through the same exact Full
+callable. Reconstruction was bit-exact when the cache contained the identical
+omitted rows, and forced fallback matched the Full reference exactly.
+
+Seven measured CUDA samples after two warmups produced these medians:
+
+```text
+Full reference:                 269.839355 ms
+reduced-Q Attention:            229.707779 ms
+selective executor hot path:    232.589127 ms
+forced exact fallback:          269.876221 ms
+Rust plan decode:                 0.225184 ms
+representative gather:            1.165312 ms
+reconstruction scatter:           1.659904 ms
+cache read/write:                  0.212992 / 0.306176 ms
+```
+
+The previously unknown validation, plan materialization/application, launch,
+allocator, explicit-sync, cache guard, and release Rust compilation costs were
+also measured. Unknown runtime costs are now zero. The frozen 1,000-call
+schedule contains 199 candidate targets, 208 source writes, and 463,869 omitted
+rows of 15,424,000, or 3.007449%. Net projected savings are 7.190806 seconds
+(1.470972%) optimistic, 7.000464 seconds (1.432035%) at the median, and
+6.923862 seconds (1.416365%) conservatively. Conservative savings are positive,
+median savings exceed 1%, p95 does not regress, and memory/fallback/pipeline
+checks pass. Peak CUDA allocated/reserved memory was 3,223,861,760 /
+3,948,937,216 bytes and cleanup returned both to zero.
+
+```text
+H3_V4_HOT_PATH_ECONOMICS_VIABLE
+```
+
+This result only clears the conditional Formal CONTROL Gate. It does not
+authorize selective H3 generation and represents about 1.43% projected sampler
+savings, so V4 remains an auxiliary optimization rather than the main path to
+the product's two-minute target.
+
+One and only one approved Full Compute Formal CONTROL was then submitted from
+head `4fdb82dea0f4c4014dd85409fa8403611443abd7`. All pre-start and post-start
+Admission checks passed. The run started H3 GPU work but failed closed on the
+151st Full Attention call, at target step 3, before any exact holdout record:
+
+```text
+V4 candidate source is incomplete:
+slot=0 source_step=2 target_step=3 block=0 region=0
+```
+
+At failure, 13 slots had been captured and consumed, none had been released,
+and all were still `CONSUMING`. The requested step-2/version-2/capture-14 source
+was not complete while the retained slot still described
+step-1/version-1/capture-1. The generic diagnostic therefore reports a lineage
+mismatch, but the direct runtime failure is an incomplete source-slot lifecycle
+before consumption. No functional correction is made in this task.
+
+Submission/GPU start/completion was `1/1/0`; cumulative Formal submissions are
+six. Model forwards were 4, Full Attention calls were 151, and exact records,
+Rust live/replay, Selective, partial-Q, Attention omission, output mutation,
+retry, and fallback were all zero. The terminal was `execution_error`, no MP4
+was produced, and output integrity is unavailable. Runner wall time was
+194.865485 seconds. Sampled Comfy VRAM peaked at 12,037,813,671 bytes and
+NVIDIA-used memory at 11,919,163,392 bytes.
+
+The verified owned runtime tree stopped without terminating external processes.
+The immediate shutdown sample still observed 165 MiB and therefore failed only
+its instant GPU-baseline check; a later read-only check confirmed all owned
+processes absent, port 8191 closed, and GPU memory restored to 10 MiB. No retry,
+repair, second generation, executor integration, or follow-up research was
+started.
+
+```text
+H3_V4_FORMAL_CONTROL_FAILED
+```
+
+The hot path has measurable auxiliary economics, but its production evidence
+lifecycle is not safe enough to proceed. Actual selective H3 execution remains
+unauthorized.
