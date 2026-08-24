@@ -61,6 +61,10 @@ from .h3_bounded_host_source_oracle_v4 import (
 )
 from .h3_bounded_host_source_oracle_v4_cuda import run_bounded_cuda_preflight
 from .h3_observer_v4 import PROFILE_DIGEST, PROFILE_ID, SOURCE_CAPTURE_COUNT
+from .h3_v4_economics import (
+    DECISION as ECONOMICS_NOT_VIABLE,
+    build_precontrol_economics_gate,
+)
 from .h3_row_region_safety import (
     CACHE_HARD_CAP_BYTES,
     FULL_Q_ROWS,
@@ -94,6 +98,10 @@ ADMISSION_BLOCKED = "H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED"
 PHYSICAL_VRAM_BYTES = 12_884_377_600
 PROJECTED_BASELINE_PEAK_BYTES = 12_514_625_897
 EXPECTED_ATTENTION_CALLS = BLOCK_COUNT * 20
+
+
+class V4EconomicsGateBlocked(Exception):
+    """Stop before runtime start when product economics are not established."""
 
 
 def _git(repository: Path, *args: str) -> str:
@@ -428,6 +436,7 @@ def run_control(
         )
         model_free = model_free_preflight_receipt()
         transfer = build_transfer_ledger()
+        economics = build_precontrol_economics_gate()
         import torch
 
         cuda_preflight = run_bounded_cuda_preflight(torch)
@@ -456,6 +465,7 @@ def run_control(
             "release_pyo3_loaded": bridge_probe.extension is not None,
             "inventory_exact": len(FROZEN_EVENTS) == MINIMUM_EXACT_RECORDS,
             "source_capture_exact": SOURCE_CAPTURE_COUNT == 208,
+            "production_economics_viable": economics["passed"] is True,
         }
         receipt["pre_start_admission"] = {
             "head": head,
@@ -469,10 +479,14 @@ def run_control(
             "model_free": model_free,
             "cuda_preflight": cuda_preflight,
             "transfer": transfer,
+            "production_economics": economics,
             "checks": checks,
             "passed": all(checks.values()),
         }
         if not all(checks.values()):
+            if economics["passed"] is not True:
+                receipt["decision"] = ECONOMICS_NOT_VIABLE
+                raise V4EconomicsGateBlocked("V4 production Economics Gate failed")
             raise RuntimeError("V4 pre-start Admission Gate failed")
 
         receipt["runtime_start"] = backend.start_runtime()
@@ -721,7 +735,10 @@ def run_control(
     except BaseException as error:
         receipt["runner_error"] = type(error).__name__
         receipt["runner_error_message"] = str(error)[:1000]
-        receipt["decision"] = FAILED if submitted else ADMISSION_BLOCKED
+        if isinstance(error, V4EconomicsGateBlocked):
+            receipt["decision"] = ECONOMICS_NOT_VIABLE
+        else:
+            receipt["decision"] = FAILED if submitted else ADMISSION_BLOCKED
     finally:
         if resource_sampler is not None:
             resource_sampler.stop()

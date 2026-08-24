@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from hashlib import sha256
 from time import perf_counter
 from typing import Any, Mapping, Sequence
@@ -30,11 +30,18 @@ from .h3_bounded_host_source_oracle_v4 import (
     SOURCE_CAPTURE_D2H_BYTES,
     SOURCE_PAYLOAD_BYTES,
     SOURCE_SHAPE,
+    SOURCE_SLOT_CONSUMING,
+    SOURCE_SLOT_EMPTY,
+    SOURCE_SLOT_IDENTITY_FIELDS,
+    SOURCE_SLOT_READY,
+    SOURCE_SLOT_RELEASED,
     SOURCE_STEPS,
     SharedStagingState,
+    SourceSlotLifecycle,
     SourceIdentity,
     TOTAL_TENSOR_TRANSFER_BYTES,
     TOTAL_TENSOR_TRANSFER_HARD_CAP_BYTES,
+    V4ContractError,
     frozen_inventory_digest,
     settings_digest,
 )
@@ -73,7 +80,7 @@ PACKED_LAYOUT_DIGEST = sha256(
 ).hexdigest()
 
 
-class V4ObserverAbort(RuntimeError):
+class V4ObserverAbort(Exception):
     """Abort the one-shot observer without entering a native retry path."""
 
 
@@ -82,17 +89,66 @@ class V4HostSourceSlot:
     """One block-local exact BF16 host source and its completion identity."""
 
     payload: Any
-    valid: bool = False
-    consumed: bool = True
-    source_step: int | None = None
+    lifecycle: SourceSlotLifecycle = field(default_factory=SourceSlotLifecycle)
     lineage_digest: str | None = None
     lineage_components: dict[str, Any] | None = None
     completion_event: Any | None = None
 
+    @property
+    def state(self) -> str:
+        return self.lifecycle.state
+
+    @property
+    def valid(self) -> bool:
+        return self.state in {
+            SOURCE_SLOT_READY,
+            SOURCE_SLOT_CONSUMING,
+            SOURCE_SLOT_RELEASED,
+        }
+
+    @property
+    def consumed(self) -> bool:
+        return self.state in {SOURCE_SLOT_EMPTY, SOURCE_SLOT_RELEASED}
+
+    @property
+    def source_step(self) -> int | None:
+        if self.lifecycle.identity is None:
+            return None
+        return int(self.lifecycle.identity["source_step_ordinal"])
+
+    @property
+    def version(self) -> int:
+        return self.lifecycle.version
+
+    def begin_capture(self, components: Mapping[str, Any]) -> None:
+        self.lifecycle.begin_capture(components)
+        self.lineage_digest = None
+        self.lineage_components = None
+        self.completion_event = None
+
+    def mark_ready(
+        self,
+        *,
+        lineage_digest: str,
+        lineage_components: Mapping[str, Any],
+        completion_event: Any,
+    ) -> None:
+        self.lineage_digest = lineage_digest
+        self.lineage_components = dict(lineage_components)
+        self.completion_event = completion_event
+        self.lifecycle.mark_ready()
+
+    def begin_consume(self, expected_components: Mapping[str, Any]) -> None:
+        expected = {
+            field: expected_components[field] for field in SOURCE_SLOT_IDENTITY_FIELDS
+        }
+        self.lifecycle.begin_consume(expected)
+
+    def release(self) -> None:
+        self.lifecycle.release()
+
     def reset(self) -> None:
-        self.valid = False
-        self.consumed = True
-        self.source_step = None
+        self.lifecycle.reset()
         self.lineage_digest = None
         self.lineage_components = None
         self.completion_event = None
@@ -404,7 +460,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
             block=block_index,
             target_sequence=event.ordinal,
         )
-        if not slot.valid or slot.completion_event is None:
+        if slot.state != SOURCE_SLOT_READY or slot.completion_event is None:
             self.incomplete_source_count += 1
             self.lineage_diagnostic = compare_lineage(
                 expected=expected_components,
@@ -417,13 +473,14 @@ class H3ObserverControllerV4(H3A3G1Controller):
                 f"source_step={event.source_step} target_step={step} "
                 f"block={block_index} region={REGION}"
             )
-        if slot.source_step != event.source_step or slot.lineage_digest != expected_lineage:
+        comparison = compare_lineage(
+            expected=expected_components,
+            actual=slot.lineage_components,
+            target=target_components,
+        )
+        if not comparison["matched"] or slot.lineage_digest != expected_lineage:
             self.lineage_mismatch_count += 1
-            self.lineage_diagnostic = compare_lineage(
-                expected=expected_components,
-                actual=slot.lineage_components,
-                target=target_components,
-            )
+            self.lineage_diagnostic = comparison
             first = self.lineage_diagnostic["first_mismatch_field"]
             raise V4ObserverAbort(
                 "V4 candidate source lineage changed: "
@@ -434,6 +491,12 @@ class H3ObserverControllerV4(H3A3G1Controller):
                 f"source_step={event.source_step} target_step={step} "
                 f"block={block_index} region={REGION}"
             )
+        try:
+            slot.begin_consume(expected_components)
+        except V4ContractError as error:
+            self.lineage_mismatch_count += 1
+            self.lineage_diagnostic = comparison
+            raise V4ObserverAbort(str(error)) from error
         stream = self.torch.cuda.current_stream(device=full_core.device)
         self._wait_for_staging(stream)
         stream.wait_event(slot.completion_event)
@@ -523,7 +586,10 @@ class H3ObserverControllerV4(H3A3G1Controller):
                 "bf16_bit_preserving_copy_path": True,
             }
         )
-        slot.consumed = True
+        try:
+            slot.release()
+        except V4ContractError as error:
+            raise V4ObserverAbort(str(error)) from error
         self._seen_targets.add(key)
         self.candidate_source_h2d_bytes += SOURCE_PAYLOAD_BYTES
         self.region_upload_count += 1
@@ -540,9 +606,18 @@ class H3ObserverControllerV4(H3A3G1Controller):
             self.duplicate_record_count += 1
             raise V4ObserverAbort("V4 duplicate source capture")
         slot = self.resources.slots[block_index]
-        if slot.valid and not slot.consumed:
+        identity = self._source_identity(block_index, step)
+        lineage_digest = identity.lineage_digest()
+        lineage_components = self._source_lineage_components(
+            block_index=block_index,
+            source_step=step,
+            legacy_digest=lineage_digest,
+        )
+        try:
+            slot.begin_capture(lineage_components)
+        except V4ContractError as error:
             self.source_overwrite_count += 1
-            raise V4ObserverAbort("V4 unread source would be overwritten")
+            raise V4ObserverAbort(str(error)) from error
         stream = self.torch.cuda.current_stream(device=full_core.device)
         self._wait_for_staging(stream)
         staging = self._region_staging
@@ -564,17 +639,11 @@ class H3ObserverControllerV4(H3A3G1Controller):
         d2h_end.record(self._transfer_stream)
         completion = self.torch.cuda.Event(blocking=False)
         completion.record(self._transfer_stream)
-        identity = self._source_identity(block_index, step)
-        slot.valid = True
-        slot.consumed = False
-        slot.source_step = step
-        slot.lineage_digest = identity.lineage_digest()
-        slot.lineage_components = self._source_lineage_components(
-            block_index=block_index,
-            source_step=step,
-            legacy_digest=slot.lineage_digest,
+        slot.mark_ready(
+            lineage_digest=lineage_digest,
+            lineage_components=lineage_components,
+            completion_event=completion,
         )
-        slot.completion_event = completion
         self._staging_release_event = completion
         self._seen_sources.add(key)
         self.source_capture_d2h_bytes += SOURCE_PAYLOAD_BYTES
@@ -654,8 +723,24 @@ class H3ObserverControllerV4(H3A3G1Controller):
             self.missing_record_count = len(missing_targets) + len(missing_sources)
             self.unexpected_record_count += len(unexpected_targets) + len(unexpected_sources)
             terminal_unconsumed = sum(
-                slot.valid and not slot.consumed for slot in self.resources.slots.values()
+                slot.state == SOURCE_SLOT_READY for slot in self.resources.slots.values()
             )
+            slot_lifecycle = {
+                "capture_count": sum(
+                    slot.lifecycle.capture_count for slot in self.resources.slots.values()
+                ),
+                "consume_count": sum(
+                    slot.lifecycle.consume_count for slot in self.resources.slots.values()
+                ),
+                "release_count": sum(
+                    slot.lifecycle.release_count for slot in self.resources.slots.values()
+                ),
+                "invalid_transition_count": sum(
+                    slot.lifecycle.invalid_transition_count
+                    for slot in self.resources.slots.values()
+                ),
+                "peak_slot_count": len(self.resources.slots),
+            }
             confusion = {
                 "true_safe": sum(
                     item["predicted_state"] == "STABLE"
@@ -712,6 +797,16 @@ class H3ObserverControllerV4(H3A3G1Controller):
                 "partial_attention_zero": self.partial_attention_calls == 0,
                 "terminal_unconsumed_sources_expected": terminal_unconsumed
                 == len(SOURCE_BLOCKS) - 4,
+                "slot_capture_count_exact": slot_lifecycle["capture_count"]
+                == SOURCE_CAPTURE_COUNT,
+                "slot_consume_count_exact": slot_lifecycle["consume_count"]
+                == MINIMUM_EXACT_RECORDS,
+                "slot_release_count_exact": slot_lifecycle["release_count"]
+                == MINIMUM_EXACT_RECORDS,
+                "slot_transition_errors_zero": slot_lifecycle[
+                    "invalid_transition_count"
+                ]
+                == 0,
             }
             if not all(integrity.values()):
                 raise V4ObserverAbort("V4 observer integrity Gate failed")
@@ -767,6 +862,7 @@ class H3ObserverControllerV4(H3A3G1Controller):
                     "integrity_checks": integrity,
                     "passed": all(integrity.values()),
                     "lineage_diagnostic": self.lineage_diagnostic_receipt(),
+                    "source_slot_lifecycle": slot_lifecycle,
                 },
             }
             return self._final_receipt
@@ -807,6 +903,25 @@ class H3ObserverControllerV4(H3A3G1Controller):
             "output_mutation_count": self.output_mutation_count,
             "rust_tensor_transfer_bytes": 0,
             "lineage_diagnostic": self.lineage_diagnostic_receipt(),
+            "source_slot_lifecycle": {
+                "states": {
+                    str(block): slot.state
+                    for block, slot in self.resources.slots.items()
+                },
+                "versions": {
+                    str(block): slot.version
+                    for block, slot in self.resources.slots.items()
+                },
+                "capture_count": sum(
+                    slot.lifecycle.capture_count for slot in self.resources.slots.values()
+                ),
+                "consume_count": sum(
+                    slot.lifecycle.consume_count for slot in self.resources.slots.values()
+                ),
+                "release_count": sum(
+                    slot.lifecycle.release_count for slot in self.resources.slots.values()
+                ),
+            },
         }
 
     def close(self) -> None:

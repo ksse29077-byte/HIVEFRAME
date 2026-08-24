@@ -51,6 +51,99 @@ class V4ContractError(ValueError):
     """Reject a changed inventory, unsafe transition, or exceeded bound."""
 
 
+SOURCE_SLOT_EMPTY = "EMPTY"
+SOURCE_SLOT_CAPTURING = "CAPTURING"
+SOURCE_SLOT_READY = "READY"
+SOURCE_SLOT_CONSUMING = "CONSUMING"
+SOURCE_SLOT_RELEASED = "RELEASED"
+
+_SOURCE_SLOT_TRANSITIONS = {
+    SOURCE_SLOT_EMPTY: {SOURCE_SLOT_CAPTURING},
+    SOURCE_SLOT_CAPTURING: {SOURCE_SLOT_READY},
+    SOURCE_SLOT_READY: {SOURCE_SLOT_CONSUMING},
+    SOURCE_SLOT_CONSUMING: {SOURCE_SLOT_RELEASED},
+    SOURCE_SLOT_RELEASED: {SOURCE_SLOT_EMPTY},
+}
+
+SOURCE_SLOT_IDENTITY_FIELDS = (
+    "generation_digest",
+    "source_step_ordinal",
+    "source_scheduler_timestep",
+    "source_block",
+    "source_region",
+    "source_capture_sequence",
+    "source_slot_index",
+    "source_slot_version",
+    "source_tensor_shape",
+    "source_dtype",
+    "source_device_layout_identity",
+)
+
+
+@dataclass
+class SourceSlotLifecycle:
+    """Bound one reusable payload to an explicit capture/consume lifecycle."""
+
+    state: str = SOURCE_SLOT_EMPTY
+    version: int = 0
+    identity: dict[str, Any] | None = None
+    capture_count: int = 0
+    consume_count: int = 0
+    release_count: int = 0
+    invalid_transition_count: int = 0
+
+    def _transition(self, target: str) -> None:
+        if target not in _SOURCE_SLOT_TRANSITIONS[self.state]:
+            self.invalid_transition_count += 1
+            raise V4ContractError(
+                f"invalid V4 source-slot transition {self.state}->{target}"
+            )
+        self.state = target
+
+    def begin_capture(self, identity: Mapping[str, Any]) -> int:
+        if self.state == SOURCE_SLOT_RELEASED:
+            self._transition(SOURCE_SLOT_EMPTY)
+            self.identity = None
+        if self.state != SOURCE_SLOT_EMPTY:
+            raise V4ContractError("V4 source capture requires EMPTY or RELEASED slot")
+        missing = [field for field in SOURCE_SLOT_IDENTITY_FIELDS if field not in identity]
+        if missing:
+            raise V4ContractError(f"V4 source identity is incomplete: {missing[0]}")
+        next_version = self.version + 1
+        if int(identity["source_slot_version"]) != next_version:
+            raise V4ContractError("V4 source slot version is not monotonic")
+        self._transition(SOURCE_SLOT_CAPTURING)
+        self.version = next_version
+        self.identity = {field: identity[field] for field in SOURCE_SLOT_IDENTITY_FIELDS}
+        self.capture_count += 1
+        return self.version
+
+    def mark_ready(self) -> None:
+        self._transition(SOURCE_SLOT_READY)
+
+    def begin_consume(self, expected: Mapping[str, Any]) -> None:
+        if self.state != SOURCE_SLOT_READY or self.identity is None:
+            raise V4ContractError("V4 source consume requires READY slot")
+        for field in SOURCE_SLOT_IDENTITY_FIELDS:
+            if self.identity.get(field) != expected.get(field):
+                raise V4ContractError(f"V4 source identity mismatch: {field}")
+        self._transition(SOURCE_SLOT_CONSUMING)
+        self.consume_count += 1
+
+    def release(self) -> None:
+        self._transition(SOURCE_SLOT_RELEASED)
+        self.release_count += 1
+
+    def reset(self) -> None:
+        self.state = SOURCE_SLOT_EMPTY
+        self.version = 0
+        self.identity = None
+        self.capture_count = 0
+        self.consume_count = 0
+        self.release_count = 0
+        self.invalid_transition_count = 0
+
+
 def _region_rows() -> tuple[int, ...]:
     rows = CPU_PROTOTYPE_PLANS[1].region_rows[REGION]
     return tuple(sorted((*rows["representative"], *rows["omitted"])))

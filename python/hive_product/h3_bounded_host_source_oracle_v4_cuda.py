@@ -259,6 +259,8 @@ def run_bounded_cuda_preflight(torch_module: Any) -> dict[str, Any]:
         "teardown": verification["close"],
         "cold_baseline": remediation["cold_baseline"],
         "warm_baseline": remediation["warm_baseline"],
+        "rolling_slot_normal": remediation["rolling_slot_normal"],
+        "rolling_slot_abort": remediation["rolling_slot_abort"],
         "checks": remediation["checks"],
         "passed": remediation["passed"],
     }

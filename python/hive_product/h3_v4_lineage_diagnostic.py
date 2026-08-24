@@ -11,7 +11,12 @@ from .h3_bounded_host_source_oracle_v4 import (
     FROZEN_EVENTS,
     REGION,
     SOURCE_BLOCKS,
+    SOURCE_SLOT_EMPTY,
+    SOURCE_SLOT_IDENTITY_FIELDS,
+    SOURCE_SLOT_READY,
     SOURCE_STEPS,
+    SourceSlotLifecycle,
+    V4ContractError,
 )
 
 
@@ -30,10 +35,12 @@ LINEAGE_FIELDS = (
     "source_block",
     "source_region",
     "source_slot_index",
+    "source_slot_version",
     "source_capture_sequence",
     "source_capture_event_id",
     "source_tensor_shape",
     "source_dtype",
+    "source_device_layout_identity",
     "source_completion_state",
     "legacy_lineage_digest",
 )
@@ -65,6 +72,15 @@ def source_capture_sequence(block: int, source_step: int) -> int:
     except ValueError as error:
         raise ValueError("V4 source step is outside the frozen inventory") from error
     return step_index * len(SOURCE_BLOCKS) + source_slot_index(block) + 1
+
+
+def source_slot_version(source_step: int) -> int:
+    """Return the monotonic per-block slot generation for a source step."""
+
+    try:
+        return SOURCE_STEPS.index(int(source_step)) + 1
+    except ValueError as error:
+        raise ValueError("V4 source step has no slot version") from error
 
 
 def source_capture_event_id(
@@ -112,6 +128,7 @@ def build_source_components(
         "source_block": int(block),
         "source_region": REGION,
         "source_slot_index": source_slot_index(block),
+        "source_slot_version": source_slot_version(source_step),
         "source_capture_sequence": sequence,
         "source_capture_event_id": source_capture_event_id(
             generation_digest=generation_digest,
@@ -121,6 +138,9 @@ def build_source_components(
         ),
         "source_tensor_shape": [int(value) for value in tensor_shape],
         "source_dtype": str(tensor_dtype),
+        "source_device_layout_identity": canonical_digest(
+            {"device": "cpu-pinned", "layout_digest": str(layout_digest)}
+        ),
         "source_completion_state": str(completion_state),
         "legacy_lineage_digest": str(legacy_lineage_digest),
     }
@@ -224,47 +244,99 @@ def replay_frozen_event_trace(scheduler_timesteps: Sequence[str]) -> dict[str, A
     if len(scheduler_timesteps) != TOTAL_STEPS:
         raise ValueError("V4 trace requires exactly 20 scheduler timesteps")
     by_target = {(event.block, event.target_step): event for event in FROZEN_EVENTS}
-    slots: dict[int, int | None] = {block: None for block in SOURCE_BLOCKS}
+    slots = {block: SourceSlotLifecycle() for block in SOURCE_BLOCKS}
     captures = 0
     targets = 0
     mismatch = 0
     overwrite = 0
     incomplete = 0
+    duplicate_consume = 0
+    stale_slot = 0
+    unread_overwrite = 0
+    peak_live_slots = 0
     first_target_call = None
+
+    def identity(block: int, source_step: int) -> dict[str, Any]:
+        components = build_source_components(
+            generation_digest="1" * 64,
+            profile_digest="2" * 64,
+            model_digest="3" * 64,
+            inventory_digest="4" * 64,
+            layout_digest="5" * 64,
+            scheduler_timesteps=scheduler_timesteps,
+            block=block,
+            source_step=source_step,
+            tensor_shape=(3367, 7168),
+            tensor_dtype="torch.bfloat16",
+            completion_state="EVENT_RECORDED",
+            legacy_lineage_digest="6" * 64,
+        )
+        return {field: components[field] for field in SOURCE_SLOT_IDENTITY_FIELDS}
+
     for step in range(TOTAL_STEPS):
         for block in range(BLOCK_COUNT):
             event = by_target.get((block, step))
             if event is not None:
                 if first_target_call is None:
                     first_target_call = step * BLOCK_COUNT + block + 1
-                source_step = slots[block]
-                if source_step is None:
+                slot = slots[block]
+                if slot.state != SOURCE_SLOT_READY:
                     incomplete += 1
-                elif source_step != event.source_step:
-                    mismatch += 1
                 else:
-                    targets += 1
-                    slots[block] = None
+                    try:
+                        slot.begin_consume(identity(block, event.source_step))
+                        slot.release()
+                        targets += 1
+                    except V4ContractError as error:
+                        mismatch += 1
+                        if "source_step_ordinal" in str(error):
+                            stale_slot += 1
+                        if "requires READY" in str(error):
+                            duplicate_consume += 1
             if block in SOURCE_BLOCKS and step in SOURCE_STEPS:
-                if slots[block] is not None:
+                slot = slots[block]
+                try:
+                    slot.begin_capture(identity(block, step))
+                    slot.mark_ready()
+                    captures += 1
+                except V4ContractError:
                     overwrite += 1
-                slots[block] = step
-                captures += 1
+                    if slot.state == SOURCE_SLOT_READY:
+                        unread_overwrite += 1
+            peak_live_slots = max(
+                peak_live_slots,
+                sum(slot.state != SOURCE_SLOT_EMPTY for slot in slots.values()),
+            )
+    releases = sum(slot.release_count for slot in slots.values())
+    consumes = sum(slot.consume_count for slot in slots.values())
+    transition_errors = sum(slot.invalid_transition_count for slot in slots.values())
     passed = (
         captures == len(SOURCE_BLOCKS) * len(SOURCE_STEPS)
         and targets == len(FROZEN_EVENTS)
+        and consumes == releases == len(FROZEN_EVENTS)
         and mismatch == overwrite == incomplete == 0
+        and duplicate_consume == stale_slot == unread_overwrite == 0
+        and transition_errors == 0
+        and peak_live_slots <= len(SOURCE_BLOCKS)
     )
     return {
         "schema_version": SCHEMA_VERSION,
         "runtime_evidence": False,
         "full_attention_trace_calls": TOTAL_STEPS * BLOCK_COUNT,
         "source_capture_count": captures,
+        "target_lookup_count": len(FROZEN_EVENTS),
+        "target_consume_completed_count": consumes,
+        "source_release_count": releases,
         "frozen_candidates_encountered": targets,
         "exact_candidate_admissions": targets,
         "lineage_mismatch_count": mismatch,
         "source_slot_overwrite_count": overwrite,
         "incomplete_source_admission_count": incomplete,
+        "duplicate_consume_count": duplicate_consume,
+        "stale_slot_admission_count": stale_slot,
+        "unread_slot_overwrite_count": unread_overwrite,
+        "slot_transition_error_count": transition_errors,
+        "peak_simultaneous_live_slots": peak_live_slots,
         "first_target_full_attention_call": first_target_call,
         "passed": passed,
     }

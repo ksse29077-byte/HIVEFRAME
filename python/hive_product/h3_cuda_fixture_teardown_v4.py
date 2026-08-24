@@ -16,17 +16,29 @@ from .attention_output_reuse import (
     CATASTROPHIC_NORMALIZED_L2_MAX,
 )
 from .h3_bounded_host_source_oracle_v4 import (
+    FROZEN_EVENTS,
     GPU_STAGING_BUDGET_BYTES,
+    MINIMUM_EXACT_RECORDS,
     OMITTED_POSITIONS,
     REGION_ROWS,
     REPRESENTATIVE_POSITIONS,
+    SOURCE_BLOCKS,
     SOURCE_PAYLOAD_BYTES,
     SOURCE_SHAPE,
+    SOURCE_SLOT_IDENTITY_FIELDS,
+    SOURCE_SLOT_READY,
+    SOURCE_STEPS,
+    TOTAL_TENSOR_TRANSFER_HARD_CAP_BYTES,
+    SourceSlotLifecycle,
 )
+from .h3_v4_lineage_diagnostic import build_source_components
 
 
 SCHEMA_VERSION = "h3.cuda-fixture-teardown-remediation-v4.1"
 ROOT_CAUSE = "LIVE_TENSOR_REFERENCE_LEAK"
+ROLLING_HOST_HARD_CAP_BYTES = 768 * 1024**2
+ROLLING_H2D_HARD_CAP_BYTES = 12 * 1024**3
+SOURCE_CAPTURE_COUNT = len(SOURCE_BLOCKS) * len(SOURCE_STEPS)
 LIFECYCLE = (
     "RUNNING",
     "STOP_ACCEPTING",
@@ -301,6 +313,275 @@ def snapshot_digest(snapshot: Mapping[str, Any]) -> str:
     return sha256(
         json.dumps(dict(snapshot), sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def _rolling_identity(block: int, source_step: int) -> dict[str, Any]:
+    scheduler_timesteps = tuple(float(20 - index).hex() for index in range(20))
+    components = build_source_components(
+        generation_digest="1" * 64,
+        profile_digest="2" * 64,
+        model_digest="3" * 64,
+        inventory_digest="4" * 64,
+        layout_digest="5" * 64,
+        scheduler_timesteps=scheduler_timesteps,
+        block=block,
+        source_step=source_step,
+        tensor_shape=SOURCE_SHAPE,
+        tensor_dtype="torch.bfloat16",
+        completion_state="EVENT_RECORDED",
+        legacy_lineage_digest="6" * 64,
+    )
+    return {field: components[field] for field in SOURCE_SLOT_IDENTITY_FIELDS}
+
+
+def run_rolling_slot_cuda_fixture(
+    torch_module: Any,
+    *,
+    warm_baseline: Mapping[str, Any],
+    abort_after_capture: int | None = None,
+) -> dict[str, Any]:
+    """Exercise the fixed 13-slot production payload lifecycle without H3."""
+
+    registry = FixtureOwnershipRegistry(torch_module)
+    device = torch_module.device("cuda:0")
+    slots = {block: SourceSlotLifecycle() for block in SOURCE_BLOCKS}
+    capture_events: dict[int, Any] = {}
+    host_slots: dict[int, Any] = {}
+    source = None
+    staging = None
+    representative = None
+    omitted = None
+    exact = None
+    exact_host = None
+    transfer_stream = None
+    timing_start = None
+    timing_end = None
+    captures = 0
+    consumes = 0
+    releases = 0
+    source_d2h_bytes = 0
+    candidate_h2d_bytes = 0
+    bit_identity = True
+    exact_metric_calls = 0
+    exact_values: list[float] = []
+    terminal_ready_count = 0
+    peak_live_slots = 0
+    source_d2h_ms = 0.0
+    candidate_h2d_ms = 0.0
+    expected_abort = False
+    error: BaseException | None = None
+    final_snapshot: dict[str, Any] | None = None
+    try:
+        generator = registry.helper("rolling_generator", torch_module.Generator(device=device))
+        generator.manual_seed(101)
+        source = registry.cuda(
+            "rolling_source",
+            torch_module.randn(
+                SOURCE_SHAPE,
+                dtype=torch_module.bfloat16,
+                device=device,
+                generator=generator,
+            ),
+        )
+        staging = registry.cuda("rolling_staging", torch_module.empty_like(source))
+        transfer_stream = registry.stream(
+            "rolling_transfer", torch_module.cuda.Stream(device=device)
+        )
+        timing_start = registry.event(
+            "rolling_timing_start",
+            torch_module.cuda.Event(enable_timing=True, blocking=False),
+        )
+        timing_end = registry.event(
+            "rolling_timing_end",
+            torch_module.cuda.Event(enable_timing=True, blocking=False),
+        )
+        for block in SOURCE_BLOCKS:
+            host_slots[block] = registry.pinned(
+                f"rolling_host_{block}",
+                torch_module.empty(
+                    SOURCE_SHAPE,
+                    dtype=torch_module.bfloat16,
+                    device="cpu",
+                    pin_memory=True,
+                ),
+            )
+            capture_events[block] = registry.event(
+                f"rolling_capture_{block}",
+                torch_module.cuda.Event(enable_timing=False, blocking=False),
+            )
+        representative = registry.cuda(
+            "rolling_representative",
+            torch_module.tensor(
+                REPRESENTATIVE_POSITIONS, dtype=torch_module.long, device=device
+            ),
+        )
+        omitted = registry.cuda(
+            "rolling_omitted",
+            torch_module.tensor(OMITTED_POSITIONS, dtype=torch_module.long, device=device),
+        )
+        exact_host = registry.pinned(
+            "rolling_exact_host",
+            torch_module.empty(
+                (6,), dtype=torch_module.float32, device="cpu", pin_memory=True
+            ),
+        )
+        by_target = {(event.block, event.target_step): event for event in FROZEN_EVENTS}
+        from .h3_bounded_host_source_oracle_v4_cuda import gpu_exact_oracle_metrics
+
+        for step in range(20):
+            for block in range(50):
+                event = by_target.get((block, step))
+                if event is not None:
+                    slot = slots[block]
+                    slot.begin_consume(_rolling_identity(block, event.source_step))
+                    with torch_module.cuda.stream(transfer_stream):
+                        transfer_stream.wait_event(capture_events[block])
+                        timing_start.record(transfer_stream)
+                        staging.copy_(host_slots[block], non_blocking=True)
+                        timing_end.record(transfer_stream)
+                    timing_end.synchronize()
+                    candidate_h2d_ms += float(timing_start.elapsed_time(timing_end))
+                    bit_identity = bit_identity and bool(
+                        torch_module.equal(
+                            source.view(torch_module.int16),
+                            staging.view(torch_module.int16),
+                        )
+                    )
+                    exact = registry.cuda(
+                        f"rolling_exact_{consumes}",
+                        gpu_exact_oracle_metrics(
+                            torch_module,
+                            staging,
+                            source,
+                            representative,
+                            omitted,
+                        ),
+                    )
+                    with torch_module.cuda.stream(transfer_stream):
+                        transfer_stream.wait_stream(
+                            torch_module.cuda.current_stream(device)
+                        )
+                        exact_host.copy_(exact, non_blocking=True)
+                    transfer_stream.synchronize()
+                    exact_values = [float(value) for value in exact_host.tolist()]
+                    exact_metric_calls += 1
+                    slot.release()
+                    consumes += 1
+                    releases += 1
+                    candidate_h2d_bytes += SOURCE_PAYLOAD_BYTES
+                if block in slots and step in SOURCE_STEPS:
+                    slot = slots[block]
+                    slot.begin_capture(_rolling_identity(block, step))
+                    with torch_module.cuda.stream(transfer_stream):
+                        transfer_stream.wait_stream(
+                            torch_module.cuda.current_stream(device)
+                        )
+                        timing_start.record(transfer_stream)
+                        host_slots[block].copy_(source, non_blocking=True)
+                        timing_end.record(transfer_stream)
+                        capture_events[block].record(transfer_stream)
+                    timing_end.synchronize()
+                    source_d2h_ms += float(timing_start.elapsed_time(timing_end))
+                    slot.mark_ready()
+                    captures += 1
+                    source_d2h_bytes += SOURCE_PAYLOAD_BYTES
+                    if abort_after_capture == captures:
+                        expected_abort = True
+                        raise FixtureLifecycleError("planned rolling-slot abort")
+                peak_live_slots = max(
+                    peak_live_slots,
+                    sum(slot.state != "EMPTY" for slot in slots.values()),
+                )
+        terminal_ready_count = sum(
+            slot.state == SOURCE_SLOT_READY for slot in slots.values()
+        )
+    except BaseException as caught:
+        error = caught
+    finally:
+        registry.synchronize_owned_cuda()
+        registry.join_workers()
+        registry.release_strong_references()
+        source = None
+        staging = None
+        representative = None
+        omitted = None
+        exact = None
+        exact_host = None
+        transfer_stream = None
+        timing_start = None
+        timing_end = None
+        host_slots.clear()
+        capture_events.clear()
+        slots.clear()
+        gc.collect()
+        torch_module.cuda.empty_cache()
+        final_snapshot = memory_snapshot(
+            torch_module,
+            label="rolling_slot:final",
+            registry=registry,
+            fixture_state="CLOSED",
+        )
+
+    assert final_snapshot is not None
+    cleanup_checks = final_memory_gate(final_snapshot, warm_baseline)
+    cleanup_checks["reserved_matches_warm_baseline"] = final_snapshot[
+        "reserved_bytes"
+    ] == warm_baseline["reserved_bytes"]
+    if abort_after_capture is not None:
+        checks = {
+            "planned_abort_observed": expected_abort
+            and isinstance(error, FixtureLifecycleError),
+            "abort_cleanup_pass": all(cleanup_checks.values()),
+        }
+    else:
+        terminal_ready = SOURCE_CAPTURE_COUNT - MINIMUM_EXACT_RECORDS
+        checks = {
+            "no_runtime_error": error is None,
+            "capture_count_exact": captures == SOURCE_CAPTURE_COUNT,
+            "consume_count_exact": consumes == MINIMUM_EXACT_RECORDS,
+            "release_count_exact": releases == MINIMUM_EXACT_RECORDS,
+            "terminal_ready_count_exact": terminal_ready_count
+            == terminal_ready
+            == 9,
+            "slot_count_exact": len(SOURCE_BLOCKS) == 13,
+            "peak_live_slots_bounded": peak_live_slots <= len(SOURCE_BLOCKS),
+            "bf16_bit_preserved": bit_identity,
+            "source_identity_exact": error is None,
+            "candidate_only_h2d": candidate_h2d_bytes
+            == MINIMUM_EXACT_RECORDS * SOURCE_PAYLOAD_BYTES,
+            "exact_gpu_oracle_metric_count_exact": exact_metric_calls
+            == MINIMUM_EXACT_RECORDS,
+            "exact_gpu_oracle_finite": bool(exact_values)
+            and exact_values[2] == 1.0
+            and exact_values[5] == 1.0,
+            "bounded_host_source": len(SOURCE_BLOCKS) * SOURCE_PAYLOAD_BYTES
+            <= ROLLING_HOST_HARD_CAP_BYTES,
+            "gpu_staging_bounded": SOURCE_PAYLOAD_BYTES
+            <= GPU_STAGING_BUDGET_BYTES,
+            "candidate_h2d_bounded": candidate_h2d_bytes
+            <= ROLLING_H2D_HARD_CAP_BYTES,
+            "total_transfer_bounded": source_d2h_bytes + candidate_h2d_bytes
+            <= TOTAL_TENSOR_TRANSFER_HARD_CAP_BYTES,
+            "normal_cleanup_pass": all(cleanup_checks.values()),
+        }
+    return {
+        "mode": "ABORT" if abort_after_capture is not None else "NORMAL",
+        "capture_count": captures,
+        "consume_count": consumes,
+        "release_count": releases,
+        "terminal_ready_count": terminal_ready_count,
+        "peak_live_slots": peak_live_slots,
+        "source_d2h_bytes": source_d2h_bytes,
+        "candidate_h2d_bytes": candidate_h2d_bytes,
+        "source_d2h_gpu_ms": source_d2h_ms,
+        "candidate_h2d_gpu_ms": candidate_h2d_ms,
+        "exact_gpu_oracle_metric_calls": exact_metric_calls,
+        "retry_count": 0,
+        "cleanup_checks": cleanup_checks,
+        "final_snapshot": final_snapshot,
+        "checks": checks,
+        "passed": all(checks.values()),
+    }
 
 
 class V4CudaFixture:
@@ -767,6 +1048,12 @@ def run_teardown_remediation(
     )
     warmup = run_fixture_cycle(torch_module, cycle_name="warm_up")
     warm_baseline = warmup["close"]["snapshots"]["empty_cache"]
+    rolling_normal = run_rolling_slot_cuda_fixture(
+        torch_module, warm_baseline=warm_baseline
+    )
+    rolling_abort = run_rolling_slot_cuda_fixture(
+        torch_module, warm_baseline=warm_baseline, abort_after_capture=1
+    )
     negatives = []
     if run_negative_tests:
         negatives = [
@@ -824,6 +1111,8 @@ def run_teardown_remediation(
         "verification_functional_pass": functional_pass,
         "verification_memory_gate_pass": close_pass,
         "negative_leak_tests_pass": negative_pass,
+        "rolling_slot_normal_pass": rolling_normal["passed"],
+        "rolling_slot_abort_cleanup_pass": rolling_abort["passed"],
         "allocated_monotonic_growth_zero": all(
             value == 0 for value in allocated_growth
         ),
@@ -840,6 +1129,8 @@ def run_teardown_remediation(
         "warm_up": warmup,
         "warm_baseline": warm_baseline,
         "negative_tests": negatives,
+        "rolling_slot_normal": rolling_normal,
+        "rolling_slot_abort": rolling_abort,
         "verification_cycles": verifications,
         "verification_final_allocated_bytes": allocated,
         "verification_final_reserved_bytes": reserved,

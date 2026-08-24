@@ -648,3 +648,74 @@ H3_V4_LIVE_LINEAGE_CAUSE_CAPTURED
 This is not a successful Formal CONTROL and does not authorize executor or
 SELECTIVE integration. No second H3 submission, lineage fix, V5 work, or
 automatic follow-up was started.
+
+## Source Slot Lifecycle Remediation And Economics Gate
+
+The approved continuation began from exact clean Draft PR #138 head
+`fbf41c9fa869f5b0407410b041c791878e0bf5fb`. The live step-1/sequence-4 slot
+retained while step-16/sequence-199 was requested is now code-proven as
+`TARGET_PROCESSING_DEFERRED`. `V4ObserverAbort` inherited `RuntimeError`; the
+parent A3-G1 controller caught that type in its pre-mutation native fallback,
+so target processing failed without releasing the READY source. Subsequent
+capture refresh then rejected the unread slot and the stale identity survived.
+
+The minimal correction makes the observer abort bypass that generic fallback
+while remaining an ordinary `Exception` at the ComfyUI terminal boundary. The
+13 existing slots now enforce the explicit lifecycle `EMPTY -> CAPTURING ->
+READY -> CONSUMING -> RELEASED -> EMPTY`, a monotonic per-slot version, and
+exact generation, scheduler, block, region, capture, shape, dtype, and
+device/layout identity. A stale step-1/sequence-4 slot cannot satisfy the
+step-16/sequence-199 request and fails closed without relabeling.
+
+The full model-free order replay passed with 1,000 calls, 208 captures, 199
+target lookups, 199 consumes, 199 releases, and peak live slots 13. Lineage
+mismatch, overwrite, duplicate consume, incomplete admission, stale admission,
+and unread overwrite were all zero.
+
+One model-free CUDA rolling fixture also passed. It used the fixed 13 pinned
+slots and one 48,269,312-byte staging tensor, transferred 10,040,016,896 bytes
+D2H and 9,605,593,088 candidate-only bytes H2D, preserved BF16 bits, ran the
+exact GPU metric path for all 199 consumes, and completed both normal and
+planned-abort cleanup.
+Allocator allocated/reserved values returned to the warm baseline, live
+fixture tensor references were zero, and retry was zero.
+
+The prior ACL regression failed only inside the managed sandbox because
+Python-created temporary directories received unusable ACLs. The unchanged
+original test passed outside that sandbox in 0.004 seconds and is classified
+`TEST_ENVIRONMENT_ONLY`; no runtime or security Gate changed.
+
+Verification passed 36 focused Python tests, 110 adjacent H3 tests, all 50 Rust
+workspace tests, and the four required release PyO3 tests with skip zero.
+`cargo fmt`, strict workspace Clippy, workspace release build, release extension
+load, ABI V2, Rust tensor bytes zero, and maximum one Rust call per generation
+all passed. The release extension SHA-256 remained
+`60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711`.
+
+The Product Economics Gate did not pass. P1-A2 running-to-terminal and the V4
+sampler-node boundary are `NOT_COMPARABLE`. The valid C4-S0 same-profile sampler
+baseline is 488.8473197 seconds and its global Attention mixing span is
+343.2285699 seconds. Applying the 3.007449% planned Q ratio to that entire span
+gives an optimistic upper bound of 10.3224257 seconds, not a speedup claim.
+After the known 0.041647456-second C2 cost, the all-unknown-costs-equal-zero
+counterfactual would be 10.2807782 seconds or 2.1031%.
+
+That counterfactual is not admissible. Partial-kernel launch, representative
+gather, reconstruction/scatter, cache read/write and identity guards,
+per-generation GPU plan materialization, and Rust live-plan compile time are
+unmeasured. Thus predicted net seconds and predicted E2E percentage are both
+unknown, `unknown_runtime_cost_zero` is false, and the required >=1% Gate
+cannot be established.
+
+No dedicated runtime was started, no H3 model was loaded, and no prompt was
+submitted. Current-task submission/GPU start/completion is `0/0/0`, cumulative
+Formal CONTROL submissions remain five, retry/fallback is `0/0`, and
+SELECTIVE/partial-Q/Attention omission/output mutation is `0/0/0/0`.
+
+```text
+H3_V4_ECONOMICS_NOT_VIABLE
+```
+
+The slot defect is remediated and bounded, but this does not establish that the
+compound-eye path is commercially faster. Formal CONTROL and executor work
+remain unauthorized and were not started automatically.

@@ -12,7 +12,13 @@ from hive_product.h3_bounded_host_source_oracle_v4 import (
     MINIMUM_EXACT_RECORDS,
     MINIMUM_PLANNED_Q_RATIO,
     SOURCE_BLOCKS,
+    SOURCE_SLOT_EMPTY,
+    SOURCE_SLOT_READY,
+    SOURCE_SLOT_RELEASED,
+    SOURCE_SLOT_IDENTITY_FIELDS,
     SOURCE_STEPS,
+    SourceSlotLifecycle,
+    V4ContractError,
 )
 from hive_product.h3_bounded_host_source_oracle_v4_cuda import (
     gpu_compressed_fingerprint,
@@ -46,12 +52,16 @@ from hive_product.h3_v4_lineage_diagnostic import (
     replay_frozen_event_trace,
     replay_retained_failure_prefix,
 )
+from hive_product.h3_v4_economics import (
+    DECISION as ECONOMICS_NOT_VIABLE,
+    build_precontrol_economics_gate,
+)
 
 
 class H3ObserverV4Tests(unittest.TestCase):
     def test_abort_uses_ordinary_runtime_exception_boundary(self) -> None:
-        self.assertTrue(issubclass(V4ObserverAbort, RuntimeError))
         self.assertTrue(issubclass(V4ObserverAbort, Exception))
+        self.assertFalse(issubclass(V4ObserverAbort, RuntimeError))
 
         timeline = EventTimeline({"10": {"class_type": NODE_CLASS}})
         timeline.prompt_id = "prompt-id"
@@ -72,6 +82,19 @@ class H3ObserverV4Tests(unittest.TestCase):
             )
         self.assertTrue(terminal)
         self.assertEqual(timeline.terminal_event, "execution_error")
+
+    def test_v4_abort_bypasses_parent_native_fallback_and_fails_closed(self) -> None:
+        error = V4ObserverAbort("target processing failed")
+        native_fallback_types = (IndexError, RuntimeError, TypeError, ValueError)
+        self.assertNotIsInstance(error, native_fallback_types)
+
+        parent_source = inspect.getsource(
+            H3ObserverControllerV4.__mro__[1].instrumented_forward
+        )
+        self.assertIn(
+            "except (IndexError, RuntimeError, TypeError, ValueError)", parent_source
+        )
+        self.assertIn("except BaseException", parent_source)
 
     @staticmethod
     def _lineage_components():
@@ -134,6 +157,75 @@ class H3ObserverV4Tests(unittest.TestCase):
         self.assertEqual(receipt["lineage_mismatch_count"], 0)
         self.assertEqual(receipt["source_slot_overwrite_count"], 0)
         self.assertEqual(receipt["incomplete_source_admission_count"], 0)
+        self.assertEqual(receipt["target_lookup_count"], 199)
+        self.assertEqual(receipt["target_consume_completed_count"], 199)
+        self.assertEqual(receipt["source_release_count"], 199)
+        self.assertEqual(receipt["duplicate_consume_count"], 0)
+        self.assertEqual(receipt["stale_slot_admission_count"], 0)
+        self.assertEqual(receipt["unread_slot_overwrite_count"], 0)
+        self.assertLessEqual(receipt["peak_simultaneous_live_slots"], 13)
+
+    def test_source_slot_lifecycle_versions_capture_consume_and_release(self) -> None:
+        scheduler = tuple(float(20 - index).hex() for index in range(20))
+        first = build_source_components(
+            generation_digest="1" * 64,
+            profile_digest="2" * 64,
+            model_digest="3" * 64,
+            inventory_digest="4" * 64,
+            layout_digest="5" * 64,
+            scheduler_timesteps=scheduler,
+            block=3,
+            source_step=1,
+            tensor_shape=(3367, 7168),
+            tensor_dtype="torch.bfloat16",
+            completion_state="EVENT_RECORDED",
+            legacy_lineage_digest="6" * 64,
+        )
+        identity = {field: first[field] for field in SOURCE_SLOT_IDENTITY_FIELDS}
+        slot = SourceSlotLifecycle()
+        self.assertEqual(slot.state, SOURCE_SLOT_EMPTY)
+        slot.begin_capture(identity)
+        slot.mark_ready()
+        self.assertEqual(slot.state, SOURCE_SLOT_READY)
+        self.assertEqual(slot.version, 1)
+        slot.begin_consume(identity)
+        slot.release()
+        self.assertEqual(slot.state, SOURCE_SLOT_RELEASED)
+        self.assertEqual((slot.capture_count, slot.consume_count, slot.release_count), (1, 1, 1))
+
+    def test_retained_step1_sequence4_cannot_satisfy_step16_sequence199(self) -> None:
+        scheduler = tuple(float(20 - index).hex() for index in range(20))
+
+        def identity(source_step: int) -> dict[str, object]:
+            components = build_source_components(
+                generation_digest="1" * 64,
+                profile_digest="2" * 64,
+                model_digest="3" * 64,
+                inventory_digest="4" * 64,
+                layout_digest="5" * 64,
+                scheduler_timesteps=scheduler,
+                block=3,
+                source_step=source_step,
+                tensor_shape=(3367, 7168),
+                tensor_dtype="torch.bfloat16",
+                completion_state="EVENT_RECORDED",
+                legacy_lineage_digest="6" * 64,
+            )
+            return {
+                field: components[field] for field in SOURCE_SLOT_IDENTITY_FIELDS
+            }
+
+        slot = SourceSlotLifecycle()
+        stored = identity(1)
+        requested = identity(16)
+        self.assertEqual(stored["source_capture_sequence"], 4)
+        self.assertEqual(requested["source_capture_sequence"], 199)
+        slot.begin_capture(stored)
+        slot.mark_ready()
+        with self.assertRaisesRegex(V4ContractError, "source_step_ordinal"):
+            slot.begin_consume(requested)
+        self.assertEqual(slot.state, SOURCE_SLOT_READY)
+        self.assertEqual(slot.identity, stored)
 
     def test_retained_151_13_0_prefix_is_not_reproducible_from_frozen_order(self):
         receipt = replay_retained_failure_prefix(
@@ -383,6 +475,36 @@ class H3ObserverV4Tests(unittest.TestCase):
         self.assertEqual(performance["projected_production_observer_cost_ms"], 1_000.0)
         self.assertGreater(performance["projected_production_net_ms"], 0.0)
 
+    def test_precontrol_economics_separates_costs_and_blocks_unknown_runtime(self):
+        gate = build_precontrol_economics_gate()
+        classes = {item["cost_id"]: item["classification"] for item in gate["costs"]}
+        self.assertFalse(gate["passed"])
+        self.assertEqual(gate["decision"], ECONOMICS_NOT_VIABLE)
+        self.assertEqual(
+            gate["measurement_comparability"]["direct_comparison"],
+            "NOT_COMPARABLE",
+        )
+        self.assertEqual(classes["source_capture_d2h"], "CONTROL_ONLY")
+        self.assertEqual(classes["candidate_source_h2d"], "CONTROL_ONLY")
+        self.assertEqual(
+            classes["compound_eye_scalar_d2h"], "SELECTIVE_RUNTIME_REQUIRED"
+        )
+        self.assertEqual(
+            classes["rust_live_plan_compile"], "SELECTIVE_RUNTIME_REQUIRED"
+        )
+        self.assertEqual(classes["rust_deterministic_replay"], "CONTROL_ONLY")
+        self.assertEqual(classes["artifact_serialization"], "CONTROL_ONLY")
+        self.assertEqual(classes["confusion_matrix_calculation"], "CONTROL_ONLY")
+        self.assertGreater(len(gate["unknown_selective_runtime_costs"]), 0)
+        self.assertIsNone(gate["predicted_net_saving_seconds"])
+        self.assertGreater(gate["avoided_q_compute_upper_bound_seconds"], 0.0)
+
+        optimistic = build_precontrol_economics_gate(
+            {name: 0.0 for name in gate["unknown_selective_runtime_costs"]}
+        )
+        self.assertTrue(optimistic["passed"])
+        self.assertGreaterEqual(optimistic["predicted_net_saving_ratio"], 0.01)
+
     def test_runner_source_enforces_single_submission_and_terminal_decisions(self):
         import hive_product.h3_observer_v4_control_probe as runner
 
@@ -395,6 +517,8 @@ class H3ObserverV4Tests(unittest.TestCase):
         self.assertIn("_shutdown_owned_runtime(", source)
         self.assertIn('if callback_path.is_file()', source)
         self.assertIn('root / "private-receipt.json"', source)
+        self.assertIn("build_precontrol_economics_gate", source)
+        self.assertIn("production_economics_viable", source)
         self.assertEqual(VALIDATED, "H3_V4_OBSERVER_RUNTIME_AND_FORMAL_CONTROL_VALIDATED")
         self.assertEqual(NOT_VIABLE, "H3_COMPOUND_EYE_PATH_NOT_YET_PRODUCT_VIABLE")
         self.assertEqual(ADMISSION_BLOCKED, "H3_V4_FORMAL_CONTROL_ADMISSION_BLOCKED")

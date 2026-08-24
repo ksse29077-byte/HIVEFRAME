@@ -1,0 +1,73 @@
+schema_version: h3.v4-source-slot-lifecycle-economics-gate.1
+status: H3_V4_ECONOMICS_NOT_VIABLE
+issue: 137
+draft_pr: 138
+starting_head: fbf41c9fa869f5b0407410b041c791878e0bf5fb
+root_cause:
+  classification: TARGET_PROCESSING_DEFERRED
+  code_location:
+    observer_exception: python/hive_product/h3_observer_v4.py
+    native_fallback_boundary: python/hive_product/a3_g1_conditional_reuse.py
+  mechanism: V4ObserverAbort_was_RuntimeError_and_parent_native_fallback_deferred_target_failure
+  retained_slot: {step: 1, capture_sequence: 4, state: READY}
+  requested_source: {step: 16, capture_sequence: 199}
+remediation:
+  state_machine: [EMPTY, CAPTURING, READY, CONSUMING, RELEASED, EMPTY]
+  slot_count: 13
+  full_identity_required: true
+  monotonic_slot_version: true
+  stale_slot_fail_closed: true
+  abort_bypasses_native_fallback: true
+model_free_trace:
+  full_attention_calls: 1000
+  captures: 208
+  target_lookups: 199
+  consumes: 199
+  releases: 199
+  peak_live_slots: 13
+  lineage_mismatch: 0
+  overwrite: 0
+  duplicate_consume: 0
+  incomplete_admission: 0
+  stale_admission: 0
+  passed: true
+cuda_fixture:
+  model_loaded: false
+  captures: 208
+  consumes: 199
+  releases: 199
+  source_d2h_bytes: 10040016896
+  candidate_h2d_bytes: 9605593088
+  total_transfer_bytes: 19645609984
+  resident_host_bytes: 627501056
+  shared_gpu_staging_bytes: 48269312
+  bf16_bit_preserved: true
+  exact_gpu_oracle_metric_calls: 199
+  exact_gpu_oracle_metric: PASS
+  normal_cleanup: PASS
+  abort_cleanup: PASS
+  allocator_baseline_restored: true
+  live_tensor_references: 0
+  retry_count: 0
+economics_gate:
+  comparable_baseline_seconds: 488.8473196999985
+  global_attention_mixing_seconds: 343.2285699157715
+  planned_q_reduction_ratio: 0.03007449429460581
+  avoided_q_compute_upper_bound_seconds: 10.322425667677582
+  known_runtime_overhead_seconds: 0.041647456
+  unknown_runtime_cost_count: 6
+  predicted_net_saving_seconds: null
+  predicted_net_saving_percent: null
+  passed: false
+execution:
+  runtime_start: 0
+  h3_model_load: 0
+  formal_control_submission_gpu_completion: [0, 0, 0]
+  cumulative_formal_control_submissions: 5
+  selective_partial_q_omission: [0, 0, 0]
+  retry_fallback: [0, 0]
+decision:
+  code: H3_V4_ECONOMICS_NOT_VIABLE
+  formal_control_allowed: false
+  automatic_follow_up_allowed: false
+  product_acceleration_claim: false

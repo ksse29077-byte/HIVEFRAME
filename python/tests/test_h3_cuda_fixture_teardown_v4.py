@@ -11,6 +11,7 @@ from hive_product.h3_cuda_fixture_teardown_v4 import (
     final_memory_gate,
     normalize_cuda_device_index,
     reset_peak_memory_stats_compat,
+    run_rolling_slot_cuda_fixture,
 )
 from hive_product.h3_bounded_host_source_oracle_v4_cuda import (
     run_bounded_cuda_preflight,
@@ -132,6 +133,16 @@ class H3CudaFixtureTeardownV4Tests(unittest.TestCase):
         self.assertIn("run_teardown_remediation", source)
         self.assertNotIn("del source", source)
         self.assertNotIn("final_allocated <= baseline_allocated", source)
+
+    def test_rolling_fixture_contract_is_fixed_and_fail_closed(self):
+        source = inspect.getsource(run_rolling_slot_cuda_fixture)
+        self.assertIn("SOURCE_CAPTURE_COUNT", source)
+        self.assertIn("MINIMUM_EXACT_RECORDS", source)
+        self.assertIn("slot.begin_consume", source)
+        self.assertIn("slot.release", source)
+        self.assertIn("candidate_only_h2d", source)
+        self.assertIn("planned rolling-slot abort", source)
+        self.assertNotIn("range(199)", source)
 
     def test_cuda_index_normalization_and_peak_reset_are_strict(self):
         torch_module = FakeTorch()

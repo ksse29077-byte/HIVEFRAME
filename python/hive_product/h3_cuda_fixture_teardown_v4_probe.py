@@ -84,6 +84,16 @@ def sanitize_public(receipt: Mapping[str, Any]) -> dict[str, Any]:
             }
             for case in receipt["negative_tests"]
         ],
+        "rolling_slot_normal": {
+            key: value
+            for key, value in receipt["rolling_slot_normal"].items()
+            if key != "final_snapshot"
+        },
+        "rolling_slot_abort": {
+            key: value
+            for key, value in receipt["rolling_slot_abort"].items()
+            if key != "final_snapshot"
+        },
         "verification_cycles": [
             {
                 "cycle_name": cycle["functional"]["cycle_name"],
