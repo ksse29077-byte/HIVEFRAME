@@ -1,0 +1,92 @@
+schema_version: h3.tier-b-attention-backend-ablation.knowledge.1
+decision: H3_TIER_B_FUSION_KERNEL_NOT_VIABLE
+task: H3_TIER_B_EXACT_ATTENTION_BACKEND_QKV_ROPE_OUT_FUSION_AB
+issue: 141
+draft_pr: 142
+exact_base_head: c996d73233ed1a64eb3e1b1e04fe084390c19f32
+
+frozen_boundaries:
+  v4: EXPERIMENTAL_AUXILIARY_FROZEN
+  selective: false
+  partial_q: false
+  cache_reuse: false
+  attention_omission: false
+  full_q_percent: 100
+  full_kv_percent: 100
+
+environment:
+  gpu: NVIDIA GeForce RTX 3060
+  physical_vram_bytes: 12884377600
+  compute_capability: [8, 6]
+  torch: 2.12.1+cu130
+  cuda: "13.0"
+  dtype: torch.bfloat16
+  shape: [1, 56, 15424, 128]
+
+installed_path:
+  qkv: one packed projection; split and packing are views
+  rope: fused in-place CK RMSNorm plus RoPE
+  attention: cuDNN SDPA through attention_pytorch
+  output: direct-copy reshape followed by separate projection
+  source_sha256:
+    h3_model: 882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024
+    attention_dispatch: a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9
+    comfy_ops: aa6dc3dd7f2d6b04f9e3f5df949348a4734f5f9af4d08891c57c8a64986d3782
+
+capability:
+  baseline: attention_pytorch
+  candidate_name: h3_exact_fused_v1
+  candidate_version: 1
+  actual_implemented_components:
+    - direct_cudnn_sdpa_dispatch
+    - standard_output_reshape
+  fusion_claimed: false
+  compile_required: false
+  cache_required: false
+  fallback: attention_pytorch
+
+warm_interleaved_ablation:
+  warmups: 2
+  repeats: 8
+  baseline_cuda_p50_ms: 270.9821319580078
+  baseline_cuda_p95_ms: 271.1898498535156
+  candidate_cuda_p50_ms: 270.9903259277344
+  candidate_cuda_p95_ms: 271.1347351074219
+  efficient_alternative_cuda_p50_ms: 411.5118103027344
+  efficient_alternative_cuda_p95_ms: 411.6183166503906
+  baseline_kernel_count: 2
+  candidate_kernel_count: 2
+  baseline_candidate_kernel_identity_equal: true
+  candidate_to_baseline_p50_ratio: 1.000030237
+
+parity:
+  shape_dtype_device: PASS
+  bitwise_equal: true
+  max_abs_error: 0.0
+  mean_abs_error: 0.0
+  nonfinite_count: 0
+  forced_fallback: PASS
+  silent_unsupported_execution_count: 0
+
+admission:
+  parity: PASS
+  p95_backend_regression_zero: PASS
+  incremental_workspace_within_256_mib: PASS
+  prior_physical_headroom_at_least_256_mib: PASS
+  predicted_sampler_reduction_fraction: -0.0000179293151058803
+  predicted_e2e_reduction_fraction: -0.0000149548212560265
+  sampler_reduction_at_least_10_percent: FAIL
+  e2e_reduction_at_least_10_percent: FAIL
+  passed: false
+
+generation:
+  control_submissions: 0
+  candidate_submissions: 0
+  gpu_generations: 0
+  retry: 0
+
+disposition:
+  tier_b_exact_attention_fusion: NOT_VIABLE_IN_INSTALLED_STACK
+  reason: baseline and candidate resolve to the same cuDNN SDPA plus reshape kernels
+  product_integration: NOT_STARTED
+  automatic_follow_up: false

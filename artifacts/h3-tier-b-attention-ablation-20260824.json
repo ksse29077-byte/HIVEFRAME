@@ -1,0 +1,348 @@
+{
+  "ablations": {
+    "A0": {
+      "component": "baseline attention_pytorch",
+      "status": "MEASURED"
+    },
+    "A1": {
+      "component": "QKV projection and packing only",
+      "reason": "installed H3 already uses one packed projection; split and views launch no kernels",
+      "status": "NO_DISTINCT_CANDIDATE"
+    },
+    "A2": {
+      "component": "Q/K RoPE only",
+      "reason": "installed H3 already uses fused in-place CK RMSNorm plus RoPE",
+      "status": "NO_DISTINCT_CANDIDATE"
+    },
+    "A3": {
+      "component": "Attention backend only",
+      "direct_cudnn": "h3_exact_fused_v1",
+      "distinct_efficient_alternative": "efficient_sdpa_alternative",
+      "status": "MEASURED"
+    },
+    "A4": {
+      "component": "output transform and projection only",
+      "reason": "no safe fused projection kernel exists in the installed stack; Standard reshape is retained",
+      "status": "NO_DISTINCT_CANDIDATE"
+    },
+    "A5": {
+      "component": "combined h3_exact_fused_v1",
+      "reason": "only direct cuDNN dispatch is implemented; manifest fusion_claimed is false",
+      "status": "NOT_A_FUSION_CANDIDATE"
+    }
+  },
+  "admission": {
+    "checks": {
+      "baseline_parity": true,
+      "candidate_fallback_zero": true,
+      "candidate_full_kv_100_percent": true,
+      "candidate_full_q_100_percent": true,
+      "candidate_nonfinite_zero": true,
+      "candidate_omission_zero": true,
+      "incremental_workspace_within_256_mib": true,
+      "p95_backend_regression_zero": true,
+      "predicted_e2e_reduction_at_least_10_percent": false,
+      "predicted_sampler_reduction_at_least_10_percent": false,
+      "prior_physical_headroom_at_least_256_mib": true
+    },
+    "passed": false
+  },
+  "candidate_receipt": {
+    "admitted": true,
+    "attention_omission_count": 0,
+    "call_position": 11,
+    "fallback_count": 0,
+    "fallback_reason": null,
+    "full_kv_percent": 100,
+    "full_q_percent": 100,
+    "manifest_digest": "ec3ad67e54d116d8844716c027dae0bcdf74d524b4b1c0d2ac90618b8851dccc",
+    "partial_q_enabled": false,
+    "requested_backend": "h3_exact_fused_v1",
+    "selected_backend": "h3_exact_fused_v1",
+    "selective_enabled": false
+  },
+  "capability_manifest": {
+    "attention_pytorch": {
+      "cache_required": false,
+      "compile_required": false,
+      "device_types": [
+        "cuda"
+      ],
+      "dtypes": [
+        "torch.bfloat16"
+      ],
+      "fallback_backend": null,
+      "full_kv_percent": 100,
+      "full_q_percent": 100,
+      "fusion_claimed": false,
+      "head_dims": [
+        128
+      ],
+      "heads": [
+        56
+      ],
+      "implementation_digest": "installed-source-gated",
+      "implemented_components": [
+        "installed_comfyui_attention_dispatch"
+      ],
+      "layouts": [
+        "BHSD"
+      ],
+      "maximum_incremental_workspace_bytes": 0,
+      "name": "attention_pytorch",
+      "omission_enabled": false,
+      "quality_contract": "same Full Attention semantics; shape/dtype/device parity; finite output; no quality threshold relaxation",
+      "semantics": "exact full scaled dot product attention",
+      "sequence_rows": [
+        15424
+      ],
+      "timing_counters": [
+        "cuda_p50_ms",
+        "cuda_p95_ms",
+        "cpu_launch_p50_ms",
+        "kernel_count",
+        "peak_allocated_bytes",
+        "peak_reserved_bytes"
+      ],
+      "version": "installed-comfyui"
+    },
+    "h3_exact_fused_v1": {
+      "cache_required": false,
+      "compile_required": false,
+      "device_types": [
+        "cuda"
+      ],
+      "dtypes": [
+        "torch.bfloat16"
+      ],
+      "fallback_backend": "attention_pytorch",
+      "full_kv_percent": 100,
+      "full_q_percent": 100,
+      "fusion_claimed": false,
+      "head_dims": [
+        128
+      ],
+      "heads": [
+        56
+      ],
+      "implementation_digest": "ec3ad67e54d116d8844716c027dae0bcdf74d524b4b1c0d2ac90618b8851dccc",
+      "implemented_components": [
+        "direct_cudnn_sdpa_dispatch",
+        "standard_output_reshape"
+      ],
+      "layouts": [
+        "BHSD"
+      ],
+      "maximum_incremental_workspace_bytes": 268435456,
+      "name": "h3_exact_fused_v1",
+      "omission_enabled": false,
+      "quality_contract": "same Full Attention semantics; shape/dtype/device parity; finite output; no quality threshold relaxation",
+      "semantics": "exact full noncausal SDPA with zero dropout and no mask",
+      "sequence_rows": [
+        15424
+      ],
+      "timing_counters": [
+        "cuda_p50_ms",
+        "cuda_p95_ms",
+        "cpu_launch_p50_ms",
+        "kernel_count",
+        "peak_allocated_bytes",
+        "peak_reserved_bytes"
+      ],
+      "version": "1"
+    }
+  },
+  "cold_first_use": {
+    "attention_pytorch": {
+      "compile_time_ms": 0.0,
+      "cuda_ms": 522.8724975585938,
+      "wall_ms": 523.0512000853196
+    },
+    "efficient_sdpa_alternative": {
+      "compile_time_ms": 0.0,
+      "cuda_ms": 409.3745422363281,
+      "wall_ms": 409.51839997433126
+    },
+    "h3_exact_fused_v1": {
+      "compile_time_ms": 0.0,
+      "cuda_ms": 269.35809326171875,
+      "wall_ms": 269.43959994241595
+    }
+  },
+  "cold_first_use_interpretation": {
+    "cross_backend_comparison_valid": false,
+    "order": [
+      "attention_pytorch",
+      "h3_exact_fused_v1",
+      "efficient_sdpa_alternative"
+    ],
+    "reason": "the first call pays shared cuDNN initialization; warm interleaved timing is the performance admission source"
+  },
+  "created_at": "2026-08-24T08:56:23.037671+00:00",
+  "decision": "H3_TIER_B_FUSION_KERNEL_NOT_VIABLE",
+  "environment": {
+    "after": {
+      "memory_used_mib": 2897,
+      "sm_clock_mhz": 1942,
+      "temperature_c": 60,
+      "utilization_percent": 100
+    },
+    "before": {
+      "memory_used_mib": 741,
+      "sm_clock_mhz": 1777,
+      "temperature_c": 41,
+      "utilization_percent": 10
+    },
+    "compute_capability": [
+      8,
+      6
+    ],
+    "cuda": "13.0",
+    "device": "NVIDIA GeForce RTX 3060",
+    "dtype": "torch.bfloat16",
+    "shape": [
+      1,
+      56,
+      15424,
+      128
+    ],
+    "torch": "2.12.1+cu130"
+  },
+  "generation": {
+    "baseline_submissions": 0,
+    "candidate_submissions": 0,
+    "gpu_generation_count": 0,
+    "retry": 0
+  },
+  "installed_source_sha256": {
+    "attention_dispatch": "a540a0b487eb5979c4dbc38c72926e3a38b5e41480a038a98707e2eef7e038d9",
+    "comfy_ops": "aa6dc3dd7f2d6b04f9e3f5df949348a4734f5f9af4d08891c57c8a64986d3782",
+    "h3_model": "882c280b05aa60cd17f231e5e2389b921b52880fb3b4e23574c0aba5f2bd5024"
+  },
+  "kernel_inventory": {
+    "attention_pytorch": {
+      "kernel_count": 2,
+      "kernel_names": [
+        "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_",
+        "cudnn_generated_fort_native_sdpa_sm80_flash_fprop_wmma_f16_knob_3_64x64x128_4x1x1_cga1x1x1_kernel0_0"
+      ],
+      "support_status": "collected"
+    },
+    "efficient_sdpa_alternative": {
+      "kernel_count": 1,
+      "kernel_names": [
+        "_Z41fmha_cutlassF_bf16_aligned_64x128_rf_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi64ELi128ELi128ELb1ELb1EE6ParamsE"
+      ],
+      "support_status": "collected"
+    },
+    "h3_exact_fused_v1": {
+      "kernel_count": 2,
+      "kernel_names": [
+        "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_",
+        "cudnn_generated_fort_native_sdpa_sm80_flash_fprop_wmma_f16_knob_3_64x64x128_4x1x1_cga1x1x1_kernel0_0"
+      ],
+      "support_status": "collected"
+    }
+  },
+  "memory": {
+    "attention_pytorch": {
+      "allocation_count_delta": 4,
+      "incremental_peak_allocated_bytes": 442236928,
+      "incremental_peak_reserved_bytes": 0,
+      "peak_allocated_bytes": 1105592320,
+      "peak_reserved_bytes": 2885681152,
+      "resident_input_bytes": 663355392
+    },
+    "efficient_sdpa_alternative": {
+      "allocation_count_delta": 1,
+      "incremental_peak_allocated_bytes": 221118464,
+      "incremental_peak_reserved_bytes": 0,
+      "peak_allocated_bytes": 884473856,
+      "peak_reserved_bytes": 2885681152,
+      "resident_input_bytes": 663355392
+    },
+    "h3_exact_fused_v1": {
+      "allocation_count_delta": 4,
+      "incremental_peak_allocated_bytes": 442236928,
+      "incremental_peak_reserved_bytes": 0,
+      "peak_allocated_bytes": 1105592320,
+      "peak_reserved_bytes": 2885681152,
+      "resident_input_bytes": 663355392
+    }
+  },
+  "parity": {
+    "bitwise_equal": true,
+    "device_equal": true,
+    "dtype_equal": true,
+    "max_abs_error": 0.0,
+    "mean_abs_error": 0.0,
+    "nonfinite_count": 0,
+    "shape_equal": true
+  },
+  "projection": {
+    "candidate_to_baseline_p50_ratio": 1.0000302380443586,
+    "predicted_e2e_reduction_fraction": -1.4954821256026537e-05,
+    "predicted_kernel_seconds_saved": -0.009511426037818614,
+    "predicted_sampler_reduction_fraction": -1.7929315105880307e-05,
+    "prior_attention_kernel_seconds": 314.55162658691404,
+    "prior_attention_surface_seconds": 380.23846793174744
+  },
+  "schema_version": "h3.tier-b-attention-ablation.1",
+  "task": "H3_TIER_B_EXACT_ATTENTION_BACKEND_QKV_ROPE_OUT_FUSION_AB",
+  "warm_interleaved": {
+    "attention_pytorch": {
+      "cpu_launch_p50_ms": 0.08209998486563563,
+      "cpu_launch_p95_ms": 0.5164999747648835,
+      "cuda_ms": [
+        271.1898498535156,
+        270.983154296875,
+        270.993408203125,
+        270.9811096191406,
+        270.97906494140625,
+        270.9770202636719,
+        270.9770202636719,
+        271.0855712890625
+      ],
+      "cuda_p50_ms": 270.9821319580078,
+      "cuda_p95_ms": 271.1898498535156,
+      "repeats": 8,
+      "warmups": 2
+    },
+    "efficient_sdpa_alternative": {
+      "cpu_launch_p50_ms": 0.05119998240843415,
+      "cpu_launch_p95_ms": 0.0950000248849392,
+      "cuda_ms": [
+        411.5169372558594,
+        411.44012451171875,
+        411.4606018066406,
+        411.5445861816406,
+        411.5066833496094,
+        411.536376953125,
+        411.5066833496094,
+        411.6183166503906
+      ],
+      "cuda_p50_ms": 411.5118103027344,
+      "cuda_p95_ms": 411.6183166503906,
+      "repeats": 8,
+      "warmups": 2
+    },
+    "h3_exact_fused_v1": {
+      "cpu_launch_p50_ms": 0.08435000199824572,
+      "cpu_launch_p95_ms": 0.1960000954568386,
+      "cuda_ms": [
+        270.9217224121094,
+        271.0118408203125,
+        270.9903259277344,
+        270.983154296875,
+        270.98931884765625,
+        270.9903259277344,
+        271.1347351074219,
+        271.0087585449219
+      ],
+      "cuda_p50_ms": 270.9903259277344,
+      "cuda_p95_ms": 271.1347351074219,
+      "repeats": 8,
+      "warmups": 2
+    }
+  }
+}
