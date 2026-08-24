@@ -2521,3 +2521,24 @@ Selective H3 remains unauthorized and the two-minute product target is not met.
 
 ### Next action
 ```
+## 2026-08-24 H3 End-to-End Bottleneck Profile
+
+Issue #139 and stacked Draft PR #140 froze V4 as
+`EXPERIMENTAL_AUXILIARY_FROZEN` and profiled the unchanged Standard H3 path
+exactly once. The run completed `1/1/1` submission/GPU/completion with retry,
+fallback, SELECTIVE, partial-Q, omission, V4 observer, and V4 transfer all zero.
+Sampler was 530.495782 seconds and verified submit-to-output was 636.010680
+seconds. Attention accounted for 386.567680 seconds, including a 314.551627
+second kernel, while MLP/FFN accounted for 100.811781 seconds and video VAE
+decode for 62.207073 seconds. Both sampler and E2E ledgers closed at 100 percent
+without double-counting nested CUDA spans.
+
+The selected next task is
+`H3_TIER_B_EXACT_ATTENTION_BACKEND_QKV_ROPE_OUT_FUSION_AB`, with an 11.956984
+percent E2E planning estimate, fixed 256 MiB incremental VRAM cap, exact
+Standard fallback, and paired CONTROL/candidate A/B requirement. No
+optimization or follow-up Generation started. The current 636-second path does
+not support a credible two-minute claim from quality-preserving Standard-H3
+tuning alone.
+
+Decision: `H3_HIGH_IMPACT_PROFILE_COMPLETE_READY_FOR_IMPLEMENTATION`.

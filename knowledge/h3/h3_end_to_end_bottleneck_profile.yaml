@@ -1,0 +1,121 @@
+schema_version: h3.end-to-end-bottleneck-profile.knowledge.1
+decision: H3_HIGH_IMPACT_PROFILE_COMPLETE_READY_FOR_IMPLEMENTATION
+issue: 139
+draft_pr: 140
+
+v4:
+  state: EXPERIMENTAL_AUXILIARY_FROZEN
+  classification: AUXILIARY
+  product_default_enabled: false
+  executable_plan: null
+  product_performance_contribution_seconds: 0.0
+
+measured_product_path:
+  submit_to_output_seconds: 636.0106800999492
+  sampler_seconds: 530.4957820000127
+  sampler_share_of_e2e: 0.8340988571413108
+  attention_seconds: 386.567680226922
+  attention_share_of_e2e: 0.6078006114082436
+  mlp_ffn_seconds: 100.81178116858005
+  mlp_ffn_share_of_e2e: 0.15850642815107674
+  vae_decode_encode_mux_seconds: 65.02029000001494
+  prompt_and_input_conditioning_seconds: 38.71911299997009
+  accounting_ratio: 1.0
+
+selected_capability:
+  name: H3_EXACT_ATTENTION_BACKEND_QKV_ROPE_OUT_FUSION
+  version: 1
+  task: H3_TIER_B_EXACT_ATTENTION_BACKEND_QKV_ROPE_OUT_FUSION_AB
+  applies_to: H3 DiT Attention Full Compute
+  required_vram_bytes_maximum: 268435456
+  required_host_ram_bytes_maximum: 536870912
+  compatible_backend: attention_pytorch exact Full Compute reference
+  compatible_precision: existing Standard precision only
+  quality_risk: low_but_requires_ab
+  expected_e2e_reduction: 0.11956983737191107
+  exclusive_or_conflicting:
+    - alternative Attention backends
+    - unbounded CUDA graph capture
+  fallback: unchanged attention_pytorch Full Compute
+  receipt_fields:
+    - backend_identity
+    - projection_and_kernel_cuda_seconds
+    - incremental_vram_bytes
+    - sampler_seconds
+    - submit_to_output_seconds
+    - automatic_quality_result
+    - fallback_count
+
+compatibility_matrix:
+  labels: [COMPATIBLE, EXCLUSIVE, OVERLAPPING_BENEFIT, REQUIRES_AB, UNKNOWN]
+  rows:
+    attention_backend:
+      attention_backend: EXCLUSIVE
+      compile_graph: REQUIRES_AB
+      offload: COMPATIBLE
+      v4: UNKNOWN
+      step_distill: REQUIRES_AB
+      vae: COMPATIBLE
+    compile_graph:
+      attention_backend: REQUIRES_AB
+      compile_graph: EXCLUSIVE
+      offload: UNKNOWN
+      v4: UNKNOWN
+      step_distill: REQUIRES_AB
+      vae: COMPATIBLE
+    offload:
+      attention_backend: COMPATIBLE
+      compile_graph: UNKNOWN
+      offload: EXCLUSIVE
+      v4: EXCLUSIVE
+      step_distill: COMPATIBLE
+      vae: OVERLAPPING_BENEFIT
+    v4:
+      attention_backend: UNKNOWN
+      compile_graph: UNKNOWN
+      offload: EXCLUSIVE
+      v4: EXCLUSIVE
+      step_distill: UNKNOWN
+      vae: COMPATIBLE
+    step_distill:
+      attention_backend: REQUIRES_AB
+      compile_graph: REQUIRES_AB
+      offload: COMPATIBLE
+      v4: UNKNOWN
+      step_distill: EXCLUSIVE
+      vae: COMPATIBLE
+    vae:
+      attention_backend: COMPATIBLE
+      compile_graph: COMPATIBLE
+      offload: OVERLAPPING_BENEFIT
+      v4: COMPATIBLE
+      step_distill: COMPATIBLE
+      vae: EXCLUSIVE
+
+candidate_dispositions:
+  quality_preserving:
+    attention_backend_fusion: TIER_B
+    vae_pipeline: TIER_C
+    mlp_fusion: AUXILIARY
+    offload_overlap: AUXILIARY
+    norm_rope_modulation_fusion: AUXILIARY
+    cpu_sync_removal: AUXILIARY
+    encode_mux_overlap: AUXILIARY
+    persistent_residency: NOT_VIABLE
+    persistent_cuda_graph: NOT_VIABLE
+    torch_compile: UNKNOWN
+    allocator_buffer_reuse: UNKNOWN
+  quality_risk_requires_ab:
+    step_reduction: TIER_C_PER_STEP
+    distilled_scheduler_or_model: UNKNOWN
+    quantization: UNKNOWN
+    sage_attention: NOT_VIABLE_CURRENT_GATE
+    v4_cache_expansion: AUXILIARY_FROZEN
+    block_or_step_skipping: UNKNOWN
+    alternate_checkpoint_or_model: UNKNOWN
+
+two_minute_target:
+  required_e2e_reduction: 0.811323923593646
+  required_sampler_reduction_if_non_sampler_unchanged: 0.9726951610332255
+  selected_task_projected_submit_to_output_seconds: 559.9629865135997
+  conclusion: NOT_ACHIEVABLE_BY_SELECTED_TIER_B_ALONE

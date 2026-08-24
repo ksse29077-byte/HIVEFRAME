@@ -1,0 +1,208 @@
+{
+  "schema_version": "h3.high-impact-profile.final.1",
+  "decision": "H3_HIGH_IMPACT_PROFILE_COMPLETE_READY_FOR_IMPLEMENTATION",
+  "issue": 139,
+  "draft_pr": 140,
+  "stacked_base_pr": 138,
+  "starting_head": "6747e96a6ca94cdb4f137aebc36b86eb4b5b08b4",
+  "profile_implementation_head": "7615ce512df8a37c906a9479ca12f317308edc6e",
+  "execution": {
+    "submission_gpu_start_completion": [1, 1, 1],
+    "retry_fallback": [0, 0],
+    "selective_partial_q_omission": [0, 0, 0],
+    "model_forwards": 20,
+    "block_calls": 1000,
+    "v4_observer_enabled": false,
+    "v4_evidence_transfer_bytes": 0,
+    "tensor_payload_d2h_bytes": 0,
+    "hot_path_cpu_sync_count": 0,
+    "finalize_sync_count": 1,
+    "event_pairs": 11021,
+    "event_objects": 22042
+  },
+  "profile": {
+    "mode": "image_to_video_with_native_audio",
+    "input_sha256": "493ea036b4d5008c6ae7eaec772163527db1aed9457021a93ab922ee87dfb411",
+    "seed": 101,
+    "width": 864,
+    "height": 480,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "attention_backend": "attention_pytorch",
+    "sage": false,
+    "full_compute": true
+  },
+  "time_ledger_seconds": {
+    "submit_to_output": 636.0106800999492,
+    "submit_to_terminal": 635.2491499999305,
+    "sampler_wall": 530.4957820000127,
+    "sampler_cuda_event_span": 529.6165,
+    "runtime_startup": 10.617497500032187,
+    "runner_wall": 652.3402191000059,
+    "model_and_encoder_loader_nodes": 0.9918426999356598,
+    "input_prompt_conditioning": 38.71911299997009,
+    "vae_video_decode": 62.207072800025344,
+    "vae_audio_decode": 1.2099884999915957,
+    "frame_encode_mux_save": 1.6032286999979988,
+    "result_retrieval_decode_receipt": 0.7615301000187173,
+    "queue_and_unattributed_outside_sampler": 0.022122299997135997,
+    "sampler_cpu_dispatch_wait_residual": 0.8792820000127222,
+    "model_other_prepost_offload": 37.78691679246724,
+    "sampler_non_model_gpu_residual": 4.34558984375,
+    "accounted": 636.0106800999492,
+    "unaccounted": 0.0,
+    "e2e_accounting_ratio": 1.0,
+    "sampler_accounting_ratio": 1.0
+  },
+  "step_timing_seconds": {
+    "observed_interval_count": 20,
+    "mean": 26.286333595000904,
+    "median": 24.43124489998445,
+    "p90": 24.463888649968432,
+    "first": 65.71796490007546,
+    "last": 24.427271399996243,
+    "first_step_excess_over_median": 41.28672000009101,
+    "method": "client-observed progress intervals; not exact per-step GPU kernel duration"
+  },
+  "transformer_seconds": {
+    "attention_total_including_norm_and_residual": 386.567680226922,
+    "attention_share_of_sampler": 0.7286913361865576,
+    "attention_share_of_e2e": 0.6078006114082436,
+    "attention_qkv_projection": 43.7394206237793,
+    "attention_qk_norm_rope": 5.041232969284058,
+    "attention_kernel": 314.55162658691406,
+    "attention_output_projection": 16.90618775177002,
+    "attention_norm_modulation": 4.634374517917633,
+    "attention_residual_update": 1.6948377772569656,
+    "mlp_ffn_total_including_norm_and_residual": 100.81178116858005,
+    "mlp_ffn_share_of_sampler": 0.1900331436915697,
+    "mlp_ffn_share_of_e2e": 0.15850642815107674,
+    "mlp_fc1_projection": 56.84105013656616,
+    "mlp_activation_fc2_projection": 38.12562533187866,
+    "ff_norm_modulation": 4.131715092658997,
+    "ff_residual_update": 1.7133906074762344,
+    "modulation_projection": 0.10453196828067303
+  },
+  "memory": {
+    "exact_offload_h2d_seconds": null,
+    "exact_offload_d2h_seconds": null,
+    "exact_transfer_status": "NOT_COLLECTED_BY_CONTRACT",
+    "exact_transfer_reason": "Profiler trace, transfer-stream payload instrumentation, and per-call synchronization were forbidden. Effects remain in the 37.787-second model residual.",
+    "torch_max_allocated_bytes": 2332083604,
+    "torch_max_reserved_bytes": 3590324224,
+    "sampled_comfyui_peak_vram_bytes": 12458231732,
+    "sampled_nvidia_peak_vram_bytes": 11724128256,
+    "physical_vram_bytes": 12884377600,
+    "comfyui_reported_headroom_bytes": 426145868,
+    "peak_process_tree_rss_bytes": 44958818304,
+    "sampler_mean_gpu_utilization_percent": 94.71729957805907,
+    "sampler_idle_sample_ratio": 0.03164556962025317
+  },
+  "output": {
+    "integrity": "PASS",
+    "sha256": "613674ee18285f4ee5dbb9022948f95b88cbd6e8650d1927fb8497e10faf8e8d",
+    "bytes": 329765,
+    "codec": "h264",
+    "decoded_frames": 124,
+    "corrupted_frames": 0,
+    "black_frames": 0,
+    "audio_streams": 1,
+    "adjacent_exact_duplicate_frames": 0,
+    "width": 864,
+    "height": 480,
+    "fps": 24.0
+  },
+  "v4_rust_rejection": {
+    "candidate_count": 13,
+    "selected_count": 0,
+    "rejected_count": 13,
+    "rejection_reason_counts": {
+      "CACHE_REJECT_NOT_STABLE": 13
+    },
+    "first_rejection": {
+      "block_index": 0,
+      "region": 0,
+      "reason_code": 1,
+      "reason": "CACHE_REJECT_NOT_STABLE"
+    },
+    "final_plan_reason_code": 9,
+    "final_plan_reason": "CACHE_PLAN_V2_REASON_PRE_GATE_BELOW_THREE_PERCENT",
+    "evidence_candidate_q_reduction_percent": 3.0074494295,
+    "rust_planned_q_reduction_percent": 0.0,
+    "constraint_explanation": "The 3.007449 percent row-level evidence opportunity did not produce a stable generation-level block/region candidate. All 13 grouped candidates failed stability admission, leaving zero selected rows and causing the final three-percent pre-gate failure."
+  },
+  "candidate_ranking": [
+    {
+      "candidate": "attention_backend_qkv_rope_out_fusion_ab",
+      "tier": "TIER_B",
+      "affected_seconds": 380.23846793174744,
+      "affected_e2e_share": 0.5978491868595553,
+      "realistically_removable_fraction": 0.2,
+      "expected_e2e_reduction": 0.11956983737191107,
+      "expected_seconds_saved": 76.04769358634948,
+      "projected_submit_to_output_seconds": 559.9629865135997,
+      "amdahl_speedup": 1.1358084291603487
+    },
+    {
+      "candidate": "vae_decode_encode_mux_pipeline",
+      "tier": "TIER_C",
+      "affected_seconds": 65.02029000001494,
+      "expected_e2e_reduction": 0.030669433093386253
+    },
+    {
+      "candidate": "mlp_projection_activation_fusion",
+      "tier": "AUXILIARY",
+      "affected_seconds": 94.96667546844482,
+      "expected_e2e_reduction": 0.029863232942415614
+    },
+    {
+      "candidate": "model_offload_overlap_and_residency_rearrangement",
+      "tier": "AUXILIARY",
+      "affected_seconds": 37.78691679246724,
+      "expected_e2e_reduction": 0.02970619674698624
+    },
+    {
+      "candidate": "v4_selective_cache_plan",
+      "tier": "AUXILIARY",
+      "expected_e2e_reduction": 0.0,
+      "state": "EXPERIMENTAL_AUXILIARY_FROZEN",
+      "executable_plan": null
+    }
+  ],
+  "selected_next_task": {
+    "name": "H3_TIER_B_EXACT_ATTENTION_BACKEND_QKV_ROPE_OUT_FUSION_AB",
+    "expected_e2e_reduction": 0.11956983737191107,
+    "rtx3060_12gb_feasible": true,
+    "maximum_incremental_vram_bytes": 268435456,
+    "minimum_remaining_physical_reserve_bytes": 134217728,
+    "maximum_incremental_host_ram_bytes": 536870912,
+    "quality_contract": "same fixed input and Standard settings; exact shape and integrity; automatic quality no worse than Standard; visual review required before promotion",
+    "fallback": "unchanged attention_pytorch Full Compute",
+    "generation_limit": {
+      "control": 1,
+      "candidate": 1,
+      "retry": 0
+    },
+    "automatic_start": false
+  },
+  "two_minute_target": {
+    "current_submit_to_output_seconds": 636.0106800999492,
+    "required_total_reduction_fraction": 0.811323923593646,
+    "non_sampler_seconds_if_unchanged": 105.51489809993654,
+    "required_sampler_reduction_if_non_sampler_unchanged": 0.9726951610332255,
+    "selected_task_projected_seconds": 559.9629865135997,
+    "realism": "NOT_ACHIEVABLE_BY_THE_SELECTED_TIER_B_OPTIMIZATION_ALONE",
+    "conclusion": "The two-minute target requires multiple non-overlapping gains plus a model/scheduler/hardware architecture change; current quality-preserving Standard-H3 optimizations alone do not support a credible 120-second claim."
+  },
+  "shutdown": {
+    "passed": true,
+    "owned_processes_remaining": 0,
+    "listener_8191_remaining": 0,
+    "external_process_termination_count": 0,
+    "console_helper_natural_exit": true,
+    "gpu_restored_bytes": 10485760
+  }
+}
