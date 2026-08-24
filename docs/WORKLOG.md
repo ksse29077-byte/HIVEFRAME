@@ -2442,6 +2442,25 @@ was produced. The owned runtime was stopped; a delayed check found port 8191
 closed and GPU memory back at 10 MiB. Final decision:
 `H3_V4_FORMAL_CONTROL_FAILED`. No repair or follow-up execution was started.
 
+The next approved continuation added a nonblocking CUDA completion pump while
+keeping the 13-slot inventory, schedule, ABI, and executor unchanged. Delayed
+model-free replay passed the full 1,000-call schedule at 208/199/199
+capture/consume/release, and the model-free CUDA fixture passed 13/13/13 with
+zero forced hot-path synchronization and allocator baseline restored. Focused
+and adjacent tests, release PyO3, Rust tests, strict Clippy, and release build
+all passed.
+
+Exactly one seventh Formal CONTROL was then submitted. It failed at Full
+Attention call 101 before the pump could create its first completion event:
+reading `_version` from a real inference tensor raised `RuntimeError: Inference
+tensors do not track version counter.` The receipt recorded 13 captures, one
+consume, zero releases, zero completion events, and no output. This supersedes
+the pre-control callback-ordering attribution and explains the prior 13/13/0:
+native fallback had hidden the same post-consume exception. Submission/GPU
+start/completion was 1/1/0, cumulative submissions are seven, and no retry,
+repair, or Selective work followed. Decision remains
+`H3_V4_FORMAL_CONTROL_FAILED`.
+
 ---
 
 ```markdown

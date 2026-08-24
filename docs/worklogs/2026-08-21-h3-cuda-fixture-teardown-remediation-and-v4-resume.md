@@ -808,3 +808,67 @@ H3_V4_FORMAL_CONTROL_FAILED
 The hot path has measurable auxiliary economics, but its production evidence
 lifecycle is not safe enough to proceed. Actual selective H3 execution remains
 unauthorized.
+
+## Asynchronous Completion Pump And Seventh Formal CONTROL
+
+The approved continuation began at exact clean head
+`9610ff9cf01da7eb0d9454daffbce4e5bb57b36a`. The retained sixth Formal receipt
+showed 13 captures, 13 consumes, zero releases, and every source slot left in
+`CONSUMING`. A minimal completion pump was added without changing the 13-slot
+inventory, frozen schedule, CachePlan ABI V2, executor behavior, thresholds, or
+planned-Q economics. The hot path only queries CUDA events; it does not perform
+a blocking synchronize. Evidence is committed before a slot is released and
+returned to `EMPTY`, while abort and finalization drain outstanding work in
+cleanup only.
+
+The delayed model-free trace passed the complete 1,000-call schedule with
+208/199/199 capture/consume/release, 4,136 nonblocking event queries, 3,937
+not-ready observations, peak 13 live slots, and zero safety failures. The
+model-free CUDA fixture passed 13/13/13 with 13 final `EMPTY` slots, zero
+hot-path forced CPU synchronization, zero retained tensor references, and
+allocator baseline restoration. Focused async tests passed 8/8, adjacent H3
+Python tests passed 125/125, release PyO3 tests passed 15/15, Rust workspace
+tests passed 50/50, and format, strict Clippy, and release build all passed. The
+implementation was pushed at `da3449fc4e0c706410c26f154d45d770e7d6ccd6`.
+
+That pre-control evidence attributed the retained 13/13/0 state to a callback
+ordering gap. The seventh Formal CONTROL superseded that attribution with a
+more specific real-runtime cause. Exactly one Full Compute CONTROL was
+submitted. It reached H3 GPU execution and failed on the first target, at Full
+Attention call 101 and model forward 3, while evaluating:
+
+```text
+version_before = int(getattr(full_core, "_version", 0))
+RuntimeError: Inference tensors do not track version counter.
+```
+
+The exception occurred after the first slot entered `CONSUMING` but before an
+oracle completion event was created. The terminal receipt therefore contains
+13 captures, one consume, zero releases, one `CONSUMING` slot, 12 `READY` slots,
+zero completion events, zero event queries, and zero evidence commits. This is
+classified as `OTHER_PROVEN_CAUSE / INFERENCE_TENSOR_VERSION_COUNTER_READ`.
+The earlier 13/13/0 failure is now explained precisely: the parent native
+fallback had swallowed this post-consume exception on each target, leaving all
+13 slots in `CONSUMING` until the subsequent incomplete-source error.
+
+Submission/GPU start/completion was `1/1/0`; cumulative Formal submissions are
+seven. Retry/fallback, SELECTIVE, partial-Q, Attention omission, Rust live
+compile/replay, and output generation were all zero. Runner wall time was
+154.123432 seconds and the Comfy prompt ran for 130.24 seconds. Sampled Comfy
+VRAM peaked at 12,037,813,671 bytes, NVIDIA-used memory at 11,919,163,392 bytes,
+and GPU utilization at 100%.
+
+The verified owned process tree and listener stopped, the console helper exited
+naturally, and external process termination remained zero. The immediate GPU
+baseline check alone failed because 173,015,040 bytes remained against a
+10,485,760-byte baseline when sampled, so the aggregate shutdown receipt is
+false. No code repair, retry, second generation, or Selective work was performed
+after submission, as required.
+
+```text
+H3_V4_FORMAL_CONTROL_FAILED
+```
+
+The asynchronous pump is validated in isolation, but Formal H3 never reached
+it. Actual Selective H3 execution remains unauthorized until a separately
+approved task addresses the inference-tensor identity check.

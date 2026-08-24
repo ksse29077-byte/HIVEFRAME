@@ -122,3 +122,67 @@ formal_control_after_economics:
   output_integrity: unavailable
   delayed_cleanup: {owned_processes: 0, listener_port_8191: closed, gpu_mib: 10, external_process_terminations: 0}
   follow_up_started: false
+async_completion_pump:
+  implementation_head: da3449fc4e0c706410c26f154d45d770e7d6ccd6
+  slot_count: 13
+  hot_path_completion_primitive: cuda_event_query_only
+  hot_path_forced_cpu_sync: 0
+  evidence_commit_before_release: true
+  delayed_model_free_trace:
+    full_attention_calls: 1000
+    captures_consumes_releases: [208, 199, 199]
+    completion_queries_not_ready: [4136, 3937]
+    peak_live_slots: 13
+    final_live_slots: 0
+    final_tensor_references: 0
+    safety_failures: 0
+  model_free_cuda_fixture:
+    captures_consumes_releases: [13, 13, 13]
+    final_empty_slots: 13
+    oracle_events_created_recorded: [13, 13]
+    completion_queries: 13
+    evidence_commits: 13
+    allocator_baseline_restored: true
+    final_tensor_references: 0
+  precontrol_root_cause_claim:
+    code: CALLBACK_ORDERING_GAP
+    status: SUPERSEDED_BY_FORMAL_CONTROL
+    reason: model_free_fixture_could_not_reproduce_real_inference_tensor_version_counter_behavior
+formal_control_after_async_completion:
+  submissions_gpu_starts_completions: [1, 1, 0]
+  cumulative_formal_control_submissions: 7
+  full_attention_calls: 101
+  model_forwards: 3
+  source_captures_consumes_releases: [13, 1, 0]
+  slot_states: {CONSUMING: 1, READY: 12, RELEASED: 0, EMPTY: 0}
+  oracle_completion_events_created_recorded: [0, 0]
+  completion_queries: 0
+  evidence_commits: 0
+  terminal: execution_error
+  proven_cause:
+    classification: OTHER_PROVEN_CAUSE
+    code: INFERENCE_TENSOR_VERSION_COUNTER_READ
+    error_type: RuntimeError
+    message: Inference_tensors_do_not_track_version_counter
+    location: python/hive_product/h3_observer_v4.py_observe_full_compute_control
+    async_pump_reached: false
+    prior_13_13_0_mechanism: native_fallback_swallowed_post_consume_exception_and_left_slots_CONSUMING
+  retry_fallback: [0, 0]
+  selective_partial_q_omission: [0, 0, 0]
+  rust_live_compile_offline_replay: [0, 0]
+  output_integrity: unavailable
+  runner_wall_seconds: 154.12343150004745
+  prompt_execution_seconds: 130.24
+  sampled_peak_vram_bytes:
+    comfyui: 12037813671
+    nvidia_system: 11919163392
+  shutdown:
+    owned_processes_absent: true
+    listener_count_zero: true
+    console_helper_natural_exit: true
+    external_process_termination_count: 0
+    immediate_gpu_baseline_check: FAIL
+    baseline_gpu_bytes: 10485760
+    immediate_post_shutdown_gpu_bytes: 173015040
+  same_task_fix_or_retry: false
+  follow_up_started: false
