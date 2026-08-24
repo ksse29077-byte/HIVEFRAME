@@ -673,6 +673,25 @@ No automatic A3-G1-R1 work is active. See the detailed
 [A3-G1 worklog](docs/worklogs/2026-08-10-a3-g1-h3-conditional-attention-reuse.md)
 and [decision report](reports/a3_g1/decision-report.md).
 
+## H3 End-to-End Bottleneck Profile And High-Impact Plan
+
+Overall status: `verified_once`; publication status: `draft_pr`. Decision:
+`H3_HIGH_IMPACT_PROFILE_COMPLETE_READY_FOR_IMPLEMENTATION`.
+
+| Task | Status | Evidence or blocker |
+|---|---|---|
+| Preserve exhausted V4 | `frozen` | `EXPERIMENTAL_AUXILIARY_FROZEN`; product default disabled; executable plan none; product contribution 0s |
+| Reuse immutable evidence first | `verified` | P1-A2, C4-S0, final V4, runtime/CUDA/VRAM evidence frozen in the existing-evidence artifact |
+| Run bounded Standard profile | `verified_once` | Issue #139 / Draft PR #140; submission/GPU/completion 1/1/1; retry/fallback 0/0; output integrity PASS |
+| Close sampler and E2E ledger | `verified_once` | sampler 530.496s; submit-to-output 636.011s; both ledgers account 100% with nested parents excluded from child sums |
+| Identify dominant product surface | `verified_once` | Attention 386.568s; kernel 314.552s; MLP/FFN 100.812s; video VAE 62.207s |
+| Select one >=10% candidate | `candidate_only` | `H3_TIER_B_EXACT_ATTENTION_BACKEND_QKV_ROPE_OUT_FUSION_AB`; planning estimate 11.957% E2E; no implementation started |
+| Reassess two-minute target | `blocked` | selected task projects 559.963s; credible 120s requires 81.132% total reduction and model/scheduler/hardware architecture change |
+
+See the [final report](reports/h3_e2e_bottleneck_profile/final-report.md),
+[knowledge record](knowledge/h3/h3_end_to_end_bottleneck_profile.yaml), and
+[next work order](docs/design/h3-tier-b-attention-backend-fusion-ab-work-order.md).
+
 ## Maintenance checklist
 
 - [ ] Update this file when task state changes.
