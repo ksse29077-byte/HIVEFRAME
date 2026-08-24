@@ -2407,6 +2407,22 @@ model load, or another Formal CONTROL. Current-task submission/GPU
 start/completion remained 0/0/0 and the cumulative submission count remains
 four. The decision is `H3_V4_LINEAGE_CONTRACT_BLOCKED`.
 
+The approved instrumented continuation then fixed only abort-to-terminal
+routing and ran one new Full Compute Formal CONTROL. All 20 forwards and
+1,000/1,000 Full Attention calls executed, but final holdout admission exposed
+an exact `SOURCE_SLOT_REUSE_OR_OVERWRITE`: block 3, region 0, slot 3 retained
+step 1/sequence 4 while target step 17 required step 16/sequence 199. The
+component diagnostic was 105,239 bytes and the automatic `execution_error`
+terminal, callback receipt, runner exit, and owned-tree shutdown all occurred.
+
+Submission/GPU start/completion was 1/1/0, cumulative submissions are five,
+and retry/fallback/SELECTIVE/partial-Q/omission/output mutation remained zero.
+No exact holdout record, Rust plan, MP4, quality result, or production-saving
+claim was admitted. A delayed cleanup check found owned processes and port
+8191 listeners zero and GPU use restored to 10 MiB. The decision is
+`H3_V4_LIVE_LINEAGE_CAUSE_CAPTURED`; no second generation or automatic
+remediation was started.
+
 ---
 
 ```markdown

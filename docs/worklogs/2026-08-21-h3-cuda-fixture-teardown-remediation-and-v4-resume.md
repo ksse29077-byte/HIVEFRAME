@@ -560,3 +560,91 @@ output mutation:                                 0
 
 No Formal CONTROL, minimal cause fix, V5 work, evidence expansion, executor
 integration, or product work was started.
+
+## Instrumented Live Lineage Formal CONTROL
+
+The approved continuation started from exact clean Draft PR #138 head
+`c9df8e9789acdce978af5bd26ac5fed04ffb9c6d`. The diagnostic-only diff from
+`ace5be83f1ddecdd71c002c98109769c90ae2969` remained limited to lineage
+receipt fields, tests, and documentation. The legacy lineage comparison,
+inventory, thresholds, planned-Q math, source and transfer budgets, CachePlan
+ABI, and execution behavior were not relaxed.
+
+The installed ComfyUI executor catches `Exception` and emits
+`execution_error`, while `V4ObserverAbort` previously inherited directly from
+`BaseException`. A pre-run model-free reproduction proved that the abort could
+escape the terminal path. The minimal fix changed it to a `RuntimeError`,
+added terminal and cleanup regression coverage, and was committed and pushed
+as `9dff881c660758ddc2865ff0ec5ed4229857fa07`. The existing single-PID and
+launcher-child ownership behavior was unchanged.
+
+Pre-run verification passed 62 focused and adjacent Python tests, including
+the 1,000-call/199-target trace, 11 lineage negative cases, abort-to-terminal,
+runner source integration, and process ownership. The release PyO3 ABI V2
+subset passed 8 tests with skip zero, Python compilation and diff checks
+passed, and the loaded extension SHA-256 remained
+`60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711`.
+Rust and CUDA sources were unchanged, so their prior full workspace and
+bounded teardown receipts were reused rather than rerun.
+
+All Git, fixed-profile, idle-queue, ownership, source, memory, transfer, and
+CUDA preflight Admission checks passed. The dedicated runtime admitted 13
+page-locked BF16 source slots (`627,501,056 B`), one `7,164 B` page-locked
+metric buffer, and one `48,269,312 B` shared GPU staging allocation. The
+runner submitted exactly one prompt from execution head
+`9dff881c660758ddc2865ff0ec5ed4229857fa07`; cumulative Formal CONTROL
+submissions increased from four to five, with retry and fallback both zero.
+
+The Full Compute path executed all 20 model forwards and all 1,000 expected
+Full Attention calls. SELECTIVE, partial-Q, Attention omission, cache reuse
+omission, and output mutation remained zero. During final holdout admission,
+the diagnostic Gate captured an exact live mismatch and failed closed before
+candidate H2D, exact oracle work, Rust admission, decode, or MP4 output:
+
+```text
+classification:                  SOURCE_SLOT_REUSE_OR_OVERWRITE
+first mismatch field:            source_step_ordinal
+actual source:                   step 1, block 3, region 0, slot 3, sequence 4
+expected source:                 step 16, block 3, region 0, slot 3, sequence 199
+target:                          step 17, block 3, region 0, sequence 199
+mismatched components:           source step, scheduler, capture sequence,
+                                 capture event ID, legacy lineage digest
+shape/dtype/completion:           [3367, 7168] / BF16 / EVENT_RECORDED (matched)
+generation/profile/model/inventory/layout: matched
+```
+
+The bounded diagnostic file is `105,239 B`, below the 1 MiB cap, and contains
+no tensor, prompt, input payload, or private path. The observed source D2H was
+`627,501,056 B`, C2 scalar D2H was `3,840 B`, candidate H2D was zero, and total
+observed device transfer was `627,504,896 B`. Rust tensor bytes and forced
+hot-path CUDA synchronization were zero.
+
+The websocket terminal was automatically reported as `execution_error`; the
+callback and private receipts were finalized without manual finalization, and
+the runner exited after `671.311306 s`. The sampler node was observed for
+`604.296236 s`, submit-to-terminal was `645.916571 s`, and bounded C2 observer
+overhead was `0.041647456 s`. Exact oracle and production-net timing are not
+available because exact records remained zero. Sampled NVIDIA peak VRAM was
+`11,885,608,960 B`, leaving `998,768,640 B` against the frozen physical-VRAM
+value.
+
+The immediate shutdown receipt marked only its GPU-baseline sample false at
+`165 MiB`; ownership shutdown itself passed. A delayed read-only cleanup check
+found the owned Python and console-helper PIDs absent, port 8191 listeners
+zero, GPU use back at `10 MiB` and 0%, external process termination zero, and
+direct `conhost.exe` termination zero. No MP4 was produced, so output
+integrity, the 199-record confusion matrix, false-safe, actual planned-Q
+reduction, Rust live/replay digests, and production savings are unavailable.
+
+```text
+submission/GPU start/completion:       1/1/0
+Full Attention actual/expected:        1,000/1,000
+exact holdout records:                 0/199
+retry/fallback:                        0/0
+SELECTIVE/partial-Q/Attention omission: 0/0/0
+H3_V4_LIVE_LINEAGE_CAUSE_CAPTURED
+```
+
+This is not a successful Formal CONTROL and does not authorize executor or
+SELECTIVE integration. No second H3 submission, lineage fix, V5 work, or
+automatic follow-up was started.

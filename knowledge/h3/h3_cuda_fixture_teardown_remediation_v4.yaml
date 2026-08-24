@@ -359,3 +359,128 @@ observer_runtime_continuation:
     output_mutation_count: 0
     automatic_follow_up_created: false
     decision: H3_V4_LINEAGE_CONTRACT_BLOCKED
+  instrumented_live_lineage_formal_control:
+    authorized_starting_head: c9df8e9789acdce978af5bd26ac5fed04ffb9c6d
+    execution_head: 9dff881c660758ddc2865ff0ec5ed4229857fa07
+    diagnostic_only_diff: true
+    legacy_lineage_gate_relaxed: false
+    abort_terminal_fix:
+      classification: COMFYUI_EXCEPTION_BOUNDARY_COMPATIBILITY
+      exception_type_before: BaseException
+      exception_type_after: RuntimeError
+      websocket_terminal_event: execution_error
+      callback_finalized_automatically: true
+      runner_exited_automatically: true
+      manual_finalization: false
+    verification:
+      focused_and_adjacent_python_passed: 62
+      release_pyo3_tests_passed: 8
+      release_pyo3_tests_skipped: 0
+      python_compile_passed: true
+      diff_check_passed: true
+      rust_source_changed: false
+      cuda_source_changed: false
+      prior_rust_and_cuda_receipts_reused: true
+      release_pyo3_sha256: 60e0a1cf58a772841465ff622bf708ab2ce29485d75c12013bae56c1214dd711
+    run_id: h3-v4-formal-control-20260824-1
+    admission_passed: true
+    submission_count: 1
+    gpu_start_count: 1
+    completion_count: 0
+    cumulative_formal_control_submission_count: 5
+    retry_count: 0
+    fallback_count: 0
+    model_forward_count: 20
+    block_call_count: 1000
+    full_attention_actual: 1000
+    full_attention_expected: 1000
+    source_capture_count: 13
+    exact_record_count: 0
+    lineage_diagnostic:
+      classification: SOURCE_SLOT_REUSE_OR_OVERWRITE
+      first_mismatch_field: source_step_ordinal
+      mismatch_count: 5
+      mismatch_mask: 35936
+      mismatched_fields:
+        - source_step_ordinal
+        - source_scheduler_timestep
+        - source_capture_sequence
+        - source_capture_event_id
+        - legacy_lineage_digest
+      actual_source:
+        step_ordinal: 1
+        scheduler_timestep: 0x1.fdc3a20000000p-1
+        block: 3
+        region: 0
+        slot: 3
+        capture_sequence: 4
+        capture_event_digest: 9779e381b24157ecb4a1e5f06d2da6f79103a4d86c32f9c10d688a66a5544be4
+      expected_source:
+        step_ordinal: 16
+        scheduler_timestep: 0x1.8000000000000p-1
+        block: 3
+        region: 0
+        slot: 3
+        capture_sequence: 199
+        capture_event_digest: 4f433ce0a6b47ccdc5b31a73aad41624220ccf8899ac4abfc8ed2e541a8d9381
+      target:
+        step_ordinal: 17
+        scheduler_timestep: 0x1.5bc60a0000000p-1
+        expected_source_step_ordinal: 16
+        block: 3
+        region: 0
+        sequence: 199
+      shape: [3367, 7168]
+      dtype: torch.bfloat16
+      completion_state: EVENT_RECORDED
+      common_identity_fields_matched: true
+      diagnostic_metadata_bytes: 105239
+      diagnostic_metadata_cap_bytes: 1048576
+      tensor_payload_stored: false
+      prompt_or_input_stored: false
+      private_path_stored: false
+    transfer:
+      source_d2h_bytes: 627501056
+      c2_scalar_d2h_bytes: 3840
+      candidate_h2d_bytes: 0
+      exact_oracle_metadata_d2h_bytes: 0
+      total_observed_device_transfer_bytes: 627504896
+      rust_tensor_bytes: 0
+      hot_path_forced_cuda_sync_count: 0
+    timing_seconds:
+      sampler_observed: 604.2962358000223
+      c2_observer_overhead: 0.041647456
+      exact_oracle: NOT_ENTERED
+      submit_to_terminal: 645.9165709000081
+      runner_wall: 671.3113058999879
+    resources:
+      sampled_peak_nvidia_vram_bytes: 11885608960
+      frozen_physical_vram_bytes: 12884377600
+      sampled_headroom_bytes: 998768640
+    unavailable_due_to_fail_closed:
+      holdout_confusion_matrix: true
+      false_safe: true
+      actual_planned_q_reduction: true
+      rust_live_plan_digest: true
+      rust_offline_replay_digest: true
+      mp4_output: true
+      output_integrity: true
+      production_net_saving: true
+    cleanup:
+      immediate_receipt_passed: false
+      immediate_failure: GPU_BASELINE_SAMPLE_NOT_YET_SETTLED
+      delayed_read_only_check_passed: true
+      owned_processes_remaining: 0
+      port_8191_listeners: 0
+      external_processes_terminated: 0
+      conhost_direct_terminations: 0
+      post_check_gpu_used_mib: 10
+      post_check_gpu_utilization_percent: 0
+    selective_execution_count: 0
+    partial_q_execution_count: 0
+    attention_omission_count: 0
+    output_mutation_count: 0
+    executor_integration_authorized: false
+    automatic_second_submission: false
+    automatic_follow_up_created: false
+    decision: H3_V4_LIVE_LINEAGE_CAUSE_CAPTURED
