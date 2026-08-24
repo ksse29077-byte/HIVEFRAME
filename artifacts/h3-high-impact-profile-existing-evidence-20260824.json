@@ -1,0 +1,60 @@
+{
+  "schema_version": "h3.high-impact-profile.existing-evidence.1",
+  "decision": "BOUNDED_STANDARD_PROFILE_REQUIRED",
+  "reason": "Existing C4-S0 evidence attributes 91.253 percent of the sampler to DiT blocks but does not split QKV, QK norm/RoPE, attention kernel, output projection, MLP projections, model pre/post/offload residual, or the complete submit-to-terminal path. The required accounting threshold is 95 percent.",
+  "p1_a2_standard": {
+    "receipt_sha256": "f5706905e7f1ec2534b7c9c752ea87fa693207d5512f7859067d98dc0d3784f3",
+    "status": "succeeded",
+    "input_sha256": "493ea036b4d5008c6ae7eaec772163527db1aed9457021a93ab922ee87dfb411",
+    "generation_wall_seconds": 559.3130000000237,
+    "submit_to_terminal_seconds": 559.3910000000033,
+    "peak_vram_bytes": 12481828788,
+    "output_sha256": "6243074127ddf75e6d41fac2ff75710585978185e2d1e5bde7d4cf8ae7fef539"
+  },
+  "c4_s0_comparable_full_compute": {
+    "knowledge_path": "knowledge/h3/c4_s0_subblock_cost_coupling_surface.yaml",
+    "knowledge_sha256": "fc2f3f63dec2f483748dc5acad31655b2d0f8075378d50daf6a272e435831dae",
+    "worklog_sha256": "df68309d462ec1d3bce7d91629e70a45e123f0fc3e690e140d53d3e3e76743c8",
+    "sampler_wall_seconds": 488.8473196999985,
+    "sampler_cuda_event_span_seconds": 488.75934375,
+    "submit_to_terminal_seconds": 589.9130159000051,
+    "dit_block_total_seconds": 446.0770343322754,
+    "dit_block_share_of_sampler": 0.9125328404582398,
+    "global_attention_seconds": 343.2285699157715,
+    "global_attention_share_of_sampler": 0.7022445182988309,
+    "feed_forward_seconds": 95.27647136688232,
+    "feed_forward_share_of_sampler": 0.19493534514527083,
+    "instrumentation_comparable": true
+  },
+  "v4_final_formal_control": {
+    "artifact_path": "artifacts/h3-v4-inference-identity-final-control-20260824.json",
+    "artifact_sha256": "60c92f6889583a9d88ba4e9f842f1e1e29f5b14533c8f48f685e05810745e589",
+    "decision": "H3_V4_VALIDATION_CYCLE_EXHAUSTED",
+    "sampler_seconds": 537.6543957,
+    "submit_to_output_seconds": 647.1829314,
+    "full_attention_kernel_total_seconds": 314.3882592163,
+    "observer_seconds": 5.8237130928,
+    "exact_oracle_seconds": 4.9956014023,
+    "tensor_transfer_bytes": 19645609984,
+    "peak_nvidia_used_bytes": 12187598848,
+    "output_integrity_passed": true
+  },
+  "v4_product_disposition": {
+    "classification": "AUXILIARY",
+    "state": "EXPERIMENTAL_AUXILIARY_FROZEN",
+    "product_default_enabled": false,
+    "executable_plan": null,
+    "product_performance_contribution_seconds": 0.0
+  },
+  "approved_profile_run": {
+    "maximum_generation_count": 1,
+    "retry_count": 0,
+    "selective_count": 0,
+    "partial_q_count": 0,
+    "attention_omission_count": 0,
+    "v4_observer_enabled": false,
+    "v4_evidence_transfer_bytes": 0,
+    "minimum_sampler_accounting_ratio": 0.95,
+    "minimum_submit_to_terminal_accounting_ratio": 0.95
+  }
+}
