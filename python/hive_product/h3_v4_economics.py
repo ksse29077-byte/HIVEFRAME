@@ -30,6 +30,60 @@ UNKNOWN_SELECTIVE_COSTS = (
 )
 
 
+def build_measured_hot_path_economics_gate(
+    receipt: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate the frozen production-shaped benchmark as a Formal Gate input."""
+
+    economics_checks = dict(receipt.get("economics_checks", {}))
+    required_checks = (
+        "six_unknown_costs_measured",
+        "unknown_runtime_cost_zero",
+        "median_net_at_least_one_percent",
+        "conservative_net_positive",
+        "p95_overhead_no_loss",
+        "vram_allocator_pass",
+        "fallback_correctness_pass",
+        "pipeline_contract_pass",
+    )
+    checks = {
+        "schema_exact": receipt.get("schema_version")
+        == "h3.v4-production-executor-hot-path.1",
+        "benchmark_passed": receipt.get("passed") is True,
+        "decision_viable": receipt.get("decision")
+        == "H3_V4_HOT_PATH_ECONOMICS_VIABLE",
+        "all_required_checks_pass": all(
+            economics_checks.get(name) is True for name in required_checks
+        ),
+        "unknown_runtime_cost_zero": receipt.get("unknown_runtime_costs") == [],
+        "no_generation": int(receipt.get("generation_count", -1)) == 0,
+        "no_control_submission": int(receipt.get("control_submission_count", -1))
+        == 0,
+        "no_selective_generation": int(
+            receipt.get("selective_generation_count", -1)
+        )
+        == 0,
+        "no_partial_q_h3_generation": int(
+            receipt.get("partial_q_h3_generation_count", -1)
+        )
+        == 0,
+        "no_attention_omission_h3_generation": int(
+            receipt.get("attention_omission_h3_generation_count", -1)
+        )
+        == 0,
+    }
+    return {
+        "schema_version": "h3.v4-measured-hot-path-economics-gate.1",
+        "passed": all(checks.values()),
+        "checks": checks,
+        "benchmark_checksum": receipt.get("sample_checksum"),
+        "median": receipt.get("economics", {}).get("tiers", {}).get("median"),
+        "conservative": receipt.get("economics", {})
+        .get("tiers", {})
+        .get("conservative"),
+    }
+
+
 def _cost(
     cost_id: str,
     classification: str,

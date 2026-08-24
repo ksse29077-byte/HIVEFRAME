@@ -54,6 +54,7 @@ from hive_product.h3_v4_lineage_diagnostic import (
 )
 from hive_product.h3_v4_economics import (
     DECISION as ECONOMICS_NOT_VIABLE,
+    build_measured_hot_path_economics_gate,
     build_precontrol_economics_gate,
 )
 
@@ -505,6 +506,35 @@ class H3ObserverV4Tests(unittest.TestCase):
         self.assertTrue(optimistic["passed"])
         self.assertGreaterEqual(optimistic["predicted_net_saving_ratio"], 0.01)
 
+    def test_measured_hot_path_receipt_is_required_for_formal_control(self):
+        receipt = {
+            "schema_version": "h3.v4-production-executor-hot-path.1",
+            "decision": "H3_V4_HOT_PATH_ECONOMICS_VIABLE",
+            "passed": True,
+            "generation_count": 0,
+            "control_submission_count": 0,
+            "selective_generation_count": 0,
+            "partial_q_h3_generation_count": 0,
+            "attention_omission_h3_generation_count": 0,
+            "unknown_runtime_costs": [],
+            "economics_checks": {
+                name: True
+                for name in (
+                    "six_unknown_costs_measured",
+                    "unknown_runtime_cost_zero",
+                    "median_net_at_least_one_percent",
+                    "conservative_net_positive",
+                    "p95_overhead_no_loss",
+                    "vram_allocator_pass",
+                    "fallback_correctness_pass",
+                    "pipeline_contract_pass",
+                )
+            },
+        }
+        self.assertTrue(build_measured_hot_path_economics_gate(receipt)["passed"])
+        receipt["generation_count"] = 1
+        self.assertFalse(build_measured_hot_path_economics_gate(receipt)["passed"])
+
     def test_runner_source_enforces_single_submission_and_terminal_decisions(self):
         import hive_product.h3_observer_v4_control_probe as runner
 
@@ -517,7 +547,7 @@ class H3ObserverV4Tests(unittest.TestCase):
         self.assertIn("_shutdown_owned_runtime(", source)
         self.assertIn('if callback_path.is_file()', source)
         self.assertIn('root / "private-receipt.json"', source)
-        self.assertIn("build_precontrol_economics_gate", source)
+        self.assertIn("build_measured_hot_path_economics_gate", source)
         self.assertIn("production_economics_viable", source)
         self.assertEqual(VALIDATED, "H3_V4_OBSERVER_RUNTIME_AND_FORMAL_CONTROL_VALIDATED")
         self.assertEqual(NOT_VIABLE, "H3_COMPOUND_EYE_PATH_NOT_YET_PRODUCT_VIABLE")

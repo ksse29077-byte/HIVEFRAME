@@ -63,7 +63,7 @@ from .h3_bounded_host_source_oracle_v4_cuda import run_bounded_cuda_preflight
 from .h3_observer_v4 import PROFILE_DIGEST, PROFILE_ID, SOURCE_CAPTURE_COUNT
 from .h3_v4_economics import (
     DECISION as ECONOMICS_NOT_VIABLE,
-    build_precontrol_economics_gate,
+    build_measured_hot_path_economics_gate,
 )
 from .h3_row_region_safety import (
     CACHE_HARD_CAP_BYTES,
@@ -332,6 +332,7 @@ def run_control(
     workflow_path: Path,
     base_url: str,
     rust_extension_root: Path,
+    hot_path_economics_receipt: Path,
 ) -> dict[str, Any]:
     root = private_run_root.resolve() / run_id
     if root.exists():
@@ -436,7 +437,9 @@ def run_control(
         )
         model_free = model_free_preflight_receipt()
         transfer = build_transfer_ledger()
-        economics = build_precontrol_economics_gate()
+        economics = build_measured_hot_path_economics_gate(
+            json.loads(hot_path_economics_receipt.read_text(encoding="utf-8"))
+        )
         import torch
 
         cuda_preflight = run_bounded_cuda_preflight(torch)
@@ -825,6 +828,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--workflow", required=True, type=Path)
     parser.add_argument("--base-url", default="http://127.0.0.1:8191")
     parser.add_argument("--rust-extension-root", required=True, type=Path)
+    parser.add_argument("--hot-path-economics-receipt", required=True, type=Path)
     args = parser.parse_args(argv)
     result = run_control(
         run_id=args.run_id,
@@ -841,6 +845,7 @@ def main(argv: list[str] | None = None) -> int:
         workflow_path=args.workflow,
         base_url=args.base_url,
         rust_extension_root=args.rust_extension_root,
+        hot_path_economics_receipt=args.hot_path_economics_receipt,
     )
     print(json.dumps(sanitize_public(_json_safe(result)), sort_keys=True))
     return int(result.get("exit_code", 1))
