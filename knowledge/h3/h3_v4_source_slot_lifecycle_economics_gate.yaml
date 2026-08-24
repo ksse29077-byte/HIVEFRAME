@@ -236,3 +236,64 @@ inference_tensor_identity_admission:
     conservative_percent: 1.4163649114
     unknown_cost: 0
   cumulative_formal_control_submissions: 7
+inference_identity_final_formal_control:
+  control_head: 8636a0dc2eb91ad115499bf9ab6ff8834fa2e51c
+  decision: H3_V4_VALIDATION_CYCLE_EXHAUSTED
+  submissions_gpu_starts_completions: [1, 1, 1]
+  cumulative_formal_control_submissions: 8
+  model_forwards: 20
+  full_attention_calls: 1000
+  source_captures_consumes_releases: [208, 199, 199]
+  exact_records: 199
+  inference_identity:
+    checks: 398
+    raw_version_access: 0
+    failures_mismatches: [0, 0]
+    semantics: INFERENCE_NO_VERSION_COUNTER
+  safety_evidence:
+    false_safe: 0
+    false_unsafe: 130
+    true_safe: 69
+    true_unsafe: 0
+    candidate_q_reduction_percent: 3.0074494295
+  rust_plan:
+    live_compile_offline_replay: [1, 1]
+    deterministic_digest_match: true
+    digest: 0955a7d8ecc4ed2f8ffbcc5df124d4ac204c2c24684b1b1f55f41cca402b31c0
+    selected_rejected: [0, 13]
+    actual_planned_q_reduction_percent: 0.0
+    fallback_required: true
+    plan_ready: false
+    tensor_bytes: 0
+    evidence_metadata_bytes: 51000
+  retry_fallback: [0, 0]
+  selective_partial_q_omission: [0, 0, 0]
+  output:
+    integrity: PASS
+    codec: h264
+    decoded_corrupted_black_frames: [124, 0, 0]
+    audio_streams: 1
+    sha256: 6dfc729f275967fe24efad740d407771133c658463fc52652ddf2f38f81294c0
+  timing_seconds:
+    runner: 672.0816669001
+    submit_to_output: 647.1829314
+    sampler: 537.6543957
+    full_attention: 314.3882592163
+    observer: 5.8237130928
+    exact_gpu_oracle: 4.9956014023
+  transfer_bytes:
+    source_d2h: 10040016896
+    candidate_h2d: 9605593088
+    total_tensor: 19645609984
+  sampled_peak_vram_bytes:
+    comfyui: 11702912423
+    nvidia_system: 12187598848
+  delayed_cleanup:
+    owned_processes: 0
+    listener_port_8191: closed
+    gpu_mib: 10
+    external_process_terminations: 0
+  same_task_fix_or_retry: false
+  selective_follow_up_started: false
+  two_minute_product_target_met: false
+  recommended_next_task: H3_END_TO_END_BOTTLENECK_PROFILE_AND_HIGH_IMPACT_ACCELERATION_PLAN

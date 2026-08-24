@@ -2478,6 +2478,28 @@ allocator restoration. Focused tests passed 44, release-PyO3 H3 tests passed
 prompt, or Formal CONTROL was executed; cumulative submissions remain seven.
 Admission decision: `H3_V4_INFERENCE_RUNTIME_READY`.
 
+The final inference-compatible Formal Gate passed at clean local/origin/PR
+head `8636a0dc2eb91ad115499bf9ab6ff8834fa2e51c`, and exactly one eighth Full
+Compute CONTROL was submitted. H3 completed 20 model forwards and 1,000/1,000
+Full Attention calls. The common observer path completed 208/199/199
+capture/consume/release, 199 exact records, and 398 inference identity checks
+with raw `_version` access, lineage errors, orphan slots, and forced hot-path
+synchronization all zero. The 124-frame H.264 output passed integrity.
+
+The frozen holdout evidence retained zero false-safe and a 3.007449% candidate
+Q ratio, but CachePlan ABI V2 rejected all 13 candidates and produced an actual
+Rust plan ratio of 0%. Live and offline replay ran once each and matched, yet
+`plan_ready` and `planned_q_three_percent` failed. Therefore the overall Formal
+CONTROL failed after successful generation. Submission/GPU start/completion was
+1/1/1; retry/fallback/SELECTIVE/partial-Q/omission remained zero. Runner,
+submit-to-output, and sampler times were 672.082, 647.183, and 537.654 seconds.
+The runtime and listener stopped, no external process was terminated, and a
+delayed check found GPU restored to 10 MiB. No repair or rerun followed.
+
+Final decision: `H3_V4_VALIDATION_CYCLE_EXHAUSTED`. The recommended next task
+is `H3_END_TO_END_BOTTLENECK_PROFILE_AND_HIGH_IMPACT_ACCELERATION_PLAN`; actual
+Selective H3 remains unauthorized and the two-minute product target is not met.
+
 ---
 
 ```markdown

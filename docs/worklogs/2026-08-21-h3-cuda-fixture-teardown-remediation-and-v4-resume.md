@@ -928,3 +928,64 @@ H3_V4_INFERENCE_RUNTIME_READY
 
 No H3 model was loaded and no Formal CONTROL was submitted during this
 Admission stage. The cumulative Formal submission count remains seven.
+
+## Inference-Compatible Final Formal CONTROL
+
+The final submission Gate passed at clean local, origin, and Draft PR head
+`8636a0dc2eb91ad115499bf9ab6ff8834fa2e51c`. Port 8191 was free, no foreign
+ComfyUI runtime was present, the six external product databases contained zero
+active jobs, and the RTX 3060 baseline was 10 MiB. The exact P1-A2 prompt,
+input, seed 101, 864x480, 124 frames, 24 FPS, 20 steps, Standard
+`attention_pytorch`, and Sage-disabled profile were preserved.
+
+Exactly one Full Compute Formal CONTROL was submitted. The H3 execution itself
+completed: submission/GPU start/completion was `1/1/1`, model forwards were 20,
+and Full Attention was 1,000/1,000. The common Completion Pump recorded
+208/199/199 captures/consumes/releases, 199 evidence commits, 398 inference
+identity checks, and zero raw inference `_version` accesses, identity failures,
+lineage mismatches, stale completions, duplicate releases, orphan slots, or
+hot-path forced CPU synchronization. SELECTIVE, partial-Q, Attention omission,
+output mutation, retry, and job fallback were all zero.
+
+The holdout evidence was complete and untruncated. Its confusion matrix was 69
+true-safe, 130 false-unsafe, zero false-safe, and zero true-unsafe. The frozen
+evidence schedule still represented 463,869 candidate Q rows out of 15,424,000,
+or 3.007449%. This candidate figure did not become an executable Rust plan.
+CachePlan ABI V2 rejected all 13 block/region candidates, selected none,
+required Full fallback, and produced 0 planned rows and 0% actual planned Q
+reduction. Live and offline replay were deterministic and ran once each with
+matching digest `0955a7d8...402b31c0`, but the `plan_ready` and
+`planned_q_three_percent` checks failed. The receipt also classified the 51,000
+byte bounded evidence metadata crossing the PyO3 boundary as nonzero Rust
+transfer for its `rust_tensor_zero` replay check; the actual generation evidence
+batch and executor contract both report tensor bytes zero.
+
+The Standard output itself passed integrity: H.264, 864x480, 24 FPS, 124/124
+decoded frames, audio present, zero corrupted or black frames, and SHA-256
+`6dfc729f...81294c0`. Runner wall time was 672.081667 seconds,
+submit-to-output was 647.182931 seconds, and sampler time was 537.654396 seconds.
+Measured Full Attention time was 314.388259 seconds; observer and exact GPU
+oracle totals were 5.823713 and 4.995601 seconds. Source D2H, candidate H2D, and
+total tensor transfer were 10,040,016,896, 9,605,593,088, and 19,645,609,984
+bytes. Sampled NVIDIA-used VRAM peaked at 12,187,598,848 bytes.
+
+The verified runtime tree stopped, the console helper exited naturally, no
+external process was terminated, and a delayed read-only check found zero owned
+processes, zero port-8191 listeners, and GPU restored to 10 MiB. As in earlier
+runs, the immediate shutdown receipt sampled 165 MiB before delayed driver
+cleanup and therefore marked only its instant GPU-baseline check false.
+
+No same-task correction, retry, second Formal CONTROL, or Selective generation
+was started. Cumulative Formal submissions are eight. The inference identity
+defect is fixed and the full observer lifecycle is now proven in real H3, but
+the executable Rust plan Gate failed and the validation cycle is exhausted.
+
+```text
+H3_V4_VALIDATION_CYCLE_EXHAUSTED
+```
+
+The recommended next task is
+`H3_END_TO_END_BOTTLENECK_PROFILE_AND_HIGH_IMPACT_ACCELERATION_PLAN`. The
+current 537.654-second sampler and 647.183-second submit-to-output result do not
+support the two-minute product target, and actual Selective H3 remains
+unauthorized.
